@@ -39,11 +39,41 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
     e.preventDefault();
     if (!user) return;
 
+    // Validation
+    if (!formData.inviteeEmail.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Email is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.relationshipType) {
+      toast({
+        title: "Validation Error",
+        description: "Please select a relationship type",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.inviteeEmail.toLowerCase() === user.email.toLowerCase()) {
+      toast({
+        title: "Validation Error",
+        description: "You cannot invite yourself",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       await apiRequest("POST", "/api/connections", {
         inviterEmail: user.email,
-        ...formData,
+        inviteeEmail: formData.inviteeEmail.trim(),
+        relationshipType: formData.relationshipType,
+        personalMessage: formData.personalMessage.trim(),
       });
       
       toast({

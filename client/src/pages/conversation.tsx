@@ -39,9 +39,15 @@ export default function ConversationPage() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (data: { content: string; type: 'question' | 'response' }) => {
+      if (!user?.email) {
+        throw new Error("User not authenticated");
+      }
+      if (!data.content.trim()) {
+        throw new Error("Message content cannot be empty");
+      }
       const response = await apiRequest("POST", `/api/conversations/${id}/messages`, {
-        senderEmail: user?.email,
-        content: data.content,
+        senderEmail: user.email,
+        content: data.content.trim(),
         type: data.type,
       });
       return response.json();
@@ -52,13 +58,13 @@ export default function ConversationPage() {
       setNewMessage("");
       toast({
         title: "Message sent!",
-        description: "Your message has been delivered.",
+        description: "Your message has been delivered",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to send message",
+        description: error.message || "Failed to send message",
         variant: "destructive",
       });
     },
