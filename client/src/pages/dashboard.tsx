@@ -110,7 +110,7 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-crimson font-bold text-darkslate mb-2">
+          <h1 className="text-3xl font-space font-bold text-darkslate mb-2">
             Your Connection Dashboard
           </h1>
           <p className="text-gray-600">
