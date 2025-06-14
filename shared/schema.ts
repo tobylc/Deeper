@@ -70,12 +70,14 @@ export const messages = pgTable("messages", {
 });
 
 // Schemas
-export const upsertUserSchema = createInsertSchema(users).pick({
-  id: true,
+export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
+  password: true,
   firstName: true,
   lastName: true,
   profileImageUrl: true,
+  provider: true,
+  providerId: true,
 });
 
 export const insertConnectionSchema = createInsertSchema(connections).pick({
