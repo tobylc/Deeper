@@ -67,11 +67,15 @@ export default function Features() {
                   className={`w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:scale-110 cursor-pointer ${
                     activeIcon === 'users' 
                       ? 'bg-primary shadow-lg' 
-                      : 'bg-primary hover:bg-primary/80'
+                      : 'bg-primary/20 hover:bg-primary'
                   }`}
                   onClick={() => setActiveIcon('users')}
                 >
-                  <Users className="w-8 h-8 text-white" />
+                  <Users className={`w-8 h-8 transition-colors duration-300 ${
+                    activeIcon === 'users' 
+                      ? 'text-white' 
+                      : 'text-primary hover:text-white'
+                  }`} />
                 </div>
                 <h3 className="text-2xl font-inter font-bold text-foreground mb-4">Exclusively Two People</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
@@ -101,14 +105,14 @@ export default function Features() {
                   className={`w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:scale-110 cursor-pointer ${
                     activeIcon === 'clock' 
                       ? 'bg-primary shadow-lg' 
-                      : 'bg-secondary hover:bg-primary'
+                      : 'bg-secondary/20 hover:bg-primary'
                   }`}
                   onClick={() => setActiveIcon('clock')}
                 >
                   <Clock className={`w-8 h-8 transition-colors duration-300 ${
                     activeIcon === 'clock' 
                       ? 'text-white' 
-                      : 'text-secondary-foreground hover:text-white'
+                      : 'text-secondary hover:text-white'
                   }`} />
                 </div>
                 <h3 className="text-2xl font-inter font-bold text-foreground mb-4">Turn-Based Dialogue</h3>
@@ -139,14 +143,14 @@ export default function Features() {
                   className={`w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:scale-110 cursor-pointer ${
                     activeIcon === 'lightbulb' 
                       ? 'bg-primary shadow-lg' 
-                      : 'bg-accent hover:bg-primary'
+                      : 'bg-accent/20 hover:bg-primary'
                   }`}
                   onClick={() => setActiveIcon('lightbulb')}
                 >
                   <Lightbulb className={`w-8 h-8 transition-colors duration-300 ${
                     activeIcon === 'lightbulb' 
                       ? 'text-white' 
-                      : 'text-accent-foreground hover:text-white'
+                      : 'text-accent hover:text-white'
                   }`} />
                 </div>
                 <h3 className="text-2xl font-inter font-bold text-foreground mb-4">Expertly Curated Questions</h3>
