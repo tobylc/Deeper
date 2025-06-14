@@ -5,6 +5,8 @@ import {
   type Conversation, type InsertConversation,
   type Message, type InsertMessage
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, or, and } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -29,123 +31,111 @@ export interface IStorage {
   createMessage(message: InsertMessage): Promise<Message>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User> = new Map();
-  private connections: Map<number, Connection> = new Map();
-  private conversations: Map<number, Conversation> = new Map();
-  private messages: Map<number, Message> = new Map();
-  
-  private userIdCounter = 1;
-  private connectionIdCounter = 1;
-  private conversationIdCounter = 1;
-  private messageIdCounter = 1;
-
+export class DatabaseStorage implements IStorage {
   // Users
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.email === email);
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userIdCounter++;
-    const user: User = { 
-      ...insertUser, 
-      id, 
-      createdAt: new Date()
-    };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   // Connections
   async getConnection(id: number): Promise<Connection | undefined> {
-    return this.connections.get(id);
+    const [connection] = await db.select().from(connections).where(eq(connections.id, id));
+    return connection || undefined;
   }
 
   async getConnectionsByEmail(email: string): Promise<Connection[]> {
-    return Array.from(this.connections.values()).filter(
-      conn => conn.inviterEmail === email || conn.inviteeEmail === email
-    );
+    return await db
+      .select()
+      .from(connections)
+      .where(or(eq(connections.inviterEmail, email), eq(connections.inviteeEmail, email)));
   }
 
   async createConnection(insertConnection: InsertConnection): Promise<Connection> {
-    const id = this.connectionIdCounter++;
-    const connection: Connection = {
-      ...insertConnection,
-      id,
-      status: 'pending',
-      createdAt: new Date(),
-      acceptedAt: null,
-    };
-    this.connections.set(id, connection);
+    const [connection] = await db
+      .insert(connections)
+      .values({
+        ...insertConnection,
+        status: 'pending',
+      })
+      .returning();
     return connection;
   }
 
   async updateConnectionStatus(id: number, status: string, acceptedAt?: Date): Promise<Connection | undefined> {
-    const connection = this.connections.get(id);
-    if (!connection) return undefined;
-    
-    const updated = { 
-      ...connection, 
-      status,
-      acceptedAt: acceptedAt || connection.acceptedAt
-    };
-    this.connections.set(id, updated);
-    return updated;
+    const [connection] = await db
+      .update(connections)
+      .set({
+        status,
+        acceptedAt: acceptedAt || null,
+      })
+      .where(eq(connections.id, id))
+      .returning();
+    return connection || undefined;
   }
 
   // Conversations
   async getConversation(id: number): Promise<Conversation | undefined> {
-    return this.conversations.get(id);
+    const [conversation] = await db.select().from(conversations).where(eq(conversations.id, id));
+    return conversation || undefined;
   }
 
   async getConversationsByEmail(email: string): Promise<Conversation[]> {
-    return Array.from(this.conversations.values()).filter(
-      conv => conv.participant1Email === email || conv.participant2Email === email
-    );
+    return await db
+      .select()
+      .from(conversations)
+      .where(or(eq(conversations.participant1Email, email), eq(conversations.participant2Email, email)));
   }
 
   async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
-    const id = this.conversationIdCounter++;
-    const conversation: Conversation = {
-      ...insertConversation,
-      id,
-      status: 'active',
-      createdAt: new Date(),
-    };
-    this.conversations.set(id, conversation);
+    const [conversation] = await db
+      .insert(conversations)
+      .values({
+        ...insertConversation,
+        status: 'active',
+      })
+      .returning();
     return conversation;
   }
 
   async updateConversationTurn(id: number, currentTurn: string): Promise<Conversation | undefined> {
-    const conversation = this.conversations.get(id);
-    if (!conversation) return undefined;
-    
-    const updated = { ...conversation, currentTurn };
-    this.conversations.set(id, updated);
-    return updated;
+    const [conversation] = await db
+      .update(conversations)
+      .set({ currentTurn })
+      .where(eq(conversations.id, id))
+      .returning();
+    return conversation || undefined;
   }
 
   // Messages
   async getMessagesByConversationId(conversationId: number): Promise<Message[]> {
-    return Array.from(this.messages.values())
-      .filter(msg => msg.conversationId === conversationId)
-      .sort((a, b) => a.createdAt!.getTime() - b.createdAt!.getTime());
+    return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .orderBy(messages.createdAt);
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    const id = this.messageIdCounter++;
-    const message: Message = {
-      ...insertMessage,
-      id,
-      createdAt: new Date(),
-    };
-    this.messages.set(id, message);
+    const [message] = await db
+      .insert(messages)
+      .values(insertMessage)
+      .returning();
     return message;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
