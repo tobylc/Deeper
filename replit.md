@@ -31,11 +31,11 @@ Deeper is a production-ready full-stack web application designed to facilitate m
 ## Key Components
 
 ### Authentication System
-- Simple email-based authentication without passwords
-- User registration and login via email lookup
-- Client-side session persistence using localStorage
-- Context-based authentication state management
-- Production-ready rate limiting on authentication endpoints
+- Replit Auth (Beta) integration with OpenID Connect protocol
+- Server-side session management with PostgreSQL storage
+- Passport.js authentication middleware with refresh token support
+- Secure session cookies with proper expiration handling
+- Production-ready authentication endpoints with rate limiting
 
 ### Connection Management
 - Invitation system where users can invite others by email

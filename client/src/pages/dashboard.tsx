@@ -12,7 +12,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
-  const { user, setUser } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const [showInviteForm, setShowInviteForm] = useState(false);
   const { toast } = useToast();
@@ -75,10 +75,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    setLocation("/");
-  };
+  // Logout is handled by redirecting to /api/logout endpoint
 
   if (!user) return null;
 
@@ -98,8 +95,14 @@ export default function Dashboard() {
               <span className="text-xl font-inter font-bold text-white">Deeper</span>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-white/80">Welcome, {user.name}</span>
-              <Button variant="outline" onClick={handleLogout} className="border-white/20 text-white hover:bg-white hover:text-primary">
+              <span className="text-sm text-white/80">
+                Welcome, {user.firstName || user.email?.split('@')[0] || 'there'}
+              </span>
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = '/api/logout'} 
+                className="border-white/20 text-white hover:bg-white hover:text-primary"
+              >
                 Sign Out
               </Button>
             </div>
