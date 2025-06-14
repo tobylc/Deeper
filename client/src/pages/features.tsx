@@ -52,7 +52,7 @@ export default function Features() {
       </section>
 
       {/* Core Differentiators */}
-      <section className="py-16 bg-card">
+      <section className="pb-16 bg-card">
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16">
           </div>
