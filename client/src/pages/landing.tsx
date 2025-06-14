@@ -144,29 +144,26 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24" style={{ background: 'var(--nav-gray)' }}>
+      <section className="py-16" style={{ background: 'var(--nav-gray)' }}>
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-inter font-bold text-white mb-6">
             Ready to cultivate meaningful connections?
           </h2>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-white/90 mb-8">
             Join thousands discovering the power of structured, intentional dialogue
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth">
-              <Button size="lg" className="btn-ocean px-8 py-3">
+              <Button size="lg" className="btn-ocean px-8">
                 Start your free trial
               </Button>
             </Link>
             <Link href="/features">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-foreground px-8 py-3">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary px-8">
                 Learn more
               </Button>
             </Link>
           </div>
-          <p className="text-white/70 mt-6 text-sm">
-            No credit card required • 7 days free • Cancel anytime
-          </p>
         </div>
       </section>
     </div>
