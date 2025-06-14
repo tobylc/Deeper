@@ -95,7 +95,7 @@ export default function Dashboard() {
               <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
                 <Heart className="text-white w-4 h-4" />
               </div>
-              <span className="text-xl font-crimson font-bold text-darkslate">Deeper</span>
+              <span className="text-xl font-space font-bold text-darkslate">Deeper</span>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">Welcome, {user.name}</span>

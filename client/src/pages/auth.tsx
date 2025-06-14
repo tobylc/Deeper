@@ -19,26 +19,58 @@ export default function Auth() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!formData.email.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Email is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isLogin && !formData.name.trim()) {
+      toast({
+        title: "Validation Error", 
+        description: "Name is required for registration",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       if (isLogin) {
         const response = await apiRequest("POST", "/api/auth/login", {
-          email: formData.email,
+          email: formData.email.trim(),
         });
         const user = await response.json();
         setUser(user);
+        toast({
+          title: "Welcome back!",
+          description: "Successfully signed in",
+        });
         setLocation("/dashboard");
       } else {
-        const response = await apiRequest("POST", "/api/auth/register", formData);
+        const response = await apiRequest("POST", "/api/auth/register", {
+          email: formData.email.trim(),
+          name: formData.name.trim(),
+        });
         const user = await response.json();
         setUser(user);
+        toast({
+          title: "Account created!",
+          description: "Welcome to Deeper",
+        });
         setLocation("/dashboard");
       }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error.message || (isLogin ? "Login failed" : "Registration failed");
       toast({
         title: "Error",
-        description: isLogin ? "Login failed" : "Registration failed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -54,9 +86,9 @@ export default function Auth() {
             <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
               <Heart className="text-white w-5 h-5" />
             </div>
-            <span className="text-2xl font-crimson font-bold text-darkslate">Deeper</span>
+            <span className="text-2xl font-space font-bold text-darkslate">Deeper</span>
           </div>
-          <CardTitle className="text-2xl font-crimson">
+          <CardTitle className="text-2xl font-space">
             {isLogin ? "Welcome Back" : "Create Account"}
           </CardTitle>
         </CardHeader>

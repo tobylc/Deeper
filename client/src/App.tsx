@@ -22,9 +22,11 @@ const AuthContext = createContext<{
 export const useAuth = () => useContext(AuthContext);
 
 function Router() {
+  const { user } = useAuth();
+  
   return (
     <Switch>
-      <Route path="/" component={Landing} />
+      <Route path="/" component={user ? Dashboard : Landing} />
       <Route path="/auth" component={Auth} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/conversation/:id" component={Conversation} />
