@@ -37,7 +37,7 @@ export default function Features() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-8 bg-background">
+      <section className="pt-24 pb-2 bg-background">
         <div className="max-w-6xl mx-auto px-6 lg:px-8 text-center">
           <div className="mb-8">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">What Makes Us Different</Badge>
