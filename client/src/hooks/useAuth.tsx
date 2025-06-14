@@ -9,6 +9,9 @@ export function useAuth() {
     refetchOnMount: true,
   });
 
+  // Debug logging
+  console.log("Auth state:", { user, isLoading, error, isAuthenticated: !!user && !error });
+
   return {
     user,
     isLoading,
