@@ -100,6 +100,7 @@ export async function setupAuth(app: Express) {
 
   for (const domain of process.env
     .REPLIT_DOMAINS!.split(",")) {
+    console.log(`[DEBUG] Registering strategy for domain: ${domain}`);
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
@@ -110,6 +111,7 @@ export async function setupAuth(app: Express) {
       verify,
     );
     passport.use(strategy);
+    console.log(`[DEBUG] Strategy registered: replitauth:${domain}`);
   }
 
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
@@ -122,10 +124,21 @@ export async function setupAuth(app: Express) {
       console.log(`[DEBUG] Login attempt for domain: ${domain}`);
       console.log(`[DEBUG] Strategy name: replitauth:${domain}`);
       
-      passport.authenticate(`replitauth:${domain}`, {
+      const authenticator = passport.authenticate(`replitauth:${domain}`, {
         prompt: "login consent",
         scope: ["openid", "email", "profile", "offline_access"],
-      })(req, res, next);
+      });
+      
+      console.log(`[DEBUG] Authenticator created, calling...`);
+      authenticator(req, res, (err: any) => {
+        if (err) {
+          console.error('[ERROR] Authentication error:', err);
+          res.status(500).json({ error: 'Authentication failed', details: err.message });
+        } else {
+          console.log('[DEBUG] Authentication completed without error');
+          next();
+        }
+      });
     } catch (error) {
       console.error('[ERROR] Login error:', error);
       res.status(500).json({ error: 'Authentication setup error' });

@@ -18,8 +18,8 @@ import { jobQueue } from "./jobs";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication middleware
-  setupAuth(app);
+  // Setup authentication middleware FIRST
+  await setupAuth(app);
 
   // Apply global middleware
   app.use(corsHeaders);
