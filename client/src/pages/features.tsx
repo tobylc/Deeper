@@ -3,8 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Lock, MessageCircle, Lightbulb, History, Mail, Users, Star, Globe, Shield, CheckCircle, Clock, Target, Zap, Eye } from "lucide-react";
 import { Link } from "wouter";
+import { useState } from "react";
 
 export default function Features() {
+  const [activeIcon, setActiveIcon] = useState<string | null>(null);
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -61,7 +63,14 @@ export default function Features() {
             {/* Exclusive Two-Person Focus */}
             <Card className="border-2 border-gray-600 rounded-xl shadow-lg bg-primary/5">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:bg-primary/80 hover:scale-110 cursor-pointer">
+                <div 
+                  className={`w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:scale-110 cursor-pointer ${
+                    activeIcon === 'users' 
+                      ? 'bg-primary shadow-lg' 
+                      : 'bg-primary hover:bg-primary/80'
+                  }`}
+                  onClick={() => setActiveIcon('users')}
+                >
                   <Users className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-inter font-bold text-foreground mb-4">Exclusively Two People</h3>
@@ -88,8 +97,19 @@ export default function Features() {
             {/* Turn-Based Structure */}
             <Card className="border-2 border-gray-600 rounded-xl shadow-lg bg-secondary/5">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-secondary rounded-lg flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
-                  <Clock className="w-8 h-8 text-secondary-foreground transition-colors duration-300 hover:text-white" />
+                <div 
+                  className={`w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:scale-110 cursor-pointer ${
+                    activeIcon === 'clock' 
+                      ? 'bg-primary shadow-lg' 
+                      : 'bg-secondary hover:bg-primary'
+                  }`}
+                  onClick={() => setActiveIcon('clock')}
+                >
+                  <Clock className={`w-8 h-8 transition-colors duration-300 ${
+                    activeIcon === 'clock' 
+                      ? 'text-white' 
+                      : 'text-secondary-foreground hover:text-white'
+                  }`} />
                 </div>
                 <h3 className="text-2xl font-inter font-bold text-foreground mb-4">Turn-Based Dialogue</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
@@ -115,8 +135,19 @@ export default function Features() {
             {/* Curated Questions */}
             <Card className="border-2 border-gray-600 rounded-xl shadow-lg bg-accent/5">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-accent rounded-lg flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
-                  <Lightbulb className="w-8 h-8 text-accent-foreground transition-colors duration-300 hover:text-white" />
+                <div 
+                  className={`w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:scale-110 cursor-pointer ${
+                    activeIcon === 'lightbulb' 
+                      ? 'bg-primary shadow-lg' 
+                      : 'bg-accent hover:bg-primary'
+                  }`}
+                  onClick={() => setActiveIcon('lightbulb')}
+                >
+                  <Lightbulb className={`w-8 h-8 transition-colors duration-300 ${
+                    activeIcon === 'lightbulb' 
+                      ? 'text-white' 
+                      : 'text-accent-foreground hover:text-white'
+                  }`} />
                 </div>
                 <h3 className="text-2xl font-inter font-bold text-foreground mb-4">Expertly Curated Questions</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
@@ -154,8 +185,19 @@ export default function Features() {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Email-Based Connection */}
             <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
-                <Mail className="w-6 h-6 text-primary transition-colors duration-300 hover:text-white" />
+              <div 
+                className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:scale-110 cursor-pointer ${
+                  activeIcon === 'mail' 
+                    ? 'bg-primary shadow-lg' 
+                    : 'bg-primary/10 hover:bg-primary'
+                }`}
+                onClick={() => setActiveIcon('mail')}
+              >
+                <Mail className={`w-6 h-6 transition-colors duration-300 ${
+                  activeIcon === 'mail' 
+                    ? 'text-white' 
+                    : 'text-primary hover:text-white'
+                }`} />
               </div>
               <div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-2">Mutual Consent System</h3>
@@ -167,8 +209,19 @@ export default function Features() {
 
             {/* Conversation Timeline */}
             <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
-              <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
-                <History className="w-6 h-6 text-secondary-foreground transition-colors duration-300 hover:text-white" />
+              <div 
+                className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:scale-110 cursor-pointer ${
+                  activeIcon === 'history' 
+                    ? 'bg-primary shadow-lg' 
+                    : 'bg-secondary/10 hover:bg-primary'
+                }`}
+                onClick={() => setActiveIcon('history')}
+              >
+                <History className={`w-6 h-6 transition-colors duration-300 ${
+                  activeIcon === 'history' 
+                    ? 'text-white' 
+                    : 'text-secondary-foreground hover:text-white'
+                }`} />
               </div>
               <div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-2">Conversation Timeline</h3>
@@ -180,8 +233,19 @@ export default function Features() {
 
             {/* Relationship Categories */}
             <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
-              <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
-                <Heart className="w-6 h-6 text-accent-foreground transition-colors duration-300 hover:text-white" />
+              <div 
+                className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:scale-110 cursor-pointer ${
+                  activeIcon === 'heart' 
+                    ? 'bg-primary shadow-lg' 
+                    : 'bg-accent/10 hover:bg-primary'
+                }`}
+                onClick={() => setActiveIcon('heart')}
+              >
+                <Heart className={`w-6 h-6 transition-colors duration-300 ${
+                  activeIcon === 'heart' 
+                    ? 'text-white' 
+                    : 'text-accent-foreground hover:text-white'
+                }`} />
               </div>
               <div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-2">Relationship-Specific Design</h3>
@@ -193,8 +257,19 @@ export default function Features() {
 
             {/* Privacy Focus */}
             <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
-              <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
-                <Shield className="w-6 h-6 text-success transition-colors duration-300 hover:text-white" />
+              <div 
+                className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:scale-110 cursor-pointer ${
+                  activeIcon === 'shield' 
+                    ? 'bg-primary shadow-lg' 
+                    : 'bg-success/10 hover:bg-primary'
+                }`}
+                onClick={() => setActiveIcon('shield')}
+              >
+                <Shield className={`w-6 h-6 transition-colors duration-300 ${
+                  activeIcon === 'shield' 
+                    ? 'text-white' 
+                    : 'text-success hover:text-white'
+                }`} />
               </div>
               <div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-2">Privacy by Design</h3>
@@ -206,8 +281,19 @@ export default function Features() {
 
             {/* Thoughtful Pacing */}
             <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
-                <Target className="w-6 h-6 text-primary transition-colors duration-300 hover:text-white" />
+              <div 
+                className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:scale-110 cursor-pointer ${
+                  activeIcon === 'target' 
+                    ? 'bg-primary shadow-lg' 
+                    : 'bg-primary/10 hover:bg-primary'
+                }`}
+                onClick={() => setActiveIcon('target')}
+              >
+                <Target className={`w-6 h-6 transition-colors duration-300 ${
+                  activeIcon === 'target' 
+                    ? 'text-white' 
+                    : 'text-primary hover:text-white'
+                }`} />
               </div>
               <div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-2">Intentional Pacing</h3>
