@@ -11,7 +11,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <span className="text-2xl font-inter font-bold text-deep-forest">Deeper</span>
+              <span className="text-2xl font-inter font-bold text-warm-charcoal">Deeper</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <Link href="/" className="text-foreground/80 hover:text-primary transition-colors font-inter font-medium">
@@ -24,7 +24,7 @@ export default function Landing() {
                 Pricing
               </Link>
               <Link href="/auth">
-                <Button className="btn-sage rounded-full px-6 py-2">
+                <Button className="btn-coral px-6 py-2">
                   Login
                 </Button>
               </Link>
@@ -40,13 +40,13 @@ export default function Landing() {
             <h1 className="text-5xl lg:text-7xl font-inter font-bold text-foreground mb-8 leading-tight">
               Cultivate meaningful
               <br />
-              <span className="text-warm-sage">connections.</span>
+              <span className="text-warm-coral">connections.</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-12 font-inter max-w-2xl mx-auto leading-relaxed">
               Create exclusive, private spaces for thoughtful dialogue that deepens relationships over time.
             </p>
             <Link href="/auth">
-              <Button size="lg" className="btn-sage rounded-full px-8 py-3 text-lg font-medium">
+              <Button size="lg" className="btn-coral px-8 py-3 text-lg font-medium">
                 Start free trial
               </Button>
             </Link>
@@ -58,7 +58,7 @@ export default function Landing() {
             <Card className="card-elevated rounded-3xl p-8 text-left smooth-enter">
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                  <Lock className="w-6 h-6 icon-sage" />
+                  <Lock className="w-6 h-6 icon-coral" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Structured conversations.
@@ -73,7 +73,7 @@ export default function Landing() {
             <Card className="card-elevated rounded-3xl p-8 text-left smooth-enter">
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center mb-6">
-                  <Lightbulb className="w-6 h-6 icon-terracotta" />
+                  <Lightbulb className="w-6 h-6 icon-honey" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Curated question pools
@@ -88,7 +88,7 @@ export default function Landing() {
             <Card className="card-elevated rounded-3xl p-8 text-left smooth-enter">
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center mb-6">
-                  <Users className="w-6 h-6 text-warm-sage" />
+                  <Users className="w-6 h-6 icon-sage-blue" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Private communication spaces.
@@ -111,7 +111,7 @@ export default function Landing() {
           
           <div className="grid md:grid-cols-3 gap-12">
             <div className="smooth-enter">
-              <div className="w-16 h-16 rounded-full gradient-sage flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 rounded-full gradient-coral flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl font-bold text-white">1</span>
               </div>
               <h3 className="text-xl font-inter font-semibold text-foreground mb-4">Invite someone special</h3>
@@ -121,8 +121,8 @@ export default function Landing() {
             </div>
             
             <div className="smooth-enter">
-              <div className="w-16 h-16 rounded-full gradient-terracotta flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-white">2</span>
+              <div className="w-16 h-16 rounded-full gradient-honey flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-warm-charcoal">2</span>
               </div>
               <h3 className="text-xl font-inter font-semibold text-foreground mb-4">Choose your journey</h3>
               <p className="text-muted-foreground leading-relaxed">
@@ -132,7 +132,7 @@ export default function Landing() {
             
             <div className="smooth-enter">
               <div className="w-16 h-16 rounded-full bg-accent/80 flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-deep-forest">3</span>
+                <span className="text-2xl font-bold text-warm-charcoal">3</span>
               </div>
               <h3 className="text-xl font-inter font-semibold text-foreground mb-4">Build deeper bonds</h3>
               <p className="text-muted-foreground leading-relaxed">
