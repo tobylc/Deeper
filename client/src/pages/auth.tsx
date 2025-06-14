@@ -79,16 +79,16 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md card-elevated">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <Heart className="text-white w-5 h-5" />
             </div>
-            <span className="text-2xl font-space font-bold text-darkslate">Deeper</span>
+            <span className="text-2xl font-inter font-bold text-foreground">Deeper</span>
           </div>
-          <CardTitle className="text-2xl font-space">
+          <CardTitle className="text-2xl font-inter">
             {isLogin ? "Welcome Back" : "Create Account"}
           </CardTitle>
         </CardHeader>
@@ -116,7 +116,7 @@ export default function Auth() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full btn-ocean" disabled={isLoading}>
               {isLoading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
             </Button>
           </form>

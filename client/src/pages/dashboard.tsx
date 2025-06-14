@@ -86,20 +86,20 @@ export default function Dashboard() {
   const activeConversations = conversations.filter(c => c.status === 'active');
 
   return (
-    <div className="min-h-screen gradient-warm">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="glass-nav">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 gradient-ocean rounded-xl flex items-center justify-center">
-                <Heart className="text-deep-charcoal w-4 h-4" />
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Heart className="text-white w-4 h-4" />
               </div>
-              <span className="text-xl font-inter font-bold text-soft-white">Deeper</span>
+              <span className="text-xl font-inter font-bold text-white">Deeper</span>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">Welcome, {user.name}</span>
-              <Button variant="outline" onClick={handleLogout} className="border-primary/20 text-foreground hover:bg-primary hover:text-white rounded-full">
+              <span className="text-sm text-white/80">Welcome, {user.name}</span>
+              <Button variant="outline" onClick={handleLogout} className="border-white/20 text-white hover:bg-white hover:text-primary">
                 Sign Out
               </Button>
             </div>
@@ -110,7 +110,7 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8 smooth-enter">
-          <h1 className="text-3xl font-inter font-bold text-soft-white mb-2">
+          <h1 className="text-3xl font-inter font-bold text-foreground mb-2">
             Your Connection Dashboard
           </h1>
           <p className="text-muted-foreground">
@@ -120,14 +120,14 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="card-warm smooth-enter rounded-3xl">
+          <Card className="card-elevated smooth-enter">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-soft-white">Active Conversations</h3>
-                  <p className="text-2xl font-bold text-ocean-blue">{activeConversations.length}</p>
+                  <h3 className="font-semibold text-foreground">Active Conversations</h3>
+                  <p className="text-2xl font-bold text-primary">{activeConversations.length}</p>
                 </div>
-                <MessageCircle className="w-8 h-8 icon-ocean" />
+                <MessageCircle className="w-8 h-8 text-primary" />
               </div>
             </CardContent>
           </Card>
@@ -136,10 +136,10 @@ export default function Dashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-darkslate">Pending Invites</h3>
-                  <p className="text-2xl font-bold text-secondary">{pendingConnections.length}</p>
+                  <h3 className="font-semibold text-foreground">Pending Invites</h3>
+                  <p className="text-2xl font-bold text-secondary-foreground">{pendingConnections.length}</p>
                 </div>
-                <Mail className="w-8 h-8 text-secondary" />
+                <Mail className="w-8 h-8 text-secondary-foreground" />
               </div>
             </CardContent>
           </Card>
@@ -148,7 +148,7 @@ export default function Dashboard() {
             <CardContent className="p-6">
               <Button 
                 onClick={() => setShowInviteForm(true)}
-                className="w-full h-full min-h-[80px] bg-accent hover:bg-accent/90"
+                className="w-full h-full min-h-[80px] btn-ocean"
               >
                 <Plus className="w-6 h-6 mr-2" />
                 Send New Invitation
@@ -159,24 +159,24 @@ export default function Dashboard() {
 
         {/* Pending Invitations */}
         {pendingConnections.length > 0 && (
-          <Card className="mb-8">
+          <Card className="mb-8 card-elevated">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Mail className="w-5 h-5 mr-2" />
+              <CardTitle className="flex items-center text-foreground">
+                <Mail className="w-5 h-5 mr-2 text-primary" />
                 Pending Invitations
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {pendingConnections.map((connection) => (
-                  <div key={connection.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div key={connection.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
                     <div>
-                      <p className="font-medium">{connection.inviterEmail}</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="font-medium text-foreground">{connection.inviterEmail}</p>
+                      <p className="text-sm text-muted-foreground">
                         Wants to connect as: {connection.relationshipType}
                       </p>
                       {connection.personalMessage && (
-                        <p className="text-sm text-gray-600 mt-1 italic">
+                        <p className="text-sm text-muted-foreground mt-1 italic">
                           "{connection.personalMessage}"
                         </p>
                       )}
@@ -205,22 +205,22 @@ export default function Dashboard() {
         )}
 
         {/* Active Conversations */}
-        <Card>
+        <Card className="card-elevated">
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <MessageCircle className="w-5 h-5 mr-2" />
+            <CardTitle className="flex items-center text-foreground">
+              <MessageCircle className="w-5 h-5 mr-2 text-primary" />
               Active Conversations
             </CardTitle>
           </CardHeader>
           <CardContent>
             {activeConversations.length === 0 ? (
               <div className="text-center py-12">
-                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No active conversations</h3>
-                <p className="text-gray-600 mb-4">
+                <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-2">No active conversations</h3>
+                <p className="text-muted-foreground mb-4">
                   Send an invitation to start your first meaningful conversation
                 </p>
-                <Button onClick={() => setShowInviteForm(true)}>
+                <Button onClick={() => setShowInviteForm(true)} className="btn-ocean">
                   <Plus className="w-4 h-4 mr-2" />
                   Send Invitation
                 </Button>
@@ -234,16 +234,16 @@ export default function Dashboard() {
                   const isMyTurn = conversation.currentTurn === user.email;
                   
                   return (
-                    <div key={conversation.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div key={conversation.id} className="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-accent/50 transition-colors">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
+                          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                             <span className="text-white font-semibold text-sm">
                               {otherParticipant.charAt(0).toUpperCase()}
                             </span>
                           </div>
                           <div>
-                            <p className="font-medium">{otherParticipant}</p>
+                            <p className="font-medium text-foreground">{otherParticipant}</p>
                             <div className="flex items-center space-x-2">
                               <Badge variant="secondary">{conversation.relationshipType}</Badge>
                               <Badge variant={isMyTurn ? "default" : "outline"}>
@@ -254,13 +254,13 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-gray-600">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
                           {new Date(conversation.createdAt!).toLocaleDateString()}
                         </span>
                         <Button 
                           onClick={() => setLocation(`/conversation/${conversation.id}`)}
-                          className="ml-4"
+                          className="ml-4 btn-ocean"
                         >
                           Continue
                         </Button>
