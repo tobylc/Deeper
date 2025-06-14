@@ -71,8 +71,8 @@ export default function Pricing() {
                 <Badge className="bg-primary text-white px-3 py-1 text-xs">Most Popular</Badge>
               </div>
               <CardHeader className="text-center pt-5 pb-3">
-                <div className="w-12 h-12 card-icon bg-primary rounded-lg flex items-center justify-center mx-auto mb-2 transition-all duration-300">
-                  <Gift className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Gift className="w-6 h-6" />
                 </div>
                 <CardTitle className="text-lg font-inter">Free Trial</CardTitle>
                 <div className="mt-2">
@@ -105,7 +105,7 @@ export default function Pricing() {
                   </li>
                 </ul>
                 <Link href="/auth">
-                  <Button className="w-full card-button btn-ocean py-2 text-xs transition-all duration-300">
+                  <Button className="w-full card-button py-2 text-xs">
                     Start Free Trial
                   </Button>
                 </Link>
@@ -121,8 +121,8 @@ export default function Pricing() {
               onClick={() => setSelectedCard('personal')}
             >
               <CardHeader className="text-center pt-5 pb-3">
-                <div className="w-12 h-12 card-icon bg-secondary rounded-lg flex items-center justify-center mx-auto mb-2 transition-all duration-300">
-                  <Heart className="w-6 h-6 text-secondary-foreground" />
+                <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Heart className="w-6 h-6" />
                 </div>
                 <CardTitle className="text-lg font-inter">Personal</CardTitle>
                 <div className="mt-2">
@@ -159,7 +159,7 @@ export default function Pricing() {
                   </li>
                 </ul>
                 <Link href="/auth">
-                  <Button variant="outline" className="w-full card-button border-secondary text-secondary hover:bg-secondary hover:text-white py-2 text-xs transition-all duration-300">
+                  <Button className="w-full card-button py-2 text-xs">
                     Choose Personal
                   </Button>
                 </Link>
@@ -172,8 +172,8 @@ export default function Pricing() {
               onClick={() => setSelectedCard('premium')}
             >
               <CardHeader className="text-center pt-5 pb-3">
-                <div className="w-12 h-12 card-icon bg-accent rounded-lg flex items-center justify-center mx-auto mb-2 transition-all duration-300">
-                  <Crown className="w-6 h-6 text-accent-foreground" />
+                <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Crown className="w-6 h-6" />
                 </div>
                 <CardTitle className="text-lg font-inter">Premium</CardTitle>
                 <div className="mt-2">
@@ -210,7 +210,7 @@ export default function Pricing() {
                   </li>
                 </ul>
                 <Link href="/auth">
-                  <Button variant="outline" className="w-full card-button border-accent text-accent hover:bg-accent hover:text-white rounded-full py-2 text-xs transition-all duration-300">
+                  <Button className="w-full card-button py-2 text-xs">
                     Choose Premium
                   </Button>
                 </Link>

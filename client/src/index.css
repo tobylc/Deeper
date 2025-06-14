@@ -114,12 +114,22 @@
     border: 2px solid hsl(215, 85%, 60%);
   }
 
+  /* Default card icon styling - blue background with white icon */
+  .card-icon {
+    @apply bg-blue-500 text-white transition-all duration-300;
+  }
+
   .pricing-card:hover .card-icon {
     @apply bg-blue-500 text-white;
   }
 
   .pricing-card.selected .card-icon {
     @apply bg-blue-500 text-white;
+  }
+
+  /* Default card button styling - blue outline with blue text */
+  .card-button {
+    @apply border-2 border-blue-500 text-blue-500 bg-transparent transition-all duration-300;
   }
 
   .pricing-card:hover .card-button {
