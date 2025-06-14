@@ -92,10 +92,10 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 gradient-coral rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 gradient-rose rounded-xl flex items-center justify-center">
                 <Heart className="text-white w-4 h-4" />
               </div>
-              <span className="text-xl font-inter font-bold text-warm-charcoal">Deeper</span>
+              <span className="text-xl font-inter font-bold text-deep-plum">Deeper</span>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-muted-foreground">Welcome, {user.name}</span>

@@ -111,7 +111,7 @@ export default function Landing() {
           
           <div className="grid md:grid-cols-3 gap-12">
             <div className="smooth-enter">
-              <div className="w-16 h-16 rounded-full gradient-coral flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 rounded-full gradient-rose flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl font-bold text-white">1</span>
               </div>
               <h3 className="text-xl font-inter font-semibold text-foreground mb-4">Invite someone special</h3>
@@ -121,8 +121,8 @@ export default function Landing() {
             </div>
             
             <div className="smooth-enter">
-              <div className="w-16 h-16 rounded-full gradient-honey flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-warm-charcoal">2</span>
+              <div className="w-16 h-16 rounded-full gradient-gold flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-deep-plum">2</span>
               </div>
               <h3 className="text-xl font-inter font-semibold text-foreground mb-4">Choose your journey</h3>
               <p className="text-muted-foreground leading-relaxed">
@@ -132,7 +132,7 @@ export default function Landing() {
             
             <div className="smooth-enter">
               <div className="w-16 h-16 rounded-full bg-accent/80 flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-warm-charcoal">3</span>
+                <span className="text-2xl font-bold text-deep-plum">3</span>
               </div>
               <h3 className="text-xl font-inter font-semibold text-foreground mb-4">Build deeper bonds</h3>
               <p className="text-muted-foreground leading-relaxed">
@@ -144,7 +144,7 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 gradient-coral">
+      <section className="py-24 gradient-rose">
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-inter font-bold text-white mb-6">
             Ready to cultivate meaningful connections?
@@ -154,12 +154,12 @@ export default function Landing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 btn-coral px-8 py-3">
+              <Button size="lg" className="bg-white text-primary hover:bg-white/90 btn-rose px-8 py-3">
                 Start your free trial
               </Button>
             </Link>
             <Link href="/features">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary btn-coral px-8 py-3">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary btn-rose px-8 py-3">
                 Learn more
               </Button>
             </Link>
