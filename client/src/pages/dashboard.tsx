@@ -92,10 +92,10 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 gradient-rose rounded-xl flex items-center justify-center">
-                <Heart className="text-white w-4 h-4" />
+              <div className="w-8 h-8 gradient-ocean rounded-xl flex items-center justify-center">
+                <Heart className="text-deep-charcoal w-4 h-4" />
               </div>
-              <span className="text-xl font-inter font-bold text-deep-plum">Deeper</span>
+              <span className="text-xl font-inter font-bold text-soft-white">Deeper</span>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-muted-foreground">Welcome, {user.name}</span>
@@ -110,7 +110,7 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8 smooth-enter">
-          <h1 className="text-3xl font-inter font-bold text-deep-plum mb-2">
+          <h1 className="text-3xl font-inter font-bold text-soft-white mb-2">
             Your Connection Dashboard
           </h1>
           <p className="text-muted-foreground">
@@ -124,10 +124,10 @@ export default function Dashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-deep-plum">Active Conversations</h3>
-                  <p className="text-2xl font-bold text-deep-rose">{activeConversations.length}</p>
+                  <h3 className="font-semibold text-soft-white">Active Conversations</h3>
+                  <p className="text-2xl font-bold text-ocean-blue">{activeConversations.length}</p>
                 </div>
-                <MessageCircle className="w-8 h-8 icon-rose" />
+                <MessageCircle className="w-8 h-8 icon-ocean" />
               </div>
             </CardContent>
           </Card>

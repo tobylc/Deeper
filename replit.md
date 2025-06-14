@@ -165,15 +165,15 @@ Changelog:
   * Removed "About" navigation link for streamlined UX
   * Implemented consistent navigation across all pages
 - June 14, 2025. Complete design system overhaul:
-  * Implemented deep plum and rose gold color palette for intimate connection
-  * Deep rose primary (#9C4F86), warm rose gold (#D7A087), soft lavender accents
-  * Enhanced curved aesthetic with 1.5rem radius and subtle background patterns
-  * Eliminated all linear elements for completely rounded design language
-  * Added glassmorphism navigation with enhanced backdrop blur
-  * Created gradient-based buttons (btn-rose, btn-gold) with hover animations
-  * Updated message bubbles with 2rem radius for maximum softness
+  * Implemented dark sophisticated ocean blue and amber palette for immersive experience
+  * Ocean blue primary (#4FACFE), warm amber (#D7A087), soft teal accents
+  * Dark charcoal background (#1B2137) with multi-layer radial gradient patterns
+  * Enhanced curved aesthetic with 1.5rem radius eliminating all linear elements
+  * Added glassmorphism navigation with 20px backdrop blur for depth
+  * Created gradient-based buttons (btn-ocean, btn-amber) with hover animations
+  * Updated message bubbles with 2rem radius and dark glass effect
   * Applied modern Inter typography throughout application
-  * Enhanced all pages with smooth animations and cohesive aesthetic
+  * Enhanced all pages with smooth animations and cohesive dark aesthetic
 ```
 
 ## User Preferences
