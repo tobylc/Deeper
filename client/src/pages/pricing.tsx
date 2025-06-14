@@ -6,28 +6,28 @@ import { Link } from "wouter";
 
 export default function Pricing() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen gradient-warm">
       {/* Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-white/20">
+      <nav className="absolute top-0 left-0 right-0 z-50 glass-nav">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/">
               <div className="flex items-center space-x-2 cursor-pointer">
-                <span className="text-2xl font-space font-bold text-darkslate">Deeper</span>
+                <span className="text-2xl font-inter font-bold text-deep-forest">Deeper</span>
               </div>
             </Link>
             <div className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-gray-700 hover:text-primary transition-colors font-inter font-medium">
+              <Link href="/" className="text-foreground/80 hover:text-primary transition-colors font-inter font-medium">
                 Home
               </Link>
-              <Link href="/features" className="text-gray-700 hover:text-primary transition-colors font-inter font-medium">
+              <Link href="/features" className="text-foreground/80 hover:text-primary transition-colors font-inter font-medium">
                 Features
               </Link>
               <Link href="/pricing" className="text-primary font-inter font-medium">
                 Pricing
               </Link>
               <Link href="/auth">
-                <Button className="bg-primary text-white hover:bg-primary/90 rounded-full px-6">
+                <Button className="btn-sage rounded-full px-6 py-2">
                   Login
                 </Button>
               </Link>

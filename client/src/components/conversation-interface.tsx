@@ -22,12 +22,12 @@ export default function ConversationInterface({
   };
 
   return (
-    <Card>
+    <Card className="card-elevated">
       <CardContent className="p-6">
         <div className="space-y-6 max-h-96 overflow-y-auto">
           {messages.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-gray-500 mb-4">
+              <div className="text-muted-foreground mb-4">
                 No messages yet. Start the conversation by asking a question!
               </div>
             </div>
@@ -37,16 +37,12 @@ export default function ConversationInterface({
               const senderName = getParticipantName(message.senderEmail);
               
               return (
-                <div key={message.id} className={`flex ${isFromCurrentUser ? 'justify-end' : 'justify-start'}`}>
+                <div key={message.id} className={`flex ${isFromCurrentUser ? 'justify-end' : 'justify-start'} smooth-enter`}>
                   <div className={`max-w-xs ${
                     isFromCurrentUser 
-                      ? message.type === 'question' 
-                        ? 'bg-primary text-white' 
-                        : 'bg-accent text-white'
-                      : 'bg-gray-100'
-                  } p-4 rounded-2xl ${
-                    isFromCurrentUser ? 'rounded-tr-md' : 'rounded-tl-md'
-                  } shadow-sm`}>
+                      ? 'message-bubble own' 
+                      : 'message-bubble other'
+                  }`}>
                     <div className={`text-xs mb-1 ${
                       isFromCurrentUser ? 'text-white/80' : 'text-gray-500'
                     }`}>
