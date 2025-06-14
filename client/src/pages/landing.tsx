@@ -11,7 +11,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <span className="text-2xl font-inter font-bold text-deep-plum">Deeper</span>
+              <span className="text-2xl font-inter font-bold text-soft-white">Deeper</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <Link href="/" className="text-foreground/80 hover:text-primary transition-colors font-inter font-medium">
@@ -24,7 +24,7 @@ export default function Landing() {
                 Pricing
               </Link>
               <Link href="/auth">
-                <Button className="btn-rose px-6 py-2">
+                <Button className="btn-ocean px-6 py-2">
                   Login
                 </Button>
               </Link>

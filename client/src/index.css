@@ -5,32 +5,33 @@
 @tailwind utilities;
 
 :root {
-  /* Deep plum & rose gold palette for intimate connection and trust */
-  --background: hsl(310, 25%, 97%); /* Soft lavender mist */
-  --foreground: hsl(320, 30%, 20%); /* Deep plum */
-  --muted: hsl(310, 20%, 93%);
-  --muted-foreground: hsl(320, 15%, 45%);
-  --popover: hsl(310, 30%, 98%);
-  --popover-foreground: hsl(320, 30%, 20%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(320, 30%, 20%);
-  --border: hsl(310, 15%, 90%);
-  --input: hsl(310, 15%, 92%);
-  --primary: hsl(320, 45%, 45%); /* Deep rose */
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(25, 45%, 70%); /* Warm rose gold */
-  --secondary-foreground: hsl(320, 30%, 20%);
-  --accent: hsl(300, 35%, 80%); /* Soft lavender */
-  --accent-foreground: hsl(320, 30%, 20%);
+  /* Dark sophisticated palette for immersive connection experience */
+  --background: hsl(220, 13%, 9%); /* Deep charcoal */
+  --foreground: hsl(220, 9%, 92%); /* Soft white */
+  --muted: hsl(220, 13%, 15%);
+  --muted-foreground: hsl(220, 9%, 65%);
+  --popover: hsl(220, 13%, 12%);
+  --popover-foreground: hsl(220, 9%, 92%);
+  --card: hsl(220, 13%, 11%);
+  --card-foreground: hsl(220, 9%, 92%);
+  --border: hsl(220, 13%, 18%);
+  --input: hsl(220, 13%, 16%);
+  --primary: hsl(200, 70%, 55%); /* Ocean blue */
+  --primary-foreground: hsl(220, 13%, 9%);
+  --secondary: hsl(35, 45%, 65%); /* Warm amber */
+  --secondary-foreground: hsl(220, 13%, 9%);
+  --accent: hsl(160, 35%, 60%); /* Soft teal */
+  --accent-foreground: hsl(220, 13%, 9%);
   --destructive: hsl(0, 70%, 60%);
   --destructive-foreground: hsl(0, 0%, 100%);
-  --ring: hsl(320, 45%, 45%);
+  --ring: hsl(200, 70%, 55%);
   --radius: 1.5rem;
   --success: hsl(120, 35%, 45%);
-  --deep-rose: hsl(320, 45%, 45%);
-  --rose-gold: hsl(25, 45%, 70%);
-  --soft-lavender: hsl(300, 35%, 80%);
-  --deep-plum: hsl(320, 30%, 20%);
+  --ocean-blue: hsl(200, 70%, 55%);
+  --warm-amber: hsl(35, 45%, 65%);
+  --soft-teal: hsl(160, 35%, 60%);
+  --deep-charcoal: hsl(220, 13%, 9%);
+  --soft-white: hsl(220, 9%, 92%);
 }
 
 .dark {
@@ -68,9 +69,10 @@
 
   body {
     @apply bg-background text-foreground font-inter antialiased;
-    background-image: radial-gradient(circle at 25% 25%, hsl(300, 20%, 98%) 0%, transparent 50%),
-                      radial-gradient(circle at 75% 75%, hsl(320, 15%, 96%) 0%, transparent 50%);
-    background-size: 100px 100px;
+    background-image: radial-gradient(circle at 25% 25%, hsl(200, 20%, 12%) 0%, transparent 60%),
+                      radial-gradient(circle at 75% 75%, hsl(160, 15%, 14%) 0%, transparent 60%),
+                      radial-gradient(circle at 50% 50%, hsl(35, 10%, 12%) 0%, transparent 70%);
+    background-size: 150px 150px, 200px 200px, 300px 300px;
   }
 
   .font-inter {
@@ -81,43 +83,43 @@
 @layer components {
   /* Glassmorphism navigation */
   .glass-nav {
-    background: rgba(249, 246, 250, 0.85);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(156, 79, 134, 0.08);
+    background: rgba(33, 39, 55, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(79, 172, 254, 0.12);
   }
 
   /* Card variations */
   .card-elevated {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(156, 79, 134, 0.08);
-    box-shadow: 0 12px 40px rgba(156, 79, 134, 0.08);
+    background: rgba(33, 39, 55, 0.90);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(79, 172, 254, 0.15);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     border-radius: 1.5rem;
   }
 
   .card-warm {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(249, 246, 250, 0.8) 100%);
-    border: 1px solid rgba(203, 174, 215, 0.15);
+    background: linear-gradient(135deg, rgba(33, 39, 55, 0.85) 0%, rgba(40, 46, 62, 0.75) 100%);
+    border: 1px solid rgba(108, 179, 168, 0.20);
     border-radius: 1.5rem;
   }
 
   /* Button variations */
-  .btn-rose {
-    background: linear-gradient(135deg, hsl(var(--deep-rose)) 0%, hsl(320, 50%, 50%) 100%);
-    color: white;
+  .btn-ocean {
+    background: linear-gradient(135deg, hsl(var(--ocean-blue)) 0%, hsl(200, 80%, 60%) 100%);
+    color: hsl(var(--deep-charcoal));
     border: none;
     border-radius: 2rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .btn-rose:hover {
+  .btn-ocean:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(156, 79, 134, 0.4);
+    box-shadow: 0 12px 30px rgba(79, 172, 254, 0.4);
   }
 
-  .btn-gold {
-    background: linear-gradient(135deg, hsl(var(--rose-gold)) 0%, hsl(25, 50%, 65%) 100%);
-    color: hsl(var(--deep-plum));
+  .btn-amber {
+    background: linear-gradient(135deg, hsl(var(--warm-amber)) 0%, hsl(35, 55%, 70%) 100%);
+    color: hsl(var(--deep-charcoal));
     border: none;
     border-radius: 2rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -133,71 +135,75 @@
     background: linear-gradient(135deg, hsl(46, 35%, 98%) 0%, hsl(46, 25%, 92%) 100%);
   }
 
-  .gradient-rose {
-    background: linear-gradient(135deg, hsl(320, 45%, 45%) 0%, hsl(320, 50%, 50%) 100%);
+  .gradient-ocean {
+    background: linear-gradient(135deg, hsl(200, 70%, 55%) 0%, hsl(200, 80%, 60%) 100%);
   }
 
-  .gradient-gold {
-    background: linear-gradient(135deg, hsl(25, 45%, 70%) 0%, hsl(25, 50%, 65%) 100%);
+  .gradient-amber {
+    background: linear-gradient(135deg, hsl(35, 45%, 65%) 0%, hsl(35, 55%, 70%) 100%);
   }
 
-  .gradient-lavender {
-    background: linear-gradient(135deg, hsl(300, 35%, 80%) 0%, hsl(320, 45%, 45%) 100%);
+  .gradient-teal {
+    background: linear-gradient(135deg, hsl(160, 35%, 60%) 0%, hsl(160, 45%, 65%) 100%);
   }
 
   /* Text variations */
-  .text-deep-rose {
-    color: hsl(var(--deep-rose));
+  .text-ocean-blue {
+    color: hsl(var(--ocean-blue));
   }
 
-  .text-rose-gold {
-    color: hsl(var(--rose-gold));
+  .text-warm-amber {
+    color: hsl(var(--warm-amber));
   }
 
-  .text-soft-lavender {
-    color: hsl(var(--soft-lavender));
+  .text-soft-teal {
+    color: hsl(var(--soft-teal));
   }
 
-  .text-deep-plum {
-    color: hsl(var(--deep-plum));
+  .text-deep-charcoal {
+    color: hsl(var(--deep-charcoal));
+  }
+
+  .text-soft-white {
+    color: hsl(var(--soft-white));
   }
 
   /* Icon styling */
-  .icon-rose {
-    color: hsl(var(--deep-rose));
+  .icon-ocean {
+    color: hsl(var(--ocean-blue));
   }
 
-  .icon-gold {
-    color: hsl(var(--rose-gold));
+  .icon-amber {
+    color: hsl(var(--warm-amber));
   }
 
-  .icon-lavender {
-    color: hsl(var(--soft-lavender));
+  .icon-teal {
+    color: hsl(var(--soft-teal));
   }
 
-  .icon-plum {
-    color: hsl(var(--deep-plum));
+  .icon-white {
+    color: hsl(var(--soft-white));
   }
 
   /* Conversation interface styles */
   .message-bubble {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(156, 79, 134, 0.1);
+    background: rgba(33, 39, 55, 0.8);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(79, 172, 254, 0.15);
     border-radius: 2rem;
     padding: 1.25rem 1.5rem;
-    box-shadow: 0 6px 20px rgba(156, 79, 134, 0.06);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   }
 
   .message-bubble.own {
-    background: linear-gradient(135deg, hsl(320, 45%, 45%) 0%, hsl(320, 50%, 50%) 100%);
-    color: white;
+    background: linear-gradient(135deg, hsl(200, 70%, 55%) 0%, hsl(200, 80%, 60%) 100%);
+    color: hsl(var(--deep-charcoal));
     border-color: transparent;
   }
 
   .message-bubble.other {
-    background: rgba(249, 246, 250, 0.9);
-    border-color: rgba(203, 174, 215, 0.15);
+    background: rgba(40, 46, 62, 0.85);
+    border-color: rgba(108, 179, 168, 0.20);
   }
 
   /* Smooth animations */
