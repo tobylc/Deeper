@@ -57,101 +57,101 @@ export default function Pricing() {
 
       {/* Pricing Tiers */}
       <section className="py-16 bg-card">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8">
-          <div className="grid lg:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 justify-center items-stretch">
             
             {/* Free Trial */}
-            <Card className="border-2 border-primary/20 bg-primary/5 relative">
+            <Card className="border-2 border-primary/20 bg-primary/5 relative flex-1 max-w-sm">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-primary text-white px-4 py-1">Most Popular</Badge>
+                <Badge className="bg-primary text-white px-3 py-1 text-sm">Most Popular</Badge>
               </div>
-              <CardHeader className="text-center pt-8">
-                <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Gift className="w-8 h-8 text-white" />
+              <CardHeader className="text-center pt-6 pb-4">
+                <div className="w-14 h-14 bg-primary rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Gift className="w-7 h-7 text-white" />
                 </div>
-                <CardTitle className="text-2xl font-inter">Free Trial</CardTitle>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-foreground">$0</span>
-                  <span className="text-muted-foreground ml-2">for 7 days</span>
+                <CardTitle className="text-xl font-inter">Free Trial</CardTitle>
+                <div className="mt-3">
+                  <span className="text-3xl font-bold text-foreground">$0</span>
+                  <span className="text-muted-foreground ml-2 text-sm">for 7 days</span>
                 </div>
-                <p className="text-muted-foreground mt-2">Perfect for getting started</p>
+                <p className="text-muted-foreground mt-2 text-sm">Perfect for getting started</p>
               </CardHeader>
-              <CardContent className="pt-6">
-                <ul className="space-y-4 mb-8">
+              <CardContent className="pt-2">
+                <ul className="space-y-3 mb-6">
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-foreground">3 conversation spaces</span>
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span className="text-foreground text-sm">3 conversation spaces</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-foreground">50+ curated questions</span>
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span className="text-foreground text-sm">50+ curated questions</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-foreground">Email invitations</span>
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span className="text-foreground text-sm">Email invitations</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-foreground">Basic conversation timeline</span>
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span className="text-foreground text-sm">Basic conversation timeline</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-foreground">All relationship types</span>
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span className="text-foreground text-sm">All relationship types</span>
                   </li>
                 </ul>
                 <Link href="/auth">
-                  <Button className="w-full btn-ocean py-3">
+                  <Button className="w-full btn-ocean py-2.5 text-sm">
                     Start Free Trial
                   </Button>
                 </Link>
-                <p className="text-xs text-muted-foreground mt-3 text-center">
+                <p className="text-xs text-muted-foreground mt-2 text-center">
                   No credit card required • Cancel anytime
                 </p>
               </CardContent>
             </Card>
 
             {/* Personal Plan */}
-            <Card className="border border-border">
-              <CardHeader className="text-center">
-                <div className="w-16 h-16 bg-secondary rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Heart className="w-8 h-8 text-secondary-foreground" />
+            <Card className="border border-border flex-1 max-w-sm">
+              <CardHeader className="text-center pt-6 pb-4">
+                <div className="w-14 h-14 bg-secondary rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Heart className="w-7 h-7 text-secondary-foreground" />
                 </div>
-                <CardTitle className="text-2xl font-inter">Personal</CardTitle>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-foreground">$9</span>
-                  <span className="text-muted-foreground ml-2">per month</span>
+                <CardTitle className="text-xl font-inter">Personal</CardTitle>
+                <div className="mt-3">
+                  <span className="text-3xl font-bold text-foreground">$9</span>
+                  <span className="text-muted-foreground ml-2 text-sm">per month</span>
                 </div>
-                <p className="text-muted-foreground mt-2">For meaningful relationships</p>
+                <p className="text-muted-foreground mt-2 text-sm">For meaningful relationships</p>
               </CardHeader>
-              <CardContent className="pt-6">
-                <ul className="space-y-4 mb-8">
+              <CardContent className="pt-2">
+                <ul className="space-y-3 mb-6">
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-secondary-foreground flex-shrink-0" />
-                    <span className="text-foreground">Unlimited conversation spaces</span>
+                    <CheckCircle className="w-4 h-4 text-secondary-foreground flex-shrink-0" />
+                    <span className="text-foreground text-sm">Unlimited conversation spaces</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-secondary-foreground flex-shrink-0" />
-                    <span className="text-foreground">200+ premium questions</span>
+                    <CheckCircle className="w-4 h-4 text-secondary-foreground flex-shrink-0" />
+                    <span className="text-foreground text-sm">200+ premium questions</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-secondary-foreground flex-shrink-0" />
-                    <span className="text-foreground">Advanced conversation timeline</span>
+                    <CheckCircle className="w-4 h-4 text-secondary-foreground flex-shrink-0" />
+                    <span className="text-foreground text-sm">Advanced conversation timeline</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-secondary-foreground flex-shrink-0" />
-                    <span className="text-foreground">Question personalization</span>
+                    <CheckCircle className="w-4 h-4 text-secondary-foreground flex-shrink-0" />
+                    <span className="text-foreground text-sm">Question personalization</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-secondary-foreground flex-shrink-0" />
-                    <span className="text-foreground">Conversation insights</span>
+                    <CheckCircle className="w-4 h-4 text-secondary-foreground flex-shrink-0" />
+                    <span className="text-foreground text-sm">Conversation insights</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-secondary-foreground flex-shrink-0" />
-                    <span className="text-foreground">Email support</span>
+                    <CheckCircle className="w-4 h-4 text-secondary-foreground flex-shrink-0" />
+                    <span className="text-foreground text-sm">Email support</span>
                   </li>
                 </ul>
                 <Link href="/auth">
-                  <Button variant="outline" className="w-full border-secondary text-secondary hover:bg-secondary hover:text-white py-3">
+                  <Button variant="outline" className="w-full border-secondary text-secondary hover:bg-secondary hover:text-white py-2.5 text-sm">
                     Choose Personal
                   </Button>
                 </Link>
@@ -159,47 +159,47 @@ export default function Pricing() {
             </Card>
 
             {/* Premium Plan */}
-            <Card className="border border-border">
-              <CardHeader className="text-center">
-                <div className="w-16 h-16 bg-accent rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Crown className="w-8 h-8 text-accent-foreground" />
+            <Card className="border border-border flex-1 max-w-sm">
+              <CardHeader className="text-center pt-6 pb-4">
+                <div className="w-14 h-14 bg-accent rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Crown className="w-7 h-7 text-accent-foreground" />
                 </div>
-                <CardTitle className="text-2xl font-inter">Premium</CardTitle>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-foreground">$19</span>
-                  <span className="text-muted-foreground ml-2">per month</span>
+                <CardTitle className="text-xl font-inter">Premium</CardTitle>
+                <div className="mt-3">
+                  <span className="text-3xl font-bold text-foreground">$19</span>
+                  <span className="text-muted-foreground ml-2 text-sm">per month</span>
                 </div>
-                <p className="text-muted-foreground mt-2">For relationship experts</p>
+                <p className="text-muted-foreground mt-2 text-sm">For relationship experts</p>
               </CardHeader>
-              <CardContent className="pt-6">
-                <ul className="space-y-4 mb-8">
+              <CardContent className="pt-2">
+                <ul className="space-y-3 mb-6">
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-accent-foreground flex-shrink-0" />
-                    <span className="text-foreground">Everything in Personal</span>
+                    <CheckCircle className="w-4 h-4 text-accent-foreground flex-shrink-0" />
+                    <span className="text-foreground text-sm">Everything in Personal</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-accent-foreground flex-shrink-0" />
-                    <span className="text-foreground">500+ expert-level questions</span>
+                    <CheckCircle className="w-4 h-4 text-accent-foreground flex-shrink-0" />
+                    <span className="text-foreground text-sm">500+ expert-level questions</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-accent-foreground flex-shrink-0" />
-                    <span className="text-foreground">AI-powered question suggestions</span>
+                    <CheckCircle className="w-4 h-4 text-accent-foreground flex-shrink-0" />
+                    <span className="text-foreground text-sm">AI-powered question suggestions</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-accent-foreground flex-shrink-0" />
-                    <span className="text-foreground">Relationship health metrics</span>
+                    <CheckCircle className="w-4 h-4 text-accent-foreground flex-shrink-0" />
+                    <span className="text-foreground text-sm">Relationship health metrics</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-accent-foreground flex-shrink-0" />
-                    <span className="text-foreground">Export conversation history</span>
+                    <CheckCircle className="w-4 h-4 text-accent-foreground flex-shrink-0" />
+                    <span className="text-foreground text-sm">Export conversation history</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-accent-foreground flex-shrink-0" />
-                    <span className="text-foreground">Priority support</span>
+                    <CheckCircle className="w-4 h-4 text-accent-foreground flex-shrink-0" />
+                    <span className="text-foreground text-sm">Priority support</span>
                   </li>
                 </ul>
                 <Link href="/auth">
-                  <Button variant="outline" className="w-full border-accent text-accent hover:bg-accent hover:text-white rounded-full py-3">
+                  <Button variant="outline" className="w-full border-accent text-accent hover:bg-accent hover:text-white rounded-full py-2.5 text-sm">
                     Choose Premium
                   </Button>
                 </Link>
