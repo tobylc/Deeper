@@ -267,7 +267,7 @@ export default function Features() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-primary">
+      <section className="py-16" style={{ background: 'var(--nav-gray)' }}>
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-inter font-bold text-white mb-6">
             Ready to experience deeper connection?
@@ -277,12 +277,12 @@ export default function Features() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 px-8">
+              <Button size="lg" className="btn-ocean px-8">
                 Start Free Trial
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary px-8">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-foreground px-8">
                 View Pricing
               </Button>
             </Link>

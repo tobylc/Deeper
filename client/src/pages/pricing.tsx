@@ -285,7 +285,7 @@ export default function Pricing() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-16 bg-primary">
+      <section className="py-16" style={{ background: 'var(--nav-gray)' }}>
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-inter font-bold text-white mb-6">
             Ready to build deeper connections?
@@ -294,7 +294,7 @@ export default function Pricing() {
             Join thousands of people having more meaningful conversations
           </p>
           <Link href="/auth">
-            <Button size="lg" className="bg-white text-primary hover:bg-white/90 px-8">
+            <Button size="lg" className="btn-ocean px-8">
               Start Your Free Trial
             </Button>
           </Link>
