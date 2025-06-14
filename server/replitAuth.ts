@@ -121,15 +121,30 @@ export async function setupAuth(app: Express) {
     try {
       // Use the first domain from REPLIT_DOMAINS or req.hostname
       const domain = process.env.REPLIT_DOMAINS?.split(",")[0] || req.hostname;
-      console.log(`[DEBUG] Login attempt for domain: ${domain}`);
+      const provider = req.query.provider as string;
+      
+      console.log(`[DEBUG] Login attempt for domain: ${domain}, provider: ${provider || 'default'}`);
       console.log(`[DEBUG] Strategy name: replitauth:${domain}`);
       
-      const authenticator = passport.authenticate(`replitauth:${domain}`, {
+      // Configure authentication options based on provider
+      let authOptions: any = {
         prompt: "login consent",
         scope: ["openid", "email", "profile", "offline_access"],
-      });
+      };
+
+      // Add provider-specific hints for OAuth
+      if (provider === 'google') {
+        authOptions.hd = undefined; // Allow any Google domain
+        authOptions.login_hint = 'google';
+      } else if (provider === 'facebook') {
+        authOptions.login_hint = 'facebook';
+      } else if (provider === 'apple') {
+        authOptions.login_hint = 'apple';
+      }
       
-      console.log(`[DEBUG] Authenticator created, calling...`);
+      const authenticator = passport.authenticate(`replitauth:${domain}`, authOptions);
+      
+      console.log(`[DEBUG] Authenticator created with options:`, authOptions);
       authenticator(req, res, (err: any) => {
         if (err) {
           console.error('[ERROR] Authentication error:', err);
