@@ -165,8 +165,10 @@ Changelog:
   * Removed "About" navigation link for streamlined UX
   * Implemented consistent navigation across all pages
 - June 14, 2025. Complete design system overhaul:
-  * Implemented warm, earthy color palette (sage green, terracotta, cream, forest)
-  * Designed for emotional safety and trust in meaningful conversations
+  * Updated to warm coral primary color palette for emotional connection
+  * Warm coral (#F4926C), golden honey (#F0D79B), soft sage blue accents
+  * Designed for emotional safety, trust, and meaningful conversations
+  * Enhanced all corners to be rounded (1.25rem+ radius) throughout application
   * Added glassmorphism navigation and elevated card components
   * Created custom button variants and message bubble styling
   * Applied modern Inter typography throughout application

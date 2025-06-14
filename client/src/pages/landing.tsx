@@ -144,7 +144,7 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 gradient-sage">
+      <section className="py-24 gradient-coral">
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-inter font-bold text-white mb-6">
             Ready to cultivate meaningful connections?
@@ -154,12 +154,12 @@ export default function Landing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 rounded-full px-8 py-3">
+              <Button size="lg" className="bg-white text-primary hover:bg-white/90 btn-coral px-8 py-3">
                 Start your free trial
               </Button>
             </Link>
             <Link href="/features">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary rounded-full px-8 py-3">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary btn-coral px-8 py-3">
                 Learn more
               </Button>
             </Link>

@@ -92,14 +92,14 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 gradient-sage rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 gradient-coral rounded-xl flex items-center justify-center">
                 <Heart className="text-white w-4 h-4" />
               </div>
-              <span className="text-xl font-inter font-bold text-deep-forest">Deeper</span>
+              <span className="text-xl font-inter font-bold text-warm-charcoal">Deeper</span>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-muted-foreground">Welcome, {user.name}</span>
-              <Button variant="outline" onClick={handleLogout} className="border-primary/20 text-foreground hover:bg-primary hover:text-white">
+              <Button variant="outline" onClick={handleLogout} className="border-primary/20 text-foreground hover:bg-primary hover:text-white rounded-full">
                 Sign Out
               </Button>
             </div>
@@ -110,7 +110,7 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8 smooth-enter">
-          <h1 className="text-3xl font-inter font-bold text-deep-forest mb-2">
+          <h1 className="text-3xl font-inter font-bold text-warm-charcoal mb-2">
             Your Connection Dashboard
           </h1>
           <p className="text-muted-foreground">
@@ -120,14 +120,14 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="card-warm smooth-enter">
+          <Card className="card-warm smooth-enter rounded-3xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-deep-forest">Active Conversations</h3>
-                  <p className="text-2xl font-bold text-warm-sage">{activeConversations.length}</p>
+                  <h3 className="font-semibold text-warm-charcoal">Active Conversations</h3>
+                  <p className="text-2xl font-bold text-warm-coral">{activeConversations.length}</p>
                 </div>
-                <MessageCircle className="w-8 h-8 icon-sage" />
+                <MessageCircle className="w-8 h-8 icon-coral" />
               </div>
             </CardContent>
           </Card>
