@@ -9,10 +9,10 @@ import { db } from "./db";
 import { eq, or, and } from "drizzle-orm";
 
 export interface IStorage {
-  // Users (for Replit Auth)
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  // Users
+  getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
 
   // Connections
   getConnection(id: number): Promise<Connection | undefined>;
