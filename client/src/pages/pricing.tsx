@@ -58,10 +58,10 @@ export default function Pricing() {
       {/* Pricing Tiers */}
       <section className="py-8 bg-card">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 justify-center items-stretch h-auto lg:h-[500px]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 max-h-[480px]">
             
             {/* Free Trial */}
-            <Card className="border-2 border-gray-200/20 bg-primary/5 relative flex-1 max-w-sm h-full">
+            <Card className="border-2 border-gray-300/40 bg-primary/5 relative h-full">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-primary text-white px-3 py-1 text-xs">Most Popular</Badge>
               </div>
@@ -111,7 +111,7 @@ export default function Pricing() {
             </Card>
 
             {/* Personal Plan */}
-            <Card className="border-2 border-gray-200/20 flex-1 max-w-sm h-full">
+            <Card className="border-2 border-gray-300/40 h-full">
               <CardHeader className="text-center pt-5 pb-3">
                 <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Heart className="w-6 h-6 text-secondary-foreground" />
@@ -159,7 +159,7 @@ export default function Pricing() {
             </Card>
 
             {/* Premium Plan */}
-            <Card className="border-2 border-gray-200/20 flex-1 max-w-sm h-full">
+            <Card className="border-2 border-gray-300/40 h-full">
               <CardHeader className="text-center pt-5 pb-3">
                 <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Crown className="w-6 h-6 text-accent-foreground" />
