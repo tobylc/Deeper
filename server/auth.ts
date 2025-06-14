@@ -10,7 +10,6 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import connectPg from "connect-pg-simple";
-import connectPg from "connect-pg-simple";
 
 declare global {
   namespace Express {
@@ -58,6 +57,7 @@ export function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
+  // Local Strategy for email/password authentication
   passport.use(
     new LocalStrategy(
       { usernameField: "email" },
@@ -74,6 +74,80 @@ export function setupAuth(app: Express) {
       }
     )
   );
+
+  // Google OAuth Strategy
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(
+      new GoogleStrategy(
+        {
+          clientID: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          callbackURL: "/api/auth/google/callback",
+        },
+        async (accessToken, refreshToken, profile, done) => {
+          try {
+            let user = await storage.getUserByEmail(profile.emails?.[0]?.value || '');
+            
+            if (!user) {
+              user = await storage.createUser({
+                email: profile.emails?.[0]?.value || '',
+                firstName: profile.name?.givenName || '',
+                lastName: profile.name?.familyName || '',
+                profileImageUrl: profile.photos?.[0]?.value || '',
+                provider: 'google',
+                providerId: profile.id,
+              });
+            }
+            
+            return done(null, user);
+          } catch (error) {
+            return done(error);
+          }
+        }
+      )
+    );
+  }
+
+  // Facebook OAuth Strategy
+  if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
+    passport.use(
+      new FacebookStrategy(
+        {
+          clientID: process.env.FACEBOOK_APP_ID,
+          clientSecret: process.env.FACEBOOK_APP_SECRET,
+          callbackURL: "/api/auth/facebook/callback",
+          profileFields: ['id', 'emails', 'name', 'picture.type(large)'],
+        },
+        async (accessToken, refreshToken, profile, done) => {
+          try {
+            let user = await storage.getUserByEmail(profile.emails?.[0]?.value || '');
+            
+            if (!user) {
+              user = await storage.createUser({
+                email: profile.emails?.[0]?.value || '',
+                firstName: profile.name?.givenName || '',
+                lastName: profile.name?.familyName || '',
+                profileImageUrl: profile.photos?.[0]?.value || '',
+                provider: 'facebook',
+                providerId: profile.id,
+              });
+            }
+            
+            return done(null, user);
+          } catch (error) {
+            return done(error);
+          }
+        }
+      )
+    );
+  }
+
+  // Apple OAuth Strategy (Note: Requires proper Apple Developer setup)
+  if (process.env.APPLE_CLIENT_ID && process.env.APPLE_TEAM_ID && process.env.APPLE_KEY_ID) {
+    // Apple Sign In requires complex setup with certificates
+    // For now, we'll skip Apple implementation and focus on Google/Facebook
+    console.log('Apple Sign In configured but requires additional setup');
+  }
 
   passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser(async (id: number, done) => {
@@ -122,6 +196,29 @@ export function setupAuth(app: Express) {
       res.sendStatus(200);
     });
   });
+
+  // Social Authentication Routes
+  
+  // Google OAuth routes
+  app.get("/api/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+  app.get("/api/auth/google/callback", 
+    passport.authenticate("google", { failureRedirect: "/auth" }),
+    (req, res) => res.redirect("/")
+  );
+
+  // Facebook OAuth routes
+  app.get("/api/auth/facebook", passport.authenticate("facebook", { scope: ["email"] }));
+  app.get("/api/auth/facebook/callback",
+    passport.authenticate("facebook", { failureRedirect: "/auth" }),
+    (req, res) => res.redirect("/")
+  );
+
+  // Apple OAuth routes (disabled - requires complex certificate setup)
+  // app.get("/api/auth/apple", passport.authenticate("apple"));
+  // app.get("/api/auth/apple/callback",
+  //   passport.authenticate("apple", { failureRedirect: "/auth" }),
+  //   (req, res) => res.redirect("/")
+  // );
 
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
