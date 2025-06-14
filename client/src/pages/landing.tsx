@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Lock, Lightbulb, Users, X } from "lucide-react";
+import { MessageSquare, HelpCircle, Shield, X } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 
@@ -78,10 +78,10 @@ export default function Landing() {
           {/* Feature Cards */}
           <div className="grid md:grid-cols-3 gap-8 mt-20">
             {/* Structured Conversations */}
-            <Card className="card-elevated p-8 text-left smooth-enter">
+            <Card className="card-elevated p-8 text-left smooth-enter border-2" style={{ borderColor: 'var(--nav-gray)' }}>
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
-                  <Lock className="w-6 h-6 icon-ocean" />
+                  <MessageSquare className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Structured conversations
@@ -93,10 +93,10 @@ export default function Landing() {
             </Card>
 
             {/* Curated Question Pools */}
-            <Card className="card-elevated p-8 text-left smooth-enter">
+            <Card className="card-elevated p-8 text-left smooth-enter border-2" style={{ borderColor: 'var(--nav-gray)' }}>
               <CardContent className="p-0">
-                <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mb-6">
-                  <Lightbulb className="w-6 h-6 text-muted-foreground" />
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
+                  <HelpCircle className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Curated question pools
@@ -108,10 +108,10 @@ export default function Landing() {
             </Card>
 
             {/* Private Communication Spaces */}
-            <Card className="card-elevated p-8 text-left smooth-enter">
+            <Card className="card-elevated p-8 text-left smooth-enter border-2" style={{ borderColor: 'var(--nav-gray)' }}>
               <CardContent className="p-0">
-                <div className="w-12 h-12 rounded-lg bg-accent flex items-center justify-center mb-6">
-                  <Users className="w-6 h-6 text-accent-foreground" />
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
+                  <Shield className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Private communication spaces
