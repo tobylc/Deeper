@@ -1,6 +1,6 @@
 import { 
   users, connections, conversations, messages,
-  type User, type UpsertUser,
+  type User, type InsertUser,
   type Connection, type InsertConnection,
   type Conversation, type InsertConversation,
   type Message, type InsertMessage
