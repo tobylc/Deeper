@@ -305,8 +305,19 @@ export default function Features() {
 
             {/* Question Intelligence */}
             <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
-              <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
-                <Zap className="w-6 h-6 text-secondary-foreground transition-colors duration-300 hover:text-white" />
+              <div 
+                className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:scale-110 cursor-pointer ${
+                  activeIcon === 'zap' 
+                    ? 'bg-primary shadow-lg' 
+                    : 'bg-secondary/10 hover:bg-primary'
+                }`}
+                onClick={() => setActiveIcon('zap')}
+              >
+                <Zap className={`w-6 h-6 transition-colors duration-300 ${
+                  activeIcon === 'zap' 
+                    ? 'text-white' 
+                    : 'text-secondary-foreground hover:text-white'
+                }`} />
               </div>
               <div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-2">Smart Question Suggestions</h3>
