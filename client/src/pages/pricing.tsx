@@ -81,8 +81,8 @@ export default function Pricing() {
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">Perfect for getting started</p>
               </CardHeader>
-              <CardContent className="pt-1 pb-4">
-                <ul className="space-y-2 mb-4">
+              <CardContent className="pt-1 pb-4 flex flex-col h-full">
+                <ul className="space-y-2 mb-4 flex-grow">
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-primary flex-shrink-0" />
                     <span className="text-foreground text-xs">3 conversation spaces</span>
@@ -104,14 +104,16 @@ export default function Pricing() {
                     <span className="text-foreground text-xs">All relationship types</span>
                   </li>
                 </ul>
-                <p className="text-xs text-muted-foreground mb-4 text-center">
-                  No credit card required • Cancel anytime
-                </p>
-                <Link href="/auth">
-                  <Button className="w-full card-button py-2 text-xs">
-                    Start Free Trial
-                  </Button>
-                </Link>
+                <div className="mt-auto">
+                  <p className="text-xs text-muted-foreground mb-4 text-center">
+                    No credit card required • Cancel anytime
+                  </p>
+                  <Link href="/auth">
+                    <Button className="w-full card-button py-2 text-xs">
+                      Start Free Trial
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
 
@@ -131,8 +133,8 @@ export default function Pricing() {
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">For meaningful relationships</p>
               </CardHeader>
-              <CardContent className="pt-1 pb-4">
-                <ul className="space-y-2 mb-4">
+              <CardContent className="pt-1 pb-4 flex flex-col h-full">
+                <ul className="space-y-2 mb-4 flex-grow">
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-secondary-foreground flex-shrink-0" />
                     <span className="text-foreground text-xs">Unlimited conversation spaces</span>
@@ -158,11 +160,13 @@ export default function Pricing() {
                     <span className="text-foreground text-xs">Email support</span>
                   </li>
                 </ul>
-                <Link href="/auth">
-                  <Button className="w-full card-button py-2 text-xs">
-                    Choose Personal
-                  </Button>
-                </Link>
+                <div className="mt-auto">
+                  <Link href="/auth">
+                    <Button className="w-full card-button py-2 text-xs">
+                      Choose Personal
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
 
@@ -182,8 +186,8 @@ export default function Pricing() {
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">For relationship experts</p>
               </CardHeader>
-              <CardContent className="pt-1 pb-4">
-                <ul className="space-y-2 mb-4">
+              <CardContent className="pt-1 pb-4 flex flex-col h-full">
+                <ul className="space-y-2 mb-4 flex-grow">
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-accent-foreground flex-shrink-0" />
                     <span className="text-foreground text-xs">Everything in Personal</span>
@@ -209,11 +213,13 @@ export default function Pricing() {
                     <span className="text-foreground text-xs">Priority support</span>
                   </li>
                 </ul>
-                <Link href="/auth">
-                  <Button className="w-full card-button py-2 text-xs">
-                    Choose Premium
-                  </Button>
-                </Link>
+                <div className="mt-auto">
+                  <Link href="/auth">
+                    <Button className="w-full card-button py-2 text-xs">
+                      Choose Premium
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           </div>
