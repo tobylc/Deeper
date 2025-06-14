@@ -122,13 +122,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const connection = await storage.createConnection(connectionData);
       
-      // Send invitation email
-      try {
-        await emailService.sendConnectionInvitation(connection);
-      } catch (error) {
-        console.error("Failed to send invitation email:", error);
-        // Don't fail the request if email fails
-      }
+      // Queue invitation email for background processing
+      jobQueue.addJob('send_email', {
+        emailType: 'invitation',
+        connection
+      });
+      
+      // Track connection creation
+      analytics.track({
+        type: 'connection_created',
+        email: connection.inviterEmail,
+        metadata: { 
+          relationshipType: connection.relationshipType,
+          inviteeEmail: connection.inviteeEmail
+        }
+      });
       
       res.json(connection);
     } catch (error) {
@@ -188,12 +196,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currentTurn: connection.inviterEmail, // Inviter asks first question
       });
 
-      // Send acceptance notification email
-      try {
-        await emailService.sendConnectionAccepted(connection);
-      } catch (error) {
-        console.error("Failed to send acceptance email:", error);
-      }
+      // Queue acceptance notification email
+      jobQueue.addJob('send_email', {
+        emailType: 'accepted',
+        connection
+      });
+      
+      // Track connection acceptance
+      analytics.track({
+        type: 'connection_accepted',
+        email: connection.inviteeEmail,
+        metadata: { 
+          inviterEmail: connection.inviterEmail,
+          relationshipType: connection.relationshipType
+        }
+      });
 
       res.json({ connection, conversation });
     } catch (error) {
@@ -227,12 +244,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Failed to update connection status" });
       }
 
-      // Send decline notification email
-      try {
-        await emailService.sendConnectionDeclined(connection);
-      } catch (error) {
-        console.error("Failed to send decline email:", error);
-      }
+      // Queue decline notification email
+      jobQueue.addJob('send_email', {
+        emailType: 'declined',
+        connection
+      });
+      
+      // Track connection decline
+      analytics.track({
+        type: 'connection_declined',
+        email: connection.inviteeEmail,
+        metadata: { 
+          inviterEmail: connection.inviterEmail,
+          relationshipType: connection.relationshipType
+        }
+      });
 
       res.json(connection);
     } catch (error) {
@@ -331,6 +357,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? conversation.participant2Email 
         : conversation.participant1Email;
       await storage.updateConversationTurn(conversationId, nextTurn);
+
+      // Track message sending
+      analytics.track({
+        type: 'message_sent',
+        email: messageData.senderEmail,
+        metadata: { 
+          conversationId,
+          messageType: messageData.type,
+          relationshipType: conversation.relationshipType
+        }
+      });
 
       res.json(message);
     } catch (error) {

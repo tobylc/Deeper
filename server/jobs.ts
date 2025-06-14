@@ -56,19 +56,19 @@ export class JobQueue {
     const now = new Date();
 
     try {
-      for (const [id, job] of this.jobs.entries()) {
+      this.jobs.forEach(async (job, id) => {
         if (job.status === 'pending' && job.scheduledFor <= now) {
           await this.processJob(job);
         }
-      }
+      });
 
       // Clean up completed/failed jobs older than 1 hour
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      for (const [id, job] of this.jobs.entries()) {
+      this.jobs.forEach((job, id) => {
         if ((job.status === 'completed' || job.status === 'failed') && job.createdAt < oneHourAgo) {
           this.jobs.delete(id);
         }
-      }
+      });
     } catch (error) {
       console.error("Error processing jobs:", error);
     } finally {
@@ -150,9 +150,12 @@ export class JobQueue {
       failed: 0
     };
 
-    for (const job of this.jobs.values()) {
-      stats[job.status]++;
-    }
+    this.jobs.forEach((job) => {
+      if (job.status === 'pending') stats.pending++;
+      else if (job.status === 'running') stats.running++;
+      else if (job.status === 'completed') stats.completed++;
+      else if (job.status === 'failed') stats.failed++;
+    });
 
     return stats;
   }
