@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -61,17 +63,13 @@
     @apply bg-background text-foreground font-inter antialiased;
   }
 
-  .font-crimson {
-    font-family: 'Crimson Text', serif;
+  .font-space {
+    font-family: 'Space Grotesk', sans-serif;
   }
 
   .font-inter {
     font-family: 'Inter', sans-serif;
   }
-
-  .font-source {
-    font-family: 'Source Sans Pro', sans-serif;
-  }
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Source+Sans+Pro:wght@400;600&display=swap');
+
