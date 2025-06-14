@@ -154,13 +154,32 @@ export function setupAuth(app: Express) {
     done(null, user.id);
   });
   
-  passport.deserializeUser(async (id: any, done) => {
+  passport.deserializeUser(async (sessionData: any, done) => {
     try {
-      // Ensure id is a number
-      const userId = typeof id === 'string' ? parseInt(id, 10) : id;
+      let userId: number;
+      
+      // Handle different session data formats
+      if (typeof sessionData === 'number') {
+        userId = sessionData;
+      } else if (typeof sessionData === 'string') {
+        userId = parseInt(sessionData, 10);
+      } else if (sessionData && typeof sessionData === 'object') {
+        // Handle Replit Auth or other complex session data
+        if (sessionData.claims && sessionData.claims.sub) {
+          userId = parseInt(sessionData.claims.sub, 10);
+        } else if (sessionData.id) {
+          userId = typeof sessionData.id === 'string' ? parseInt(sessionData.id, 10) : sessionData.id;
+        } else {
+          return done(new Error('Invalid session data format'));
+        }
+      } else {
+        return done(new Error('Invalid session data'));
+      }
+      
       if (isNaN(userId)) {
         return done(new Error('Invalid user ID'));
       }
+      
       const user = await storage.getUser(userId);
       done(null, user);
     } catch (error) {
