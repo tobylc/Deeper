@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "@shared/schema";
+import { insertConnectionSchema, insertMessageSchema, upsertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import { 
   rateLimit, 
@@ -15,6 +15,7 @@ import { emailService } from "./email";
 import { analytics } from "./analytics";
 import { healthService } from "./health";
 import { jobQueue } from "./jobs";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Apply global middleware
