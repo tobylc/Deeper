@@ -18,6 +18,9 @@ import { jobQueue } from "./jobs";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup Replit Auth middleware
+  await setupAuth(app);
+
   // Apply global middleware
   app.use(corsHeaders);
   app.use(securityHeaders);
@@ -47,68 +50,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Auth endpoints with rate limiting
-  app.post("/api/auth/register", 
-    rateLimit(5, 15 * 60 * 1000), // 5 requests per 15 minutes
-    validateEmail,
-    async (req, res) => {
+  // Replit Auth endpoints
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
-      
-      // Check if user already exists
-      const existingUser = await storage.getUserByEmail(userData.email);
-      if (existingUser) {
-        return res.status(400).json({ message: "User already exists" });
-      }
-
-      const user = await storage.createUser(userData);
-      
-      // Track user registration
-      analytics.track({
-        type: 'user_registered',
-        email: user.email,
-        metadata: { name: user.name }
-      });
-      
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
-      console.error("Registration error:", error);
-      res.status(400).json({ message: "Invalid user data" });
-    }
-  });
-
-  app.post("/api/auth/login", 
-    rateLimit(10, 15 * 60 * 1000), // 10 requests per 15 minutes
-    validateEmail,
-    async (req, res) => {
-    try {
-      const { email } = req.body;
-      const user = await storage.getUserByEmail(email);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json(user);
-    } catch (error) {
-      console.error("Login error:", error);
-      res.status(400).json({ message: "Login failed" });
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
   // Connection endpoints
   app.post("/api/connections", 
+    isAuthenticated,
     rateLimit(20, 60 * 60 * 1000), // 20 connections per hour
     validateEmail,
-    async (req, res) => {
+    async (req: any, res) => {
     try {
       const connectionData = insertConnectionSchema.parse(req.body);
       
-      // Validate that both users exist
-      const inviterExists = await storage.getUserByEmail(connectionData.inviterEmail);
-      if (!inviterExists) {
-        return res.status(400).json({ message: "Inviter email not found. Please register first." });
+      // Get authenticated user's email
+      const userId = req.user.claims.sub;
+      const currentUser = await storage.getUser(userId);
+      if (!currentUser?.email) {
+        return res.status(400).json({ message: "User email not found" });
       }
+      
+      // Use authenticated user's email as inviter
+      connectionData.inviterEmail = currentUser.email;
 
       // Check for duplicate connections
       const existingConnections = await storage.getConnectionsByEmail(connectionData.inviterEmail);
