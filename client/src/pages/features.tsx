@@ -59,9 +59,9 @@ export default function Features() {
 
           <div className="grid lg:grid-cols-3 gap-8 mb-16">
             {/* Exclusive Two-Person Focus */}
-            <Card className="border-2 border-primary/20 bg-primary/5">
+            <Card className="border-2 border-gray-600 rounded-xl shadow-lg bg-primary/5">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center mx-auto mb-6">
+                <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:bg-primary/80 hover:scale-110 cursor-pointer">
                   <Users className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-inter font-bold text-foreground mb-4">Exclusively Two People</h3>
@@ -86,10 +86,10 @@ export default function Features() {
             </Card>
 
             {/* Turn-Based Structure */}
-            <Card className="border-2 border-secondary/20 bg-secondary/5">
+            <Card className="border-2 border-gray-600 rounded-xl shadow-lg bg-secondary/5">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-secondary rounded-lg flex items-center justify-center mx-auto mb-6">
-                  <Clock className="w-8 h-8 text-secondary-foreground" />
+                <div className="w-16 h-16 bg-secondary rounded-lg flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
+                  <Clock className="w-8 h-8 text-secondary-foreground transition-colors duration-300 hover:text-white" />
                 </div>
                 <h3 className="text-2xl font-inter font-bold text-foreground mb-4">Turn-Based Dialogue</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
@@ -113,10 +113,10 @@ export default function Features() {
             </Card>
 
             {/* Curated Questions */}
-            <Card className="border-2 border-accent/20 bg-accent/5">
+            <Card className="border-2 border-gray-600 rounded-xl shadow-lg bg-accent/5">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-accent rounded-lg flex items-center justify-center mx-auto mb-6">
-                  <Lightbulb className="w-8 h-8 text-accent-foreground" />
+                <div className="w-16 h-16 bg-accent rounded-lg flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
+                  <Lightbulb className="w-8 h-8 text-accent-foreground transition-colors duration-300 hover:text-white" />
                 </div>
                 <h3 className="text-2xl font-inter font-bold text-foreground mb-4">Expertly Curated Questions</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
@@ -153,9 +153,9 @@ export default function Features() {
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Email-Based Connection */}
-            <div className="flex items-start space-x-4 p-6 bg-card rounded-lg shadow-sm">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Mail className="w-6 h-6 text-primary" />
+            <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
+                <Mail className="w-6 h-6 text-primary transition-colors duration-300 hover:text-white" />
               </div>
               <div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-2">Mutual Consent System</h3>
@@ -166,9 +166,9 @@ export default function Features() {
             </div>
 
             {/* Conversation Timeline */}
-            <div className="flex items-start space-x-4 p-6 bg-card rounded-lg shadow-sm">
-              <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <History className="w-6 h-6 text-secondary-foreground" />
+            <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
+              <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
+                <History className="w-6 h-6 text-secondary-foreground transition-colors duration-300 hover:text-white" />
               </div>
               <div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-2">Conversation Timeline</h3>
@@ -179,9 +179,9 @@ export default function Features() {
             </div>
 
             {/* Relationship Categories */}
-            <div className="flex items-start space-x-4 p-6 bg-card rounded-lg shadow-sm">
-              <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Heart className="w-6 h-6 text-accent-foreground" />
+            <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
+              <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
+                <Heart className="w-6 h-6 text-accent-foreground transition-colors duration-300 hover:text-white" />
               </div>
               <div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-2">Relationship-Specific Design</h3>
@@ -192,9 +192,9 @@ export default function Features() {
             </div>
 
             {/* Privacy Focus */}
-            <div className="flex items-start space-x-4 p-6 bg-card rounded-lg shadow-sm">
-              <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Shield className="w-6 h-6 text-success" />
+            <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
+              <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
+                <Shield className="w-6 h-6 text-success transition-colors duration-300 hover:text-white" />
               </div>
               <div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-2">Privacy by Design</h3>
@@ -205,9 +205,9 @@ export default function Features() {
             </div>
 
             {/* Thoughtful Pacing */}
-            <div className="flex items-start space-x-4 p-6 bg-card rounded-lg shadow-sm">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Target className="w-6 h-6 text-primary" />
+            <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
+                <Target className="w-6 h-6 text-primary transition-colors duration-300 hover:text-white" />
               </div>
               <div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-2">Intentional Pacing</h3>
@@ -218,9 +218,9 @@ export default function Features() {
             </div>
 
             {/* Question Intelligence */}
-            <div className="flex items-start space-x-4 p-6 bg-card rounded-lg shadow-sm">
-              <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Zap className="w-6 h-6 text-secondary-foreground" />
+            <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
+              <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:bg-primary hover:scale-110 cursor-pointer">
+                <Zap className="w-6 h-6 text-secondary-foreground transition-colors duration-300 hover:text-white" />
               </div>
               <div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-2">Smart Question Suggestions</h3>
