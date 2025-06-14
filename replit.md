@@ -2,7 +2,7 @@
 
 ## Overview
 
-Deeper is a full-stack web application designed to facilitate meaningful connections and conversations between people. The platform enables users to invite others to private conversation spaces where they can engage in structured dialogue based on their relationship type (parent-child, romantic partners, friends, etc.). The application provides curated question suggestions to help deepen relationships through thoughtful exchanges.
+Deeper is a production-ready full-stack web application designed to facilitate meaningful connections and conversations between people. The platform enables users to invite others to private conversation spaces where they can engage in structured dialogue based on their relationship type (parent-child, romantic partners, friends, etc.). The application provides curated question suggestions to help deepen relationships through thoughtful exchanges.
 
 ## System Architecture
 
@@ -17,15 +17,15 @@ Deeper is a full-stack web application designed to facilitate meaningful connect
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js server
 - **Language**: TypeScript with ES modules
-- **API Pattern**: RESTful API endpoints
+- **API Pattern**: RESTful API endpoints with comprehensive error handling
 - **Development**: Hot reload with Vite integration for development
 - **Production**: Built with esbuild for optimized server bundle
 
 ### Data Storage Solutions
-- **Database**: PostgreSQL configured via Drizzle ORM
-- **ORM**: Drizzle with PostgreSQL dialect
+- **Database**: PostgreSQL with production-grade connection pooling
+- **ORM**: Drizzle with PostgreSQL dialect and query optimization
 - **Schema Management**: Drizzle Kit for migrations
-- **Development Storage**: In-memory storage implementation for development/testing
+- **Production Storage**: DatabaseStorage implementation with transaction support
 - **Database Provider**: Neon serverless PostgreSQL configured
 
 ## Key Components
@@ -35,6 +35,7 @@ Deeper is a full-stack web application designed to facilitate meaningful connect
 - User registration and login via email lookup
 - Client-side session persistence using localStorage
 - Context-based authentication state management
+- Production-ready rate limiting on authentication endpoints
 
 ### Connection Management
 - Invitation system where users can invite others by email
@@ -124,10 +125,39 @@ Deeper is a full-stack web application designed to facilitate meaningful connect
 - **Rationale**: Rapid development, consistent design system, excellent customization
 - **Benefits**: CSS-in-JS avoided, design tokens via CSS variables, responsive design utilities
 
+## Production Infrastructure
+
+### Security & Performance
+- **Rate Limiting**: Comprehensive rate limiting on all endpoints (authentication, connections, messages)
+- **Validation**: Multi-layer input validation with Zod schemas and custom middleware
+- **Error Handling**: Production-grade error handling with proper HTTP status codes
+- **Security Headers**: CORS, XSS protection, content type validation
+- **Database Optimization**: Indexes on all critical query paths for optimal performance
+
+### Background Processing
+- **Job Queue System**: Asynchronous background job processing for email notifications
+- **Email Service**: Configurable email service with console logging for development
+- **Analytics Tracking**: Comprehensive event tracking for user actions and system metrics
+- **Health Monitoring**: System health checks with database connectivity validation
+
+### Monitoring & Observability
+- **Request Logging**: Detailed request/response logging with performance metrics
+- **Error Tracking**: Structured error logging with stack traces and context
+- **Analytics Dashboard**: Real-time metrics for user engagement and system performance
+- **Graceful Shutdown**: Proper server shutdown handling for deployment scenarios
+
 ## Changelog
 ```
 Changelog:
-- June 14, 2025. Initial setup
+- June 14, 2025. Initial setup with basic application structure
+- June 14, 2025. Production infrastructure implementation:
+  * PostgreSQL database integration with Drizzle ORM
+  * Comprehensive error handling and validation
+  * Rate limiting and security middleware
+  * Background job processing system
+  * Analytics and monitoring capabilities
+  * Email notification system
+  * Database optimization with indexes
 ```
 
 ## User Preferences
