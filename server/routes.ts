@@ -66,9 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(req.user);
       }
 
-      console.log("Getting user data for ID:", userId);
       const user = await storage.getUser(userId);
-      console.log("Retrieved user:", user);
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
