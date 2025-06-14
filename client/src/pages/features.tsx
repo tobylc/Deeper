@@ -13,7 +13,7 @@ export default function Features() {
           <div className="flex justify-between items-center h-16">
             <Link href="/">
               <div className="flex items-center space-x-2 cursor-pointer">
-                <span className="text-2xl font-inter font-bold text-deep-plum">Deeper</span>
+                <span className="text-2xl font-inter font-bold text-soft-white">Deeper</span>
               </div>
             </Link>
             <div className="hidden md:flex items-center space-x-8">
@@ -27,7 +27,7 @@ export default function Features() {
                 Pricing
               </Link>
               <Link href="/auth">
-                <Button className="btn-rose px-6 py-2">
+                <Button className="btn-ocean px-6 py-2">
                   Login
                 </Button>
               </Link>

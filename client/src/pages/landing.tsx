@@ -58,7 +58,7 @@ export default function Landing() {
             <Card className="card-elevated rounded-3xl p-8 text-left smooth-enter">
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                  <Lock className="w-6 h-6 icon-rose" />
+                  <Lock className="w-6 h-6 icon-ocean" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Structured conversations.
@@ -73,7 +73,7 @@ export default function Landing() {
             <Card className="card-elevated rounded-3xl p-8 text-left smooth-enter">
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center mb-6">
-                  <Lightbulb className="w-6 h-6 icon-gold" />
+                  <Lightbulb className="w-6 h-6 icon-amber" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Curated question pools
@@ -88,7 +88,7 @@ export default function Landing() {
             <Card className="card-elevated rounded-3xl p-8 text-left smooth-enter">
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center mb-6">
-                  <Users className="w-6 h-6 icon-lavender" />
+                  <Users className="w-6 h-6 icon-teal" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Private communication spaces.
@@ -111,8 +111,8 @@ export default function Landing() {
           
           <div className="grid md:grid-cols-3 gap-12">
             <div className="smooth-enter">
-              <div className="w-16 h-16 rounded-full gradient-rose flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-white">1</span>
+              <div className="w-16 h-16 rounded-full gradient-ocean flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-deep-charcoal">1</span>
               </div>
               <h3 className="text-xl font-inter font-semibold text-foreground mb-4">Invite someone special</h3>
               <p className="text-muted-foreground leading-relaxed">
@@ -121,8 +121,8 @@ export default function Landing() {
             </div>
             
             <div className="smooth-enter">
-              <div className="w-16 h-16 rounded-full gradient-gold flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-deep-plum">2</span>
+              <div className="w-16 h-16 rounded-full gradient-amber flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-deep-charcoal">2</span>
               </div>
               <h3 className="text-xl font-inter font-semibold text-foreground mb-4">Choose your journey</h3>
               <p className="text-muted-foreground leading-relaxed">
@@ -132,7 +132,7 @@ export default function Landing() {
             
             <div className="smooth-enter">
               <div className="w-16 h-16 rounded-full bg-accent/80 flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-deep-plum">3</span>
+                <span className="text-2xl font-bold text-deep-charcoal">3</span>
               </div>
               <h3 className="text-xl font-inter font-semibold text-foreground mb-4">Build deeper bonds</h3>
               <p className="text-muted-foreground leading-relaxed">
@@ -144,27 +144,27 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 gradient-rose">
+      <section className="py-24 gradient-ocean">
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-inter font-bold text-white mb-6">
+          <h2 className="text-3xl font-inter font-bold text-deep-charcoal mb-6">
             Ready to cultivate meaningful connections?
           </h2>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-deep-charcoal/80 mb-8 max-w-2xl mx-auto">
             Join thousands discovering the power of structured, intentional dialogue
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 btn-rose px-8 py-3">
+              <Button size="lg" className="bg-white text-primary hover:bg-white/90 btn-ocean px-8 py-3">
                 Start your free trial
               </Button>
             </Link>
             <Link href="/features">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary btn-rose px-8 py-3">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary btn-ocean px-8 py-3">
                 Learn more
               </Button>
             </Link>
           </div>
-          <p className="text-white/80 mt-6 text-sm">
+          <p className="text-deep-charcoal/70 mt-6 text-sm">
             No credit card required • 7 days free • Cancel anytime
           </p>
         </div>
