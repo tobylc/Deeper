@@ -42,20 +42,19 @@ function updateUserSession(user: any, userData: any) {
 }
 
 async function upsertUser(userData: any) {
-  // Check if user exists by provider ID
+  // Check if user exists by email
   const existingUser = await storage.getUserByEmail(userData.email);
   if (existingUser) {
     return existingUser;
   }
 
-  // Create new user without specifying ID (let serial auto-increment)
-  return await storage.createUser({
+  // Create new user with the ID from userData
+  return await storage.upsertUser({
+    id: userData.sub || userData.id,
     email: userData.email || "demo@example.com",
     firstName: userData.first_name || userData.given_name || "Demo",
     lastName: userData.last_name || userData.family_name || "User",
     profileImageUrl: userData.profile_image_url || userData.picture || null,
-    provider: userData.provider || "demo",
-    providerId: userData.sub || userData.id || null,
   });
 }
 

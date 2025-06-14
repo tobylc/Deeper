@@ -53,10 +53,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Replit Auth endpoints
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      // Handle both Replit Auth and demo authentication
+      let userId;
+      if (req.user.claims) {
+        // Real Replit Auth
+        userId = req.user.claims.sub;
+      } else if (req.user.id) {
+        // Demo authentication or direct user object
+        userId = req.user.id;
+      } else {
+        // Fallback - return the user object directly if it's already complete
+        return res.json(req.user);
+      }
+
       console.log("Getting user data for ID:", userId);
       const user = await storage.getUser(userId);
       console.log("Retrieved user:", user);
+      
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
