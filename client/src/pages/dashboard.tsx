@@ -110,7 +110,7 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8 smooth-enter">
-          <h1 className="text-3xl font-inter font-bold text-warm-charcoal mb-2">
+          <h1 className="text-3xl font-inter font-bold text-deep-plum mb-2">
             Your Connection Dashboard
           </h1>
           <p className="text-muted-foreground">
@@ -124,10 +124,10 @@ export default function Dashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-warm-charcoal">Active Conversations</h3>
-                  <p className="text-2xl font-bold text-warm-coral">{activeConversations.length}</p>
+                  <h3 className="font-semibold text-deep-plum">Active Conversations</h3>
+                  <p className="text-2xl font-bold text-deep-rose">{activeConversations.length}</p>
                 </div>
-                <MessageCircle className="w-8 h-8 icon-coral" />
+                <MessageCircle className="w-8 h-8 icon-rose" />
               </div>
             </CardContent>
           </Card>
