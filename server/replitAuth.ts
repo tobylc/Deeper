@@ -78,6 +78,14 @@ export async function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
+  try {
+    const config = await getOidcConfig();
+    console.log('[DEBUG] OIDC config loaded successfully');
+  } catch (error) {
+    console.error('[ERROR] Failed to load OIDC config:', error);
+    throw error;
+  }
+
   const config = await getOidcConfig();
 
   const verify: VerifyFunction = async (
@@ -108,12 +116,20 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    // Use the first domain from REPLIT_DOMAINS or req.hostname
-    const domain = process.env.REPLIT_DOMAINS?.split(",")[0] || req.hostname;
-    passport.authenticate(`replitauth:${domain}`, {
-      prompt: "login consent",
-      scope: ["openid", "email", "profile", "offline_access"],
-    })(req, res, next);
+    try {
+      // Use the first domain from REPLIT_DOMAINS or req.hostname
+      const domain = process.env.REPLIT_DOMAINS?.split(",")[0] || req.hostname;
+      console.log(`[DEBUG] Login attempt for domain: ${domain}`);
+      console.log(`[DEBUG] Strategy name: replitauth:${domain}`);
+      
+      passport.authenticate(`replitauth:${domain}`, {
+        prompt: "login consent",
+        scope: ["openid", "email", "profile", "offline_access"],
+      })(req, res, next);
+    } catch (error) {
+      console.error('[ERROR] Login error:', error);
+      res.status(500).json({ error: 'Authentication setup error' });
+    }
   });
 
   app.get("/api/callback", (req, res, next) => {
