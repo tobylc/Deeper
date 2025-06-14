@@ -19,10 +19,25 @@ if (!process.env.REPL_ID) {
 
 const getOidcConfig = memoize(
   async () => {
-    return await client.discovery(
-      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
-    );
+    try {
+      // Use Replit Auth Beta issuer URL
+      const issuerUrl = process.env.ISSUER_URL ?? "https://auth.replit.com";
+      console.log(`[DEBUG] Attempting OIDC discovery with issuer: ${issuerUrl}`);
+      console.log(`[DEBUG] Client ID (REPL_ID): ${process.env.REPL_ID}`);
+      
+      const config = await client.discovery(
+        new URL(issuerUrl),
+        process.env.REPL_ID!
+      );
+      
+      console.log(`[DEBUG] OIDC config loaded successfully`);
+      console.log(`[DEBUG] Issuer: ${config.issuer}`);
+      console.log(`[DEBUG] Config keys:`, Object.keys(config));
+      return config;
+    } catch (error) {
+      console.error(`[ERROR] OIDC discovery failed:`, error);
+      throw error;
+    }
   },
   { maxAge: 3600 * 1000 }
 );
