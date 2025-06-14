@@ -5,22 +5,22 @@ import { Link } from "wouter";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen gradient-warm">
+    <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="absolute top-0 left-0 right-0 z-50 glass-nav">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <span className="text-2xl font-inter font-bold text-soft-white">Deeper</span>
+              <span className="text-2xl font-inter font-bold text-white">Deeper</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-foreground/80 hover:text-primary transition-colors font-inter font-medium">
+              <Link href="/" className="text-white/80 hover:text-white transition-colors font-inter font-medium">
                 Home
               </Link>
-              <Link href="/features" className="text-foreground/80 hover:text-primary transition-colors font-inter font-medium">
+              <Link href="/features" className="text-white/80 hover:text-white transition-colors font-inter font-medium">
                 Features
               </Link>
-              <Link href="/pricing" className="text-foreground/80 hover:text-primary transition-colors font-inter font-medium">
+              <Link href="/pricing" className="text-white/80 hover:text-white transition-colors font-inter font-medium">
                 Pricing
               </Link>
               <Link href="/auth">
@@ -40,13 +40,13 @@ export default function Landing() {
             <h1 className="text-5xl lg:text-7xl font-inter font-bold text-foreground mb-8 leading-tight">
               Cultivate meaningful
               <br />
-              <span className="text-warm-coral">connections.</span>
+              <span className="text-ocean-blue">connections.</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-12 font-inter max-w-2xl mx-auto leading-relaxed">
               Create exclusive, private spaces for thoughtful dialogue that deepens relationships over time.
             </p>
             <Link href="/auth">
-              <Button size="lg" className="btn-coral px-8 py-3 text-lg font-medium">
+              <Button size="lg" className="btn-ocean px-8 py-3 text-lg font-medium">
                 Start free trial
               </Button>
             </Link>
@@ -55,13 +55,13 @@ export default function Landing() {
           {/* Feature Cards */}
           <div className="grid md:grid-cols-3 gap-8 mt-20">
             {/* Structured Conversations */}
-            <Card className="card-elevated rounded-3xl p-8 text-left smooth-enter">
+            <Card className="card-elevated p-8 text-left smooth-enter">
               <CardContent className="p-0">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
                   <Lock className="w-6 h-6 icon-ocean" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
-                  Structured conversations.
+                  Structured conversations
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
                   Turn-based dialogue system that ensures balanced, thoughtful exchanges between two people.
@@ -70,10 +70,10 @@ export default function Landing() {
             </Card>
 
             {/* Curated Question Pools */}
-            <Card className="card-elevated rounded-3xl p-8 text-left smooth-enter">
+            <Card className="card-elevated p-8 text-left smooth-enter">
               <CardContent className="p-0">
-                <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center mb-6">
-                  <Lightbulb className="w-6 h-6 icon-amber" />
+                <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mb-6">
+                  <Lightbulb className="w-6 h-6 text-muted-foreground" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Curated question pools
@@ -85,13 +85,13 @@ export default function Landing() {
             </Card>
 
             {/* Private Communication Spaces */}
-            <Card className="card-elevated rounded-3xl p-8 text-left smooth-enter">
+            <Card className="card-elevated p-8 text-left smooth-enter">
               <CardContent className="p-0">
-                <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center mb-6">
-                  <Users className="w-6 h-6 icon-teal" />
+                <div className="w-12 h-12 rounded-lg bg-accent flex items-center justify-center mb-6">
+                  <Users className="w-6 h-6 text-accent-foreground" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
-                  Private communication spaces.
+                  Private communication spaces
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
                   Exclusive two-person spaces that create intimate environments for meaningful connection.

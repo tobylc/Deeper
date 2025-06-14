@@ -5,61 +5,70 @@
 @tailwind utilities;
 
 :root {
-  /* Dark sophisticated palette for immersive connection experience */
-  --background: hsl(220, 13%, 9%); /* Deep charcoal */
-  --foreground: hsl(220, 9%, 92%); /* Soft white */
-  --muted: hsl(220, 13%, 15%);
-  --muted-foreground: hsl(220, 9%, 65%);
-  --popover: hsl(220, 13%, 12%);
-  --popover-foreground: hsl(220, 9%, 92%);
-  --card: hsl(220, 13%, 11%);
-  --card-foreground: hsl(220, 9%, 92%);
-  --border: hsl(220, 13%, 18%);
-  --input: hsl(220, 13%, 16%);
-  --primary: hsl(200, 70%, 55%); /* Ocean blue */
-  --primary-foreground: hsl(220, 13%, 9%);
-  --secondary: hsl(35, 45%, 65%); /* Warm amber */
-  --secondary-foreground: hsl(220, 13%, 9%);
-  --accent: hsl(160, 35%, 60%); /* Soft teal */
-  --accent-foreground: hsl(220, 13%, 9%);
+  /* Clean gray and blue palette inspired by glass navigation */
+  --background: hsl(210, 20%, 98%); /* Light gray background */
+  --foreground: hsl(210, 20%, 15%); /* Dark text */
+  --muted: hsl(210, 15%, 92%); /* Light gray elements */
+  --muted-foreground: hsl(210, 10%, 50%); /* Muted text */
+  --popover: hsl(210, 20%, 100%); /* White popover */
+  --popover-foreground: hsl(210, 20%, 15%);
+  --card: hsl(210, 20%, 100%); /* White cards */
+  --card-foreground: hsl(210, 20%, 15%);
+  --border: hsl(210, 15%, 85%); /* Light border */
+  --input: hsl(210, 15%, 97%); /* Light input background */
+  --primary: hsl(215, 85%, 60%); /* Blue primary */
+  --primary-foreground: hsl(0, 0%, 100%); /* White text on blue */
+  --secondary: hsl(210, 15%, 88%); /* Light gray secondary */
+  --secondary-foreground: hsl(210, 20%, 15%);
+  --accent: hsl(210, 15%, 90%); /* Subtle accent */
+  --accent-foreground: hsl(210, 20%, 15%);
   --destructive: hsl(0, 70%, 60%);
   --destructive-foreground: hsl(0, 0%, 100%);
-  --ring: hsl(200, 70%, 55%);
-  --radius: 1.5rem;
-  --success: hsl(120, 35%, 45%);
-  --ocean-blue: hsl(200, 70%, 55%);
-  --warm-amber: hsl(35, 45%, 65%);
-  --soft-teal: hsl(160, 35%, 60%);
-  --deep-charcoal: hsl(220, 13%, 9%);
-  --soft-white: hsl(220, 9%, 92%);
+  --ring: hsl(215, 85%, 60%);
+  --radius: 0.75rem;
+  --success: hsl(120, 50%, 45%);
+  
+  /* Custom color variables */
+  --nav-gray: hsl(210, 15%, 20%); /* Dark gray for navigation */
+  --nav-gray-transparent: hsla(210, 15%, 20%, 0.9); /* Transparent nav */
+  --button-blue: hsl(215, 85%, 60%); /* Primary blue for buttons */
+  --button-blue-hover: hsl(215, 85%, 55%); /* Darker blue on hover */
+  --light-gray: hsl(210, 15%, 95%); /* Very light gray sections */
+  --medium-gray: hsl(210, 10%, 70%); /* Medium gray text */
+  --dark-gray: hsl(210, 20%, 25%); /* Dark gray text */
 }
 
 .dark {
-  --background: hsl(25, 15%, 12%);
-  --foreground: hsl(46, 25%, 92%);
-  --muted: hsl(25, 10%, 16%);
-  --muted-foreground: hsl(46, 15%, 65%);
-  --popover: hsl(25, 15%, 14%);
-  --popover-foreground: hsl(46, 25%, 92%);
-  --card: hsl(25, 15%, 16%);
-  --card-foreground: hsl(46, 25%, 92%);
-  --border: hsl(25, 10%, 20%);
-  --input: hsl(25, 10%, 18%);
-  --primary: hsl(25, 85%, 70%);
-  --primary-foreground: hsl(25, 15%, 12%);
-  --secondary: hsl(45, 65%, 80%);
-  --secondary-foreground: hsl(25, 15%, 12%);
-  --accent: hsl(195, 25%, 25%);
-  --accent-foreground: hsl(46, 25%, 92%);
+  --background: hsl(210, 20%, 8%); /* Dark background */
+  --foreground: hsl(210, 15%, 90%); /* Light text */
+  --muted: hsl(210, 15%, 15%); /* Dark muted elements */
+  --muted-foreground: hsl(210, 10%, 60%); /* Muted text */
+  --popover: hsl(210, 20%, 10%); /* Dark popover */
+  --popover-foreground: hsl(210, 15%, 90%);
+  --card: hsl(210, 20%, 12%); /* Dark cards */
+  --card-foreground: hsl(210, 15%, 90%);
+  --border: hsl(210, 15%, 20%); /* Dark border */
+  --input: hsl(210, 15%, 15%); /* Dark input background */
+  --primary: hsl(215, 85%, 60%); /* Same blue primary */
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(210, 15%, 18%); /* Dark gray secondary */
+  --secondary-foreground: hsl(210, 15%, 90%);
+  --accent: hsl(210, 15%, 20%); /* Dark accent */
+  --accent-foreground: hsl(210, 15%, 90%);
   --destructive: hsl(0, 70%, 60%);
-  --destructive-foreground: hsl(46, 25%, 92%);
-  --ring: hsl(25, 85%, 70%);
-  --radius: 1.25rem;
-  --success: hsl(120, 35%, 55%);
-  --warm-coral: hsl(25, 85%, 70%);
-  --golden-honey: hsl(45, 65%, 80%);
-  --soft-sage-blue: hsl(195, 25%, 25%);
-  --warm-charcoal: hsl(46, 25%, 92%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(215, 85%, 60%);
+  --radius: 0.75rem;
+  --success: hsl(120, 50%, 55%);
+  
+  /* Custom color variables for dark mode */
+  --nav-gray: hsl(210, 15%, 15%);
+  --nav-gray-transparent: hsla(210, 15%, 15%, 0.9);
+  --button-blue: hsl(215, 85%, 60%);
+  --button-blue-hover: hsl(215, 85%, 65%);
+  --light-gray: hsl(210, 15%, 10%);
+  --medium-gray: hsl(210, 10%, 40%);
+  --dark-gray: hsl(210, 15%, 80%);
 }
 
 @layer base {
@@ -69,10 +78,11 @@
 
   body {
     @apply bg-background text-foreground font-inter antialiased;
-    background-image: radial-gradient(circle at 25% 25%, hsl(200, 20%, 12%) 0%, transparent 60%),
-                      radial-gradient(circle at 75% 75%, hsl(160, 15%, 14%) 0%, transparent 60%),
-                      radial-gradient(circle at 50% 50%, hsl(35, 10%, 12%) 0%, transparent 70%);
-    background-size: 150px 150px, 200px 200px, 300px 300px;
+    background: linear-gradient(135deg, hsl(210, 20%, 98%) 0%, hsl(210, 15%, 95%) 100%);
+  }
+  
+  .dark body {
+    background: linear-gradient(135deg, hsl(210, 20%, 8%) 0%, hsl(210, 15%, 10%) 100%);
   }
 
   .font-inter {
@@ -83,127 +93,132 @@
 @layer components {
   /* Glassmorphism navigation */
   .glass-nav {
-    background: rgba(33, 39, 55, 0.85);
+    background: var(--nav-gray-transparent);
     backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(79, 172, 254, 0.12);
+    border-bottom: 1px solid hsl(var(--border));
   }
 
   /* Card variations */
   .card-elevated {
-    background: rgba(33, 39, 55, 0.90);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(79, 172, 254, 0.15);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    border-radius: 1.5rem;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-radius: var(--radius);
   }
 
   .card-warm {
-    background: linear-gradient(135deg, rgba(33, 39, 55, 0.85) 0%, rgba(40, 46, 62, 0.75) 100%);
-    border: 1px solid rgba(108, 179, 168, 0.20);
-    border-radius: 1.5rem;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
   }
 
   /* Button variations */
   .btn-ocean {
-    background: linear-gradient(135deg, hsl(var(--ocean-blue)) 0%, hsl(200, 80%, 60%) 100%);
-    color: hsl(var(--deep-charcoal));
+    background: var(--button-blue);
+    color: hsl(var(--primary-foreground));
     border: none;
-    border-radius: 2rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: var(--radius);
+    transition: all 0.2s ease-in-out;
   }
 
   .btn-ocean:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(79, 172, 254, 0.4);
-  }
-
-  .btn-amber {
-    background: linear-gradient(135deg, hsl(var(--warm-amber)) 0%, hsl(35, 55%, 70%) 100%);
-    color: hsl(var(--deep-charcoal));
-    border: none;
-    border-radius: 2rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .btn-honey:hover {
+    background: var(--button-blue-hover);
     transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(240, 215, 155, 0.35);
+    box-shadow: 0 4px 12px hsla(215, 85%, 60%, 0.3);
+  }
+
+  .btn-coral {
+    background: var(--button-blue);
+    color: hsl(var(--primary-foreground));
+    border: none;
+    border-radius: var(--radius);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .btn-coral:hover {
+    background: var(--button-blue-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px hsla(215, 85%, 60%, 0.3);
   }
 
   /* Gradient backgrounds */
   .gradient-warm {
-    background: linear-gradient(135deg, hsl(46, 35%, 98%) 0%, hsl(46, 25%, 92%) 100%);
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--light-gray)) 100%);
   }
 
   .gradient-ocean {
-    background: linear-gradient(135deg, hsl(200, 70%, 55%) 0%, hsl(200, 80%, 60%) 100%);
+    background: linear-gradient(135deg, var(--button-blue) 0%, var(--button-blue-hover) 100%);
   }
 
   .gradient-amber {
-    background: linear-gradient(135deg, hsl(35, 45%, 65%) 0%, hsl(35, 55%, 70%) 100%);
+    background: hsl(var(--secondary));
   }
 
   .gradient-teal {
-    background: linear-gradient(135deg, hsl(160, 35%, 60%) 0%, hsl(160, 45%, 65%) 100%);
+    background: hsl(var(--accent));
   }
 
   /* Text variations */
   .text-ocean-blue {
-    color: hsl(var(--ocean-blue));
+    color: var(--button-blue);
   }
 
   .text-warm-amber {
-    color: hsl(var(--warm-amber));
+    color: hsl(var(--medium-gray));
   }
 
   .text-soft-teal {
-    color: hsl(var(--soft-teal));
+    color: hsl(var(--accent-foreground));
   }
 
   .text-deep-charcoal {
-    color: hsl(var(--deep-charcoal));
+    color: hsl(var(--dark-gray));
   }
 
   .text-soft-white {
-    color: hsl(var(--soft-white));
+    color: hsl(var(--foreground));
+  }
+
+  .text-warm-coral {
+    color: var(--button-blue);
   }
 
   /* Icon styling */
   .icon-ocean {
-    color: hsl(var(--ocean-blue));
+    color: var(--button-blue);
   }
 
   .icon-amber {
-    color: hsl(var(--warm-amber));
+    color: hsl(var(--medium-gray));
   }
 
   .icon-teal {
-    color: hsl(var(--soft-teal));
+    color: hsl(var(--accent-foreground));
   }
 
   .icon-white {
-    color: hsl(var(--soft-white));
+    color: hsl(var(--foreground));
   }
 
   /* Conversation interface styles */
   .message-bubble {
-    background: rgba(33, 39, 55, 0.8);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(79, 172, 254, 0.15);
-    border-radius: 2rem;
-    padding: 1.25rem 1.5rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 
   .message-bubble.own {
-    background: linear-gradient(135deg, hsl(200, 70%, 55%) 0%, hsl(200, 80%, 60%) 100%);
-    color: hsl(var(--deep-charcoal));
+    background: var(--button-blue);
+    color: hsl(var(--primary-foreground));
     border-color: transparent;
   }
 
   .message-bubble.other {
-    background: rgba(40, 46, 62, 0.85);
-    border-color: rgba(108, 179, 168, 0.20);
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
   }
 
   /* Smooth animations */
@@ -223,10 +238,9 @@
   }
 
   /* Focus states */
-  .focus-sage:focus {
+  .focus-blue:focus {
     outline: none;
-    ring: 2px solid hsl(var(--warm-sage));
-    ring-opacity: 0.3;
+    box-shadow: 0 0 0 2px var(--button-blue);
   }
 }
 
