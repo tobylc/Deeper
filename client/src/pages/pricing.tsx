@@ -104,14 +104,14 @@ export default function Pricing() {
                     <span className="text-foreground text-xs">All relationship types</span>
                   </li>
                 </ul>
+                <p className="text-xs text-muted-foreground mb-4 text-center">
+                  No credit card required • Cancel anytime
+                </p>
                 <Link href="/auth">
                   <Button className="w-full card-button py-2 text-xs">
                     Start Free Trial
                   </Button>
                 </Link>
-                <p className="text-xs text-muted-foreground mt-2 text-center">
-                  No credit card required • Cancel anytime
-                </p>
               </CardContent>
             </Card>
 
