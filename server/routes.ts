@@ -351,6 +351,3 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   return httpServer;
 }
-
-// Check which auth system is imported
-import { registerRoutes } from "./routes";

@@ -13,6 +13,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: InsertUser): Promise<User>;
 
   // Connections
   getConnection(id: number): Promise<Connection | undefined>;
@@ -49,6 +50,24 @@ export class DatabaseStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
     return user || undefined;
+  }
+
+  async upsertUser(userData: InsertUser): Promise<User> {
+    // First try to find existing user by email
+    const existingUser = await this.getUserByEmail(userData.email);
+    
+    if (existingUser) {
+      // Update existing user
+      const [user] = await db
+        .update(users)
+        .set(userData)
+        .where(eq(users.email, userData.email))
+        .returning();
+      return user;
+    } else {
+      // Create new user
+      return await this.createUser(userData);
+    }
   }
 
   // Connections
