@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(240, 100%, 99%);
+  --foreground: hsl(210, 11%, 17%);
+  --muted: hsl(210, 10%, 96%);
+  --muted-foreground: hsl(215, 8%, 45%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(210, 11%, 17%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(210, 11%, 17%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
+  --primary: hsl(243, 100%, 70%);
+  --primary-foreground: hsl(210, 100%, 99%);
+  --secondary: hsl(284, 54%, 60%);
+  --secondary-foreground: hsl(210, 100%, 99%);
+  --accent: hsl(36, 89%, 50%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(60, 9%, 98%);
+  --ring: hsl(243, 100%, 70%);
+  --radius: 0.5rem;
+  --success: hsl(145, 60%, 42%);
+  --darkslate: hsl(210, 11%, 17%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 4%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 4%, 16%);
+  --muted-foreground: hsl(240, 5%, 65%);
+  --popover: hsl(240, 10%, 4%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 4%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 4%, 16%);
+  --input: hsl(240, 4%, 16%);
+  --primary: hsl(243, 100%, 70%);
+  --primary-foreground: hsl(210, 100%, 99%);
+  --secondary: hsl(240, 4%, 16%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 4%, 16%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 63%, 31%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 5%, 84%);
+  --radius: 0.5rem;
+  --success: hsl(145, 60%, 42%);
+  --darkslate: hsl(210, 11%, 17%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter antialiased;
+  }
+
+  .font-crimson {
+    font-family: 'Crimson Text', serif;
+  }
+
+  .font-inter {
+    font-family: 'Inter', sans-serif;
+  }
+
+  .font-source {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Source+Sans+Pro:wght@400;600&display=swap');

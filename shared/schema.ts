@@ -1,0 +1,79 @@
+import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const connections = pgTable("connections", {
+  id: serial("id").primaryKey(),
+  inviterEmail: text("inviter_email").notNull(),
+  inviteeEmail: text("invitee_email").notNull(),
+  relationshipType: text("relationship_type").notNull(),
+  status: text("status").notNull(), // 'pending', 'accepted', 'declined'
+  personalMessage: text("personal_message"),
+  createdAt: timestamp("created_at").defaultNow(),
+  acceptedAt: timestamp("accepted_at"),
+});
+
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  connectionId: integer("connection_id").notNull(),
+  participant1Email: text("participant1_email").notNull(),
+  participant2Email: text("participant2_email").notNull(),
+  relationshipType: text("relationship_type").notNull(),
+  currentTurn: text("current_turn").notNull(), // email of who should ask next question
+  status: text("status").notNull(), // 'active', 'paused'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").notNull(),
+  senderEmail: text("sender_email").notNull(),
+  content: text("content").notNull(),
+  type: text("type").notNull(), // 'question', 'response'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Schemas
+export const insertUserSchema = createInsertSchema(users).pick({
+  email: true,
+  name: true,
+});
+
+export const insertConnectionSchema = createInsertSchema(connections).pick({
+  inviterEmail: true,
+  inviteeEmail: true,
+  relationshipType: true,
+  personalMessage: true,
+});
+
+export const insertConversationSchema = createInsertSchema(conversations).pick({
+  connectionId: true,
+  participant1Email: true,
+  participant2Email: true,
+  relationshipType: true,
+  currentTurn: true,
+});
+
+export const insertMessageSchema = createInsertSchema(messages).pick({
+  conversationId: true,
+  senderEmail: true,
+  content: true,
+  type: true,
+});
+
+// Types
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type Connection = typeof connections.$inferSelect;
+export type InsertConnection = z.infer<typeof insertConnectionSchema>;
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
