@@ -58,7 +58,7 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
       return;
     }
 
-    if (formData.inviteeEmail.toLowerCase() === user.email.toLowerCase()) {
+    if (formData.inviteeEmail.toLowerCase() === user.email?.toLowerCase()) {
       toast({
         title: "Validation Error",
         description: "You cannot invite yourself",
@@ -70,7 +70,6 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
     setIsLoading(true);
     try {
       await apiRequest("POST", "/api/connections", {
-        inviterEmail: user.email,
         inviteeEmail: formData.inviteeEmail.trim(),
         relationshipType: formData.relationshipType,
         personalMessage: formData.personalMessage.trim(),

@@ -116,7 +116,7 @@ export default function ConversationPage() {
               </div>
               <div>
                 <div className="font-semibold text-darkslate">
-                  {user.name} & {otherParticipant}
+                  {user.firstName || user.email?.split('@')[0] || 'You'} & {otherParticipant}
                 </div>
                 <div className="text-sm text-gray-600">
                   {conversation.relationshipType}
