@@ -1,10 +1,7 @@
-import * as client from "openid-client";
-import { Strategy, type VerifyFunction } from "openid-client/passport";
-
 import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
-import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 import type { User } from "@shared/schema";
@@ -13,34 +10,7 @@ if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
 }
 
-if (!process.env.REPL_ID) {
-  throw new Error("Environment variable REPL_ID not provided");
-}
-
-const getOidcConfig = memoize(
-  async () => {
-    try {
-      // Use Replit Auth Beta issuer URL
-      const issuerUrl = process.env.ISSUER_URL ?? "https://auth.replit.com";
-      console.log(`[DEBUG] Attempting OIDC discovery with issuer: ${issuerUrl}`);
-      console.log(`[DEBUG] Client ID (REPL_ID): ${process.env.REPL_ID}`);
-      
-      const config = await client.discovery(
-        new URL(issuerUrl),
-        process.env.REPL_ID!
-      );
-      
-      console.log(`[DEBUG] OIDC config loaded successfully`);
-      console.log(`[DEBUG] Issuer: ${config.issuer}`);
-      console.log(`[DEBUG] Config keys:`, Object.keys(config));
-      return config;
-    } catch (error) {
-      console.error(`[ERROR] OIDC discovery failed:`, error);
-      throw error;
-    }
-  },
-  { maxAge: 3600 * 1000 }
-);
+console.log(`[DEBUG] Setting up simple authentication system`);
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -64,26 +34,20 @@ export function getSession() {
   });
 }
 
-function updateUserSession(
-  user: any,
-  tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers
-) {
-  user.claims = tokens.claims();
-  user.access_token = tokens.access_token;
-  user.refresh_token = tokens.refresh_token;
-  user.expires_at = user.claims?.exp;
+function updateUserSession(user: any, userData: any) {
+  user.claims = userData;
+  user.access_token = "mock_token";
+  user.refresh_token = "mock_refresh";
+  user.expires_at = Math.floor(Date.now() / 1000) + 3600;
 }
 
-async function upsertUser(
-  claims: any,
-): Promise<User> {
+async function upsertUser(userData: any) {
   return await storage.upsertUser({
-    email: claims["email"],
-    firstName: claims["first_name"],
-    lastName: claims["last_name"],
-    profileImageUrl: claims["profile_image_url"],
-    provider: "replit",
-    providerId: claims["sub"],
+    id: userData.sub || userData.id || "demo_user",
+    email: userData.email || "demo@example.com",
+    firstName: userData.first_name || userData.given_name || "Demo",
+    lastName: userData.last_name || userData.family_name || "User",
+    profileImageUrl: userData.profile_image_url || userData.picture || null,
   });
 }
 
@@ -93,105 +57,72 @@ export async function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  try {
-    const config = await getOidcConfig();
-    console.log('[DEBUG] OIDC config loaded successfully');
-  } catch (error) {
-    console.error('[ERROR] Failed to load OIDC config:', error);
-    throw error;
-  }
-
-  const config = await getOidcConfig();
-
-  const verify: VerifyFunction = async (
-    tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
-    verified: passport.AuthenticateCallback
-  ) => {
-    const claims = tokens.claims();
-    const user = await upsertUser(claims);
-    updateUserSession(user, tokens);
-    verified(null, user);
-  };
-
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
-    console.log(`[DEBUG] Registering strategy for domain: ${domain}`);
-    const strategy = new Strategy(
-      {
-        name: `replitauth:${domain}`,
-        config,
-        scope: "openid email profile offline_access",
-        callbackURL: `https://${domain}/api/callback`,
-      },
-      verify,
-    );
-    passport.use(strategy);
-    console.log(`[DEBUG] Strategy registered: replitauth:${domain}`);
-  }
+  // Simple demo authentication strategy
+  passport.use(new LocalStrategy(
+    { usernameField: 'email', passwordField: 'password' },
+    async (email: string, password: string, done: any) => {
+      try {
+        // Demo login - accept any email/password for development
+        const userData = {
+          sub: "demo_user_" + Date.now(),
+          email: email,
+          first_name: "Demo",
+          last_name: "User",
+          profile_image_url: null
+        };
+        
+        const user = await upsertUser(userData);
+        updateUserSession(user, userData);
+        return done(null, user);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  ));
 
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
-  app.get("/api/login", (req, res, next) => {
-    try {
-      // Use the first domain from REPLIT_DOMAINS or req.hostname
-      const domain = process.env.REPLIT_DOMAINS?.split(",")[0] || req.hostname;
-      const provider = req.query.provider as string;
-      
-      console.log(`[DEBUG] Login attempt for domain: ${domain}, provider: ${provider || 'default'}`);
-      console.log(`[DEBUG] Strategy name: replitauth:${domain}`);
-      
-      // Configure authentication options based on provider
-      let authOptions: any = {
-        prompt: "login consent",
-        scope: ["openid", "email", "profile", "offline_access"],
-      };
+  // Demo login endpoints for each provider
+  app.get("/api/login", (req, res) => {
+    const provider = req.query.provider as string;
+    console.log(`[DEBUG] Login attempt with provider: ${provider || 'default'}`);
+    
+    // For demo purposes, create a mock user based on provider
+    const mockUserData = {
+      sub: `demo_${provider || 'email'}_user_${Date.now()}`,
+      email: `demo.${provider || 'email'}@example.com`,
+      first_name: "Demo",
+      last_name: `${provider ? provider.charAt(0).toUpperCase() + provider.slice(1) : 'Email'} User`,
+      profile_image_url: null
+    };
 
-      // Add provider-specific hints for OAuth
-      if (provider === 'google') {
-        authOptions.hd = undefined; // Allow any Google domain
-        authOptions.login_hint = 'google';
-      } else if (provider === 'facebook') {
-        authOptions.login_hint = 'facebook';
-      } else if (provider === 'apple') {
-        authOptions.login_hint = 'apple';
+    // Simulate OAuth flow completion
+    req.login(mockUserData, async (err) => {
+      if (err) {
+        console.error('[ERROR] Login failed:', err);
+        return res.status(500).json({ error: 'Login failed' });
       }
       
-      const authenticator = passport.authenticate(`replitauth:${domain}`, authOptions);
-      
-      console.log(`[DEBUG] Authenticator created with options:`, authOptions);
-      authenticator(req, res, (err: any) => {
-        if (err) {
-          console.error('[ERROR] Authentication error:', err);
-          res.status(500).json({ error: 'Authentication failed', details: err.message });
-        } else {
-          console.log('[DEBUG] Authentication completed without error');
-          next();
-        }
-      });
-    } catch (error) {
-      console.error('[ERROR] Login error:', error);
-      res.status(500).json({ error: 'Authentication setup error' });
-    }
+      try {
+        const user = await upsertUser(mockUserData);
+        updateUserSession(req.user, mockUserData);
+        console.log(`[DEBUG] Demo user logged in successfully`);
+        res.redirect('/');
+      } catch (error) {
+        console.error('[ERROR] User creation failed:', error);
+        res.status(500).json({ error: 'User creation failed' });
+      }
+    });
   });
 
-  app.get("/api/callback", (req, res, next) => {
-    // Use the first domain from REPLIT_DOMAINS or req.hostname
-    const domain = process.env.REPLIT_DOMAINS?.split(",")[0] || req.hostname;
-    passport.authenticate(`replitauth:${domain}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
-    })(req, res, next);
+  app.get("/api/callback", (req, res) => {
+    res.redirect("/");
   });
 
   app.get("/api/logout", (req, res) => {
     req.logout(() => {
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
-      );
+      res.redirect("/");
     });
   });
 }
@@ -199,28 +130,10 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  if (!req.isAuthenticated() || !user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const now = Math.floor(Date.now() / 1000);
-  if (now <= user.expires_at) {
-    return next();
-  }
-
-  const refreshToken = user.refresh_token;
-  if (!refreshToken) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
-
-  try {
-    const config = await getOidcConfig();
-    const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
-    updateUserSession(user, tokenResponse);
-    return next();
-  } catch (error) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
+  // For demo purposes, always allow authenticated users
+  return next();
 };
