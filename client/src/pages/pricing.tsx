@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Heart, Star, Zap, Crown, Gift } from "lucide-react";
 import { Link } from "wouter";
+import { useState } from "react";
 
 export default function Pricing() {
+  const [selectedCard, setSelectedCard] = useState<string | null>('free');
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -61,12 +63,15 @@ export default function Pricing() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 max-h-[480px]">
             
             {/* Free Trial */}
-            <Card className="border-2 border-gray-300/40 bg-primary/5 relative h-full">
+            <Card 
+              className={`pricing-card relative h-full ${selectedCard === 'free' ? 'selected' : ''}`}
+              onClick={() => setSelectedCard('free')}
+            >
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-primary text-white px-3 py-1 text-xs">Most Popular</Badge>
               </div>
               <CardHeader className="text-center pt-5 pb-3">
-                <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-2">
+                <div className="w-12 h-12 card-icon bg-primary rounded-lg flex items-center justify-center mx-auto mb-2 transition-all duration-300">
                   <Gift className="w-6 h-6 text-white" />
                 </div>
                 <CardTitle className="text-lg font-inter">Free Trial</CardTitle>
@@ -100,7 +105,7 @@ export default function Pricing() {
                   </li>
                 </ul>
                 <Link href="/auth">
-                  <Button className="w-full btn-ocean py-2 text-xs">
+                  <Button className="w-full card-button btn-ocean py-2 text-xs transition-all duration-300">
                     Start Free Trial
                   </Button>
                 </Link>
@@ -111,9 +116,12 @@ export default function Pricing() {
             </Card>
 
             {/* Personal Plan */}
-            <Card className="border-2 border-gray-300/40 h-full">
+            <Card 
+              className={`pricing-card h-full ${selectedCard === 'personal' ? 'selected' : ''}`}
+              onClick={() => setSelectedCard('personal')}
+            >
               <CardHeader className="text-center pt-5 pb-3">
-                <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center mx-auto mb-2">
+                <div className="w-12 h-12 card-icon bg-secondary rounded-lg flex items-center justify-center mx-auto mb-2 transition-all duration-300">
                   <Heart className="w-6 h-6 text-secondary-foreground" />
                 </div>
                 <CardTitle className="text-lg font-inter">Personal</CardTitle>
@@ -151,7 +159,7 @@ export default function Pricing() {
                   </li>
                 </ul>
                 <Link href="/auth">
-                  <Button variant="outline" className="w-full border-secondary text-secondary hover:bg-secondary hover:text-white py-2 text-xs">
+                  <Button variant="outline" className="w-full card-button border-secondary text-secondary hover:bg-secondary hover:text-white py-2 text-xs transition-all duration-300">
                     Choose Personal
                   </Button>
                 </Link>
@@ -159,9 +167,12 @@ export default function Pricing() {
             </Card>
 
             {/* Premium Plan */}
-            <Card className="border-2 border-gray-300/40 h-full">
+            <Card 
+              className={`pricing-card h-full ${selectedCard === 'premium' ? 'selected' : ''}`}
+              onClick={() => setSelectedCard('premium')}
+            >
               <CardHeader className="text-center pt-5 pb-3">
-                <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mx-auto mb-2">
+                <div className="w-12 h-12 card-icon bg-accent rounded-lg flex items-center justify-center mx-auto mb-2 transition-all duration-300">
                   <Crown className="w-6 h-6 text-accent-foreground" />
                 </div>
                 <CardTitle className="text-lg font-inter">Premium</CardTitle>
@@ -199,7 +210,7 @@ export default function Pricing() {
                   </li>
                 </ul>
                 <Link href="/auth">
-                  <Button variant="outline" className="w-full border-accent text-accent hover:bg-accent hover:text-white rounded-full py-2 text-xs">
+                  <Button variant="outline" className="w-full card-button border-accent text-accent hover:bg-accent hover:text-white rounded-full py-2 text-xs transition-all duration-300">
                     Choose Premium
                   </Button>
                 </Link>

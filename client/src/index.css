@@ -98,6 +98,38 @@
     border-bottom: 1px solid hsl(var(--border));
   }
 
+  /* Pricing card hover and selection states */
+  .pricing-card {
+    @apply transition-all duration-300 ease-in-out cursor-pointer;
+    border: 2px solid hsl(210, 15%, 85%);
+  }
+
+  .pricing-card:hover {
+    @apply bg-blue-50;
+    border: 2px solid hsl(215, 85%, 60%);
+  }
+
+  .pricing-card.selected {
+    @apply bg-blue-50;
+    border: 2px solid hsl(215, 85%, 60%);
+  }
+
+  .pricing-card:hover .card-icon {
+    @apply bg-blue-500 text-white;
+  }
+
+  .pricing-card.selected .card-icon {
+    @apply bg-blue-500 text-white;
+  }
+
+  .pricing-card:hover .card-button {
+    @apply bg-blue-500 text-white border-blue-500;
+  }
+
+  .pricing-card.selected .card-button {
+    @apply bg-blue-500 text-white border-blue-500;
+  }
+
   /* Card variations */
   .card-elevated {
     background: hsl(var(--card));
