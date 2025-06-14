@@ -164,6 +164,13 @@ Changelog:
   * Built Pricing page with 7-day trial-to-upgrade conversion strategy
   * Removed "About" navigation link for streamlined UX
   * Implemented consistent navigation across all pages
+- June 14, 2025. Complete design system overhaul:
+  * Implemented warm, earthy color palette (sage green, terracotta, cream, forest)
+  * Designed for emotional safety and trust in meaningful conversations
+  * Added glassmorphism navigation and elevated card components
+  * Created custom button variants and message bubble styling
+  * Applied modern Inter typography throughout application
+  * Enhanced all pages with smooth animations and cohesive aesthetic
 ```
 
 ## User Preferences

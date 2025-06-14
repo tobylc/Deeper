@@ -86,20 +86,20 @@ export default function Dashboard() {
   const activeConversations = conversations.filter(c => c.status === 'active');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
+    <div className="min-h-screen gradient-warm">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-100">
+      <div className="glass-nav">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 gradient-sage rounded-xl flex items-center justify-center">
                 <Heart className="text-white w-4 h-4" />
               </div>
-              <span className="text-xl font-space font-bold text-darkslate">Deeper</span>
+              <span className="text-xl font-inter font-bold text-deep-forest">Deeper</span>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {user.name}</span>
-              <Button variant="outline" onClick={handleLogout}>
+              <span className="text-sm text-muted-foreground">Welcome, {user.name}</span>
+              <Button variant="outline" onClick={handleLogout} className="border-primary/20 text-foreground hover:bg-primary hover:text-white">
                 Sign Out
               </Button>
             </div>
@@ -109,25 +109,25 @@ export default function Dashboard() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-space font-bold text-darkslate mb-2">
+        <div className="mb-8 smooth-enter">
+          <h1 className="text-3xl font-inter font-bold text-deep-forest mb-2">
             Your Connection Dashboard
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Manage your meaningful conversations and connections
           </p>
         </div>
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-primary/5 border-primary/20">
+          <Card className="card-warm smooth-enter">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-darkslate">Active Conversations</h3>
-                  <p className="text-2xl font-bold text-primary">{activeConversations.length}</p>
+                  <h3 className="font-semibold text-deep-forest">Active Conversations</h3>
+                  <p className="text-2xl font-bold text-warm-sage">{activeConversations.length}</p>
                 </div>
-                <MessageCircle className="w-8 h-8 text-primary" />
+                <MessageCircle className="w-8 h-8 icon-sage" />
               </div>
             </CardContent>
           </Card>
