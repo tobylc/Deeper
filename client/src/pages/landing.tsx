@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Lock, Lightbulb, Users, X } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -138,8 +138,8 @@ export default function Landing() {
                 <div 
                   className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 cursor-pointer transition-all duration-300 hover:scale-110 ${
                     activeStep === stepNumber 
-                      ? 'bg-ocean-blue shadow-lg' 
-                      : 'bg-secondary hover:bg-ocean-blue/20'
+                      ? 'bg-primary shadow-lg' 
+                      : 'bg-secondary hover:bg-primary/20'
                   }`}
                   onClick={() => {
                     setActiveStep(stepNumber);
@@ -148,7 +148,7 @@ export default function Landing() {
                 >
                   <span className={`text-2xl font-bold ${
                     activeStep === stepNumber 
-                      ? 'text-white' 
+                      ? 'text-primary-foreground' 
                       : 'text-secondary-foreground'
                   }`}>
                     {stepNumber}
@@ -170,11 +170,14 @@ export default function Landing() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle className="text-2xl font-inter font-bold text-foreground flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-ocean-blue flex items-center justify-center">
-                  <span className="text-white font-bold">{selectedStep}</span>
+                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold">{selectedStep}</span>
                 </div>
                 {selectedStep && stepDetails[selectedStep as keyof typeof stepDetails].title}
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                Detailed explanation of step {selectedStep}
+              </DialogDescription>
             </DialogHeader>
             <div className="mt-6">
               <p className="text-muted-foreground leading-relaxed text-lg">
