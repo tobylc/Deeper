@@ -5,32 +5,32 @@
 @tailwind utilities;
 
 :root {
-  /* Warm, inviting palette for emotional connection and safety */
-  --background: hsl(46, 30%, 96%); /* Soft cream */
-  --foreground: hsl(25, 15%, 22%); /* Warm charcoal */
-  --muted: hsl(46, 25%, 92%);
-  --muted-foreground: hsl(25, 8%, 45%);
-  --popover: hsl(46, 35%, 98%);
-  --popover-foreground: hsl(25, 15%, 22%);
+  /* Deep plum & rose gold palette for intimate connection and trust */
+  --background: hsl(310, 25%, 97%); /* Soft lavender mist */
+  --foreground: hsl(320, 30%, 20%); /* Deep plum */
+  --muted: hsl(310, 20%, 93%);
+  --muted-foreground: hsl(320, 15%, 45%);
+  --popover: hsl(310, 30%, 98%);
+  --popover-foreground: hsl(320, 30%, 20%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(25, 15%, 22%);
-  --border: hsl(46, 20%, 88%);
-  --input: hsl(46, 20%, 90%);
-  --primary: hsl(25, 85%, 65%); /* Warm coral */
+  --card-foreground: hsl(320, 30%, 20%);
+  --border: hsl(310, 15%, 90%);
+  --input: hsl(310, 15%, 92%);
+  --primary: hsl(320, 45%, 45%); /* Deep rose */
   --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(45, 65%, 75%); /* Golden honey */
-  --secondary-foreground: hsl(25, 15%, 22%);
-  --accent: hsl(195, 25%, 85%); /* Soft sage blue */
-  --accent-foreground: hsl(25, 15%, 22%);
+  --secondary: hsl(25, 45%, 70%); /* Warm rose gold */
+  --secondary-foreground: hsl(320, 30%, 20%);
+  --accent: hsl(300, 35%, 80%); /* Soft lavender */
+  --accent-foreground: hsl(320, 30%, 20%);
   --destructive: hsl(0, 70%, 60%);
   --destructive-foreground: hsl(0, 0%, 100%);
-  --ring: hsl(25, 85%, 65%);
-  --radius: 1.25rem;
+  --ring: hsl(320, 45%, 45%);
+  --radius: 1.5rem;
   --success: hsl(120, 35%, 45%);
-  --warm-coral: hsl(25, 85%, 65%);
-  --golden-honey: hsl(45, 65%, 75%);
-  --soft-sage-blue: hsl(195, 25%, 85%);
-  --warm-charcoal: hsl(25, 15%, 22%);
+  --deep-rose: hsl(320, 45%, 45%);
+  --rose-gold: hsl(25, 45%, 70%);
+  --soft-lavender: hsl(300, 35%, 80%);
+  --deep-plum: hsl(320, 30%, 20%);
 }
 
 .dark {
@@ -68,6 +68,9 @@
 
   body {
     @apply bg-background text-foreground font-inter antialiased;
+    background-image: radial-gradient(circle at 25% 25%, hsl(300, 20%, 98%) 0%, transparent 50%),
+                      radial-gradient(circle at 75% 75%, hsl(320, 15%, 96%) 0%, transparent 50%);
+    background-size: 100px 100px;
   }
 
   .font-inter {
@@ -78,41 +81,43 @@
 @layer components {
   /* Glassmorphism navigation */
   .glass-nav {
-    background: rgba(252, 249, 243, 0.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(249, 246, 250, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(156, 79, 134, 0.08);
   }
 
   /* Card variations */
   .card-elevated {
     background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(156, 79, 134, 0.08);
+    box-shadow: 0 12px 40px rgba(156, 79, 134, 0.08);
+    border-radius: 1.5rem;
   }
 
   .card-warm {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(252, 249, 243, 0.8) 100%);
-    border: 1px solid rgba(135, 169, 107, 0.15);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(249, 246, 250, 0.8) 100%);
+    border: 1px solid rgba(203, 174, 215, 0.15);
+    border-radius: 1.5rem;
   }
 
   /* Button variations */
-  .btn-coral {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(25, 85%, 60%) 100%);
+  .btn-rose {
+    background: linear-gradient(135deg, hsl(var(--deep-rose)) 0%, hsl(320, 50%, 50%) 100%);
     color: white;
     border: none;
     border-radius: 2rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .btn-coral:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(244, 146, 108, 0.35);
+  .btn-rose:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(156, 79, 134, 0.4);
   }
 
-  .btn-honey {
-    background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(45, 65%, 70%) 100%);
-    color: hsl(var(--warm-charcoal));
+  .btn-gold {
+    background: linear-gradient(135deg, hsl(var(--rose-gold)) 0%, hsl(25, 50%, 65%) 100%);
+    color: hsl(var(--deep-plum));
     border: none;
     border-radius: 2rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -137,33 +142,37 @@
   }
 
   /* Text variations */
-  .text-warm-coral {
-    color: hsl(var(--warm-coral));
+  .text-deep-rose {
+    color: hsl(var(--deep-rose));
   }
 
-  .text-golden-honey {
-    color: hsl(var(--golden-honey));
+  .text-rose-gold {
+    color: hsl(var(--rose-gold));
   }
 
-  .text-soft-sage-blue {
-    color: hsl(var(--soft-sage-blue));
+  .text-soft-lavender {
+    color: hsl(var(--soft-lavender));
   }
 
-  .text-warm-charcoal {
-    color: hsl(var(--warm-charcoal));
+  .text-deep-plum {
+    color: hsl(var(--deep-plum));
   }
 
   /* Icon styling */
-  .icon-coral {
-    color: hsl(var(--warm-coral));
+  .icon-rose {
+    color: hsl(var(--deep-rose));
   }
 
-  .icon-honey {
-    color: hsl(var(--golden-honey));
+  .icon-gold {
+    color: hsl(var(--rose-gold));
   }
 
-  .icon-sage-blue {
-    color: hsl(var(--soft-sage-blue));
+  .icon-lavender {
+    color: hsl(var(--soft-lavender));
+  }
+
+  .icon-plum {
+    color: hsl(var(--deep-plum));
   }
 
   /* Conversation interface styles */
