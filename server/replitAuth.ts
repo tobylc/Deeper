@@ -96,17 +96,22 @@ export async function setupAuth(app: Express) {
     console.log(`[DEBUG] Login attempt with provider: ${provider || 'default'}`);
     
     try {
-      // For demo purposes, create a mock user based on provider
-      const mockUserData = {
-        sub: `demo_${provider || 'email'}_user_${Date.now()}`,
-        email: `demo.${provider || 'email'}@example.com`,
-        first_name: "Demo",
-        last_name: `${provider ? provider.charAt(0).toUpperCase() + provider.slice(1) : 'Email'} User`,
-        profile_image_url: null,
-        provider: provider || 'email'
-      };
-
-      const user = await upsertUser(mockUserData);
+      // Check if user already exists by email
+      const email = `demo.${provider || 'email'}@example.com`;
+      let user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        // Create new user
+        const mockUserData = {
+          sub: `demo_${provider || 'email'}_user_${Date.now()}`,
+          email: email,
+          first_name: "Demo",
+          last_name: `${provider ? provider.charAt(0).toUpperCase() + provider.slice(1) : 'Email'} User`,
+          profile_image_url: null,
+          provider: provider || 'email'
+        };
+        user = await upsertUser(mockUserData);
+      }
       
       // Simulate OAuth flow completion
       req.login(user, (err) => {
@@ -115,8 +120,18 @@ export async function setupAuth(app: Express) {
           return res.status(500).json({ error: 'Login failed' });
         }
         
-        updateUserSession(req.user, mockUserData);
-        console.log(`[DEBUG] Demo user logged in successfully`);
+        // Create session data that matches expected format
+        const sessionData = {
+          sub: user.id,
+          email: user.email,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          profile_image_url: user.profileImageUrl,
+          provider: provider || 'email'
+        };
+        
+        updateUserSession(req.user, sessionData);
+        console.log(`[DEBUG] Demo user logged in successfully for ${provider}: ${user.id}`);
         res.redirect('/');
       });
     } catch (error) {
