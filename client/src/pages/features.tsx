@@ -282,7 +282,7 @@ export default function Features() {
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary px-8">
+              <Button size="lg" variant="outline" className="border-white bg-transparent text-white hover:bg-white hover:text-gray-900 px-8">
                 View Pricing
               </Button>
             </Link>

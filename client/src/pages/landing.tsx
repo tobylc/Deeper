@@ -159,7 +159,7 @@ export default function Landing() {
               </Button>
             </Link>
             <Link href="/features">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary px-8">
+              <Button size="lg" variant="outline" className="border-white bg-transparent text-white hover:bg-white hover:text-gray-900 px-8">
                 Learn more
               </Button>
             </Link>
