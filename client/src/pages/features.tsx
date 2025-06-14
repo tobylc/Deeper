@@ -54,12 +54,12 @@ export default function Features() {
       </section>
 
       {/* Core Differentiators */}
-      <section className="pb-16 bg-card">
+      <section className="pb-8 bg-card">
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16">
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8 mb-16">
+          <div className="grid lg:grid-cols-3 gap-8 mb-8">
             {/* Exclusive Two-Person Focus */}
             <Card className="border-2 border-gray-600 rounded-xl shadow-lg bg-primary/5">
               <CardContent className="p-8 text-center">
@@ -178,7 +178,7 @@ export default function Features() {
       </section>
 
       {/* Detailed Features */}
-      <section className="py-16 bg-muted/30">
+      <section className="pt-8 pb-16 bg-muted/30">
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-inter font-bold text-foreground mb-4">
