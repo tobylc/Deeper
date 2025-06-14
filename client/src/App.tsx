@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { createContext, useContext, useState, useEffect } from "react";
 import Landing from "@/pages/landing";
+import Features from "@/pages/features";
+import Pricing from "@/pages/pricing";
 import Dashboard from "@/pages/dashboard";
 import Conversation from "@/pages/conversation";
 import Auth from "@/pages/auth";
@@ -27,6 +29,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={user ? Dashboard : Landing} />
+      <Route path="/features" component={Features} />
+      <Route path="/pricing" component={Pricing} />
       <Route path="/auth" component={Auth} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/conversation/:id" component={Conversation} />

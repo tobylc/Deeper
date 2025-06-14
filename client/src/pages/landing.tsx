@@ -14,10 +14,15 @@ export default function Landing() {
               <span className="text-2xl font-space font-bold text-darkslate">Deeper</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-700 hover:text-primary transition-colors font-inter font-medium">Home</a>
-              <a href="#features" className="text-gray-700 hover:text-primary transition-colors font-inter font-medium">Features</a>
-              <a href="#pricing" className="text-gray-700 hover:text-primary transition-colors font-inter font-medium">Pricing</a>
-              <a href="#about" className="text-gray-700 hover:text-primary transition-colors font-inter font-medium">About</a>
+              <Link href="/" className="text-gray-700 hover:text-primary transition-colors font-inter font-medium">
+                Home
+              </Link>
+              <Link href="/features" className="text-gray-700 hover:text-primary transition-colors font-inter font-medium">
+                Features
+              </Link>
+              <Link href="/pricing" className="text-gray-700 hover:text-primary transition-colors font-inter font-medium">
+                Pricing
+              </Link>
               <Link href="/auth">
                 <Button className="bg-primary text-white hover:bg-primary/90 rounded-full px-6">
                   Login
