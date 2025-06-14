@@ -34,7 +34,7 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   // Users
-  async getUser(id: number): Promise<User | undefined> {
+  async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
@@ -47,21 +47,22 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async getUserByEmail(email: string): Promise<User | undefined> {
+  async getUserByEmail(email: string | null | undefined): Promise<User | undefined> {
+    if (!email) return undefined;
     const [user] = await db.select().from(users).where(eq(users.email, email));
     return user || undefined;
   }
 
   async upsertUser(userData: InsertUser): Promise<User> {
     // First try to find existing user by email
-    const existingUser = await this.getUserByEmail(userData.email);
+    const existingUser = userData.email ? await this.getUserByEmail(userData.email) : undefined;
     
     if (existingUser) {
       // Update existing user
       const [user] = await db
         .update(users)
         .set(userData)
-        .where(eq(users.email, userData.email))
+        .where(eq(users.email, userData.email!))
         .returning();
       return user;
     } else {
