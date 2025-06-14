@@ -143,7 +143,7 @@ export default function ConversationPage() {
           <div className="lg:col-span-2">
             <ConversationInterface 
               messages={messages}
-              currentUserEmail={user.email}
+              currentUserEmail={user.email || ''}
               participant1Email={conversation.participant1Email}
               participant2Email={conversation.participant2Email}
             />
