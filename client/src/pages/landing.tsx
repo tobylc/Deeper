@@ -78,7 +78,7 @@ export default function Landing() {
           {/* Feature Cards */}
           <div className="grid md:grid-cols-3 gap-8 mt-20">
             {/* Structured Conversations */}
-            <Card className="card-elevated p-8 text-left smooth-enter border-2 border-gray-600">
+            <Card className="bg-card p-8 text-left smooth-enter border-2 border-gray-600 rounded-xl shadow-lg">
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
                   <MessageSquare className="w-6 h-6 text-primary" />
@@ -93,7 +93,7 @@ export default function Landing() {
             </Card>
 
             {/* Curated Question Pools */}
-            <Card className="card-elevated p-8 text-left smooth-enter border-2 border-gray-600">
+            <Card className="bg-card p-8 text-left smooth-enter border-2 border-gray-600 rounded-xl shadow-lg">
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
                   <HelpCircle className="w-6 h-6 text-primary" />
@@ -108,7 +108,7 @@ export default function Landing() {
             </Card>
 
             {/* Private Communication Spaces */}
-            <Card className="card-elevated p-8 text-left smooth-enter border-2 border-gray-600">
+            <Card className="bg-card p-8 text-left smooth-enter border-2 border-gray-600 rounded-xl shadow-lg">
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
                   <Shield className="w-6 h-6 text-primary" />
