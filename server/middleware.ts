@@ -10,11 +10,11 @@ export function rateLimit(maxRequests: number, windowMs: number) {
     const now = Date.now();
     
     // Clean up expired entries
-    for (const [k, v] of rateLimitStore.entries()) {
+    rateLimitStore.forEach((v, k) => {
       if (now > v.resetTime) {
         rateLimitStore.delete(k);
       }
-    }
+    });
     
     const current = rateLimitStore.get(key);
     

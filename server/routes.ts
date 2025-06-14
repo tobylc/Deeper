@@ -11,10 +11,19 @@ import {
   securityHeaders, 
   requestLogger 
 } from "./middleware";
+import { emailService } from "./email";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth endpoints
-  app.post("/api/auth/register", async (req, res) => {
+  // Apply global middleware
+  app.use(corsHeaders);
+  app.use(securityHeaders);
+  app.use(requestLogger);
+  
+  // Auth endpoints with rate limiting
+  app.post("/api/auth/register", 
+    rateLimit(5, 15 * 60 * 1000), // 5 requests per 15 minutes
+    validateEmail,
+    async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
       
@@ -32,7 +41,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/login", async (req, res) => {
+  app.post("/api/auth/login", 
+    rateLimit(10, 15 * 60 * 1000), // 10 requests per 15 minutes
+    validateEmail,
+    async (req, res) => {
     try {
       const { email } = req.body;
       const user = await storage.getUserByEmail(email);
@@ -49,7 +61,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Connection endpoints
-  app.post("/api/connections", async (req, res) => {
+  app.post("/api/connections", 
+    rateLimit(20, 60 * 60 * 1000), // 20 connections per hour
+    validateEmail,
+    async (req, res) => {
     try {
       const connectionData = insertConnectionSchema.parse(req.body);
       
@@ -71,6 +86,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const connection = await storage.createConnection(connectionData);
+      
+      // Send invitation email
+      try {
+        await emailService.sendConnectionInvitation(connection);
+      } catch (error) {
+        console.error("Failed to send invitation email:", error);
+        // Don't fail the request if email fails
+      }
+      
       res.json(connection);
     } catch (error) {
       console.error("Connection creation error:", error);
@@ -129,6 +153,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currentTurn: connection.inviterEmail, // Inviter asks first question
       });
 
+      // Send acceptance notification email
+      try {
+        await emailService.sendConnectionAccepted(connection);
+      } catch (error) {
+        console.error("Failed to send acceptance email:", error);
+      }
+
       res.json({ connection, conversation });
     } catch (error) {
       console.error("Accept connection error:", error);
@@ -159,6 +190,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!connection) {
         return res.status(500).json({ message: "Failed to update connection status" });
+      }
+
+      // Send decline notification email
+      try {
+        await emailService.sendConnectionDeclined(connection);
+      } catch (error) {
+        console.error("Failed to send decline email:", error);
       }
 
       res.json(connection);
@@ -204,7 +242,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/conversations/:id/messages", async (req, res) => {
+  app.post("/api/conversations/:id/messages", 
+    rateLimit(100, 60 * 60 * 1000), // 100 messages per hour
+    validateEmail,
+    validateMessageContent,
+    async (req, res) => {
     try {
       const conversationId = parseInt(req.params.id);
       const messageData = insertMessageSchema.parse({
