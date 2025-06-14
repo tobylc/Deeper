@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Sparkles } from "lucide-react";
+import { Heart, Sparkles, Mail } from "lucide-react";
+import { FaGoogle, FaFacebook, FaApple } from "react-icons/fa";
 
 export default function Auth() {
   const { user, isLoading, loginMutation, registerMutation } = useAuth();
