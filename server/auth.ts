@@ -150,10 +150,18 @@ export function setupAuth(app: Express) {
     console.log('Apple Sign In configured but requires additional setup');
   }
 
-  passport.serializeUser((user, done) => done(null, user.id));
-  passport.deserializeUser(async (id: number, done) => {
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
+  
+  passport.deserializeUser(async (id: any, done) => {
     try {
-      const user = await storage.getUser(id);
+      // Ensure id is a number
+      const userId = typeof id === 'string' ? parseInt(id, 10) : id;
+      if (isNaN(userId)) {
+        return done(new Error('Invalid user ID'));
+      }
+      const user = await storage.getUser(userId);
       done(null, user);
     } catch (error) {
       done(error);
