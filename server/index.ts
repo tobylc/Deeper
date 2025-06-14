@@ -43,12 +43,6 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  // 404 handler for unmatched routes
-  app.use(notFoundHandler);
-
-  // Global error handler
-  app.use(globalErrorHandler);
-
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
@@ -57,6 +51,12 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
+
+  // 404 handler for unmatched API routes only (after Vite setup)
+  app.use('/api/*', notFoundHandler);
+
+  // Global error handler
+  app.use(globalErrorHandler);
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
