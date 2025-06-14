@@ -9,6 +9,7 @@ import Features from "@/pages/features";
 import Pricing from "@/pages/pricing";
 import Dashboard from "@/pages/dashboard";
 import Conversation from "@/pages/conversation";
+import Auth from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -17,7 +18,10 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/auth" component={Auth} />
+        </>
       ) : (
         <>
           <Route path="/" component={Dashboard} />
