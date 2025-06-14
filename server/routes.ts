@@ -12,12 +12,39 @@ import {
   requestLogger 
 } from "./middleware";
 import { emailService } from "./email";
+import { analytics } from "./analytics";
+import { healthService } from "./health";
+import { jobQueue } from "./jobs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Apply global middleware
   app.use(corsHeaders);
   app.use(securityHeaders);
   app.use(requestLogger);
+
+  // Health check endpoints
+  app.get("/api/health", async (req, res) => {
+    try {
+      const health = await healthService.getSystemHealth();
+      const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 206 : 503;
+      res.status(statusCode).json(health);
+    } catch (error) {
+      res.status(503).json({
+        status: 'unhealthy',
+        error: 'Health check failed',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  app.get("/api/metrics", async (req, res) => {
+    try {
+      const metrics = await analytics.getDashboardMetrics();
+      res.json(metrics);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch metrics" });
+    }
+  });
   
   // Auth endpoints with rate limiting
   app.post("/api/auth/register", 
@@ -34,6 +61,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const user = await storage.createUser(userData);
+      
+      // Track user registration
+      analytics.track({
+        type: 'user_registered',
+        email: user.email,
+        metadata: { name: user.name }
+      });
+      
       res.json(user);
     } catch (error) {
       console.error("Registration error:", error);
