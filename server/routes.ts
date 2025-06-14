@@ -49,7 +49,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch metrics" });
     }
   });
-  
+
   // Replit Auth endpoints
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
@@ -70,14 +70,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req: any, res) => {
     try {
       const connectionData = insertConnectionSchema.parse(req.body);
-      
+
       // Get authenticated user's email
       const userId = req.user.claims.sub;
       const currentUser = await storage.getUser(userId);
       if (!currentUser?.email) {
         return res.status(400).json({ message: "User email not found" });
       }
-      
+
       // Use authenticated user's email as inviter
       connectionData.inviterEmail = currentUser.email;
 
@@ -93,13 +93,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const connection = await storage.createConnection(connectionData);
-      
+
       // Queue invitation email for background processing
       jobQueue.addJob('send_email', {
         emailType: 'invitation',
         connection
       });
-      
+
       // Track connection creation
       analytics.track({
         type: 'connection_created',
@@ -109,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           inviteeEmail: connection.inviteeEmail
         }
       });
-      
+
       res.json(connection);
     } catch (error) {
       console.error("Connection creation error:", error);
@@ -131,17 +131,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const { accepterEmail } = req.body;
-      
+
       // Validate the connection exists and user is authorized
       const existingConnection = await storage.getConnection(id);
       if (!existingConnection) {
         return res.status(404).json({ message: "Connection not found" });
       }
-      
+
       if (existingConnection.inviteeEmail !== accepterEmail) {
         return res.status(403).json({ message: "Not authorized to accept this connection" });
       }
-      
+
       if (existingConnection.status !== 'pending') {
         return res.status(400).json({ message: "Connection already processed" });
       }
@@ -154,7 +154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const connection = await storage.updateConnectionStatus(id, 'accepted', new Date());
-      
+
       if (!connection) {
         return res.status(500).json({ message: "Failed to update connection status" });
       }
@@ -173,7 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emailType: 'accepted',
         connection
       });
-      
+
       // Track connection acceptance
       analytics.track({
         type: 'connection_accepted',
@@ -195,23 +195,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const { declinerEmail } = req.body;
-      
+
       // Validate the connection exists and user is authorized
       const existingConnection = await storage.getConnection(id);
       if (!existingConnection) {
         return res.status(404).json({ message: "Connection not found" });
       }
-      
+
       if (existingConnection.inviteeEmail !== declinerEmail) {
         return res.status(403).json({ message: "Not authorized to decline this connection" });
       }
-      
+
       if (existingConnection.status !== 'pending') {
         return res.status(400).json({ message: "Connection already processed" });
       }
 
       const connection = await storage.updateConnectionStatus(id, 'declined');
-      
+
       if (!connection) {
         return res.status(500).json({ message: "Failed to update connection status" });
       }
@@ -221,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emailType: 'declined',
         connection
       });
-      
+
       // Track connection decline
       analytics.track({
         type: 'connection_declined',
@@ -254,7 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const conversationId = parseInt(req.params.id);
       const conversation = await storage.getConversation(conversationId);
-      
+
       if (!conversation) {
         return res.status(404).json({ message: "Conversation not found" });
       }
@@ -307,7 +307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get existing messages to validate message type
       const existingMessages = await storage.getMessagesByConversationId(conversationId);
       const lastMessage = existingMessages[existingMessages.length - 1];
-      
+
       // Validate message type based on conversation flow
       if (existingMessages.length === 0) {
         // First message must be a question
@@ -323,7 +323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const message = await storage.createMessage(messageData);
-      
+
       // Update conversation turn to the other participant
       const nextTurn = conversation.currentTurn === conversation.participant1Email 
         ? conversation.participant2Email 
@@ -351,3 +351,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   return httpServer;
 }
+
+// Check which auth system is imported
+import { registerRoutes } from "./routes";

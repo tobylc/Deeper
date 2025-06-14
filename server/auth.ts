@@ -33,6 +33,12 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  // Skip standard auth setup if Replit Auth is being used
+  if (process.env.REPL_ID && process.env.REPLIT_DOMAINS) {
+    console.log('Replit Auth detected, skipping standard auth setup');
+    return;
+  }
+  
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   const PostgresSessionStore = connectPg(session);
   
@@ -186,6 +192,11 @@ export function setupAuth(app: Express) {
       done(error);
     }
   });
+
+  // Skip route setup if Replit Auth is being used
+  if (process.env.REPL_ID && process.env.REPLIT_DOMAINS) {
+    return;
+  }
 
   app.post("/api/register", async (req, res, next) => {
     try {
