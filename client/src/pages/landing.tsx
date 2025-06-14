@@ -139,17 +139,17 @@ export default function Landing() {
                   className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 cursor-pointer transition-all duration-300 hover:scale-110 ${
                     activeStep === stepNumber 
                       ? 'bg-primary shadow-lg' 
-                      : 'bg-secondary hover:bg-primary/20'
+                      : 'bg-secondary hover:bg-primary hover:shadow-md'
                   }`}
                   onClick={() => {
                     setActiveStep(stepNumber);
                     setSelectedStep(stepNumber);
                   }}
                 >
-                  <span className={`text-2xl font-bold ${
+                  <span className={`text-2xl font-bold transition-colors duration-300 ${
                     activeStep === stepNumber 
                       ? 'text-primary-foreground' 
-                      : 'text-secondary-foreground'
+                      : 'text-secondary-foreground hover:text-primary-foreground'
                   }`}>
                     {stepNumber}
                   </span>
