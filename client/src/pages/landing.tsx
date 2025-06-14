@@ -1,9 +1,32 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Lock, Lightbulb, Users } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Lock, Lightbulb, Users, X } from "lucide-react";
 import { Link } from "wouter";
+import { useState } from "react";
 
 export default function Landing() {
+  const [selectedStep, setSelectedStep] = useState<number | null>(null);
+  const [activeStep, setActiveStep] = useState(1);
+
+  const stepDetails = {
+    1: {
+      title: "Invite someone special",
+      description: "Send a private invitation to someone you want to connect with more deeply",
+      detailedExplanation: "Creating meaningful connections starts with a simple, thoughtful invitation. You can invite anyone - a family member, romantic partner, close friend, or colleague. The invitation process is designed to be warm and personal, allowing you to choose the type of relationship and include a heartfelt message explaining why you'd like to deepen your connection. Your invitation creates a private, secure space that only you and your invited person can access, ensuring complete privacy and intimacy in your conversations."
+    },
+    2: {
+      title: "Choose your journey",
+      description: "Select relationship type and let our curated questions guide meaningful dialogue",
+      detailedExplanation: "Every relationship is unique, which is why we offer specialized question sets tailored to different types of connections. Whether you're connecting with a parent, child, romantic partner, sibling, or friend, our expertly curated questions are designed to spark meaningful conversations that go beyond surface-level chat. These questions have been carefully crafted by relationship experts to help you explore shared values, dreams, memories, and perspectives in a way that feels natural and engaging."
+    },
+    3: {
+      title: "Build deeper bonds",
+      description: "Take turns asking and answering, creating a beautiful timeline of your connection",
+      detailedExplanation: "The magic happens in the exchange. Our turn-based conversation system ensures that both people have equal opportunity to share and listen. As you take turns asking questions and sharing responses, you'll create a beautiful, chronological timeline of your growing connection. Each conversation becomes a treasured record of your relationship's evolution, filled with insights, laughter, and moments of genuine understanding that you can revisit and cherish over time."
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -110,37 +133,56 @@ export default function Landing() {
           </h2>
           
           <div className="grid md:grid-cols-3 gap-12">
-            <div className="smooth-enter">
-              <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-primary-foreground">1</span>
+            {[1, 2, 3].map((stepNumber) => (
+              <div key={stepNumber} className="smooth-enter">
+                <div 
+                  className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 cursor-pointer transition-all duration-300 hover:scale-110 ${
+                    activeStep === stepNumber 
+                      ? 'bg-ocean-blue shadow-lg' 
+                      : 'bg-secondary hover:bg-ocean-blue/20'
+                  }`}
+                  onClick={() => {
+                    setActiveStep(stepNumber);
+                    setSelectedStep(stepNumber);
+                  }}
+                >
+                  <span className={`text-2xl font-bold ${
+                    activeStep === stepNumber 
+                      ? 'text-white' 
+                      : 'text-secondary-foreground'
+                  }`}>
+                    {stepNumber}
+                  </span>
+                </div>
+                <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
+                  {stepDetails[stepNumber as keyof typeof stepDetails].title}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {stepDetails[stepNumber as keyof typeof stepDetails].description}
+                </p>
               </div>
-              <h3 className="text-xl font-inter font-semibold text-foreground mb-4">Invite someone special</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Send a private invitation to someone you want to connect with more deeply
-              </p>
-            </div>
-            
-            <div className="smooth-enter">
-              <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-secondary-foreground">2</span>
-              </div>
-              <h3 className="text-xl font-inter font-semibold text-foreground mb-4">Choose your journey</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Select relationship type and let our curated questions guide meaningful dialogue
-              </p>
-            </div>
-            
-            <div className="smooth-enter">
-              <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-accent-foreground">3</span>
-              </div>
-              <h3 className="text-xl font-inter font-semibold text-foreground mb-4">Build deeper bonds</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Take turns asking and answering, creating a beautiful timeline of your connection
-              </p>
-            </div>
+            ))}
           </div>
         </div>
+
+        {/* Step Detail Modal */}
+        <Dialog open={selectedStep !== null} onOpenChange={() => setSelectedStep(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-inter font-bold text-foreground flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-ocean-blue flex items-center justify-center">
+                  <span className="text-white font-bold">{selectedStep}</span>
+                </div>
+                {selectedStep && stepDetails[selectedStep as keyof typeof stepDetails].title}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="mt-6">
+              <p className="text-muted-foreground leading-relaxed text-lg">
+                {selectedStep && stepDetails[selectedStep as keyof typeof stepDetails].detailedExplanation}
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </section>
 
       {/* CTA Section */}
