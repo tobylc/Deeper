@@ -6,7 +6,7 @@ import { Link } from "wouter";
 import { useState } from "react";
 
 export default function Features() {
-  const [activeIcon, setActiveIcon] = useState<string | null>(null);
+  const [activeIcon, setActiveIcon] = useState<string>('users');
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -112,7 +112,7 @@ export default function Features() {
                   <Clock className={`w-8 h-8 transition-colors duration-300 ${
                     activeIcon === 'clock' 
                       ? 'text-white' 
-                      : 'text-secondary hover:text-white'
+                      : 'text-primary hover:text-white'
                   }`} />
                 </div>
                 <h3 className="text-2xl font-inter font-bold text-foreground mb-4">Turn-Based Dialogue</h3>
@@ -150,7 +150,7 @@ export default function Features() {
                   <Lightbulb className={`w-8 h-8 transition-colors duration-300 ${
                     activeIcon === 'lightbulb' 
                       ? 'text-white' 
-                      : 'text-accent hover:text-white'
+                      : 'text-primary hover:text-white'
                   }`} />
                 </div>
                 <h3 className="text-2xl font-inter font-bold text-foreground mb-4">Expertly Curated Questions</h3>
