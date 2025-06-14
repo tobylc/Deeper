@@ -10,7 +10,7 @@ import { eq, or, and } from "drizzle-orm";
 
 export interface IStorage {
   // Users
-  getUser(id: number): Promise<User | undefined>;
+  getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   upsertUser(user: InsertUser): Promise<User>;

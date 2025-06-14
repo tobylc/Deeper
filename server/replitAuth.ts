@@ -42,12 +42,20 @@ function updateUserSession(user: any, userData: any) {
 }
 
 async function upsertUser(userData: any) {
-  return await storage.upsertUser({
-    id: userData.sub || userData.id || "demo_user",
+  // Check if user exists by provider ID
+  const existingUser = await storage.getUserByEmail(userData.email);
+  if (existingUser) {
+    return existingUser;
+  }
+
+  // Create new user without specifying ID (let serial auto-increment)
+  return await storage.createUser({
     email: userData.email || "demo@example.com",
     firstName: userData.first_name || userData.given_name || "Demo",
     lastName: userData.last_name || userData.family_name || "User",
     profileImageUrl: userData.profile_image_url || userData.picture || null,
+    provider: userData.provider || "demo",
+    providerId: userData.sub || userData.id || null,
   });
 }
 
@@ -84,36 +92,38 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   // Demo login endpoints for each provider
-  app.get("/api/login", (req, res) => {
+  app.get("/api/login", async (req, res) => {
     const provider = req.query.provider as string;
     console.log(`[DEBUG] Login attempt with provider: ${provider || 'default'}`);
     
-    // For demo purposes, create a mock user based on provider
-    const mockUserData = {
-      sub: `demo_${provider || 'email'}_user_${Date.now()}`,
-      email: `demo.${provider || 'email'}@example.com`,
-      first_name: "Demo",
-      last_name: `${provider ? provider.charAt(0).toUpperCase() + provider.slice(1) : 'Email'} User`,
-      profile_image_url: null
-    };
+    try {
+      // For demo purposes, create a mock user based on provider
+      const mockUserData = {
+        sub: `demo_${provider || 'email'}_user_${Date.now()}`,
+        email: `demo.${provider || 'email'}@example.com`,
+        first_name: "Demo",
+        last_name: `${provider ? provider.charAt(0).toUpperCase() + provider.slice(1) : 'Email'} User`,
+        profile_image_url: null,
+        provider: provider || 'email'
+      };
 
-    // Simulate OAuth flow completion
-    req.login(mockUserData, async (err) => {
-      if (err) {
-        console.error('[ERROR] Login failed:', err);
-        return res.status(500).json({ error: 'Login failed' });
-      }
+      const user = await upsertUser(mockUserData);
       
-      try {
-        const user = await upsertUser(mockUserData);
+      // Simulate OAuth flow completion
+      req.login(user, (err) => {
+        if (err) {
+          console.error('[ERROR] Login failed:', err);
+          return res.status(500).json({ error: 'Login failed' });
+        }
+        
         updateUserSession(req.user, mockUserData);
         console.log(`[DEBUG] Demo user logged in successfully`);
         res.redirect('/');
-      } catch (error) {
-        console.error('[ERROR] User creation failed:', error);
-        res.status(500).json({ error: 'User creation failed' });
-      }
-    });
+      });
+    } catch (error) {
+      console.error('[ERROR] User creation failed:', error);
+      res.status(500).json({ error: 'User creation failed' });
+    }
   });
 
   app.get("/api/callback", (req, res) => {
