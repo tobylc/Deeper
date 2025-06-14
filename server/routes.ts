@@ -3,6 +3,14 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
+import { 
+  rateLimit, 
+  validateEmail, 
+  validateMessageContent, 
+  corsHeaders, 
+  securityHeaders, 
+  requestLogger 
+} from "./middleware";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth endpoints
@@ -19,6 +27,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.createUser(userData);
       res.json(user);
     } catch (error) {
+      console.error("Registration error:", error);
       res.status(400).json({ message: "Invalid user data" });
     }
   });
@@ -34,6 +43,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(user);
     } catch (error) {
+      console.error("Login error:", error);
       res.status(400).json({ message: "Login failed" });
     }
   });
@@ -42,9 +52,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/connections", async (req, res) => {
     try {
       const connectionData = insertConnectionSchema.parse(req.body);
+      
+      // Validate that both users exist
+      const inviterExists = await storage.getUserByEmail(connectionData.inviterEmail);
+      if (!inviterExists) {
+        return res.status(400).json({ message: "Inviter email not found. Please register first." });
+      }
+
+      // Check for duplicate connections
+      const existingConnections = await storage.getConnectionsByEmail(connectionData.inviterEmail);
+      const duplicate = existingConnections.find(conn => 
+        (conn.inviterEmail === connectionData.inviterEmail && conn.inviteeEmail === connectionData.inviteeEmail) ||
+        (conn.inviterEmail === connectionData.inviteeEmail && conn.inviteeEmail === connectionData.inviterEmail)
+      );
+
+      if (duplicate) {
+        return res.status(400).json({ message: "Connection already exists between these users" });
+      }
+
       const connection = await storage.createConnection(connectionData);
       res.json(connection);
     } catch (error) {
+      console.error("Connection creation error:", error);
       res.status(400).json({ message: "Invalid connection data" });
     }
   });
@@ -62,10 +91,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/connections/:id/accept", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const { accepterEmail } = req.body;
+      
+      // Validate the connection exists and user is authorized
+      const existingConnection = await storage.getConnection(id);
+      if (!existingConnection) {
+        return res.status(404).json({ message: "Connection not found" });
+      }
+      
+      if (existingConnection.inviteeEmail !== accepterEmail) {
+        return res.status(403).json({ message: "Not authorized to accept this connection" });
+      }
+      
+      if (existingConnection.status !== 'pending') {
+        return res.status(400).json({ message: "Connection already processed" });
+      }
+
+      // Ensure the invitee user exists (auto-create if needed)
+      let inviteeUser = await storage.getUserByEmail(existingConnection.inviteeEmail);
+      if (!inviteeUser) {
+        // For now, require manual registration
+        return res.status(400).json({ message: "Invitee must register first before accepting connection" });
+      }
+
       const connection = await storage.updateConnectionStatus(id, 'accepted', new Date());
       
       if (!connection) {
-        return res.status(404).json({ message: "Connection not found" });
+        return res.status(500).json({ message: "Failed to update connection status" });
       }
 
       // Create conversation when connection is accepted
@@ -79,6 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ connection, conversation });
     } catch (error) {
+      console.error("Accept connection error:", error);
       res.status(500).json({ message: "Failed to accept connection" });
     }
   });
@@ -86,14 +139,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/connections/:id/decline", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const { declinerEmail } = req.body;
+      
+      // Validate the connection exists and user is authorized
+      const existingConnection = await storage.getConnection(id);
+      if (!existingConnection) {
+        return res.status(404).json({ message: "Connection not found" });
+      }
+      
+      if (existingConnection.inviteeEmail !== declinerEmail) {
+        return res.status(403).json({ message: "Not authorized to decline this connection" });
+      }
+      
+      if (existingConnection.status !== 'pending') {
+        return res.status(400).json({ message: "Connection already processed" });
+      }
+
       const connection = await storage.updateConnectionStatus(id, 'declined');
       
       if (!connection) {
-        return res.status(404).json({ message: "Connection not found" });
+        return res.status(500).json({ message: "Failed to update connection status" });
       }
 
       res.json(connection);
     } catch (error) {
+      console.error("Decline connection error:", error);
       res.status(500).json({ message: "Failed to decline connection" });
     }
   });
@@ -142,19 +212,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
         conversationId,
       });
 
+      // Validate conversation exists and user is authorized
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      // Check if sender is a participant
+      if (messageData.senderEmail !== conversation.participant1Email && 
+          messageData.senderEmail !== conversation.participant2Email) {
+        return res.status(403).json({ message: "Not authorized to send messages in this conversation" });
+      }
+
+      // Check if it's the sender's turn
+      if (messageData.senderEmail !== conversation.currentTurn) {
+        return res.status(400).json({ message: "It's not your turn to send a message" });
+      }
+
+      // Get existing messages to validate message type
+      const existingMessages = await storage.getMessagesByConversationId(conversationId);
+      const lastMessage = existingMessages[existingMessages.length - 1];
+      
+      // Validate message type based on conversation flow
+      if (existingMessages.length === 0) {
+        // First message must be a question
+        if (messageData.type !== 'question') {
+          return res.status(400).json({ message: "First message must be a question" });
+        }
+      } else {
+        // Alternate between question and response
+        const expectedType = lastMessage.type === 'question' ? 'response' : 'question';
+        if (messageData.type !== expectedType) {
+          return res.status(400).json({ message: `Expected ${expectedType}, got ${messageData.type}` });
+        }
+      }
+
       const message = await storage.createMessage(messageData);
       
-      // Update conversation turn
-      const conversation = await storage.getConversation(conversationId);
-      if (conversation) {
-        const nextTurn = conversation.currentTurn === conversation.participant1Email 
-          ? conversation.participant2Email 
-          : conversation.participant1Email;
-        await storage.updateConversationTurn(conversationId, nextTurn);
-      }
+      // Update conversation turn to the other participant
+      const nextTurn = conversation.currentTurn === conversation.participant1Email 
+        ? conversation.participant2Email 
+        : conversation.participant1Email;
+      await storage.updateConversationTurn(conversationId, nextTurn);
 
       res.json(message);
     } catch (error) {
+      console.error("Create message error:", error);
       res.status(400).json({ message: "Failed to create message" });
     }
   });

@@ -34,8 +34,12 @@ export default function Dashboard() {
   });
 
   const handleAcceptConnection = async (connectionId: number) => {
+    if (!user) return;
+    
     try {
-      await apiRequest("PATCH", `/api/connections/${connectionId}/accept`, {});
+      await apiRequest("PATCH", `/api/connections/${connectionId}/accept`, {
+        accepterEmail: user.email,
+      });
       toast({
         title: "Connection accepted!",
         description: "Your conversation space is ready.",
@@ -51,8 +55,12 @@ export default function Dashboard() {
   };
 
   const handleDeclineConnection = async (connectionId: number) => {
+    if (!user) return;
+    
     try {
-      await apiRequest("PATCH", `/api/connections/${connectionId}/decline`, {});
+      await apiRequest("PATCH", `/api/connections/${connectionId}/decline`, {
+        declinerEmail: user.email,
+      });
       toast({
         title: "Connection declined",
         description: "The invitation has been declined.",
