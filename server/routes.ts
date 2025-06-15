@@ -86,7 +86,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req: any, res) => {
     try {
       console.log("[DEBUG] Connection request body:", req.body);
-      const connectionData = insertConnectionSchema.parse(req.body);
+      console.log("[DEBUG] Request user:", req.user);
+      
+      // Manual validation to debug the issue
+      const { inviteeEmail, relationshipType, personalMessage } = req.body;
+      
+      if (!inviteeEmail || typeof inviteeEmail !== 'string') {
+        console.log("[DEBUG] Missing or invalid inviteeEmail:", inviteeEmail);
+        return res.status(400).json({ message: "Invalid inviteeEmail" });
+      }
+      
+      if (!relationshipType || typeof relationshipType !== 'string') {
+        console.log("[DEBUG] Missing or invalid relationshipType:", relationshipType);
+        return res.status(400).json({ message: "Invalid relationshipType" });
+      }
+      
+      const connectionData = {
+        inviteeEmail,
+        relationshipType,
+        personalMessage: personalMessage || "",
+        inviterEmail: "", // Will be set below
+      };
 
       // Get authenticated user's email
       console.log("[DEBUG] Request user object:", req.user);
