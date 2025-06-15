@@ -73,7 +73,7 @@ The Deeper Team
 export class ProductionEmailService implements EmailService {
   private fromEmail: string;
 
-  constructor(apiKey: string, fromEmail: string = "your-verified-email@domain.com") {
+  constructor(apiKey: string, fromEmail: string = "deepersoc@gmail.com") {
     sgMail.setApiKey(apiKey);
     this.fromEmail = fromEmail;
   }
@@ -271,7 +271,7 @@ The Deeper Team
 export class InternalEmailService implements EmailService {
   private fromEmail: string;
 
-  constructor(fromEmail: string = "noreply@deeper.app") {
+  constructor(fromEmail: string = "deepersoc@gmail.com") {
     this.fromEmail = fromEmail;
   }
 
