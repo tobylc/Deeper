@@ -405,6 +405,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Email management endpoints
+  app.get("/api/emails/:email", isAuthenticated, async (req, res) => {
+    try {
+      const { email } = req.params;
+      const emails = await storage.getEmailsByEmail(email);
+      res.json(emails);
+    } catch (error) {
+      console.error("Failed to fetch emails:", error);
+      res.status(500).json({ message: "Failed to fetch emails" });
+    }
+  });
+
+  app.get("/api/emails/view/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const email = await storage.getEmailById(parseInt(id));
+      
+      if (!email) {
+        return res.status(404).json({ message: "Email not found" });
+      }
+
+      // Return HTML email content for viewing
+      res.setHeader('Content-Type', 'text/html');
+      res.send(email.htmlContent);
+    } catch (error) {
+      console.error("Failed to fetch email:", error);
+      res.status(500).json({ message: "Failed to fetch email" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

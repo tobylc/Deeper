@@ -73,7 +73,7 @@ The Deeper Team
 export class ProductionEmailService implements EmailService {
   private fromEmail: string;
 
-  constructor(apiKey: string, fromEmail: string = "noreply@deeper.app") {
+  constructor(apiKey: string, fromEmail: string = "your-verified-email@domain.com") {
     sgMail.setApiKey(apiKey);
     this.fromEmail = fromEmail;
   }
@@ -472,8 +472,14 @@ The Deeper Team
 
 // Email service factory
 export function createEmailService(): EmailService {
-  // Always use internal email service for now to avoid external dependencies
-  console.log('[EMAIL] Using internal database email service');
+  const sendgridApiKey = process.env.SENDGRID_API_KEY;
+
+  if (sendgridApiKey) {
+    console.log('[EMAIL] Using SendGrid email service for real email delivery');
+    return new ProductionEmailService(sendgridApiKey);
+  }
+
+  console.log('[EMAIL] No SendGrid API key - using internal database service');
   return new InternalEmailService();
 }
 
