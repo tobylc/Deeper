@@ -96,9 +96,8 @@ export default function Dashboard() {
                 Welcome, {user.firstName || user.email?.split('@')[0] || 'there'}
               </span>
               <Button 
-                variant="outline" 
-                onClick={() => window.location.href = '/api/logout'} 
-                className="border-white/30 text-white/90 hover:bg-white/10 hover:text-white hover:border-white/50 transition-all duration-200"
+                className="btn-ocean px-6 py-2"
+                onClick={() => window.location.href = '/api/logout'}
               >
                 Sign Out
               </Button>
