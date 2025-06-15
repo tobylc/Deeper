@@ -66,6 +66,20 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const emails = pgTable("emails", {
+  id: serial("id").primaryKey(),
+  toEmail: text("to_email").notNull(),
+  fromEmail: text("from_email").notNull(),
+  subject: text("subject").notNull(),
+  htmlContent: text("html_content").notNull(),
+  textContent: text("text_content").notNull(),
+  emailType: text("email_type").notNull(), // "invitation", "acceptance", "decline"
+  status: text("status").notNull().default("sent"), // "sent", "delivered", "failed"
+  connectionId: integer("connection_id").references(() => connections.id),
+  sentAt: timestamp("sent_at").defaultNow(),
+  deliveredAt: timestamp("delivered_at"),
+});
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
@@ -101,6 +115,16 @@ export const insertMessageSchema = createInsertSchema(messages).pick({
   type: true,
 });
 
+export const insertEmailSchema = createInsertSchema(emails).pick({
+  toEmail: true,
+  fromEmail: true,
+  subject: true,
+  htmlContent: true,
+  textContent: true,
+  emailType: true,
+  connectionId: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -110,3 +134,5 @@ export type Conversation = typeof conversations.$inferSelect;
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Email = typeof emails.$inferSelect;
+export type InsertEmail = z.infer<typeof insertEmailSchema>;

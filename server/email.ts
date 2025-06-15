@@ -151,8 +151,9 @@ The Deeper Team
     try {
       await sgMail.send(msg);
       console.log(`[EMAIL] Invitation sent to ${connection.inviteeEmail}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('[EMAIL] Failed to send invitation:', error);
+      console.error('[EMAIL] Error details:', error.response?.body);
       throw error;
     }
   }

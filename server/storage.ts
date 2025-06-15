@@ -1,9 +1,10 @@
 import { 
-  users, connections, conversations, messages,
+  users, connections, conversations, messages, emails,
   type User, type InsertUser,
   type Connection, type InsertConnection,
   type Conversation, type InsertConversation,
-  type Message, type InsertMessage
+  type Message, type InsertMessage,
+  type Email, type InsertEmail
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, or, and } from "drizzle-orm";
@@ -30,6 +31,11 @@ export interface IStorage {
   // Messages
   getMessagesByConversationId(conversationId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
+
+  // Emails
+  getEmailsByEmail(email: string): Promise<Email[]>;
+  createEmail(email: InsertEmail): Promise<Email>;
+  getEmailById(id: number): Promise<Email | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
