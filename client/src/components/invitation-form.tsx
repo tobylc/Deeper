@@ -84,7 +84,7 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
     } catch (error: any) {
       console.log("Invitation error:", error);
       
-      if (error.response?.status === 409) {
+      if (error.status === 409 || error.response?.status === 409) {
         toast({
           title: "Connection Already Exists",
           description: "You already have a connection with this person",
@@ -93,7 +93,7 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
       } else {
         toast({
           title: "Error",
-          description: "Failed to send invitation",
+          description: error.message || "Failed to send invitation",
           variant: "destructive",
         });
       }
