@@ -48,12 +48,16 @@ export async function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
+  const baseUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://deepersocial.replit.app' 
+    : 'http://localhost:5000';
+
   // Google OAuth Strategy
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passport.use(new GoogleStrategy({
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/api/auth/google/callback"
+      callbackURL: `${baseUrl}/api/auth/google/callback`
     }, async (accessToken, refreshToken, profile, done) => {
       try {
         const user = await upsertUser(profile, 'google');
@@ -75,7 +79,7 @@ export async function setupAuth(app: Express) {
     passport.use(new FacebookStrategy({
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackURL: "/api/auth/facebook/callback",
+      callbackURL: `${baseUrl}/api/auth/facebook/callback`,
       profileFields: ['id', 'displayName', 'photos', 'email']
     }, async (accessToken, refreshToken, profile, done) => {
       try {
