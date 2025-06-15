@@ -88,7 +88,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const connectionData = insertConnectionSchema.parse(req.body);
 
       // Get authenticated user's email
-      const userId = req.user.claims.sub;
+      let userId;
+      if (req.user.claims) {
+        // Real Replit Auth
+        userId = req.user.claims.sub;
+      } else if (req.user.id) {
+        // Demo authentication or direct user object
+        userId = req.user.id;
+      } else {
+        return res.status(400).json({ message: "Invalid user session" });
+      }
+
       const currentUser = await storage.getUser(userId);
       if (!currentUser?.email) {
         return res.status(400).json({ message: "User email not found" });
