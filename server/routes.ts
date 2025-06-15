@@ -15,7 +15,7 @@ import { emailService } from "./email";
 import { analytics } from "./analytics";
 import { healthService } from "./health";
 import { jobQueue } from "./jobs";
-import { setupAuth, isAuthenticated } from "./auth";
+import { setupAuth, isAuthenticated } from "./productionAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication middleware FIRST
@@ -50,22 +50,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Replit Auth endpoints
+  // Production Auth endpoints
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      // Handle both Replit Auth and demo authentication
-      let userId;
-      if (req.user.claims) {
-        // Real Replit Auth
-        userId = req.user.claims.sub;
-      } else if (req.user.id) {
-        // Demo authentication or direct user object
-        userId = req.user.id;
-      } else {
-        // Fallback - return the user object directly if it's already complete
-        return res.json(req.user);
-      }
-
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user) {
