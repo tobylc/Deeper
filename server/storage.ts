@@ -162,6 +162,31 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return message;
   }
+
+  // Emails
+  async getEmailsByEmail(email: string): Promise<Email[]> {
+    return await db
+      .select()
+      .from(emails)
+      .where(or(eq(emails.toEmail, email), eq(emails.fromEmail, email)))
+      .orderBy(emails.sentAt);
+  }
+
+  async createEmail(insertEmail: InsertEmail): Promise<Email> {
+    const [email] = await db
+      .insert(emails)
+      .values(insertEmail)
+      .returning();
+    return email;
+  }
+
+  async getEmailById(id: number): Promise<Email | undefined> {
+    const [email] = await db
+      .select()
+      .from(emails)
+      .where(eq(emails.id, id));
+    return email;
+  }
 }
 
 export const storage = new DatabaseStorage();
