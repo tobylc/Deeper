@@ -81,12 +81,22 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
       });
       
       onSuccess();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send invitation",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      console.log("Invitation error:", error);
+      
+      if (error.response?.status === 409) {
+        toast({
+          title: "Connection Already Exists",
+          description: "You already have a connection with this person",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to send invitation",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

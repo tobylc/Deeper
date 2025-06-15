@@ -141,7 +141,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       if (duplicate) {
-        return res.status(400).json({ message: "Connection already exists between these users" });
+        console.log("[DEBUG] Duplicate connection found:", duplicate);
+        return res.status(409).json({ 
+          message: "You already have a connection with this person", 
+          type: "DUPLICATE_CONNECTION",
+          existingConnection: duplicate 
+        });
       }
 
       const connection = await storage.createConnection(connectionData);
