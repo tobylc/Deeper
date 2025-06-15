@@ -89,9 +89,6 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Heart className="text-white w-4 h-4" />
-              </div>
               <span className="text-xl font-inter font-bold text-white">Deeper</span>
             </div>
             <div className="flex items-center space-x-4">
@@ -101,7 +98,7 @@ export default function Dashboard() {
               <Button 
                 variant="outline" 
                 onClick={() => window.location.href = '/api/logout'} 
-                className="border-white/20 text-white hover:bg-white hover:text-primary"
+                className="border-white/30 text-white/90 hover:bg-white/10 hover:text-white hover:border-white/50 transition-all duration-200"
               >
                 Sign Out
               </Button>
