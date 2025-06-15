@@ -82,6 +82,8 @@ export const insertConnectionSchema = createInsertSchema(connections).pick({
   inviteeEmail: true,
   relationshipType: true,
   personalMessage: true,
+}).extend({
+  personalMessage: z.string().optional(),
 });
 
 export const insertConversationSchema = createInsertSchema(conversations).pick({
