@@ -93,29 +93,10 @@ export async function setupAuth(app: Express) {
     );
   }
 
-  // Apple OAuth Strategy
-  if (process.env.APPLE_SERVICE_ID && process.env.APPLE_TEAM_ID && process.env.APPLE_KEY_ID && process.env.APPLE_PRIVATE_KEY) {
-    passport.use(new AppleStrategy({
-      clientID: process.env.APPLE_SERVICE_ID,
-      teamID: process.env.APPLE_TEAM_ID,
-      keyID: process.env.APPLE_KEY_ID,
-      privateKey: process.env.APPLE_PRIVATE_KEY,
-      callbackURL: "/api/auth/apple/callback"
-    }, async (accessToken, refreshToken, idToken, profile, done) => {
-      try {
-        const user = await upsertUser(profile, 'apple');
-        return done(null, user);
-      } catch (error) {
-        return done(error);
-      }
-    }));
-
-    app.get("/api/auth/apple", passport.authenticate("apple"));
-    app.get("/api/auth/apple/callback",
-      passport.authenticate("apple", { failureRedirect: "/?error=auth_failed" }),
-      (req, res) => res.redirect("/dashboard")
-    );
-  }
+  // Apple OAuth Strategy (placeholder - requires proper certificate configuration)
+  app.get("/api/auth/apple", (req, res) => {
+    res.redirect("/?error=apple_not_configured");
+  });
 
   // Email/Password Strategy
   passport.use(new LocalStrategy(
@@ -149,15 +130,8 @@ export async function setupAuth(app: Express) {
     res.redirect("/?provider=email");
   });
 
-  passport.serializeUser((user: any, done) => done(null, user.id));
-  passport.deserializeUser(async (id: string, done) => {
-    try {
-      const user = await storage.getUser(id);
-      done(null, user);
-    } catch (error) {
-      done(error);
-    }
-  });
+  passport.serializeUser((user: any, done) => done(null, user));
+  passport.deserializeUser((user: any, done) => done(null, user));
 
   // Logout
   app.post("/api/auth/logout", (req, res) => {
