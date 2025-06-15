@@ -97,7 +97,16 @@ export default function Dashboard() {
               </span>
               <Button 
                 className="btn-ocean px-6 py-2"
-                onClick={() => window.location.href = '/api/logout'}
+                onClick={async () => {
+                  try {
+                    await apiRequest("POST", "/api/auth/logout", {});
+                    window.location.href = '/';
+                  } catch (error) {
+                    console.error("Logout failed:", error);
+                    // Force redirect even if logout fails
+                    window.location.href = '/';
+                  }
+                }}
               >
                 Sign Out
               </Button>

@@ -66,6 +66,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Logout endpoint
+  app.post('/api/auth/logout', (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destroy error:", err);
+          return res.status(500).json({ error: "Session cleanup failed" });
+        }
+        res.clearCookie('connect.sid');
+        res.json({ success: true });
+      });
+    });
+  });
+
   // Connection endpoints
   app.post("/api/connections", 
     isAuthenticated,
