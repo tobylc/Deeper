@@ -85,9 +85,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     validateEmail,
     async (req: any, res) => {
     try {
+      console.log("[DEBUG] Connection request body:", req.body);
       const connectionData = insertConnectionSchema.parse(req.body);
 
       // Get authenticated user's email
+      console.log("[DEBUG] Request user object:", req.user);
       let userId;
       if (req.user.claims) {
         // Real Replit Auth
@@ -99,13 +101,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid user session" });
       }
 
+      console.log("[DEBUG] User ID extracted:", userId);
       const currentUser = await storage.getUser(userId);
+      console.log("[DEBUG] Current user from storage:", currentUser);
+      
       if (!currentUser?.email) {
         return res.status(400).json({ message: "User email not found" });
       }
 
       // Use authenticated user's email as inviter
       connectionData.inviterEmail = currentUser.email;
+      console.log("[DEBUG] Final connection data:", connectionData);
 
       // Check for duplicate connections
       const existingConnections = await storage.getConnectionsByEmail(connectionData.inviterEmail);
