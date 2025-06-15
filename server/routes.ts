@@ -15,7 +15,7 @@ import { emailService } from "./email";
 import { analytics } from "./analytics";
 import { healthService } from "./health";
 import { jobQueue } from "./jobs";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication middleware FIRST

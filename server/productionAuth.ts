@@ -1,0 +1,69 @@
+import session from "express-session";
+import type { Express, RequestHandler } from "express";
+import connectPg from "connect-pg-simple";
+import { storage } from "./storage";
+
+if (!process.env.REPLIT_DOMAINS) {
+  throw new Error("REPLIT_DOMAINS environment variable required for production");
+}
+
+console.log(`[AUTH] Production authentication system active`);
+
+export function getSession() {
+  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  const pgStore = connectPg(session);
+  const sessionStore = new pgStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: false,
+    ttl: sessionTtl,
+    tableName: "sessions",
+  });
+  return session({
+    secret: process.env.SESSION_SECRET!,
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: sessionTtl,
+    },
+  });
+}
+
+export async function setupAuth(app: Express) {
+  app.set("trust proxy", 1);
+  app.use(getSession());
+
+  // Production authentication will be handled by Replit's built-in auth
+  // This is a placeholder for when Replit Auth is properly configured
+  
+  // For now, require manual configuration of OAuth providers
+  app.get("/api/auth/login", (req, res) => {
+    res.status(501).json({ 
+      error: "Authentication not configured",
+      message: "Please configure OAuth providers in your Replit secrets"
+    });
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("[AUTH] Logout failed:", err);
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      res.json({ success: true });
+    });
+  });
+}
+
+export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  const session = req.session as any;
+  
+  if (!session?.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  req.user = session.user;
+  next();
+};
