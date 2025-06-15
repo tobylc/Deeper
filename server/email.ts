@@ -79,9 +79,7 @@ export class ProductionEmailService implements EmailService {
   }
 
   async sendConnectionInvitation(connection: Connection): Promise<void> {
-    const appUrl = process.env.REPLIT_DEV_DOMAIN 
-      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-      : 'https://deeper.app';
+    const appUrl = 'https://deepersocial.replit.app';
 
     const msg = {
       to: connection.inviteeEmail,
@@ -276,9 +274,7 @@ export class InternalEmailService implements EmailService {
   }
 
   async sendConnectionInvitation(connection: Connection): Promise<void> {
-    const appUrl = process.env.REPLIT_DEV_DOMAIN 
-      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-      : 'https://deeper.app';
+    const appUrl = 'https://deepersocial.replit.app';
 
     const subject = "You're invited to start a meaningful conversation on Deeper";
     
