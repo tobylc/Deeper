@@ -7,7 +7,7 @@ import {
   type Email, type InsertEmail
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, or, and, sql } from "drizzle-orm";
+import { eq, or, and, sql, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -202,6 +202,14 @@ export class DatabaseStorage implements IStorage {
       .where(or(eq(conversations.participant1Email, email), eq(conversations.participant2Email, email)));
   }
 
+  async getConversationsByConnection(connectionId: number): Promise<Conversation[]> {
+    return await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.connectionId, connectionId))
+      .orderBy(desc(conversations.lastActivityAt));
+  }
+
   async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
     const [conversation] = await db
       .insert(conversations)
@@ -229,6 +237,10 @@ export class DatabaseStorage implements IStorage {
       .from(messages)
       .where(eq(messages.conversationId, conversationId))
       .orderBy(messages.createdAt);
+  }
+
+  async getMessages(conversationId: number): Promise<Message[]> {
+    return this.getMessagesByConversationId(conversationId);
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {

@@ -1087,6 +1087,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Conversation threading endpoints
+  app.get("/api/connections/:connectionId/conversations", isAuthenticated, async (req: any, res) => {
+    try {
+      const connectionId = parseInt(req.params.connectionId);
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // Verify user is part of this connection
+      const connection = await storage.getConnection(connectionId);
+      if (!connection || 
+          (connection.inviterEmail !== currentUser.email && 
+           connection.inviteeEmail !== currentUser.email)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const conversations = await storage.getConversationsByConnection(connectionId);
+      res.json(conversations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
+  app.get("/api/connections/:connectionId/conversations/message-counts", isAuthenticated, async (req: any, res) => {
+    try {
+      const connectionId = parseInt(req.params.connectionId);
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const conversations = await storage.getConversationsByConnection(connectionId);
+      const messageCounts: Record<number, number> = {};
+      
+      for (const conversation of conversations) {
+        const messages = await storage.getMessages(conversation.id);
+        messageCounts[conversation.id] = messages.length;
+      }
+      
+      res.json(messageCounts);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch message counts" });
+    }
+  });
+
+  app.post("/api/connections/:connectionId/conversations", isAuthenticated, async (req: any, res) => {
+    try {
+      const connectionId = parseInt(req.params.connectionId);
+      const { topic, title, participant1Email, participant2Email, relationshipType, isMainThread } = req.body;
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // Verify user is part of this connection
+      const connection = await storage.getConnection(connectionId);
+      if (!connection || 
+          (connection.inviterEmail !== currentUser.email && 
+           connection.inviteeEmail !== currentUser.email)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const conversationData = {
+        connectionId,
+        participant1Email,
+        participant2Email,
+        relationshipType,
+        currentTurn: currentUser.email, // Creator starts the conversation
+        status: 'active',
+        title: title || topic,
+        topic,
+        isMainThread: isMainThread || false
+      };
+      
+      const conversation = await storage.createConversation(conversationData);
+      res.json(conversation);
+    } catch (error) {
+      console.error("Create conversation error:", error);
+      res.status(500).json({ message: "Failed to create conversation" });
+    }
+  });
+
   // Conversation endpoints with authentication
   app.get("/api/conversations/by-email/:email", isAuthenticated, async (req: any, res) => {
     try {
