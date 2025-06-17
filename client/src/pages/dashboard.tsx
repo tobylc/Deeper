@@ -15,6 +15,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import DeeperLogo from "@/components/deeper-logo";
+import QuotesIcon from "@/components/quotes-icon";
 
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -183,7 +184,7 @@ export default function Dashboard() {
         <Card className="mb-8 card-elevated border-amber/30">
           <CardHeader>
             <CardTitle className="flex items-center text-foreground">
-              <DeeperLogo size="sm" className="mr-2" />
+              <QuotesIcon size="sm" className="mr-2" />
               Subscription Status
             </CardTitle>
           </CardHeader>
