@@ -109,12 +109,69 @@ export default function Auth() {
                 Welcome to Deeper
               </CardTitle>
               <CardDescription className="text-muted-foreground font-inter">
-                Sign in to start building deeper relationships
+                {showEmailLogin ? "Sign in with your email and password" : "Sign in to start building deeper relationships"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Google OAuth */}
-              <Button
+              {showEmailLogin ? (
+                // Email/Password Login Form for invited users
+                <form onSubmit={handleEmailLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-foreground font-inter">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      required
+                      className="rounded-2xl bg-card border-border font-inter"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-foreground font-inter">Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        required
+                        className="rounded-2xl bg-card border-border font-inter pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isLoggingIn || !email.trim() || !password.trim()}
+                    className="w-full btn-ocean font-inter font-medium py-3 rounded-3xl transition-all duration-200"
+                  >
+                    {isLoggingIn ? "Signing in..." : "Sign In"}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setShowEmailLogin(false)}
+                    className="w-full text-sm text-muted-foreground hover:text-foreground font-inter"
+                  >
+                    ← Back to login options
+                  </Button>
+                </form>
+              ) : (
+                <>
+                  {/* Google OAuth */}
+                  <Button
                 onClick={() => window.location.href = '/api/auth/google'}
                 variant="outline"
                 size="lg"
@@ -166,7 +223,7 @@ export default function Auth() {
               </div>
 
               <Button
-                onClick={() => window.location.href = '/api/auth/email'}
+                onClick={() => setShowEmailLogin(true)}
                 variant="outline"
                 size="lg"
                 className="w-full bg-card hover:bg-accent text-foreground border-border font-inter font-medium py-3 rounded-3xl transition-all duration-200 hover:shadow-md"
@@ -175,12 +232,14 @@ export default function Auth() {
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                   <polyline points="22,6 12,13 2,6"/>
                 </svg>
-                Continue with Email
+                Sign in with Email & Password
               </Button>
 
-              <p className="text-center text-xs text-muted-foreground font-inter">
-                Secure OAuth authentication • Choose your preferred provider
-              </p>
+                  <p className="text-center text-xs text-muted-foreground font-inter">
+                    For invited users • OAuth for new accounts
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
