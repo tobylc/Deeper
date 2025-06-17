@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import path from "path";
+import { randomUUID } from "crypto";
 import { storage } from "./storage";
 import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
@@ -112,6 +113,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ success: true });
       });
     });
+  });
+
+  // Get invitation details endpoint (public - no auth required)
+  app.get("/api/invitation/:id", async (req, res) => {
+    try {
+      const connectionId = parseInt(req.params.id);
+      const connection = await storage.getConnection(connectionId);
+      
+      if (!connection) {
+        return res.status(404).json({ message: "Invitation not found" });
+      }
+
+      if (connection.status !== 'pending') {
+        return res.status(400).json({ message: "Invitation is no longer valid" });
+      }
+
+      res.json({
+        id: connection.id,
+        inviterEmail: connection.inviterEmail,
+        inviteeEmail: connection.inviteeEmail,
+        relationshipType: connection.relationshipType,
+        personalMessage: connection.personalMessage,
+        createdAt: connection.createdAt
+      });
+
+    } catch (error: any) {
+      console.error("Get invitation error:", error);
+      res.status(500).json({ message: "Failed to retrieve invitation details" });
+    }
+  });
+
+  // Invitation acceptance endpoint (public - no auth required)
+  app.post("/api/invitation/accept", async (req, res) => {
+    try {
+      const { connectionId, inviteeEmail, password } = req.body;
+
+      if (!connectionId || !inviteeEmail || !password) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Get the connection details
+      const connection = await storage.getConnection(connectionId);
+      if (!connection) {
+        return res.status(404).json({ message: "Invalid invitation" });
+      }
+
+      if (connection.status !== 'pending') {
+        return res.status(400).json({ message: "Invitation has already been processed" });
+      }
+
+      if (connection.inviteeEmail !== inviteeEmail) {
+        return res.status(400).json({ message: "Email does not match invitation" });
+      }
+
+      // Create user account for invitee
+      const newUser = await storage.upsertUser({
+        id: randomUUID(),
+        email: inviteeEmail,
+        firstName: inviteeEmail.split('@')[0],
+      });
+
+      // Update connection status to accepted
+      const updatedConnection = await storage.updateConnectionStatus(
+        connectionId, 
+        'accepted', 
+        new Date()
+      );
+
+      if (!updatedConnection) {
+        return res.status(500).json({ message: "Failed to update connection" });
+      }
+
+      // Create conversation between the two users
+      const conversation = await storage.createConversation({
+        relationshipType: connection.relationshipType,
+        connectionId: connection.id,
+        participant1Email: connection.inviterEmail,
+        participant2Email: connection.inviteeEmail,
+        currentTurn: connection.inviterEmail // Inviter starts the conversation
+      });
+
+      // Send acceptance notification email to inviter
+      try {
+        await emailService.sendConnectionAccepted(updatedConnection);
+        
+        // Track analytics
+        analytics.track({
+          type: 'connection_accepted',
+          userId: newUser.id,
+          email: inviteeEmail,
+          metadata: {
+            inviterEmail: connection.inviterEmail,
+            relationshipType: connection.relationshipType,
+            connectionId: connectionId
+          }
+        });
+      } catch (emailError) {
+        console.error("Failed to send acceptance email:", emailError);
+        // Don't fail the request if email fails
+      }
+
+      res.json({
+        message: "Connection established successfully",
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          firstName: newUser.firstName
+        },
+        connection: updatedConnection,
+        conversation: conversation
+      });
+
+    } catch (error: any) {
+      console.error("Invitation acceptance error:", error);
+      res.status(500).json({ 
+        message: "Failed to process invitation acceptance",
+        error: error.message 
+      });
+    }
   });
 
   // Connection endpoints
