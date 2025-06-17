@@ -31,6 +31,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   passwordHash: varchar("password_hash"), // For email/password authentication
+  googleId: varchar("google_id"), // Google OAuth ID for account linking
   profileImageUrl: varchar("profile_image_url"),
   subscriptionTier: varchar("subscription_tier").default("free"), // free, starter, pro, unlimited
   subscriptionStatus: varchar("subscription_status").default("active"), // active, cancelled, expired
@@ -95,6 +96,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   firstName: true,
   lastName: true,
   passwordHash: true,
+  googleId: true,
   profileImageUrl: true,
 });
 

@@ -792,6 +792,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Account linking endpoints
+  app.get("/api/auth/link/google", isAuthenticated, (req, res) => {
+    // Redirect to Google OAuth with special linking parameter
+    const baseUrl = 'https://deepersocial.replit.app';
+    const linkingUrl = `${baseUrl}/api/auth/google?linking=true`;
+    res.redirect(linkingUrl);
+  });
+
+  app.get("/api/auth/account-status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        hasPassword: !!currentUser.passwordHash,
+        hasGoogleLinked: !!currentUser.googleId,
+        email: currentUser.email,
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName
+      });
+    } catch (error) {
+      console.error("Account status error:", error);
+      res.status(500).json({ message: "Failed to get account status" });
+    }
+  });
+
   app.get("/api/subscription/status", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims?.sub || req.user.id;

@@ -13,8 +13,10 @@ export interface IStorage {
   // Users
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   upsertUser(user: InsertUser): Promise<User>;
+  linkGoogleAccount(userId: string, googleId: string): Promise<User | undefined>;
   updateUserSubscription(userId: string, subscriptionData: {
     subscriptionTier: string;
     subscriptionStatus: string;
@@ -87,6 +89,23 @@ export class DatabaseStorage implements IStorage {
       // Create new user
       return await this.createUser(userData);
     }
+  }
+
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
+    return user || undefined;
+  }
+
+  async linkGoogleAccount(userId: string, googleId: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        googleId: googleId,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
   }
 
   async updateUserSubscription(userId: string, subscriptionData: {

@@ -33,12 +33,40 @@ export function getSession() {
 }
 
 async function upsertUser(profile: any, provider: string) {
+  const email = profile.emails?.[0]?.value;
+  
+  if (provider === 'google' && email) {
+    // Check if user with this email already exists (email-based account)
+    const existingUser = await storage.getUserByEmail(email);
+    
+    if (existingUser && !existingUser.googleId) {
+      // Link Google account to existing email-based account
+      const linkedUser = await storage.linkGoogleAccount(existingUser.id, profile.id);
+      if (linkedUser) {
+        // Update profile information from Google if available
+        return await storage.upsertUser({
+          id: existingUser.id,
+          email: email,
+          firstName: profile.name?.givenName || existingUser.firstName,
+          lastName: profile.name?.familyName || existingUser.lastName,
+          profileImageUrl: profile.photos?.[0]?.value || existingUser.profileImageUrl,
+          googleId: profile.id,
+        });
+      }
+    } else if (existingUser && existingUser.googleId === profile.id) {
+      // User already linked, just return existing user
+      return existingUser;
+    }
+  }
+  
+  // Standard OAuth user creation/update
   return await storage.upsertUser({
     id: `${provider}_${profile.id}`,
-    email: profile.emails?.[0]?.value || `${provider}_${profile.id}@${provider}.com`,
+    email: email || `${provider}_${profile.id}@${provider}.com`,
     firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || 'User',
     lastName: profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || '',
     profileImageUrl: profile.photos?.[0]?.value || null,
+    googleId: provider === 'google' ? profile.id : undefined,
   });
 }
 
