@@ -139,8 +139,8 @@ export default function InvitationLanding() {
 
             <Card className="bg-card/50 border-border backdrop-blur-sm p-8 text-left rounded-3xl">
               <CardContent className="p-0">
-                <div className="w-12 h-12 rounded-xl bg-amber/10 flex items-center justify-center mb-6">
-                  <MessageCircle className="w-6 h-6 text-amber" />
+                <div className="w-12 h-12 rounded-xl bg-ocean/10 flex items-center justify-center mb-6">
+                  <MessageCircle className="w-6 h-6 text-ocean" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Thoughtfully Guided Conversations
@@ -170,8 +170,8 @@ export default function InvitationLanding() {
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-6 h-6 text-teal" />
+                  <div className="w-12 h-12 rounded-full bg-ocean/10 flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-6 h-6 text-ocean" />
                   </div>
                   <h4 className="font-inter font-semibold text-foreground mb-2">2. Private Space Created</h4>
                   <p className="text-sm text-slate-600">
@@ -179,7 +179,7 @@ export default function InvitationLanding() {
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-amber/10 flex items-center justify-center mx-auto mb-4 p-2">
+                  <div className="w-12 h-12 rounded-full bg-ocean/10 flex items-center justify-center mx-auto mb-4 p-2">
                     <QuotesIcon size="sm" />
                   </div>
                   <h4 className="font-inter font-semibold text-foreground mb-2">3. Begin Your Journey</h4>

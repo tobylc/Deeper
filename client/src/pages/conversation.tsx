@@ -28,30 +28,22 @@ export default function ConversationPage() {
     }
   }, [user, setLocation]);
 
-  const { data: conversation } = useQuery<Conversation>({
+  const { data: conversation, isLoading: conversationLoading } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${id}`],
     queryFn: async () => {
-      const testParam = import.meta.env.DEV ? '?test_user=true' : '';
-      const response = await fetch(`/api/conversations/${id}${testParam}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch conversation');
-      }
+      const response = await apiRequest('GET', `/api/conversations/${id}`);
       return response.json();
     },
-    enabled: !!id,
+    enabled: !!id && !!user,
   });
 
-  const { data: messages = [] } = useQuery<Message[]>({
+  const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
     queryKey: [`/api/conversations/${id}/messages`],
     queryFn: async () => {
-      const testParam = import.meta.env.DEV ? '?test_user=true' : '';
-      const response = await fetch(`/api/conversations/${id}/messages${testParam}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch messages');
-      }
+      const response = await apiRequest('GET', `/api/conversations/${id}/messages`);
       return response.json();
     },
-    enabled: !!id,
+    enabled: !!id && !!user,
   });
 
   const sendMessageMutation = useMutation({
@@ -67,11 +59,20 @@ export default function ConversationPage() {
         content: data.content.trim(),
         type: data.type,
       });
+      
+      // Update conversation turn after successful message
+      await apiRequest("PATCH", `/api/conversations/${id}`, {
+        currentTurn: conversation?.participant1Email === user.email 
+          ? conversation.participant2Email 
+          : conversation.participant1Email
+      });
+      
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/conversations/${id}/messages`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${user?.email}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
       setNewMessage("");
       toast({
         title: "Message sent!",
@@ -79,6 +80,7 @@ export default function ConversationPage() {
       });
     },
     onError: (error: any) => {
+      console.error("Send message error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to send message",
@@ -87,20 +89,43 @@ export default function ConversationPage() {
     },
   });
 
-  if (!user || !conversation) {
-    if (!user) {
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-          <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-            <h2 className="text-xl font-semibold mb-4">Please log in to view this conversation</h2>
-            <Button onClick={() => setLocation("/auth")} className="btn-ocean">
-              Go to Login
-            </Button>
-          </div>
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+          <h2 className="text-xl font-semibold mb-4">Please log in to view this conversation</h2>
+          <Button onClick={() => setLocation("/auth")} className="btn-ocean">
+            Go to Login
+          </Button>
         </div>
-      );
-    }
-    return null;
+      </div>
+    );
+  }
+
+  if (conversationLoading || messagesLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-radial from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center p-3 mx-auto mb-4">
+            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <p className="text-slate-300">Loading conversation...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!conversation) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+          <h2 className="text-xl font-semibold mb-4">Conversation not found</h2>
+          <Button onClick={() => setLocation("/dashboard")} className="btn-ocean">
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const otherParticipant = conversation.participant1Email === user.email 
