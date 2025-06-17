@@ -12,11 +12,28 @@ export default function InvitationLanding() {
   const [connectionId, setConnectionId] = useState<string>("");
 
   useEffect(() => {
-    // Extract invitation details from URL parameters
+    // Extract invitation details from URL parameters (both query and path formats)
+    let inviter = '';
+    let relationship = '';
+    let id = '';
+
+    // First try query parameters (standard format)
     const urlParams = new URLSearchParams(window.location.search);
-    const inviter = urlParams.get('inviter') || '';
-    const relationship = urlParams.get('relationship') || '';
-    const id = urlParams.get('id') || '';
+    inviter = urlParams.get('inviter') || '';
+    relationship = urlParams.get('relationship') || '';
+    id = urlParams.get('id') || '';
+
+    // If no query params, try path format (for email client compatibility)
+    if (!inviter && window.location.pathname.includes('/invitation/')) {
+      const pathPart = window.location.pathname.split('/invitation/')[1];
+      if (pathPart) {
+        // Parse path format: inviter=email&relationship=type&id=123
+        const pathParams = new URLSearchParams(pathPart.replace(/^inviter=/, ''));
+        inviter = decodeURIComponent(pathPart.split('&')[0].replace('inviter=', ''));
+        relationship = pathParams.get('relationship') || '';
+        id = pathParams.get('id') || '';
+      }
+    }
     
     setInviterEmail(inviter);
     setRelationshipType(relationship);

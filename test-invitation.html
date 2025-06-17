@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Invitation URLs</title>
+</head>
+<body>
+    <h1>Test Invitation URLs</h1>
+    
+    <h2>Correct Format (Query Parameters):</h2>
+    <a href="https://deepersocial.replit.app/invitation?inviter=thetobyclarkshow%40gmail.com&relationship=Friends&id=123" target="_blank">
+        Test Invitation Link (Query Params)
+    </a>
+    
+    <h2>Your Screenshot Format (Path Parameters):</h2>
+    <a href="https://deepersocial.replit.app/invitation/inviter=thetobyclarkshow%40gmail.com&relationship=Friends&id=123" target="_blank">
+        Test Invitation Link (Path Params)
+    </a>
+    
+    <script>
+        // Test URL generation
+        const connection = {
+            inviterEmail: 'thetobyclarkshow@gmail.com',
+            relationshipType: 'Friends',
+            id: 123
+        };
+        const appUrl = 'https://deepersocial.replit.app';
+        const correctUrl = `${appUrl}/invitation?inviter=${encodeURIComponent(connection.inviterEmail)}&relationship=${encodeURIComponent(connection.relationshipType)}&id=${connection.id}`;
+        
+        console.log('Generated URL:', correctUrl);
+        document.body.innerHTML += `<p><strong>Generated URL:</strong> ${correctUrl}</p>`;
+    </script>
+</body>
+</html>

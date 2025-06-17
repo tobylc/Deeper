@@ -53,16 +53,6 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Add catch-all route for client-side routing in production
-  if (app.get("env") !== "development") {
-    app.get('*', (req, res) => {
-      if (!req.path.startsWith('/api')) {
-        const distPath = path.resolve(import.meta.dirname, "public");
-        res.sendFile(path.resolve(distPath, "index.html"));
-      }
-    });
-  }
-
   // 404 handler for unmatched API routes only (after Vite setup)
   app.use('/api/*', notFoundHandler);
 
