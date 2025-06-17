@@ -1,8 +1,12 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import path from "path";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
+import multer from "multer";
+import sharp from "sharp";
+import fs from "fs/promises";
 import { storage } from "./storage";
 import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
@@ -20,7 +24,37 @@ import { healthService } from "./health";
 import { jobQueue } from "./jobs";
 import { setupAuth, isAuthenticated } from "./oauthAuth";
 
+// Configure multer for file uploads
+const storage_config = multer.memoryStorage();
+const upload = multer({
+  storage: storage_config,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files (JPEG, PNG, GIF, WebP) are allowed'));
+    }
+  },
+});
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+async function ensureUploadsDir() {
+  try {
+    await fs.access(uploadsDir);
+  } catch {
+    await fs.mkdir(uploadsDir, { recursive: true });
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Ensure uploads directory exists
+  await ensureUploadsDir();
+  
   // Setup authentication middleware FIRST
   await setupAuth(app);
 
@@ -28,6 +62,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(corsHeaders);
   app.use(securityHeaders);
   app.use(requestLogger);
+  
+  // Serve uploaded files
+  app.use('/uploads', (req, res, next) => {
+    const filePath = path.join(process.cwd(), 'public', 'uploads', req.path);
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        res.status(404).send('File not found');
+      }
+    });
+  });
 
   // CRITICAL: Universal invitation routes for both development and production
   app.get("/invitation", (req, res, next) => {
@@ -820,23 +864,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Profile image management
-  app.patch("/api/users/profile-image", 
+  // Profile image file upload
+  app.post("/api/users/profile-image/upload", 
     isAuthenticated, 
-    rateLimit(10, 60 * 60 * 1000), // 10 updates per hour
+    rateLimit(5, 60 * 60 * 1000), // 5 uploads per hour
+    upload.single('image'),
     async (req: any, res) => {
     try {
       const userId = req.user.claims?.sub || req.user.id;
-      const { profileImageUrl } = req.body;
       
-      if (!profileImageUrl) {
-        return res.status(400).json({ message: "Profile image URL is required" });
-      }
-      
-      // Basic URL validation
-      const urlRegex = /^https?:\/\/.+/;
-      if (!urlRegex.test(profileImageUrl)) {
-        return res.status(400).json({ message: "Invalid URL format" });
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
       }
       
       const currentUser = await storage.getUser(userId);
@@ -844,6 +882,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
+      // Generate unique filename
+      const fileExtension = req.file.mimetype.split('/')[1];
+      const fileName = `profile_${userId}_${Date.now()}.${fileExtension}`;
+      const filePath = path.join(uploadsDir, fileName);
+      
+      // Process image with sharp - resize and optimize
+      await sharp(req.file.buffer)
+        .resize(400, 400, { 
+          fit: 'cover',
+          position: 'center'
+        })
+        .jpeg({ quality: 85 })
+        .toFile(filePath);
+      
+      // Update user profile with new image URL
+      const profileImageUrl = `/uploads/${fileName}`;
       const updatedUser = await storage.updateUserProfileImage(currentUser.email, profileImageUrl);
       
       if (!updatedUser) {
@@ -853,11 +907,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         success: true, 
         profileImageUrl: updatedUser.profileImageUrl,
-        message: "Profile image updated successfully" 
+        message: "Profile image uploaded successfully" 
       });
     } catch (error) {
-      console.error("Profile image update error:", error);
-      res.status(500).json({ message: "Failed to update profile image" });
+      console.error("Profile image upload error:", error);
+      res.status(500).json({ message: "Failed to upload profile image" });
+    }
+  });
+
+  // Import profile image from OAuth provider
+  app.post("/api/users/profile-image/import", 
+    isAuthenticated, 
+    rateLimit(3, 60 * 60 * 1000), // 3 imports per hour
+    async (req: any, res) => {
+    try {
+      const userId = req.user.claims?.sub || req.user.id;
+      const { provider } = req.body;
+      
+      if (!provider || !['google', 'facebook'].includes(provider)) {
+        return res.status(400).json({ message: "Invalid provider. Use 'google' or 'facebook'" });
+      }
+      
+      const currentUser = await storage.getUser(userId);
+      if (!currentUser || !currentUser.email) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      let profileImageUrl = null;
+      
+      // Extract profile image from OAuth provider
+      if (provider === 'google' && currentUser.googleId) {
+        // For Google users, we can get the profile image from the OAuth claims
+        profileImageUrl = req.user.claims?.profile_image_url || req.user.claims?.picture;
+      } else if (provider === 'facebook' && currentUser.facebookId) {
+        // For Facebook users, construct profile image URL
+        profileImageUrl = `https://graph.facebook.com/${currentUser.facebookId}/picture?type=large`;
+      }
+      
+      if (!profileImageUrl) {
+        return res.status(400).json({ 
+          message: `No ${provider} profile image available or account not linked` 
+        });
+      }
+      
+      // Download and process the image
+      try {
+        const response = await fetch(profileImageUrl);
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile image');
+        }
+        
+        const imageBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(imageBuffer);
+        
+        // Generate unique filename
+        const fileName = `profile_${userId}_${provider}_${Date.now()}.jpg`;
+        const filePath = path.join(uploadsDir, fileName);
+        
+        // Process image with sharp - resize and optimize
+        await sharp(buffer)
+          .resize(400, 400, { 
+            fit: 'cover',
+            position: 'center'
+          })
+          .jpeg({ quality: 85 })
+          .toFile(filePath);
+        
+        // Update user profile with new image URL
+        const localImageUrl = `/uploads/${fileName}`;
+        const updatedUser = await storage.updateUserProfileImage(currentUser.email, localImageUrl);
+        
+        if (!updatedUser) {
+          return res.status(500).json({ message: "Failed to update profile image" });
+        }
+        
+        res.json({ 
+          success: true, 
+          profileImageUrl: updatedUser.profileImageUrl,
+          provider,
+          message: `Profile image imported from ${provider} successfully` 
+        });
+      } catch (fetchError) {
+        console.error(`Error importing ${provider} profile image:`, fetchError);
+        res.status(500).json({ message: `Failed to import ${provider} profile image` });
+      }
+    } catch (error) {
+      console.error("Profile image import error:", error);
+      res.status(500).json({ message: "Failed to import profile image" });
     }
   });
 
@@ -869,8 +1005,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect(linkingUrl);
   });
 
-  app.get("/api/auth/account-status", isAuthenticated, async (req: any, res) => {
+  app.get("/api/auth/account-status", async (req: any, res) => {
     try {
+      // Check if user is authenticated
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const userId = req.user.claims?.sub || req.user.id;
       const currentUser = await storage.getUser(userId);
       
