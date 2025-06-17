@@ -878,10 +878,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Conversation endpoints
-  app.get("/api/conversations/:email", async (req, res) => {
+  // Conversation endpoints with authentication
+  app.get("/api/conversations/by-email/:email", isAuthenticated, async (req: any, res) => {
     try {
       const { email } = req.params;
+      
+      // Verify user can access conversations for this email
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser || currentUser.email !== email) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
       const conversations = await storage.getConversationsByEmail(email);
       res.json(conversations);
     } catch (error) {
@@ -889,7 +898,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/conversations/:id", async (req, res) => {
+  app.get("/api/conversations/:id", async (req: any, res) => {
     try {
       const conversationId = parseInt(req.params.id);
       const conversation = await storage.getConversation(conversationId);
@@ -898,15 +907,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Conversation not found" });
       }
 
+      // Development bypass for testing
+      if (process.env.NODE_ENV === 'development' && req.query.test_user) {
+        const testUser = await storage.getUserByEmail('thetobyclarkshow@gmail.com');
+        if (testUser && (testUser.email === conversation.participant1Email || testUser.email === conversation.participant2Email)) {
+          return res.json(conversation);
+        }
+      }
+
+      // Check authentication for production
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Verify user is a participant in this conversation
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser || 
+          (currentUser.email !== conversation.participant1Email && 
+           currentUser.email !== conversation.participant2Email)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
       res.json(conversation);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch conversation" });
     }
   });
 
-  app.get("/api/conversations/:id/messages", async (req, res) => {
+  app.get("/api/conversations/:id/messages", async (req: any, res) => {
     try {
       const conversationId = parseInt(req.params.id);
+      
+      // Verify conversation exists
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      // Development bypass for testing
+      if (process.env.NODE_ENV === 'development' && req.query.test_user) {
+        const testUser = await storage.getUserByEmail('thetobyclarkshow@gmail.com');
+        if (testUser && (testUser.email === conversation.participant1Email || testUser.email === conversation.participant2Email)) {
+          const messages = await storage.getMessagesByConversationId(conversationId);
+          return res.json(messages);
+        }
+      }
+
+      // Check authentication for production
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser || 
+          (currentUser.email !== conversation.participant1Email && 
+           currentUser.email !== conversation.participant2Email)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
       const messages = await storage.getMessagesByConversationId(conversationId);
       res.json(messages);
     } catch (error) {

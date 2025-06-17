@@ -30,11 +30,27 @@ export default function ConversationPage() {
 
   const { data: conversation } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${id}`],
+    queryFn: async () => {
+      const testParam = import.meta.env.DEV ? '?test_user=true' : '';
+      const response = await fetch(`/api/conversations/${id}${testParam}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch conversation');
+      }
+      return response.json();
+    },
     enabled: !!id,
   });
 
   const { data: messages = [] } = useQuery<Message[]>({
     queryKey: [`/api/conversations/${id}/messages`],
+    queryFn: async () => {
+      const testParam = import.meta.env.DEV ? '?test_user=true' : '';
+      const response = await fetch(`/api/conversations/${id}/messages${testParam}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch messages');
+      }
+      return response.json();
+    },
     enabled: !!id,
   });
 
