@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Heart, Plus, MessageCircle, Clock, Users, Mail } from "lucide-react";
+import { Plus, MessageCircle, Clock, Users, Mail } from "lucide-react";
 import InvitationForm from "@/components/invitation-form";
 import AccountLinking from "@/components/account-linking";
 import ProfileImageUpload from "@/components/profile-image-upload";
@@ -183,7 +183,7 @@ export default function Dashboard() {
         <Card className="mb-8 card-elevated border-amber/30">
           <CardHeader>
             <CardTitle className="flex items-center text-foreground">
-              <Heart className="w-5 h-5 mr-2 text-amber" />
+              <DeeperLogo size="sm" className="mr-2" />
               Subscription Status
             </CardTitle>
           </CardHeader>
@@ -387,7 +387,7 @@ export default function Dashboard() {
             <Card className="mb-8 card-elevated border-success/30 bg-success/5">
               <CardHeader>
                 <CardTitle className="flex items-center text-foreground">
-                  <Heart className="w-5 h-5 mr-2 text-success" />
+                  <DeeperLogo size="sm" className="mr-2" />
                   Ready to Start Conversations
                 </CardTitle>
               </CardHeader>
@@ -398,8 +398,8 @@ export default function Dashboard() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-3">
-                            <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center">
-                              <Heart className="w-6 h-6 text-success" />
+                            <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center p-2">
+                              <DeeperLogo size="sm" />
                             </div>
                             <div>
                               <h3 className="font-semibold text-foreground text-lg">
