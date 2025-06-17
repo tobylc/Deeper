@@ -60,13 +60,6 @@ export default function ConversationPage() {
         type: data.type,
       });
       
-      // Update conversation turn after successful message
-      await apiRequest("PATCH", `/api/conversations/${id}`, {
-        currentTurn: conversation?.participant1Email === user.email 
-          ? conversation.participant2Email 
-          : conversation.participant1Email
-      });
-      
       return response.json();
     },
     onSuccess: () => {
