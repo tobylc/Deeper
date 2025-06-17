@@ -6,19 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Send, Users, Clock } from "lucide-react";
+import { ArrowLeft, Send, Users, Clock, MessageCircle, Grid3X3 } from "lucide-react";
 import ConversationInterface from "@/components/conversation-interface";
+import ConversationThreads from "@/components/conversation-threads";
 import QuestionSuggestions from "@/components/question-suggestions";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
-import type { Conversation, Message } from "@shared/schema";
+import type { Conversation, Message, Connection } from "@shared/schema";
 
 export default function ConversationPage() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { id } = useParams<{ id: string }>();
   const [newMessage, setNewMessage] = useState("");
+  const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
+  const [showThreadsView, setShowThreadsView] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -28,22 +31,41 @@ export default function ConversationPage() {
     }
   }, [user, setLocation]);
 
+  // Initialize selected conversation ID from URL
+  useEffect(() => {
+    if (id && !selectedConversationId) {
+      setSelectedConversationId(parseInt(id));
+    }
+  }, [id, selectedConversationId]);
+
   const { data: conversation, isLoading: conversationLoading } = useQuery<Conversation>({
-    queryKey: [`/api/conversations/${id}`],
+    queryKey: [`/api/conversations/${selectedConversationId || id}`],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/conversations/${id}`);
+      const conversationId = selectedConversationId || id;
+      const response = await apiRequest('GET', `/api/conversations/${conversationId}`);
       return response.json();
     },
-    enabled: !!id && !!user,
+    enabled: !!(selectedConversationId || id) && !!user,
+  });
+
+  // Get connection info for threading
+  const { data: connection } = useQuery<Connection>({
+    queryKey: [`/api/connections/${conversation?.connectionId}`],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/connections/${conversation?.connectionId}`);
+      return response.json();
+    },
+    enabled: !!conversation?.connectionId && !!user,
   });
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
-    queryKey: [`/api/conversations/${id}/messages`],
+    queryKey: [`/api/conversations/${selectedConversationId || id}/messages`],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/conversations/${id}/messages`);
+      const conversationId = selectedConversationId || id;
+      const response = await apiRequest('GET', `/api/conversations/${conversationId}/messages`);
       return response.json();
     },
-    enabled: !!id && !!user,
+    enabled: !!(selectedConversationId || id) && !!user,
   });
 
   const sendMessageMutation = useMutation({
@@ -146,11 +168,17 @@ export default function ConversationPage() {
     setNewMessage(question);
   };
 
+  const handleThreadSelect = (conversationId: number) => {
+    setSelectedConversationId(conversationId);
+    setNewMessage(""); // Clear message when switching threads
+    setShowThreadsView(false); // Hide threads view on mobile after selection
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Button 
               variant="ghost" 
@@ -176,6 +204,15 @@ export default function ConversationPage() {
             </div>
 
             <div className="flex items-center space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowThreadsView(!showThreadsView)}
+                className="lg:hidden"
+              >
+                <Grid3X3 className="w-4 h-4 mr-2" />
+                Threads
+              </Button>
               <Badge variant={isMyTurn ? "default" : "outline"}>
                 {isMyTurn ? "Your turn" : "Their turn"}
               </Badge>
@@ -188,10 +225,24 @@ export default function ConversationPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid lg:grid-cols-4 gap-8">
+          {/* Conversation Threads Sidebar */}
+          <div className={`lg:col-span-1 ${showThreadsView ? 'block' : 'hidden lg:block'}`}>
+            {conversation && connection && (
+              <ConversationThreads
+                connectionId={conversation.connectionId}
+                currentUserEmail={user.email || ''}
+                otherParticipantEmail={otherParticipant}
+                relationshipType={conversation.relationshipType}
+                onThreadSelect={handleThreadSelect}
+                selectedConversationId={selectedConversationId || parseInt(id!)}
+              />
+            )}
+          </div>
+
           {/* Main Conversation */}
-          <div className="lg:col-span-2">
+          <div className={`lg:col-span-2 ${showThreadsView ? 'hidden lg:block' : 'block'}`}>
             <ConversationInterface 
               messages={messages}
               currentUserEmail={user.email || ''}
@@ -209,7 +260,7 @@ export default function ConversationPage() {
           </div>
 
           {/* Question Suggestions Sidebar */}
-          <div className="lg:col-span-1">
+          <div className={`lg:col-span-1 ${showThreadsView ? 'hidden lg:block' : 'block'}`}>
             {isMyTurn && nextMessageType === 'question' && (
               <QuestionSuggestions 
                 relationshipType={conversation.relationshipType}

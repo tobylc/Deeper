@@ -207,7 +207,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(conversations)
       .where(eq(conversations.connectionId, connectionId))
-      .orderBy(desc(conversations.lastActivityAt));
+      .orderBy(conversations.lastActivityAt);
   }
 
   async createConversation(insertConversation: InsertConversation): Promise<Conversation> {

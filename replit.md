@@ -331,6 +331,15 @@ Changelog:
   * Improved text contrast throughout conversation page sidebar and question suggestions
   * Updated all secondary text elements to use darker gray (slate-600/700) for better visibility
   * Consistent contrast standards applied across conversation interface, sidebar, and question cards
+- June 17, 2025. Multi-conversation threading system implementation:
+  * Enhanced database schema with conversation threading support: title, topic, isMainThread, parentConversationId, lastActivityAt fields
+  * Implemented ConversationThreads component with collapsible envelope-style thread management
+  * Added backend API endpoints for connection-based conversation threading (/api/connections/:id/conversations)
+  * Created thread selection interface allowing users to start new conversation topics while maintaining existing ones
+  * Fixed message bubble flashing issue during typing by optimizing conditional rendering logic
+  * Redesigned conversation page with 4-column layout: threads sidebar, main conversation, question suggestions
+  * Mobile-responsive threading interface with toggle button for thread visibility
+  * Thread sorting: main thread first, then by last activity date for intuitive conversation flow
 - June 17, 2025. Authentication infinite loading issue resolution:
   * Fixed authentication hook to properly handle 401 responses without infinite loading
   * Added 3-second timeout to authentication requests to prevent hanging
