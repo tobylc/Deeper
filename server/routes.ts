@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import path from "path";
 import { storage } from "./storage";
 import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
@@ -26,6 +27,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(securityHeaders);
   app.use(requestLogger);
 
+  // CRITICAL: Invitation routes MUST be before static serving to work in production
+  // In development, these will be handled by Vite's dev server
+  // In production, we need to serve the built index.html
+  if (process.env.NODE_ENV !== "development") {
+    app.get("/invitation", (req, res) => {
+      console.log("[INVITATION] Production route hit with query:", req.query);
+      const distPath = path.resolve(import.meta.dirname, "public");
+      res.sendFile(path.resolve(distPath, "index.html"));
+    });
+
+    app.get("/invitation/*", (req, res) => {
+      console.log("[INVITATION] Production wildcard route hit with params:", req.params, "query:", req.query);
+      const distPath = path.resolve(import.meta.dirname, "public");
+      res.sendFile(path.resolve(distPath, "index.html"));
+    });
+  }
+
   // Health check endpoints
   app.get("/api/health", async (req, res) => {
     try {
@@ -50,20 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Debug routes for invitation page (place before static serving)
-  app.get("/invitation", (req, res) => {
-    console.log("[DEBUG] Direct invitation route hit with query:", req.query);
-    const path = require('path');
-    const distPath = path.resolve(import.meta.dirname, "public");
-    res.sendFile(path.resolve(distPath, "index.html"));
-  });
 
-  app.get("/invitation/*", (req, res) => {
-    console.log("[DEBUG] Wildcard invitation route hit with params:", req.params, "query:", req.query);
-    const path = require('path');
-    const distPath = path.resolve(import.meta.dirname, "public");
-    res.sendFile(path.resolve(distPath, "index.html"));
-  });
 
   // Production Auth endpoints
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
