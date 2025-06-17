@@ -301,6 +301,14 @@ Changelog:
   * Updated backend tierBenefits configuration to enforce new connection limits
   * Enhanced pricing page UI with new icons (Users, MessageCircle, Infinity) for each tier
   * Maintained existing subscription inheritance system where invitees get inviter's benefits
+- June 17, 2025. UI fixes and authentication flow improvements:
+  * Fixed invitation page circle icon color to display blue logo instead of black/inverted version
+  * Eliminated flash of dark screen during redirects by implementing proper loading states in App.tsx
+  * Added authentication loading spinner with branded styling to prevent 404 flashes
+  * Updated invitation signup page to use router navigation instead of window.location.href
+  * Enhanced auth page to properly invalidate authentication cache after login
+  * Improved routing logic to separate authenticated vs unauthenticated routes cleanly
+  * Fixed invitee login redirect issues by implementing proper query invalidation
 ```
 
 ## User Preferences
