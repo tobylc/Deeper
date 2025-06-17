@@ -9,6 +9,7 @@ import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import DeeperLogo from "@/components/deeper-logo";
 
 export default function Auth() {
   const { user, isLoading } = useAuth();
@@ -87,7 +88,7 @@ export default function Auth() {
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
               <ArrowLeft className="w-5 h-5 text-white/80" />
-              <span className="text-2xl font-inter font-bold text-white">Deeper</span>
+              <DeeperLogo size="md" />
             </Link>
           </div>
         </div>

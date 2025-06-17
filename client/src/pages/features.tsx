@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, Lock, MessageCircle, Lightbulb, History, Mail, Users, Star, Globe, Shield, CheckCircle, Clock, Target, Zap, Eye } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
+import DeeperLogo from "@/components/deeper-logo";
 
 export default function Features() {
   const [activeIcon, setActiveIcon] = useState<string>('users');
@@ -15,7 +16,7 @@ export default function Features() {
           <div className="flex justify-between items-center h-16">
             <Link href="/">
               <div className="flex items-center space-x-2 cursor-pointer">
-                <span className="text-2xl font-inter font-bold text-white">Deeper</span>
+                <DeeperLogo size="md" />
               </div>
             </Link>
             <div className="hidden md:flex items-center space-x-8">

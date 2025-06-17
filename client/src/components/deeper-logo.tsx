@@ -16,6 +16,11 @@ export default function DeeperLogo({ className = "", size = 'md' }: DeeperLogoPr
       src="/deeper-logo.png" 
       alt="Deeper" 
       className={`${sizeClasses[size]} ${className}`}
+      onError={(e) => {
+        console.error('Logo failed to load:', e);
+        // Fallback to text if image fails
+        (e.target as HTMLImageElement).style.display = 'none';
+      }}
     />
   );
 }

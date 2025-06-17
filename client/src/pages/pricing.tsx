@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Heart, Star, Zap, Crown, Gift } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
+import DeeperLogo from "@/components/deeper-logo";
 
 export default function Pricing() {
   const [selectedCard, setSelectedCard] = useState<string | null>('free');
