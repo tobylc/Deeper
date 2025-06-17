@@ -221,8 +221,9 @@ Changelog:
   * Invitation acceptance logic handles existing users without password conflicts
   * Email/password authentication fully functional for invited users
   * Users can access their accounts using either login method after linking
-  * Fixed conversation turn logic so invitees properly start first conversations
+  * Fixed conversation turn logic so inviters properly start first conversations
   * Corrected "Your turn" vs "Their turn" display based on actual conversation state
+  * Enhanced conversation header to display participant names instead of email addresses
 ```
 
 ## User Preferences

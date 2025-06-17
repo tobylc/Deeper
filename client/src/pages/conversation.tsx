@@ -11,6 +11,7 @@ import ConversationInterface from "@/components/conversation-interface";
 import QuestionSuggestions from "@/components/question-suggestions";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
 import type { Conversation, Message } from "@shared/schema";
 
 export default function ConversationPage() {
@@ -76,9 +77,9 @@ export default function ConversationPage() {
     ? conversation.participant2Email 
     : conversation.participant1Email;
   
-  // Fix turn logic: if no messages exist, it should be the invitee's turn (participant2) 
+  // Fix turn logic: if no messages exist, it should be the inviter's turn (participant1)
   const isMyTurn = messages.length === 0 
-    ? conversation.participant2Email === user.email  // Invitee starts first
+    ? conversation.participant1Email === user.email  // Inviter starts first
     : conversation.currentTurn === user.email;
   
   // Determine if the next message should be a question or response
@@ -120,7 +121,7 @@ export default function ConversationPage() {
               </div>
               <div>
                 <div className="font-semibold text-darkslate">
-                  {user.firstName || user.email?.split('@')[0] || 'You'} & {otherParticipant}
+                  {user.firstName || user.email?.split('@')[0] || 'You'} & <UserDisplayName email={otherParticipant} />
                 </div>
                 <div className="text-sm text-gray-600">
                   {conversation.relationshipType}
