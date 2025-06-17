@@ -152,7 +152,7 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <DeeperLogo size="md" />
+              <DeeperLogo size="header" />
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-white/80">

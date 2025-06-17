@@ -17,11 +17,20 @@ export default function DeeperLogo({ className = "", size = 'md' }: DeeperLogoPr
     <img 
       src="/deeper-logo.png" 
       alt="Deeper" 
-      className={`${sizeClasses[size]} object-contain ${className}`}
+      className={`${sizeClasses[size]} object-contain select-none ${className}`}
+      loading="eager"
+      decoding="async"
       onError={(e) => {
         console.error('Logo failed to load:', e);
-        // Fallback to text if image fails
-        (e.target as HTMLImageElement).style.display = 'none';
+        // Production-ready fallback with proper error handling
+        const img = e.target as HTMLImageElement;
+        img.style.display = 'none';
+        
+        // Create text fallback for production reliability
+        const fallback = document.createElement('span');
+        fallback.textContent = 'Deeper';
+        fallback.className = `${sizeClasses[size]} font-bold text-ocean ${className}`;
+        img.parentNode?.insertBefore(fallback, img);
       }}
     />
   );
