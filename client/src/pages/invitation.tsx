@@ -143,7 +143,7 @@ export default function InvitationLanding() {
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Thoughtfully Guided Conversations
                 </h3>
-                <p className="text-slate-300 leading-relaxed">
+                <p className="text-slate-100 leading-relaxed">
                   Our expertly curated questions help you explore deeper topics naturally, 
                   creating meaningful dialogue that strengthens your connection over time.
                 </p>
@@ -163,7 +163,7 @@ export default function InvitationLanding() {
                     <CheckCircle className="w-6 h-6 text-ocean" />
                   </div>
                   <h4 className="font-inter font-semibold text-foreground mb-2">1. Quick Registration</h4>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-100">
                     Sign up with your preferred method - Google, Facebook, Apple, or email
                   </p>
                 </div>
@@ -172,7 +172,7 @@ export default function InvitationLanding() {
                     <Users className="w-6 h-6 text-teal" />
                   </div>
                   <h4 className="font-inter font-semibold text-foreground mb-2">2. Private Space Created</h4>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-100">
                     Your exclusive conversation space with {getInviterName()} becomes available immediately
                   </p>
                 </div>
@@ -181,7 +181,7 @@ export default function InvitationLanding() {
                     <Heart className="w-6 h-6 text-amber" />
                   </div>
                   <h4 className="font-inter font-semibold text-foreground mb-2">3. Begin Your Journey</h4>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-slate-100">
                     Start exchanging thoughtful questions and responses, deepening your connection
                   </p>
                 </div>
@@ -191,7 +191,7 @@ export default function InvitationLanding() {
 
           {/* Call to Action */}
           <div className="text-center mt-12">
-            <p className="text-slate-200 mb-6 font-inter">
+            <p className="text-slate-50 mb-6 font-inter">
               {getInviterName()} is waiting to begin this special journey with you.
             </p>
             <Button 
@@ -203,7 +203,7 @@ export default function InvitationLanding() {
             >
               Accept & Join Now
             </Button>
-            <p className="text-sm text-slate-300 mt-4 font-inter">
+            <p className="text-sm text-slate-100 mt-4 font-inter">
               Free to start • Private & secure • Designed for meaningful connections
             </p>
           </div>
