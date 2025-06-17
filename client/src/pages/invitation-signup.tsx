@@ -6,34 +6,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
 
 export default function InvitationSignup() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [inviterEmail, setInviterEmail] = useState<string>("");
-  const [inviteeEmail, setInviteeEmail] = useState<string>("");
-  const [relationshipType, setRelationshipType] = useState<string>("");
-  const [connectionId, setConnectionId] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    // Extract invitation details from URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const inviter = urlParams.get('inviter') || '';
-    const invitee = urlParams.get('invitee') || '';
-    const relationship = urlParams.get('relationship') || '';
-    const id = urlParams.get('id') || '';
-    
-    setInviterEmail(inviter);
-    setInviteeEmail(invitee);
-    setRelationshipType(relationship);
-    setConnectionId(id);
-  }, []);
+  // Get invitation ID from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const invitationId = urlParams.get('id');
+
+  // Fetch invitation details
+  const { data: invitation, isLoading: invitationLoading, error: invitationError } = useQuery({
+    queryKey: ['/api/invitation', invitationId],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/invitation/${invitationId}`);
+      return response.json();
+    },
+    enabled: !!invitationId,
+  });
 
   const getInviterName = () => {
-    return inviterEmail ? inviterEmail.split('@')[0] : 'someone special';
+    return invitation?.inviterEmail ? invitation.inviterEmail.split('@')[0] : 'someone special';
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -62,8 +59,8 @@ export default function InvitationSignup() {
     try {
       // Create account with invitation acceptance
       const response = await apiRequest("POST", "/api/invitation/accept", {
-        connectionId: parseInt(connectionId),
-        inviteeEmail,
+        connectionId: invitation?.id,
+        inviteeEmail: invitation?.inviteeEmail,
         password,
       });
 
@@ -97,7 +94,21 @@ export default function InvitationSignup() {
     }
   };
 
-  if (!inviterEmail || !inviteeEmail || !connectionId) {
+  // Show loading state while fetching invitation
+  if (invitationLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+        <Card className="w-full max-w-md mx-4 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+          <CardContent className="pt-6">
+            <p className="text-center text-slate-300">Loading invitation details...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show error if invitation not found or invalid
+  if (invitationError || !invitation) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
         <Card className="w-full max-w-md mx-4 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
@@ -127,7 +138,7 @@ export default function InvitationSignup() {
               <Input
                 id="inviteeEmail"
                 type="email"
-                value={inviteeEmail}
+                value={invitation.inviteeEmail || ''}
                 readOnly
                 className="bg-slate-700/50 border-slate-600 text-white cursor-not-allowed"
               />
@@ -140,7 +151,7 @@ export default function InvitationSignup() {
               <Label htmlFor="relationshipType" className="text-slate-300">Relationship Type</Label>
               <Input
                 id="relationshipType"
-                value={relationshipType}
+                value={invitation.relationshipType || ''}
                 readOnly
                 className="bg-slate-700/50 border-slate-600 text-white cursor-not-allowed"
               />

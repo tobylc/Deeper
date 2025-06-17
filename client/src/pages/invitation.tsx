@@ -109,13 +109,7 @@ export default function InvitationLanding() {
                   size="lg" 
                   className="btn-ocean px-12 py-4 text-lg font-medium"
                   onClick={() => {
-                    const params = new URLSearchParams({
-                      inviter: inviterEmail,
-                      invitee: inviterEmail, // Will be updated with actual invitee email
-                      relationship: relationshipType,
-                      id: connectionId
-                    });
-                    setLocation(`/invitation/signup?${params.toString()}`);
+                    setLocation(`/invitation/signup?id=${connectionId}`);
                   }}
                 >
                   Accept Your Personal Invitation
