@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { MessageCircle, ArrowRight, Sparkles, Clock } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
+import QuotesIcon from "@/components/quotes-icon";
 import type { Message, User } from "@shared/schema";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import ProfileAvatar from "@/components/profile-avatar";
@@ -68,7 +69,7 @@ export default function ConversationInterface({
             Ask the first question to begin this deeper connection.
           </p>
           <div className="flex items-center justify-center space-x-2 text-sm text-amber/80">
-            <DeeperLogo size="sm" />
+            <QuotesIcon size="sm" />
             <span>Every great conversation starts with curiosity</span>
           </div>
         </div>

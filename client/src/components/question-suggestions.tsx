@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Lightbulb, Shuffle, Sparkles, ArrowRight, MessageCircle } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
+import QuotesIcon from "@/components/quotes-icon";
 import { getQuestionsByCategory } from "@/lib/questions";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -62,7 +63,7 @@ export default function QuestionSuggestions({ relationshipType, onQuestionSelect
               variant="secondary" 
               className="w-fit bg-gradient-to-r from-amber/20 to-amber/10 text-amber-800 border-amber/30 shadow-sm"
             >
-              <DeeperLogo size="sm" className="mr-1" />
+              <QuotesIcon size="sm" className="mr-1" />
               {relationshipType}
             </Badge>
           </CardHeader>

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, MessageCircle, Clock, CheckCircle } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
+import QuotesIcon from "@/components/quotes-icon";
 
 interface InviteeWelcomePopupProps {
   inviterName: string;
@@ -51,12 +52,12 @@ export default function InviteeWelcomePopup({
           
           <div className="flex items-center gap-3 mb-2">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-ocean to-teal flex items-center justify-center p-2">
-              <DeeperLogo size="sm" className="brightness-0 invert" />
+              <QuotesIcon size="sm" className="brightness-0 invert" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm text-muted-foreground font-inter">Welcome to</span>
-                <DeeperLogo size="sm" />
+                <QuotesIcon size="sm" />
               </div>
               <p className="text-sm text-muted-foreground font-inter">
                 Your connection journey begins here

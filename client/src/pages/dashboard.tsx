@@ -388,7 +388,7 @@ export default function Dashboard() {
             <Card className="mb-8 card-elevated border-success/30 bg-success/5">
               <CardHeader>
                 <CardTitle className="flex items-center text-foreground">
-                  <DeeperLogo size="sm" className="mr-2" />
+                  <QuotesIcon size="sm" className="mr-2" />
                   Ready to Start Conversations
                 </CardTitle>
               </CardHeader>
@@ -400,7 +400,7 @@ export default function Dashboard() {
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-3">
                             <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center p-2">
-                              <DeeperLogo size="sm" />
+                              <QuotesIcon size="sm" />
                             </div>
                             <div>
                               <h3 className="font-semibold text-foreground text-lg">

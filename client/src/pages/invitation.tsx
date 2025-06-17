@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, MessageCircle, Users, Sparkles, CheckCircle } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
+import QuotesIcon from "@/components/quotes-icon";
 import { Link } from "wouter";
 
 export default function InvitationLanding() {
@@ -179,7 +180,7 @@ export default function InvitationLanding() {
                 </div>
                 <div className="text-center">
                   <div className="w-12 h-12 rounded-full bg-amber/10 flex items-center justify-center mx-auto mb-4 p-2">
-                    <DeeperLogo size="sm" />
+                    <QuotesIcon size="sm" />
                   </div>
                   <h4 className="font-inter font-semibold text-foreground mb-2">3. Begin Your Journey</h4>
                   <p className="text-sm text-slate-600">
