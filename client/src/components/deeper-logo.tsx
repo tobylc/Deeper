@@ -25,15 +25,19 @@ export default function DeeperLogo({ className = "", size = 'md' }: DeeperLogoPr
     <svg 
       width={width} 
       height={height} 
-      viewBox="0 0 140 40" 
+      viewBox="0 0 180 50" 
       className={`${sizeClasses[size]} ${className}`}
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Modern gradient background circle */}
+      {/* Gradients using application color scheme */}
       <defs>
-        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="speechBubbleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="hsl(215, 85%, 60%)" />
           <stop offset="100%" stopColor="hsl(215, 85%, 50%)" />
+        </linearGradient>
+        <linearGradient id="dropletGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="hsl(215, 85%, 65%)" />
+          <stop offset="100%" stopColor="hsl(215, 85%, 55%)" />
         </linearGradient>
         <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="hsl(215, 85%, 60%)" />
@@ -41,20 +45,44 @@ export default function DeeperLogo({ className = "", size = 'md' }: DeeperLogoPr
         </linearGradient>
       </defs>
       
-      {/* Circular background with gradient */}
-      <circle cx="20" cy="20" r="16" fill="url(#logoGradient)" />
+      {/* Speech bubble shape (left side) */}
+      <path 
+        d="M 5 8 
+           C 5 5, 8 2, 12 2
+           L 28 2
+           C 32 2, 35 5, 35 8
+           L 35 18
+           C 35 21, 32 24, 28 24
+           L 18 24
+           L 12 28
+           L 16 24
+           L 12 24
+           C 8 24, 5 21, 5 18
+           Z" 
+        fill="url(#speechBubbleGradient)"
+      />
       
-      {/* Abstract connection symbol - two overlapping circles representing connection */}
-      <circle cx="16" cy="16" r="4" fill="white" opacity="0.9" />
-      <circle cx="24" cy="24" r="4" fill="white" opacity="0.9" />
-      <circle cx="20" cy="20" r="2" fill="white" />
+      {/* Droplet/teardrop shape (right side) */}
+      <path 
+        d="M 45 25
+           C 45 25, 52 18, 52 12
+           C 52 8, 49 5, 45 5
+           C 41 5, 38 8, 38 12
+           C 38 18, 45 25, 45 25
+           Z" 
+        fill="url(#dropletGradient)"
+      />
       
       {/* Typography - "Deeper" text */}
-      <text x="48" y="16" fontFamily="Inter, sans-serif" fontSize="14" fontWeight="700" fill="url(#textGradient)">
+      <text 
+        x="65" 
+        y="20" 
+        fontFamily="Inter, sans-serif" 
+        fontSize="16" 
+        fontWeight="700" 
+        fill="url(#textGradient)"
+      >
         Deeper
-      </text>
-      <text x="48" y="30" fontFamily="Inter, sans-serif" fontSize="8" fontWeight="400" fill="hsl(210, 10%, 50%)" opacity="0.8">
-        CONNECTIONS
       </text>
     </svg>
   );
