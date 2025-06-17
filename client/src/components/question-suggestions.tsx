@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lightbulb, Shuffle } from "lucide-react";
+import { Lightbulb, Shuffle, Sparkles, ArrowRight, Heart, MessageCircle } from "lucide-react";
 import { getQuestionsByCategory } from "@/lib/questions";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface QuestionSuggestionsProps {
   relationshipType: string;

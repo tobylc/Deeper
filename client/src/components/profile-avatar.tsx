@@ -4,9 +4,9 @@ import { cn } from "@/lib/utils";
 
 interface ProfileAvatarProps {
   email: string;
-  firstName?: string;
-  lastName?: string;
-  profileImageUrl?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  profileImageUrl?: string | null;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
   showOnlineIndicator?: boolean;

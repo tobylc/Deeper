@@ -180,6 +180,7 @@ export default function ConversationPage() {
               participant1Email={conversation.participant1Email}
               participant2Email={conversation.participant2Email}
               isMyTurn={isMyTurn}
+              relationshipType={conversation.relationshipType}
             />
 
             {/* Message Input */}
