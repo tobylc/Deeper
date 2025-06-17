@@ -11,6 +11,7 @@ import Dashboard from "@/pages/dashboard";
 import Conversation from "@/pages/conversation";
 import Auth from "@/pages/auth";
 import InvitationLanding from "@/pages/invitation";
+import InvitationSignup from "@/pages/invitation-signup";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
   return (
     <Switch>
       {/* Invitation and auth routes are always accessible */}
+      <Route path="/invitation/signup" component={InvitationSignup} />
       <Route path="/invitation/:params*" component={InvitationLanding} />
       <Route path="/invitation" component={InvitationLanding} />
       <Route path="/auth" component={Auth} />

@@ -105,11 +105,21 @@ export default function InvitationLanding() {
                 one-on-one conversations between you and {getInviterName()}.
               </p>
               <div className="flex justify-center">
-                <Link href="/auth">
-                  <Button size="lg" className="btn-ocean px-12 py-4 text-lg font-medium">
-                    Accept Your Personal Invitation
-                  </Button>
-                </Link>
+                <Button 
+                  size="lg" 
+                  className="btn-ocean px-12 py-4 text-lg font-medium"
+                  onClick={() => {
+                    const params = new URLSearchParams({
+                      inviter: inviterEmail,
+                      invitee: inviterEmail, // Will be updated with actual invitee email
+                      relationship: relationshipType,
+                      id: connectionId
+                    });
+                    setLocation(`/invitation/signup?${params.toString()}`);
+                  }}
+                >
+                  Accept Your Personal Invitation
+                </Button>
               </div>
             </CardContent>
           </Card>
