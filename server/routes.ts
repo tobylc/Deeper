@@ -820,6 +820,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Profile image management
+  app.patch("/api/users/profile-image", 
+    isAuthenticated, 
+    rateLimit(10, 60 * 60 * 1000), // 10 updates per hour
+    async (req: any, res) => {
+    try {
+      const userId = req.user.claims?.sub || req.user.id;
+      const { profileImageUrl } = req.body;
+      
+      if (!profileImageUrl) {
+        return res.status(400).json({ message: "Profile image URL is required" });
+      }
+      
+      // Basic URL validation
+      const urlRegex = /^https?:\/\/.+/;
+      if (!urlRegex.test(profileImageUrl)) {
+        return res.status(400).json({ message: "Invalid URL format" });
+      }
+      
+      const currentUser = await storage.getUser(userId);
+      if (!currentUser || !currentUser.email) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const updatedUser = await storage.updateUserProfileImage(currentUser.email, profileImageUrl);
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update profile image" });
+      }
+      
+      res.json({ 
+        success: true, 
+        profileImageUrl: updatedUser.profileImageUrl,
+        message: "Profile image updated successfully" 
+      });
+    } catch (error) {
+      console.error("Profile image update error:", error);
+      res.status(500).json({ message: "Failed to update profile image" });
+    }
+  });
+
   // Account linking endpoints
   app.get("/api/auth/link/google", isAuthenticated, (req, res) => {
     // Redirect to Google OAuth with special linking parameter

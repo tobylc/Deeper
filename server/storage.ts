@@ -17,6 +17,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   upsertUser(user: InsertUser): Promise<User>;
   linkGoogleAccount(userId: string, googleId: string): Promise<User | undefined>;
+  updateUserProfileImage(email: string, profileImageUrl: string): Promise<User | undefined>;
   updateUserSubscription(userId: string, subscriptionData: {
     subscriptionTier: string;
     subscriptionStatus: string;
@@ -104,6 +105,18 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
+  }
+
+  async updateUserProfileImage(email: string, profileImageUrl: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        profileImageUrl: profileImageUrl,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.email, email))
       .returning();
     return user || undefined;
   }
