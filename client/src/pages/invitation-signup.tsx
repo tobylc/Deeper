@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
 import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
@@ -82,32 +82,24 @@ export default function InvitationSignup() {
       if (response.ok) {
         const result = await response.json();
         
-        if (result.success) {
-          toast({
-            title: "Welcome to Deeper!",
-            description: `Connection established with ${getInviterName()}. Taking you to your dashboard...`,
+        toast({
+          title: "Welcome to Deeper!",
+          description: `Connection established with ${getInviterName()}. Taking you to your dashboard...`,
+        });
+        
+        // Invalidate authentication cache to refresh user state
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        
+        // Redirect with welcome parameters to trigger popup
+        setTimeout(() => {
+          const welcomeParams = new URLSearchParams({
+            welcome: 'true',
+            inviter: invitation.inviterEmail,
+            relationship: invitation.relationshipType
           });
-          
-          // Redirect with welcome parameters to trigger popup
-          setTimeout(() => {
-            const welcomeParams = new URLSearchParams({
-              welcome: 'true',
-              inviter: invitation.inviterEmail,
-              relationship: invitation.relationshipType
-            });
-            setLocation(`/dashboard?${welcomeParams.toString()}`);
-          }, 1000);
-        } else {
-          toast({
-            title: "Account Created",
-            description: result.details || "Please sign in to continue.",
-            variant: "default",
-          });
-          
-          setTimeout(() => {
-            setLocation("/auth");
-          }, 2000);
-        }
+          // Use window.location.href to ensure proper navigation and auth state refresh
+          window.location.href = `/dashboard?${welcomeParams.toString()}`;
+        }, 1500); // Increased delay to allow cache invalidation
       } else {
         const error = await response.json();
         
