@@ -115,6 +115,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Get user display name endpoint
+  app.get("/api/users/display-name/:email", async (req, res) => {
+    try {
+      const email = decodeURIComponent(req.params.email);
+      const displayName = await storage.getUserDisplayNameByEmail(email);
+      res.json({ displayName });
+    } catch (error: any) {
+      console.error("Get display name error:", error);
+      res.status(500).json({ message: "Failed to get display name" });
+    }
+  });
+
   // Get invitation details endpoint (public - no auth required)
   app.get("/api/invitation/:id", async (req, res) => {
     try {

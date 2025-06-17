@@ -231,6 +231,25 @@ export class DatabaseStorage implements IStorage {
       .where(eq(emails.id, id));
     return email;
   }
+
+  async getUserDisplayNameByEmail(email: string): Promise<string> {
+    const user = await this.getUserByEmail(email);
+    if (!user) return email.split('@')[0];
+    
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    
+    if (user.firstName) {
+      return user.firstName;
+    }
+    
+    if (user.lastName) {
+      return user.lastName;
+    }
+    
+    return email.split('@')[0];
+  }
 }
 
 export const storage = new DatabaseStorage();

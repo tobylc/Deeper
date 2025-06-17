@@ -227,7 +227,7 @@ export default function InvitationSignup() {
 
             <Button
               type="submit"
-              disabled={isLoading || !password || !confirmPassword}
+              disabled={isLoading || !firstName.trim() || !lastName.trim() || !password || !confirmPassword}
               className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 rounded-xl transition-all duration-200"
             >
               {isLoading ? "Creating Connection..." : "Begin Deeper Connection"}
