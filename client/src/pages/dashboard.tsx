@@ -19,6 +19,23 @@ export default function Dashboard() {
   const [showInviteForm, setShowInviteForm] = useState(false);
   const { toast } = useToast();
 
+  // Check for account linking success
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const linkedProvider = urlParams.get('linked');
+    
+    if (linkedProvider === 'google') {
+      toast({
+        title: "Account Linked Successfully!",
+        description: "Your Google account has been linked. You can now sign in using either method.",
+        duration: 5000,
+      });
+      
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [toast]);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       setLocation("/auth");
