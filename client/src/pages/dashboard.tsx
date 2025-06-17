@@ -364,6 +364,131 @@ export default function Dashboard() {
           </Card>
         )}
 
+        {/* Ready to Start Conversations */}
+        {(() => {
+          // Find accepted connections that don't have active conversations yet
+          const connectionsReadyToStart = acceptedConnections.filter(connection => {
+            // Only show for inviters who need to start conversations
+            if (connection.inviterEmail !== user.email) return false;
+            
+            // Check if there's already an active conversation for this connection
+            const hasActiveConversation = activeConversations.some(conv => 
+              (conv.participant1Email === connection.inviterEmail && conv.participant2Email === connection.inviteeEmail) ||
+              (conv.participant1Email === connection.inviteeEmail && conv.participant2Email === connection.inviterEmail)
+            );
+            
+            return !hasActiveConversation;
+          });
+
+          if (connectionsReadyToStart.length === 0) return null;
+
+          return (
+            <Card className="mb-8 card-elevated border-success/30 bg-success/5">
+              <CardHeader>
+                <CardTitle className="flex items-center text-foreground">
+                  <Heart className="w-5 h-5 mr-2 text-success" />
+                  Ready to Start Conversations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {connectionsReadyToStart.map((connection) => (
+                    <div key={connection.id} className="p-6 bg-white dark:bg-slate-800 border border-success/20 rounded-2xl">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-3">
+                            <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center">
+                              <Heart className="w-6 h-6 text-success" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-foreground text-lg">
+                                Connection Accepted!
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                <UserDisplayName email={connection.inviteeEmail} /> has accepted your invitation
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-amber/10 border border-amber/20 rounded-xl p-4 mb-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <MessageCircle className="w-4 h-4 text-amber" />
+                              <h4 className="font-medium text-foreground">Ready to begin your {connection.relationshipType.toLowerCase()} journey</h4>
+                            </div>
+                            <p className="text-sm text-slate-600">
+                              Your private conversation space is ready. Start with a meaningful question to begin your dialogue together.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center space-x-2 mb-4">
+                            <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
+                              {connection.relationshipType}
+                            </Badge>
+                            <Badge variant="outline">
+                              Accepted {new Date(connection.acceptedAt!).toLocaleDateString()}
+                            </Badge>
+                          </div>
+
+                          {connection.personalMessage && (
+                            <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                              <p className="text-sm text-muted-foreground">
+                                <span className="font-medium">Your message:</span> "{connection.personalMessage}"
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="ml-6">
+                          <Button 
+                            onClick={async () => {
+                              try {
+                                // Create a new conversation
+                                const response = await apiRequest("POST", "/api/conversations", {
+                                  participant1Email: connection.inviterEmail,
+                                  participant2Email: connection.inviteeEmail,
+                                  relationshipType: connection.relationshipType,
+                                  currentTurn: connection.inviterEmail // Inviter starts first
+                                });
+                                
+                                const conversation = await response.json();
+                                
+                                // Refresh conversations data
+                                queryClient.invalidateQueries({ queryKey: [`/api/conversations/${user.email}`] });
+                                
+                                if (conversation && conversation.id) {
+                                  setLocation(`/conversation/${conversation.id}`);
+                                } else {
+                                  toast({
+                                    title: "Success!",
+                                    description: "Conversation space created. Redirecting...",
+                                  });
+                                  // Fallback: refresh the page to show updated state
+                                  setTimeout(() => window.location.reload(), 1000);
+                                }
+                              } catch (error) {
+                                console.error("Conversation creation error:", error);
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to start conversation",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                            className="btn-ocean px-6 py-3 text-lg"
+                          >
+                            <MessageCircle className="w-5 h-5 mr-2" />
+                            Start Your First Conversation
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
         {/* Active Conversations */}
         <Card className="card-elevated">
           <CardHeader>
