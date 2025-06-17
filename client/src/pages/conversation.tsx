@@ -77,6 +77,16 @@ export default function ConversationPage() {
     ? conversation.participant2Email 
     : conversation.participant1Email;
   
+  // Debug logging to understand the turn logic
+  console.log('Conversation turn debug:', {
+    userEmail: user.email,
+    participant1Email: conversation.participant1Email,
+    participant2Email: conversation.participant2Email,
+    currentTurn: conversation.currentTurn,
+    messagesLength: messages.length,
+    isUserParticipant1: conversation.participant1Email === user.email
+  });
+
   // Fix turn logic: if no messages exist, it should be the inviter's turn (participant1)
   const isMyTurn = messages.length === 0 
     ? conversation.participant1Email === user.email  // Inviter starts first
