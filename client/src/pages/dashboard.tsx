@@ -21,6 +21,13 @@ export default function Dashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Fetch account status for profile image import options
+  const { data: accountStatus } = useQuery({
+    queryKey: ["/api/auth/account-status"],
+    enabled: isAuthenticated,
+    retry: false,
+  });
+
   // Check for account linking success
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -417,7 +424,10 @@ export default function Dashboard() {
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           {/* Profile Image Upload */}
           <ProfileImageUpload 
-            currentImageUrl={user?.profileImageUrl}
+            currentImageUrl={user?.profileImageUrl ?? undefined}
+            userEmail={user?.email || undefined}
+            hasGoogleLinked={accountStatus?.hasGoogleLinked || false}
+            hasFacebookLinked={false}
             onImageUpdate={() => {
               // Refresh user data
               queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });

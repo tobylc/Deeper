@@ -939,9 +939,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (provider === 'google' && currentUser.googleId) {
         // For Google users, we can get the profile image from the OAuth claims
         profileImageUrl = req.user.claims?.profile_image_url || req.user.claims?.picture;
-      } else if (provider === 'facebook' && currentUser.facebookId) {
-        // For Facebook users, construct profile image URL
-        profileImageUrl = `https://graph.facebook.com/${currentUser.facebookId}/picture?type=large`;
+      } else if (provider === 'facebook') {
+        // For Facebook users, we would construct profile image URL if facebook linking was implemented
+        // For now, return an error since Facebook OAuth is not yet implemented
+        return res.status(400).json({ 
+          message: "Facebook import not yet available. Please use file upload instead." 
+        });
       }
       
       if (!profileImageUrl) {
@@ -1005,13 +1008,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect(linkingUrl);
   });
 
-  app.get("/api/auth/account-status", async (req: any, res) => {
+  app.get("/api/auth/account-status", isAuthenticated, async (req: any, res) => {
     try {
-      // Check if user is authenticated
-      if (!req.isAuthenticated() || !req.user) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
       const userId = req.user.claims?.sub || req.user.id;
       const currentUser = await storage.getUser(userId);
       

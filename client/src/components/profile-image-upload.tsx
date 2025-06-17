@@ -31,10 +31,18 @@ export default function ProfileImageUpload({
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append('image', file);
-      return await apiRequest('/api/users/profile-image/upload', {
+      
+      const response = await fetch('/api/users/profile-image/upload', {
         method: 'POST',
         body: formData,
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Upload failed');
+      }
+      
+      return await response.json();
     },
     onSuccess: (data) => {
       toast({
@@ -57,15 +65,22 @@ export default function ProfileImageUpload({
 
   const importMutation = useMutation({
     mutationFn: async (provider: 'google' | 'facebook') => {
-      return await apiRequest('/api/users/profile-image/import', {
+      const response = await fetch('/api/users/profile-image/import', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ provider }),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Import failed');
+      }
+      
+      return await response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: "Success",
         description: `Profile image imported from ${data.provider} successfully`,
