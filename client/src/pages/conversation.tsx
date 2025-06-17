@@ -71,26 +71,28 @@ export default function ConversationPage() {
     },
   });
 
-  if (!user || !conversation) return null;
+  if (!user || !conversation) {
+    if (!user) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+            <h2 className="text-xl font-semibold mb-4">Please log in to view this conversation</h2>
+            <Button onClick={() => setLocation("/auth")} className="btn-ocean">
+              Go to Login
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  }
 
   const otherParticipant = conversation.participant1Email === user.email 
     ? conversation.participant2Email 
     : conversation.participant1Email;
   
-  // Debug logging to understand the turn logic
-  console.log('Conversation turn debug:', {
-    userEmail: user.email,
-    participant1Email: conversation.participant1Email,
-    participant2Email: conversation.participant2Email,
-    currentTurn: conversation.currentTurn,
-    messagesLength: messages.length,
-    isUserParticipant1: conversation.participant1Email === user.email
-  });
-
-  // Fix turn logic: if no messages exist, it should be the inviter's turn (participant1)
-  const isMyTurn = messages.length === 0 
-    ? conversation.participant1Email === user.email  // Inviter starts first
-    : conversation.currentTurn === user.email;
+  // Correct turn logic: inviter (participant1) always starts the conversation
+  const isMyTurn = conversation.currentTurn === user.email;
   
   // Determine if the next message should be a question or response
   const lastMessage = messages[messages.length - 1];
