@@ -89,6 +89,7 @@ export const emails = pgTable("emails", {
 
 // Schemas
 export const insertUserSchema = createInsertSchema(users).pick({
+  id: true,
   email: true,
   firstName: true,
   lastName: true,
@@ -100,6 +101,7 @@ export const insertConnectionSchema = createInsertSchema(connections).pick({
   inviteeEmail: true,
   relationshipType: true,
   personalMessage: true,
+  inviterSubscriptionTier: true,
 }).extend({
   personalMessage: z.string().optional(),
 });

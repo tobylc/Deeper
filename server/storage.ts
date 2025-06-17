@@ -86,6 +86,30 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async updateUserSubscription(userId: string, subscriptionData: {
+    subscriptionTier: string;
+    subscriptionStatus: string;
+    maxConnections: number;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+    subscriptionExpiresAt?: Date;
+  }): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        subscriptionTier: subscriptionData.subscriptionTier,
+        subscriptionStatus: subscriptionData.subscriptionStatus,
+        maxConnections: subscriptionData.maxConnections,
+        stripeCustomerId: subscriptionData.stripeCustomerId,
+        stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
+        subscriptionExpiresAt: subscriptionData.subscriptionExpiresAt,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
+  }
+
   // Connections
   async getConnection(id: number): Promise<Connection | undefined> {
     const [connection] = await db.select().from(connections).where(eq(connections.id, id));

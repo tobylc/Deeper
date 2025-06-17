@@ -107,15 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid relationshipType" });
       }
       
-      const connectionData = {
-        inviteeEmail,
-        relationshipType,
-        personalMessage: personalMessage || "",
-        inviterEmail: "", // Will be set below
-      };
-
-      // Get authenticated user's email
-      console.log("[DEBUG] Request user object:", req.user);
+      // Get authenticated user first
       let userId;
       if (req.user.claims) {
         // Real Replit Auth
@@ -135,9 +127,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "User email not found" });
       }
 
-      // Use authenticated user's email as inviter
-      connectionData.inviterEmail = currentUser.email;
-      console.log("[DEBUG] Final connection data:", connectionData);
+      // Check subscription limits before allowing connection creation
+      const initiatedConnectionsCount = await storage.getInitiatedConnectionsCount(currentUser.email);
+      const userMaxConnections = currentUser.maxConnections || 1;
+      
+      if (initiatedConnectionsCount >= userMaxConnections) {
+        return res.status(403).json({ 
+          message: "Connection limit reached. Upgrade your plan to invite more people.", 
+          type: "SUBSCRIPTION_LIMIT",
+          currentCount: initiatedConnectionsCount,
+          maxAllowed: userMaxConnections,
+          subscriptionTier: currentUser.subscriptionTier || 'free'
+        });
+      }
+
+      const connectionData = {
+        inviteeEmail,
+        relationshipType,
+        personalMessage: personalMessage || "",
+        inviterEmail: currentUser.email,
+        inviterSubscriptionTier: currentUser.subscriptionTier || 'free'
+      };
 
       // Check for duplicate connections
       const existingConnections = await storage.getConnectionsByEmail(connectionData.inviterEmail);
