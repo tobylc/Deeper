@@ -213,6 +213,14 @@ Changelog:
   * Invitation acceptance workflow with robust session establishment
   * Comprehensive logging for debugging and monitoring purposes
   * Authentication state properly typed throughout frontend application
+- June 17, 2025. Account linking system for invited users completed:
+  * Database schema enhanced with googleId field for OAuth account linking
+  * OAuth authentication automatically links existing email-based accounts with Google profiles
+  * Dashboard interface shows authentication methods with account linking controls
+  * Success notifications when Google account linking is completed
+  * Invitation acceptance logic handles existing users without password conflicts
+  * Email/password authentication fully functional for invited users
+  * Users can access their accounts using either login method after linking
 ```
 
 ## User Preferences
