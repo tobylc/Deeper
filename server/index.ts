@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { globalErrorHandler, notFoundHandler, setupGracefulShutdown } from "./error-handling";
@@ -50,6 +51,16 @@ app.use((req, res, next) => {
     await setupVite(app, server);
   } else {
     serveStatic(app);
+  }
+
+  // Add catch-all route for client-side routing in production
+  if (app.get("env") !== "development") {
+    app.get('*', (req, res) => {
+      if (!req.path.startsWith('/api')) {
+        const distPath = path.resolve(import.meta.dirname, "public");
+        res.sendFile(path.resolve(distPath, "index.html"));
+      }
+    });
   }
 
   // 404 handler for unmatched API routes only (after Vite setup)
