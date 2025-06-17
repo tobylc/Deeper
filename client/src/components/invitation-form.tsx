@@ -90,6 +90,21 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
           description: "You already have a connection with this person",
           variant: "destructive",
         });
+      } else if (error.status === 403 || error.response?.status === 403) {
+        const errorData = error.response?.data || error;
+        if (errorData.type === 'SUBSCRIPTION_LIMIT') {
+          toast({
+            title: "Connection Limit Reached",
+            description: `You've reached your limit of ${errorData.maxAllowed} connections. Upgrade your plan to invite more people.`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Access Denied",
+            description: errorData.message || "You don't have permission to perform this action",
+            variant: "destructive",
+          });
+        }
       } else {
         toast({
           title: "Error",

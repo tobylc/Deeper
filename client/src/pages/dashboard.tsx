@@ -150,10 +150,18 @@ export default function Dashboard() {
                 </p>
               </div>
             </div>
-            <div className="mt-4 text-center">
+            <div className="mt-6 text-center space-y-3">
               <p className="text-sm text-muted-foreground">
                 Paid members can invite others without charge. Invitees inherit your subscription benefits.
               </p>
+              {((user as any)?.subscriptionTier === 'free' || !(user as any)?.subscriptionTier) && (
+                <Button 
+                  onClick={() => setLocation('/pricing')}
+                  className="btn-amber px-6 py-2"
+                >
+                  Upgrade Plan
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

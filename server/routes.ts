@@ -331,6 +331,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Subscription management endpoints
+  app.post("/api/subscription/upgrade", isAuthenticated, async (req: any, res) => {
+    try {
+      const { tier } = req.body;
+      const userId = req.user.claims?.sub || req.user.id;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const currentUser = await storage.getUser(userId);
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const tierBenefits: Record<string, { maxConnections: number, price: number }> = {
+        'basic': { maxConnections: 5, price: 9.99 },
+        'premium': { maxConnections: 20, price: 19.99 },
+        'unlimited': { maxConnections: 999, price: 39.99 }
+      };
+
+      const benefits = tierBenefits[tier];
+      if (!benefits) {
+        return res.status(400).json({ message: "Invalid subscription tier" });
+      }
+
+      // For now, simulate successful upgrade (Stripe integration would go here)
+      await storage.updateUserSubscription(userId, {
+        subscriptionTier: tier,
+        subscriptionStatus: 'active',
+        maxConnections: benefits.maxConnections,
+        subscriptionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+      });
+
+      res.json({ 
+        success: true, 
+        tier, 
+        maxConnections: benefits.maxConnections,
+        message: "Subscription upgraded successfully" 
+      });
+    } catch (error) {
+      console.error("Subscription upgrade error:", error);
+      res.status(500).json({ message: "Failed to upgrade subscription" });
+    }
+  });
+
+  app.get("/api/subscription/status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (!currentUser.email) {
+        return res.status(400).json({ message: "User email not found" });
+      }
+
+      const initiatedCount = await storage.getInitiatedConnectionsCount(currentUser.email);
+      
+      res.json({
+        subscriptionTier: currentUser.subscriptionTier || 'free',
+        subscriptionStatus: currentUser.subscriptionStatus || 'inactive',
+        maxConnections: currentUser.maxConnections || 1,
+        initiatedConnections: initiatedCount,
+        subscriptionExpiresAt: currentUser.subscriptionExpiresAt
+      });
+    } catch (error) {
+      console.error("Subscription status error:", error);
+      res.status(500).json({ message: "Failed to fetch subscription status" });
+    }
+  });
+
   // Conversation endpoints
   app.get("/api/conversations/:email", async (req, res) => {
     try {

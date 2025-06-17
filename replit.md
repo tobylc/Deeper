@@ -182,6 +182,15 @@ Changelog:
   * Updated email templates to use deployed URL (https://deepersocial.replit.app)
   * System now requires proper OAuth configuration for production use
   * All authentication endpoints updated for production deployment
+- June 17, 2025. Comprehensive subscription billing system implemented:
+  * Connection limits enforced based on subscription tiers (free: 1, basic: 5, premium: 20, unlimited: 999)
+  * Paid users can invite others without charge - invitees inherit subscription benefits
+  * Enhanced dashboard UI differentiates between initiated vs accepted connections
+  * Subscription management routes for upgrading and status checking
+  * Connection acceptance automatically grants inviter's tier to invitee
+  * Comprehensive error handling for connection limits in invitation form
+  * Subscription status display shows current plan, connection counts, and upgrade options
+  * Database schema includes inviterSubscriptionTier tracking for billing inheritance
 ```
 
 ## User Preferences
