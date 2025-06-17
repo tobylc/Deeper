@@ -18,12 +18,14 @@ function Router() {
 
   return (
     <Switch>
+      {/* Invitation routes are always accessible */}
+      <Route path="/invitation/:params*" component={InvitationLanding} />
+      <Route path="/invitation" component={InvitationLanding} />
+      
       {isLoading || !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
           <Route path="/auth" component={Auth} />
-          <Route path="/invitation/:params*" component={InvitationLanding} />
-          <Route path="/invitation" component={InvitationLanding} />
         </>
       ) : (
         <>
