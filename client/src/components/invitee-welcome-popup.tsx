@@ -72,8 +72,8 @@ export default function InviteeWelcomePopup({
                 Connection Established
               </h3>
             </div>
-            <p className="text-sm text-muted-foreground font-inter leading-relaxed">
-              <span className="font-medium text-foreground">{inviterName}</span> has invited you to connect as{' '}
+            <p className="text-sm text-slate-200 font-inter leading-relaxed">
+              <span className="font-medium text-white">{inviterName}</span> has invited you to connect as{' '}
               <span className="font-medium text-ocean">{relationshipType}</span>. 
               Your account has been created and you're ready to begin meaningful conversations.
             </p>
@@ -81,7 +81,7 @@ export default function InviteeWelcomePopup({
 
           {/* What Happens Next */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-foreground font-inter flex items-center gap-2">
+            <h3 className="font-semibold text-white font-inter flex items-center gap-2">
               <Clock className="w-5 h-5 text-amber" />
               What happens next?
             </h3>
