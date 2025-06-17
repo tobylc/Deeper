@@ -22,6 +22,7 @@ function Router() {
         <>
           <Route path="/" component={Landing} />
           <Route path="/auth" component={Auth} />
+          <Route path="/invitation/:params*" component={InvitationLanding} />
           <Route path="/invitation" component={InvitationLanding} />
         </>
       ) : (
