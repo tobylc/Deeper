@@ -105,7 +105,7 @@ export class ProductionEmailService implements EmailService {
             ` : ''}
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${appUrl}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
+              <a href="${appUrl}/invitation?inviter=${encodeURIComponent(connection.inviterEmail)}&relationship=${encodeURIComponent(connection.relationshipType)}&id=${connection.id}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
                 Accept Invitation
               </a>
             </div>
@@ -298,7 +298,7 @@ export class InternalEmailService implements EmailService {
           ` : ''}
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${appUrl}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
+            <a href="${appUrl}/invitation?inviter=${encodeURIComponent(connection.inviterEmail)}&relationship=${encodeURIComponent(connection.relationshipType)}&id=${connection.id}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
               Accept Invitation
             </a>
           </div>
