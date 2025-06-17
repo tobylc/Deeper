@@ -58,7 +58,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center pt-16">
+      <section className="relative min-h-screen flex items-center justify-center pt-32">
         <div className="max-w-6xl mx-auto px-6 lg:px-8 text-center">
           <div className="mb-16">
             <h1 className="text-5xl lg:text-7xl font-inter font-bold text-foreground mb-8 leading-tight">
