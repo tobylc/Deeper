@@ -7,7 +7,7 @@ import {
   type Email, type InsertEmail
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, or, and } from "drizzle-orm";
+import { eq, or, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -15,10 +15,19 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   upsertUser(user: InsertUser): Promise<User>;
+  updateUserSubscription(userId: string, subscriptionData: {
+    subscriptionTier: string;
+    subscriptionStatus: string;
+    maxConnections: number;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+    subscriptionExpiresAt?: Date;
+  }): Promise<User | undefined>;
 
   // Connections
   getConnection(id: number): Promise<Connection | undefined>;
   getConnectionsByEmail(email: string): Promise<Connection[]>;
+  getInitiatedConnectionsCount(email: string): Promise<number>;
   createConnection(connection: InsertConnection): Promise<Connection>;
   updateConnectionStatus(id: number, status: string, acceptedAt?: Date): Promise<Connection | undefined>;
 
@@ -88,6 +97,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(connections)
       .where(or(eq(connections.inviterEmail, email), eq(connections.inviteeEmail, email)));
+  }
+
+  async getInitiatedConnectionsCount(email: string): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(connections)
+      .where(eq(connections.inviterEmail, email));
+    return result[0]?.count || 0;
   }
 
   async createConnection(insertConnection: InsertConnection): Promise<Connection> {

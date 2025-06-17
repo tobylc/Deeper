@@ -31,6 +31,12 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  subscriptionTier: varchar("subscription_tier").default("free"), // free, starter, pro, unlimited
+  subscriptionStatus: varchar("subscription_status").default("active"), // active, cancelled, expired
+  maxConnections: integer("max_connections").default(1), // connections user can initiate
+  stripeCustomerId: varchar("stripe_customer_id"),
+  stripeSubscriptionId: varchar("stripe_subscription_id"),
+  subscriptionExpiresAt: timestamp("subscription_expires_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -42,6 +48,7 @@ export const connections = pgTable("connections", {
   relationshipType: text("relationship_type").notNull(),
   status: text("status").notNull(), // 'pending', 'accepted', 'declined'
   personalMessage: text("personal_message"),
+  inviterSubscriptionTier: text("inviter_subscription_tier").default("free"), // tier when invitation was sent
   createdAt: timestamp("created_at").defaultNow(),
   acceptedAt: timestamp("accepted_at"),
 });
@@ -83,12 +90,9 @@ export const emails = pgTable("emails", {
 // Schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
-  password: true,
   firstName: true,
   lastName: true,
   profileImageUrl: true,
-  provider: true,
-  providerId: true,
 });
 
 export const insertConnectionSchema = createInsertSchema(connections).pick({
