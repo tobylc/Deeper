@@ -15,23 +15,24 @@ export function getSession() {
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
+    createTableIfMissing: true,
     ttl: sessionTtl,
     tableName: "sessions",
+    schemaName: 'public',
   });
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET || 'default-secret-key-for-dev',
     store: sessionStore,
-    resave: false, // Don't save session if unmodified
-    saveUninitialized: false, // Don't create session until something stored
+    resave: true, // Force session resave for OAuth
+    saveUninitialized: true, // Create session for OAuth flow
     rolling: true, // Reset expiry on activity
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Disable for development
       maxAge: sessionTtl,
-      sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax',
+      sameSite: 'lax',
     },
-    name: 'deeper.session', // Custom session name
+    name: 'connect.sid', // Standard session name
   });
 }
 
