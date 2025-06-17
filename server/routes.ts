@@ -385,46 +385,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error: any) {
       console.error("Invitation acceptance error:", error);
+      
+      // Handle specific database errors
+      if (error.code === '23505') { // PostgreSQL unique violation
+        return res.status(409).json({ 
+          message: "An account with this email already exists" 
+        });
+      }
+      
+      if (error.code === '23503') { // PostgreSQL foreign key violation
+        return res.status(400).json({ 
+          message: "Invalid invitation reference" 
+        });
+      }
+      
+      // Handle connection timeout
+      if (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET') {
+        return res.status(503).json({ 
+          message: "Service temporarily unavailable. Please try again." 
+        });
+      }
+      
       res.status(500).json({ 
         message: "Failed to process invitation acceptance",
-        error: error.message 
+        error: process.env.NODE_ENV === 'development' ? error.message : "Internal server error"
       });
     }
   });
 
-  // Connection endpoints
+  // Connection endpoints with enhanced security
   app.post("/api/connections", 
     isAuthenticated,
-    rateLimit(20, 60 * 60 * 1000), // 20 connections per hour
+    rateLimit(5, 60 * 60 * 1000), // 5 invitations per hour for better control
     validateEmail,
     async (req: any, res) => {
     try {
-      console.log("[DEBUG] Connection request body:", req.body);
-      console.log("[DEBUG] Request user:", req.user);
-      
-      // Manual validation to debug the issue
+      // Enhanced input validation
       const { inviteeEmail, relationshipType, personalMessage } = req.body;
       
-      if (!inviteeEmail || typeof inviteeEmail !== 'string') {
-        console.log("[DEBUG] Missing or invalid inviteeEmail:", inviteeEmail);
-        return res.status(400).json({ message: "Invalid inviteeEmail" });
+      // Comprehensive input validation
+      if (!inviteeEmail || typeof inviteeEmail !== 'string' || inviteeEmail.trim().length === 0) {
+        return res.status(400).json({ message: "Valid invitee email is required" });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(inviteeEmail.trim())) {
+        return res.status(400).json({ message: "Invalid email format" });
       }
       
-      if (!relationshipType || typeof relationshipType !== 'string') {
-        console.log("[DEBUG] Missing or invalid relationshipType:", relationshipType);
-        return res.status(400).json({ message: "Invalid relationshipType" });
+      if (!relationshipType || typeof relationshipType !== 'string' || relationshipType.trim().length === 0) {
+        return res.status(400).json({ message: "Relationship type is required" });
+      }
+
+      // Validate relationship type against allowed values
+      const allowedRelationshipTypes = [
+        'Parent-Child', 'Romantic Partners', 'Friends', 'Siblings', 
+        'Colleagues', 'Mentor-Mentee', 'Other Family', 'Other'
+      ];
+      if (!allowedRelationshipTypes.includes(relationshipType)) {
+        return res.status(400).json({ message: "Invalid relationship type" });
+      }
+
+      // Validate personal message length
+      if (personalMessage && (typeof personalMessage !== 'string' || personalMessage.length > 500)) {
+        return res.status(400).json({ message: "Personal message cannot exceed 500 characters" });
       }
       
-      // Get authenticated user first
-      let userId;
-      if (req.user.claims) {
-        // Real Replit Auth
+      // Get authenticated user with enhanced security
+      let userId = req.user.id;
+      if (req.user.claims && req.user.claims.sub) {
         userId = req.user.claims.sub;
-      } else if (req.user.id) {
-        // Demo authentication or direct user object
-        userId = req.user.id;
-      } else {
-        return res.status(400).json({ message: "Invalid user session" });
+      }
+
+      if (!userId) {
+        return res.status(401).json({ message: "Invalid user session" });
+      }
+
+      // Prevent self-invitation
+      if (inviteeEmail.trim().toLowerCase() === req.user.email?.toLowerCase()) {
+        return res.status(400).json({ message: "You cannot invite yourself" });
       }
 
       console.log("[DEBUG] User ID extracted:", userId);
