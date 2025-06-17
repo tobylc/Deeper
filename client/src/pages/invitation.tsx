@@ -85,7 +85,7 @@ export default function InvitationLanding() {
               <br />
               <span className="bg-gradient-to-r from-ocean to-teal bg-clip-text text-transparent">invited to connect</span>
             </h1>
-            <p className="text-xl text-slate-200 font-inter max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-slate-50 font-inter max-w-2xl mx-auto leading-relaxed">
               {getInviterName()} has chosen you for something truly special - a private, intimate space designed exclusively for the two of you.
             </p>
           </div>
@@ -99,7 +99,7 @@ export default function InvitationLanding() {
                   This invitation is just for you
                 </h2>
               </div>
-              <p className="text-lg text-slate-300 mb-6 font-inter leading-relaxed">
+              <p className="text-lg text-slate-100 mb-6 font-inter leading-relaxed">
                 {getInviterName()} has invited you to begin a {getRelationshipDescription()} journey together on Deeper. 
                 This isn't a group chat or social network - it's a sacred space created exclusively for meaningful 
                 one-on-one conversations between you and {getInviterName()}.
@@ -128,7 +128,7 @@ export default function InvitationLanding() {
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Completely Private & Secure
                 </h3>
-                <p className="text-slate-300 leading-relaxed">
+                <p className="text-slate-100 leading-relaxed">
                   Your conversation space is encrypted and completely private. Only you and {getInviterName()} 
                   will ever have access. No algorithms, no ads, no interruptions.
                 </p>
