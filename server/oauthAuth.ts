@@ -26,8 +26,9 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Disabled for development
       maxAge: sessionTtl,
+      sameSite: 'lax',
     },
   });
 }
@@ -193,8 +194,19 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  if (!req.user) {
+  console.log("[AUTH] Checking authentication:", {
+    isAuthenticated: req.isAuthenticated?.(),
+    hasUser: !!req.user,
+    sessionID: req.sessionID,
+    method: req.method,
+    url: req.url
+  });
+
+  if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
+    console.log("[AUTH] Authentication failed - no user or not authenticated");
     return res.status(401).json({ message: "Unauthorized" });
   }
+  
+  console.log("[AUTH] Authentication successful for user:", (req.user as any).id || (req.user as any).claims?.sub);
   next();
 };
