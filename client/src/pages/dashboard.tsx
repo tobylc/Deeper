@@ -50,10 +50,23 @@ export default function Dashboard() {
     }
     
     // Show welcome popup for new invitees
-    if (newInvitee === 'true' && inviterEmail && relationshipType) {
-      const inviterName = inviterEmail.split('@')[0];
-      setWelcomeData({ inviterName, relationshipType });
-      setShowWelcomePopup(true);
+    if (newInvitee === 'true' && inviterEmail && relationshipType && user) {
+      // Fetch the inviter's display name for the welcome popup
+      fetch(`/api/users/display-name/${encodeURIComponent(inviterEmail)}`, {
+        credentials: 'include'
+      })
+      .then(response => response.json())
+      .then(data => {
+        const inviterName = data.displayName || inviterEmail.split('@')[0];
+        setWelcomeData({ inviterName, relationshipType });
+        setShowWelcomePopup(true);
+      })
+      .catch(() => {
+        // Fallback to email username if API fails
+        const inviterName = inviterEmail.split('@')[0];
+        setWelcomeData({ inviterName, relationshipType });
+        setShowWelcomePopup(true);
+      });
     }
     
     // Clean up URL parameters
