@@ -62,12 +62,12 @@ export default function InvitationLanding() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-radial from-slate-900 via-slate-800 to-slate-900">
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-32 w-80 h-80 bg-primary/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-secondary/20 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-32 w-80 h-80 bg-ocean/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-amber/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal/10 rounded-full blur-3xl"></div>
       </div>
 
       {/* Main Content */}
@@ -76,14 +76,14 @@ export default function InvitationLanding() {
           {/* Header */}
           <div className="text-center mb-12">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center">
                 <Heart className="w-8 h-8 text-white" />
               </div>
             </div>
-            <h1 className="text-4xl lg:text-6xl font-inter font-bold text-foreground mb-4 leading-tight">
+            <h1 className="text-4xl lg:text-6xl font-inter font-bold text-white mb-4 leading-tight">
               You've been personally
               <br />
-              <span className="text-ocean-blue">invited to connect</span>
+              <span className="bg-gradient-to-r from-ocean to-teal bg-clip-text text-transparent">invited to connect</span>
             </h1>
             <p className="text-xl text-muted-foreground font-inter max-w-2xl mx-auto leading-relaxed">
               {getInviterName()} has chosen you for something truly special - a private, intimate space designed exclusively for the two of you.
@@ -91,10 +91,10 @@ export default function InvitationLanding() {
           </div>
 
           {/* Invitation Details Card */}
-          <Card className="card-elevated rounded-3xl backdrop-blur-xl border-border/50 shadow-2xl mb-12">
+          <Card className="bg-card/50 border-border backdrop-blur-sm rounded-3xl shadow-2xl mb-12">
             <CardContent className="p-8 text-center">
               <div className="flex items-center justify-center mb-6">
-                <Sparkles className="w-8 h-8 text-primary mr-3" />
+                <Sparkles className="w-8 h-8 text-ocean mr-3" />
                 <h2 className="text-2xl font-inter font-bold text-foreground">
                   This invitation is just for you
                 </h2>
@@ -107,7 +107,7 @@ export default function InvitationLanding() {
               <div className="flex justify-center">
                 <Button 
                   size="lg" 
-                  className="btn-ocean px-12 py-4 text-lg font-medium"
+                  className="btn-ocean px-12 py-4 text-lg font-medium rounded-2xl"
                   onClick={() => {
                     setLocation(`/invitation/signup?id=${connectionId}`);
                   }}
@@ -120,10 +120,10 @@ export default function InvitationLanding() {
 
           {/* What Makes This Special */}
           <div className="grid md:grid-cols-2 gap-8 mb-12">
-            <Card className="bg-card/80 backdrop-blur-sm p-8 text-left border-2 border-gray-600/30 rounded-3xl">
+            <Card className="bg-card/50 border-border backdrop-blur-sm p-8 text-left rounded-3xl">
               <CardContent className="p-0">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
-                  <Shield className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-xl bg-ocean/10 flex items-center justify-center mb-6">
+                  <Shield className="w-6 h-6 text-ocean" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Completely Private & Secure
@@ -135,10 +135,10 @@ export default function InvitationLanding() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card/80 backdrop-blur-sm p-8 text-left border-2 border-gray-600/30 rounded-3xl">
+            <Card className="bg-card/50 border-border backdrop-blur-sm p-8 text-left rounded-3xl">
               <CardContent className="p-0">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
-                  <MessageCircle className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-xl bg-amber/10 flex items-center justify-center mb-6">
+                  <MessageCircle className="w-6 h-6 text-amber" />
                 </div>
                 <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
                   Thoughtfully Guided Conversations
@@ -152,15 +152,15 @@ export default function InvitationLanding() {
           </div>
 
           {/* What Happens Next */}
-          <Card className="bg-card/60 backdrop-blur-sm border-2 border-gray-600/30 rounded-3xl">
+          <Card className="bg-card/50 border-border backdrop-blur-sm rounded-3xl">
             <CardContent className="p-8">
               <h3 className="text-2xl font-inter font-bold text-foreground mb-8 text-center">
                 What happens when you accept?
               </h3>
               <div className="grid md:grid-cols-3 gap-8">
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-6 h-6 text-primary" />
+                  <div className="w-12 h-12 rounded-full bg-ocean/10 flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-6 h-6 text-ocean" />
                   </div>
                   <h4 className="font-inter font-semibold text-foreground mb-2">1. Quick Registration</h4>
                   <p className="text-sm text-muted-foreground">
@@ -168,8 +168,8 @@ export default function InvitationLanding() {
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-6 h-6 text-primary" />
+                  <div className="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-6 h-6 text-teal" />
                   </div>
                   <h4 className="font-inter font-semibold text-foreground mb-2">2. Private Space Created</h4>
                   <p className="text-sm text-muted-foreground">
@@ -177,8 +177,8 @@ export default function InvitationLanding() {
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <Heart className="w-6 h-6 text-primary" />
+                  <div className="w-12 h-12 rounded-full bg-amber/10 flex items-center justify-center mx-auto mb-4">
+                    <Heart className="w-6 h-6 text-amber" />
                   </div>
                   <h4 className="font-inter font-semibold text-foreground mb-2">3. Begin Your Journey</h4>
                   <p className="text-sm text-muted-foreground">
@@ -194,11 +194,15 @@ export default function InvitationLanding() {
             <p className="text-muted-foreground mb-6 font-inter">
               {getInviterName()} is waiting to begin this special journey with you.
             </p>
-            <Link href="/auth">
-              <Button size="lg" className="btn-amber px-12 py-4 text-lg font-medium mr-4">
-                Accept & Join Now
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="btn-amber px-12 py-4 text-lg font-medium rounded-2xl mr-4"
+              onClick={() => {
+                setLocation(`/invitation/signup?id=${connectionId}`);
+              }}
+            >
+              Accept & Join Now
+            </Button>
             <p className="text-sm text-muted-foreground mt-4 font-inter">
               Free to start • Private & secure • Designed for meaningful connections
             </p>

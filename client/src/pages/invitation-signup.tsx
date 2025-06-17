@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
+import { Heart } from "lucide-react";
 
 export default function InvitationSignup() {
   const [, setLocation] = useLocation();
@@ -86,9 +87,14 @@ export default function InvitationSignup() {
             description: `Connection established with ${getInviterName()}. Taking you to your dashboard...`,
           });
           
-          // Redirect immediately since session is established
+          // Redirect with welcome parameters to trigger popup
           setTimeout(() => {
-            window.location.href = "/dashboard";
+            const welcomeParams = new URLSearchParams({
+              welcome: 'true',
+              inviter: invitation.inviterEmail,
+              relationship: invitation.relationshipType
+            });
+            window.location.href = `/dashboard?${welcomeParams.toString()}`;
           }, 1000);
         } else {
           toast({
@@ -156,13 +162,25 @@ export default function InvitationSignup() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      <Card className="w-full max-w-md mx-4 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-white">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-radial from-slate-900 via-slate-800 to-slate-900">
+      {/* Background Effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-32 w-80 h-80 bg-ocean/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-amber/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal/10 rounded-full blur-3xl"></div>
+      </div>
+      
+      <Card className="relative z-10 w-full max-w-lg mx-4 bg-card/50 border-border backdrop-blur-sm rounded-3xl shadow-2xl">
+        <CardHeader className="text-center pb-6">
+          <div className="flex items-center justify-center mb-4">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center">
+              <Heart className="w-6 h-6 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold text-foreground font-inter">
             Complete Your Connection
           </CardTitle>
-          <CardDescription className="text-slate-300">
+          <CardDescription className="text-muted-foreground font-inter">
             {getInviterName()} invited you to connect on Deeper
           </CardDescription>
         </CardHeader>
@@ -170,57 +188,57 @@ export default function InvitationSignup() {
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="firstName" className="text-slate-300">First Name</Label>
+                <Label htmlFor="firstName" className="text-foreground font-inter font-medium">First Name</Label>
                 <Input
                   id="firstName"
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  className="bg-slate-700/50 border-slate-600 text-white focus:border-blue-400"
+                  className="bg-input border-border text-foreground focus:border-ocean rounded-2xl font-inter"
                   placeholder="Your first name"
                 />
               </div>
               <div>
-                <Label htmlFor="lastName" className="text-slate-300">Last Name</Label>
+                <Label htmlFor="lastName" className="text-foreground font-inter font-medium">Last Name</Label>
                 <Input
                   id="lastName"
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
-                  className="bg-slate-700/50 border-slate-600 text-white focus:border-blue-400"
+                  className="bg-input border-border text-foreground focus:border-ocean rounded-2xl font-inter"
                   placeholder="Your last name"
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="inviteeEmail" className="text-slate-300">Your Email Address</Label>
+              <Label htmlFor="inviteeEmail" className="text-foreground font-inter font-medium">Your Email Address</Label>
               <Input
                 id="inviteeEmail"
                 type="email"
                 value={invitation.inviteeEmail || ''}
                 readOnly
-                className="bg-slate-700/50 border-slate-600 text-white cursor-not-allowed"
+                className="bg-muted border-border text-muted-foreground cursor-not-allowed rounded-2xl font-inter"
               />
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1 font-inter">
                 This email was used for your invitation and cannot be changed
               </p>
             </div>
 
             <div>
-              <Label htmlFor="relationshipType" className="text-slate-300">Relationship Type</Label>
+              <Label htmlFor="relationshipType" className="text-foreground font-inter font-medium">Relationship Type</Label>
               <Input
                 id="relationshipType"
                 value={invitation.relationshipType || ''}
                 readOnly
-                className="bg-slate-700/50 border-slate-600 text-white cursor-not-allowed"
+                className="bg-muted border-border text-muted-foreground cursor-not-allowed rounded-2xl font-inter"
               />
             </div>
 
             <div>
-              <Label htmlFor="password" className="text-slate-300">Create Password</Label>
+              <Label htmlFor="password" className="text-foreground font-inter font-medium">Create Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -228,13 +246,13 @@ export default function InvitationSignup() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
-                className="bg-slate-700/50 border-slate-600 text-white focus:border-blue-400"
+                className="bg-input border-border text-foreground focus:border-ocean rounded-2xl font-inter"
                 placeholder="At least 8 characters"
               />
             </div>
 
             <div>
-              <Label htmlFor="confirmPassword" className="text-slate-300">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-foreground font-inter font-medium">Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -242,7 +260,7 @@ export default function InvitationSignup() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={8}
-                className="bg-slate-700/50 border-slate-600 text-white focus:border-blue-400"
+                className="bg-input border-border text-foreground focus:border-ocean rounded-2xl font-inter"
                 placeholder="Confirm your password"
               />
             </div>
@@ -250,15 +268,15 @@ export default function InvitationSignup() {
             <Button
               type="submit"
               disabled={isLoading || !firstName.trim() || !lastName.trim() || !password || !confirmPassword}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 rounded-xl transition-all duration-200"
+              className="w-full btn-ocean py-3 rounded-2xl font-inter font-medium"
             >
               {isLoading ? "Creating Connection..." : "Begin Deeper Connection"}
             </Button>
           </form>
 
-          <div className="mt-6 p-4 bg-slate-700/30 rounded-lg border border-slate-600">
-            <h4 className="text-sm font-medium text-white mb-2">What happens next?</h4>
-            <ul className="text-xs text-slate-300 space-y-1">
+          <div className="mt-6 p-4 bg-card/30 rounded-2xl border border-border">
+            <h4 className="text-sm font-medium text-foreground mb-2 font-inter">What happens next?</h4>
+            <ul className="text-xs text-muted-foreground space-y-1 font-inter">
               <li>• Your account will be created with your invitation email</li>
               <li>• A connection will be established with {getInviterName()}</li>
               <li>• You'll be taken to your dashboard to start conversations</li>

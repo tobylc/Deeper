@@ -9,6 +9,7 @@ import { Heart, Plus, MessageCircle, Clock, Users, Mail } from "lucide-react";
 import InvitationForm from "@/components/invitation-form";
 import AccountLinking from "@/components/account-linking";
 import ProfileImageUpload from "@/components/profile-image-upload";
+import InviteeWelcomePopup from "@/components/invitee-welcome-popup";
 import type { Connection, Conversation } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +19,8 @@ export default function Dashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [showInviteForm, setShowInviteForm] = useState(false);
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+  const [welcomeData, setWelcomeData] = useState<{inviterName: string, relationshipType: string} | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -28,10 +31,13 @@ export default function Dashboard() {
     retry: false,
   });
 
-  // Check for account linking success
+  // Check for account linking success and new invitee welcome
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const linkedProvider = urlParams.get('linked');
+    const newInvitee = urlParams.get('welcome');
+    const inviterEmail = urlParams.get('inviter');
+    const relationshipType = urlParams.get('relationship');
     
     if (linkedProvider === 'google') {
       toast({
@@ -39,8 +45,17 @@ export default function Dashboard() {
         description: "Your Google account has been linked. You can now sign in using either method.",
         duration: 5000,
       });
-      
-      // Clean up URL
+    }
+    
+    // Show welcome popup for new invitees
+    if (newInvitee === 'true' && inviterEmail && relationshipType) {
+      const inviterName = inviterEmail.split('@')[0];
+      setWelcomeData({ inviterName, relationshipType });
+      setShowWelcomePopup(true);
+    }
+    
+    // Clean up URL parameters
+    if (linkedProvider || newInvitee) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [toast]);
@@ -447,6 +462,15 @@ export default function Dashboard() {
             setShowInviteForm(false);
             refetchConnections();
           }}
+        />
+      )}
+
+      {/* Welcome Popup for New Invitees */}
+      {showWelcomePopup && welcomeData && (
+        <InviteeWelcomePopup
+          inviterName={welcomeData.inviterName}
+          relationshipType={welcomeData.relationshipType}
+          onClose={() => setShowWelcomePopup(false)}
         />
       )}
     </div>
