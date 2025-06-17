@@ -106,9 +106,10 @@ export default function Auth() {
           {/* Auth Card - using design system classes */}
           <Card className="card-elevated rounded-3xl backdrop-blur-xl border-border/50 shadow-2xl">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-inter font-bold text-foreground">
-                Welcome to Deeper
-              </CardTitle>
+              <div className="flex flex-col items-center gap-2 mb-2">
+                <span className="text-lg text-muted-foreground font-inter">Welcome to</span>
+                <DeeperLogo size="lg" />
+              </div>
               <CardDescription className="text-muted-foreground font-inter">
                 {showEmailLogin ? "Sign in with your email and password" : "Sign in to start building deeper relationships"}
               </CardDescription>

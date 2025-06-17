@@ -16,7 +16,7 @@ export default function Pricing() {
           <div className="flex justify-between items-center h-16">
             <Link href="/">
               <div className="flex items-center space-x-2 cursor-pointer">
-                <span className="text-2xl font-inter font-bold text-white">Deeper</span>
+                <DeeperLogo size="md" />
               </div>
             </Link>
             <div className="hidden md:flex items-center space-x-8">

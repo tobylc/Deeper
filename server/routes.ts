@@ -63,6 +63,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(securityHeaders);
   app.use(requestLogger);
   
+  // Serve static files from public directory
+  app.use(express.static(path.join(process.cwd(), 'public')));
+  
   // Serve uploaded files
   app.use('/uploads', (req, res, next) => {
     const filePath = path.join(process.cwd(), 'public', 'uploads', req.path);
