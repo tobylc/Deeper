@@ -94,10 +94,27 @@ export async function setupAuth(app: Express) {
       }
     }));
 
-    app.get("/api/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+    app.get("/api/auth/google", (req, res, next) => {
+      // Check if this is an account linking request
+      const isLinking = req.query.linking === 'true';
+      if (isLinking) {
+        (req.session as any).isLinking = true;
+      }
+      passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+    });
+    
     app.get("/api/auth/google/callback", 
       passport.authenticate("google", { failureRedirect: "/?error=auth_failed" }),
-      (req, res) => res.redirect("/dashboard")
+      (req, res) => {
+        const isLinking = (req.session as any).isLinking;
+        delete (req.session as any).isLinking; // Clean up session
+        
+        if (isLinking) {
+          res.redirect("/dashboard?linked=google");
+        } else {
+          res.redirect("/dashboard");
+        }
+      }
     );
   }
 

@@ -7,6 +7,7 @@ import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Heart, Plus, MessageCircle, Clock, Users, Mail } from "lucide-react";
 import InvitationForm from "@/components/invitation-form";
+import AccountLinking from "@/components/account-linking";
 import type { Connection, Conversation } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -392,6 +393,9 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Account Security */}
+        <AccountLinking />
       </div>
 
       {/* Invitation Form Modal */}
