@@ -17,15 +17,8 @@ import NotFound from "@/pages/not-found";
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Show loading state with timeout to prevent infinite loading
+  // Show loading state with automatic timeout
   if (isLoading) {
-    // Set a timeout to redirect to auth if loading takes too long
-    setTimeout(() => {
-      if (isLoading && window.location.pathname === '/auth') {
-        window.location.reload();
-      }
-    }, 5000);
-
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-radial from-slate-900 via-slate-800 to-slate-900">
         <div className="text-center">

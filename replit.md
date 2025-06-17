@@ -316,6 +316,13 @@ Changelog:
   * Updated all invitation page icons to use consistent blue color matching quotation marks
   * Fixed invitee welcome popup text readability by changing all text to white or blue colors
   * Improved production messaging functionality with proper authentication and turn management
+- June 17, 2025. Authentication infinite loading issue resolution:
+  * Fixed authentication hook to properly handle 401 responses without infinite loading
+  * Added 3-second timeout to authentication requests to prevent hanging
+  * Updated session configuration for better OAuth compatibility and persistence
+  * Enhanced session store settings with proper PostgreSQL schema configuration
+  * Simplified authentication state management to resolve loading states quickly
+  * Authentication now properly transitions from loading to login form for unauthenticated users
 ```
 
 ## User Preferences
