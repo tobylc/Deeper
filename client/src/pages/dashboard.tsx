@@ -426,7 +426,7 @@ export default function Dashboard() {
           <ProfileImageUpload 
             currentImageUrl={user?.profileImageUrl ?? undefined}
             userEmail={user?.email || undefined}
-            hasGoogleLinked={accountStatus?.hasGoogleLinked || false}
+            hasGoogleLinked={user?.googleId ? true : false}
             hasFacebookLinked={false}
             onImageUpdate={() => {
               // Refresh user data
