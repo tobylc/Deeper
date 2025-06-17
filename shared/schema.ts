@@ -30,6 +30,7 @@ export const users = pgTable("users", {
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
+  passwordHash: varchar("password_hash"), // For email/password authentication
   profileImageUrl: varchar("profile_image_url"),
   subscriptionTier: varchar("subscription_tier").default("free"), // free, starter, pro, unlimited
   subscriptionStatus: varchar("subscription_status").default("active"), // active, cancelled, expired
@@ -93,6 +94,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   firstName: true,
   lastName: true,
+  passwordHash: true,
   profileImageUrl: true,
 });
 

@@ -1,18 +1,28 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Auth() {
   const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+  const [showEmailLogin, setShowEmailLogin] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!isLoading && user) {
-      setLocation("/");
+      setLocation("/dashboard");
     }
   }, [user, isLoading, setLocation]);
 
@@ -24,8 +34,49 @@ export default function Auth() {
     );
   }
 
-  const handleLogin = () => {
-    window.location.href = `/api/auth/login`;
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+
+    try {
+      const response = await apiRequest("POST", "/api/auth/login", {
+        email: email.trim(),
+        password,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "Welcome back!",
+          description: "Successfully logged in to your account.",
+        });
+        
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1000);
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Login Failed",
+          description: error.message || "Invalid email or password.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Connection Error",
+        description: "Unable to connect. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleOAuthLogin = () => {
+    window.location.href = `/api/auth/google`;
   };
 
   return (

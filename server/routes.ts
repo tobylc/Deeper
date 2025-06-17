@@ -82,6 +82,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // Email/Password login endpoint
+  app.post('/api/auth/login', 
+    rateLimit(10, 15 * 60 * 1000), // 10 attempts per 15 minutes
+    async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Validate input
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+      
+      // Find user by email
+      const user = await storage.getUserByEmail(email.toLowerCase().trim());
+      if (!user) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      // Check if user has a password hash (invited users)
+      if (!user.passwordHash) {
+        return res.status(401).json({ 
+          message: "This account was created through OAuth. Please use Google or Facebook login." 
+        });
+      }
+      
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      // Log in the user
+      req.login(user, (err: any) => {
+        if (err) {
+          console.error("Login error:", err);
+          return res.status(500).json({ message: "Login failed" });
+        }
+        
+        req.session.save((saveErr: any) => {
+          if (saveErr) {
+            console.error("Session save error:", saveErr);
+          }
+          
+          res.json({
+            success: true,
+            message: "Login successful",
+            user: {
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName
+            }
+          });
+        });
+      });
+      
+    } catch (error: any) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
   // Production Auth endpoints
   app.get('/api/auth/user', async (req: any, res) => {
     try {
@@ -292,14 +360,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      // Create user account for invitee
+      // Create user account for invitee with hashed password
       const newUser = await storage.upsertUser({
         id: randomUUID(),
         email: inviteeEmail,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        // Note: Password is hashed but we don't have a password field in schema yet
-        // This would need to be added to the user schema for full password auth
+        passwordHash: hashedPassword,
       });
 
       // Update connection status to accepted
