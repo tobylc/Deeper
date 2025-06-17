@@ -86,7 +86,7 @@ export default function Dashboard() {
   });
 
   const { data: conversations = [] } = useQuery<Conversation[]>({
-    queryKey: [`/api/conversations/${user.email}`],
+    queryKey: [`/api/conversations/by-email/${user.email}`],
     enabled: !!user.email,
   });
 
@@ -453,7 +453,7 @@ export default function Dashboard() {
                                 const conversation = await response.json();
                                 
                                 // Refresh conversations data
-                                queryClient.invalidateQueries({ queryKey: [`/api/conversations/${user.email}`] });
+                                queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user.email}`] });
                                 
                                 if (conversation && conversation.id) {
                                   setLocation(`/conversation/${conversation.id}`);

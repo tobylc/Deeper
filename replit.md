@@ -231,6 +231,14 @@ Changelog:
   * Connection decline emails use proper names for better personalization
   * Enhanced user experience with more personal and professional email communications
   * Applies to ConsoleEmailService, ProductionEmailService, and InternalEmailService
+- June 17, 2025. Inviter dashboard enhancement for accepted connections:
+  * Added "Ready to Start Conversations" section for accepted connections without active conversations
+  * Clear visual indication when invitee accepts invitation with success messaging and next steps
+  * Prominent "Start Your First Conversation" button to begin dialogue from dashboard
+  * Shows connection details including relationship type, acceptance date, and personal message
+  * Automatically creates conversation and redirects to conversation interface when clicked
+  * Fixed conversation endpoint mismatch from /api/conversations/${email} to /api/conversations/by-email/${email}
+  * Separates accepted connections from active conversations for better user flow and clarity
 ```
 
 ## User Preferences
