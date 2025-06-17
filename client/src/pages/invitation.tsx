@@ -82,8 +82,8 @@ export default function InvitationLanding() {
                 <DeeperLogo size="md" className="brightness-0 invert" />
               </div>
             </div>
-            <h1 className="text-4xl lg:text-6xl font-inter font-bold text-white mb-4 leading-tight">
-              You've been personally
+            <h1 className="text-4xl lg:text-6xl font-inter font-bold mb-4 leading-tight">
+              <span className="text-ocean">You've been personally</span>
               <br />
               <span className="bg-gradient-to-r from-ocean to-teal bg-clip-text text-transparent">invited to connect</span>
             </h1>

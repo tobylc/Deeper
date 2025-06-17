@@ -75,16 +75,16 @@ export default function InviteeWelcomePopup({
                 Connection Established
               </h3>
             </div>
-            <p className="text-sm text-slate-700 font-inter leading-relaxed">
-              <span className="font-medium text-slate-900">{inviterName}</span> has invited you to connect as{' '}
-              <span className="font-medium text-blue-600">{relationshipType}</span>. 
+            <p className="text-sm text-ocean font-inter leading-relaxed">
+              <span className="font-medium text-white">{inviterName}</span> has invited you to connect as{' '}
+              <span className="font-medium text-white">{relationshipType}</span>. 
               Your account has been created and you're ready to begin meaningful conversations.
             </p>
           </div>
 
           {/* What Happens Next */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-slate-800 font-inter flex items-center gap-2">
+            <h3 className="font-semibold text-white font-inter flex items-center gap-2">
               <Clock className="w-5 h-5 text-amber" />
               What happens next?
             </h3>
@@ -95,10 +95,10 @@ export default function InviteeWelcomePopup({
                   <span className="text-xs font-bold text-amber">1</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-800 font-inter">
+                  <p className="text-sm font-medium text-white font-inter">
                     Wait for {inviterName} to start your first conversation
                   </p>
-                  <p className="text-xs text-slate-600 font-inter">
+                  <p className="text-xs text-ocean font-inter">
                     They'll choose a meaningful question to begin your dialogue
                   </p>
                 </div>
@@ -109,10 +109,10 @@ export default function InviteeWelcomePopup({
                   <span className="text-xs font-bold text-amber">2</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-800 font-inter">
+                  <p className="text-sm font-medium text-white font-inter">
                     You'll receive an email notification
                   </p>
-                  <p className="text-xs text-slate-600 font-inter">
+                  <p className="text-xs text-ocean font-inter">
                     When it's your turn to respond in the conversation
                   </p>
                 </div>
@@ -123,10 +123,10 @@ export default function InviteeWelcomePopup({
                   <span className="text-xs font-bold text-amber">3</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-800 font-inter">
+                  <p className="text-sm font-medium text-white font-inter">
                     Engage in turn-based meaningful dialogue
                   </p>
-                  <p className="text-xs text-slate-600 font-inter">
+                  <p className="text-xs text-ocean font-inter">
                     Take turns asking questions and sharing thoughtful responses
                   </p>
                 </div>
@@ -138,11 +138,11 @@ export default function InviteeWelcomePopup({
           <div className="p-4 rounded-2xl bg-gradient-to-r from-amber/10 to-orange/10 border border-amber/20">
             <div className="flex items-center gap-2 mb-2">
               <MessageCircle className="w-4 h-4 text-amber" />
-              <h4 className="text-sm font-semibold text-slate-800 font-inter">
+              <h4 className="text-sm font-semibold text-white font-inter">
                 Tips for meaningful conversations
               </h4>
             </div>
-            <ul className="text-xs text-slate-600 font-inter space-y-1">
+            <ul className="text-xs text-ocean font-inter space-y-1">
               <li>• Be open and authentic in your responses</li>
               <li>• Take time to thoughtfully consider each question</li>
               <li>• Ask follow-up questions to deepen understanding</li>
@@ -159,7 +159,7 @@ export default function InviteeWelcomePopup({
             I'm Ready to Connect
           </Button>
 
-          <p className="text-xs text-center text-slate-600 font-inter">
+          <p className="text-xs text-center text-ocean font-inter">
             You can always return to your dashboard to check for new conversations
           </p>
         </CardContent>
