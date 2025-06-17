@@ -62,7 +62,12 @@ export const conversations = pgTable("conversations", {
   participant2Email: text("participant2_email").notNull(),
   relationshipType: text("relationship_type").notNull(),
   currentTurn: text("current_turn").notNull(), // email of who should ask next question
-  status: text("status").notNull(), // 'active', 'paused'
+  status: text("status").notNull(), // 'active', 'paused', 'archived'
+  title: text("title"), // optional title for the conversation thread
+  topic: text("topic"), // topic or subject of this conversation thread
+  isMainThread: boolean("is_main_thread").default(true), // first conversation is main thread
+  parentConversationId: integer("parent_conversation_id"), // reference to parent conversation if branched
+  lastActivityAt: timestamp("last_activity_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

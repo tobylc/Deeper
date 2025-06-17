@@ -294,7 +294,7 @@ export default function ConversationInterface({
             
             {/* Typing Indicator */}
             {messages.length > 0 && messages[messages.length - 1]?.type === 'question' && 
-             messages[messages.length - 1]?.senderEmail === currentUserEmail && (
+             messages[messages.length - 1]?.senderEmail !== currentUserEmail && !isMyTurn && (
               <TypingIndicator />
             )}
           </div>
