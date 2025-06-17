@@ -48,9 +48,8 @@ export async function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://deepersocial.replit.app' 
-    : 'http://localhost:5000';
+  // Always use production URL for OAuth callbacks since users access via replit.app
+  const baseUrl = 'https://deepersocial.replit.app';
 
   // Google OAuth Strategy
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
