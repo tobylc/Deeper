@@ -1090,6 +1090,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User data endpoints
+  app.get("/api/users/by-email/:email", async (req, res) => {
+    try {
+      const { email } = req.params;
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Return user data (excluding sensitive information)
+      res.json({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        subscriptionTier: user.subscriptionTier,
+        createdAt: user.createdAt
+      });
+    } catch (error) {
+      console.error("Error fetching user by email:", error);
+      res.status(500).json({ message: "Failed to fetch user data" });
+    }
+  });
+
+  app.get("/api/users/display-name/:email", async (req, res) => {
+    try {
+      const { email } = req.params;
+      const displayName = await storage.getUserDisplayNameByEmail(email);
+      res.json({ displayName });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user display name" });
+    }
+  });
+
   // Email management endpoints
   app.get("/api/emails/:email", isAuthenticated, async (req, res) => {
     try {
