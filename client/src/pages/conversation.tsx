@@ -199,62 +199,13 @@ export default function ConversationPage() {
               participant2Email={conversation.participant2Email}
               isMyTurn={isMyTurn}
               relationshipType={conversation.relationshipType}
+              newMessage={newMessage}
+              setNewMessage={setNewMessage}
+              onSendMessage={handleSendMessage}
+              onQuestionSelect={handleQuestionSelect}
+              isSending={sendMessageMutation.isPending}
+              nextMessageType={nextMessageType}
             />
-
-            {/* Message Input - Always visible but contextual */}
-            <Card className="mt-6 card-elevated border-slate-200/60">
-              <CardHeader>
-                <CardTitle className="text-lg text-foreground font-inter">
-                  {isMyTurn 
-                    ? (nextMessageType === 'question' ? 'Ask a Question' : 'Share Your Response')
-                    : 'Waiting for their turn'
-                  }
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Textarea
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder={
-                      isMyTurn 
-                        ? (nextMessageType === 'question' 
-                            ? "What would you like to ask?" 
-                            : "Share your thoughts...")
-                        : "It's their turn to respond..."
-                    }
-                    disabled={!isMyTurn}
-                    className="min-h-[120px] bg-input border-border text-foreground focus:border-ocean rounded-2xl font-inter resize-none"
-                  />
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      <Badge 
-                        variant={isMyTurn ? "default" : "outline"}
-                        className={isMyTurn ? "bg-ocean text-white" : "border-slate-300 text-slate-600"}
-                      >
-                        {isMyTurn 
-                          ? (nextMessageType === 'question' ? 'Asking a question' : 'Responding')
-                          : 'Their turn'
-                        }
-                      </Badge>
-                      {!isMyTurn && (
-                        <span className="text-sm text-muted-foreground font-inter">
-                          You'll be notified when it's your turn
-                        </span>
-                      )}
-                    </div>
-                    <Button 
-                      onClick={handleSendMessage}
-                      disabled={!isMyTurn || !newMessage.trim() || sendMessageMutation.isPending}
-                      className="btn-ocean font-inter rounded-2xl"
-                    >
-                      <Send className="w-4 h-4 mr-2" />
-                      {sendMessageMutation.isPending ? 'Sending...' : 'Send'}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Question Suggestions Sidebar */}

@@ -1,7 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, ArrowRight, Sparkles, Clock } from "lucide-react";
+import { MessageCircle, ArrowRight, Sparkles, Clock, Send, Plus } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
 import type { Message, User } from "@shared/schema";
@@ -17,6 +19,12 @@ interface ConversationInterfaceProps {
   participant2Email: string;
   isMyTurn: boolean;
   relationshipType: string;
+  newMessage: string;
+  setNewMessage: (message: string) => void;
+  onSendMessage: () => void;
+  onQuestionSelect: (question: string) => void;
+  isSending: boolean;
+  nextMessageType: 'question' | 'response';
 }
 
 export default function ConversationInterface({ 
@@ -25,7 +33,13 @@ export default function ConversationInterface({
   participant1Email, 
   participant2Email,
   isMyTurn,
-  relationshipType
+  relationshipType,
+  newMessage,
+  setNewMessage,
+  onSendMessage,
+  onQuestionSelect,
+  isSending,
+  nextMessageType
 }: ConversationInterfaceProps) {
   // Fetch user data for profile avatars
   const { data: currentUser } = useQuery<User>({
@@ -292,6 +306,112 @@ export default function ConversationInterface({
           </div>
         )}
       </div>
+
+      {/* Message Input Area */}
+      {isMyTurn && (
+        <div className="border-t border-slate-200/60 p-6 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm">
+          <div className="space-y-4">
+            {/* Message Type Indicator */}
+            <div className="flex items-center justify-between">
+              <Badge 
+                variant="outline" 
+                className={cn(
+                  "border-slate-300 text-slate-700 font-medium",
+                  nextMessageType === 'question' 
+                    ? "bg-ocean/10 border-ocean/30 text-ocean" 
+                    : "bg-amber/10 border-amber/30 text-amber-800"
+                )}
+              >
+                {nextMessageType === 'question' ? (
+                  <>
+                    <MessageCircle className="h-3 w-3 mr-1" />
+                    Your Question
+                  </>
+                ) : (
+                  <>
+                    <QuotesIcon size="sm" className="mr-1" />
+                    Your Response
+                  </>
+                )}
+              </Badge>
+              
+              <div className="text-sm text-slate-500">
+                {nextMessageType === 'question' 
+                  ? "Ask something meaningful to deepen your connection"
+                  : "Share your thoughts and continue the conversation"
+                }
+              </div>
+            </div>
+
+            {/* Input Area */}
+            <div className="flex space-x-3">
+              <div className="flex-1">
+                <Textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder={
+                    nextMessageType === 'question' 
+                      ? "Type your question or click a suggestion from the right sidebar..." 
+                      : "Share your response..."
+                  }
+                  className="min-h-[80px] resize-none bg-white/80 backdrop-blur-sm border-slate-200/60 focus:border-ocean/50 focus:ring-ocean/20 rounded-xl"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      onSendMessage();
+                    }
+                  }}
+                  maxLength={500}
+                />
+              </div>
+              
+              <div className="flex flex-col space-y-2">
+                <Button 
+                  onClick={onSendMessage}
+                  disabled={!newMessage.trim() || isSending}
+                  className={cn(
+                    "h-12 w-12 rounded-xl shadow-lg transition-all duration-200",
+                    "bg-gradient-to-r from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean/70",
+                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                >
+                  {isSending ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4 text-white" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Character Count */}
+            <div className="text-xs text-slate-500 text-right">
+              {newMessage.length}/500 characters
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Turn Status for Non-Turn */}
+      {!isMyTurn && (
+        <div className="border-t border-slate-200/60 p-6 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm">
+          <div className="text-center space-y-3">
+            <div className="flex items-center justify-center space-x-2">
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-ocean rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+              </div>
+              <span className="text-sm text-slate-600 font-medium">
+                Waiting for <UserDisplayName email={otherParticipantEmail} />
+              </span>
+            </div>
+            <p className="text-xs text-slate-500">
+              You'll be notified when it's your turn to respond
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
