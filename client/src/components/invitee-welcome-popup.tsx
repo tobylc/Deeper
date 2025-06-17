@@ -50,34 +50,29 @@ export default function InviteeWelcomePopup({
             <X className="h-4 w-4" />
           </Button>
           
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-ocean to-teal flex items-center justify-center p-2">
-              <QuotesIcon size="sm" className="brightness-0 invert" />
+          <div className="flex flex-col items-center text-center mb-2">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm text-white font-inter">Welcome to</span>
+              <DeeperLogo size="md" />
             </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm text-white font-inter">Welcome to</span>
-                <QuotesIcon size="sm" />
-              </div>
-              <p className="text-sm text-ocean font-inter">
-                Your connection journey begins here
-              </p>
-            </div>
+            <p className="text-sm text-[#4FACFE] font-inter">
+              Your connection journey begins here
+            </p>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {/* Connection Established */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-ocean/10 to-teal/10 border border-ocean/20">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-[#4FACFE]/10 to-teal/10 border border-[#4FACFE]/20">
             <div className="flex items-center gap-3 mb-3">
-              <CheckCircle className="w-5 h-5 text-ocean" />
+              <CheckCircle className="w-5 h-5 text-[#4FACFE]" />
               <h3 className="font-semibold text-white font-inter">
                 Connection Established
               </h3>
             </div>
             <p className="text-sm text-white font-inter leading-relaxed">
-              <span className="font-medium text-ocean">{inviterName}</span> has invited you to connect as{' '}
-              <span className="font-medium text-ocean">{relationshipType}</span>. 
+              <span className="font-medium text-[#4FACFE]">{inviterName}</span> has invited you to connect as{' '}
+              <span className="font-medium text-[#4FACFE]">{relationshipType}</span>. 
               Your account has been created and you're ready to begin meaningful conversations.
             </p>
           </div>
@@ -85,48 +80,48 @@ export default function InviteeWelcomePopup({
           {/* What Happens Next */}
           <div className="space-y-4">
             <h3 className="font-semibold text-white font-inter flex items-center gap-2">
-              <Clock className="w-5 h-5 text-ocean" />
+              <Clock className="w-5 h-5 text-[#4FACFE]" />
               What happens next?
             </h3>
             
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-ocean/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-ocean">1</span>
+                <div className="w-6 h-6 rounded-full bg-[#4FACFE]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-[#4FACFE]">1</span>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white font-inter">
                     Wait for {inviterName} to start your first conversation
                   </p>
-                  <p className="text-xs text-ocean font-inter">
+                  <p className="text-xs text-[#4FACFE] font-inter">
                     They'll choose a meaningful question to begin your dialogue
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-ocean/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-ocean">2</span>
+                <div className="w-6 h-6 rounded-full bg-[#4FACFE]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-[#4FACFE]">2</span>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white font-inter">
                     You'll receive an email notification
                   </p>
-                  <p className="text-xs text-ocean font-inter">
+                  <p className="text-xs text-[#4FACFE] font-inter">
                     When it's your turn to respond in the conversation
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-ocean/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-ocean">3</span>
+                <div className="w-6 h-6 rounded-full bg-[#4FACFE]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-[#4FACFE]">3</span>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white font-inter">
                     Engage in turn-based meaningful dialogue
                   </p>
-                  <p className="text-xs text-ocean font-inter">
+                  <p className="text-xs text-[#4FACFE] font-inter">
                     Take turns asking questions and sharing thoughtful responses
                   </p>
                 </div>
@@ -135,9 +130,9 @@ export default function InviteeWelcomePopup({
           </div>
 
           {/* Tips for Great Conversations */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-ocean/10 to-teal/10 border border-ocean/20">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-[#4FACFE]/10 to-teal/10 border border-[#4FACFE]/20">
             <div className="flex items-center gap-2 mb-2">
-              <MessageCircle className="w-4 h-4 text-ocean" />
+              <MessageCircle className="w-4 h-4 text-[#4FACFE]" />
               <h4 className="text-sm font-semibold text-white font-inter">
                 Tips for meaningful conversations
               </h4>
