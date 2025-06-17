@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { MessageSquare, HelpCircle, Shield, X } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
+import DeeperLogo from "@/components/deeper-logo";
 
 export default function Landing() {
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
@@ -34,7 +35,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <span className="text-2xl font-inter font-bold text-white">Deeper</span>
+              <DeeperLogo size="md" />
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <Link href="/" className="text-white/80 hover:text-white transition-colors font-inter font-medium">

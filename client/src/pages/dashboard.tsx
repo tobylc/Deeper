@@ -14,6 +14,7 @@ import type { Connection, Conversation } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
+import DeeperLogo from "@/components/deeper-logo";
 
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -151,7 +152,7 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <span className="text-xl font-inter font-bold text-white">Deeper</span>
+              <DeeperLogo size="md" />
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-white/80">
