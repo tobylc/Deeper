@@ -324,6 +324,13 @@ Changelog:
   * Ensured invitees are redirected to dashboard with welcome popup after successful account creation
   * Turn-based messaging system with visual indicators and proper authentication handling
   * Production-ready conversation interface with Enter key support and loading states
+- June 17, 2025. Conversation interface contrast and readability improvements:
+  * Updated message bubbles to use solid backgrounds: blue for current user, gray for other users
+  * Changed all message text to white for optimal readability against solid backgrounds
+  * Enhanced typing indicator styling with consistent gray background and white text
+  * Improved text contrast throughout conversation page sidebar and question suggestions
+  * Updated all secondary text elements to use darker gray (slate-600/700) for better visibility
+  * Consistent contrast standards applied across conversation interface, sidebar, and question cards
 - June 17, 2025. Authentication infinite loading issue resolution:
   * Fixed authentication hook to properly handle 401 responses without infinite loading
   * Added 3-second timeout to authentication requests to prevent hanging
