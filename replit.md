@@ -191,6 +191,15 @@ Changelog:
   * Comprehensive error handling for connection limits in invitation form
   * Subscription status display shows current plan, connection counts, and upgrade options
   * Database schema includes inviterSubscriptionTier tracking for billing inheritance
+- June 17, 2025. Full name user system implemented:
+  * Added firstName and lastName fields to user schema for proper name storage
+  * Updated invitation signup form to collect full names during account creation
+  * OAuth authentication extracts names from Google profiles automatically
+  * Created UserDisplayName component and utility functions for consistent name display
+  * Backend API endpoint for retrieving user display names (/api/users/display-name/:email)
+  * Updated dashboard, conversation interface, and invitation displays to show proper names
+  * System prioritizes full names over email addresses throughout the interface
+  * Graceful fallback to email username when names are unavailable
 ```
 
 ## User Preferences

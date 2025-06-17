@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import type { Message } from "@shared/schema";
+import { UserDisplayName } from "@/hooks/useUserDisplayName";
 
 interface ConversationInterfaceProps {
   messages: Message[];
@@ -18,7 +19,7 @@ export default function ConversationInterface({
 }: ConversationInterfaceProps) {
   const getParticipantName = (email: string) => {
     if (email === currentUserEmail) return "You";
-    return email.split("@")[0]; // Simple name extraction
+    return <UserDisplayName email={email} />;
   };
 
   return (

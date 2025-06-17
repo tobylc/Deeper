@@ -10,6 +10,7 @@ import InvitationForm from "@/components/invitation-form";
 import type { Connection, Conversation } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { UserDisplayName } from "@/hooks/useUserDisplayName";
 
 export default function Dashboard() {
   const { user, isAuthenticated } = useAuth();
@@ -229,7 +230,9 @@ export default function Dashboard() {
                 {pendingInvitations.map((connection) => (
                   <div key={connection.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
                     <div>
-                      <p className="font-medium text-foreground">{connection.inviterEmail}</p>
+                      <p className="font-medium text-foreground">
+                        <UserDisplayName email={connection.inviterEmail} />
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         Wants to connect as: {connection.relationshipType}
                       </p>
@@ -344,7 +347,9 @@ export default function Dashboard() {
                             </span>
                           </div>
                           <div>
-                            <p className="font-medium text-foreground">{otherParticipant}</p>
+                            <p className="font-medium text-foreground">
+                              <UserDisplayName email={otherParticipant} />
+                            </p>
                             <div className="flex items-center space-x-2">
                               <Badge variant="secondary">{conversation.relationshipType}</Badge>
                               <Badge variant={isMyTurn ? "default" : "outline"}>
