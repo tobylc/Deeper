@@ -79,7 +79,12 @@ export default function Dashboard() {
 
   if (!user) return null;
 
-  const pendingConnections = connections.filter(c => c.status === 'pending' && c.inviteeEmail === user.email);
+  // Separate connections by type for better subscription clarity
+  const pendingInvitations = connections.filter(c => c.status === 'pending' && c.inviteeEmail === user.email);
+  const sentInvitations = connections.filter(c => c.status === 'pending' && c.inviterEmail === user.email);
+  const acceptedConnections = connections.filter(c => c.status === 'accepted');
+  const initiatedConnections = acceptedConnections.filter(c => c.inviterEmail === user.email);
+  const receivedConnections = acceptedConnections.filter(c => c.inviteeEmail === user.email);
   const activeConversations = conversations.filter(c => c.status === 'active');
 
   return (
@@ -116,6 +121,43 @@ export default function Dashboard() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Subscription Status */}
+        <Card className="mb-8 card-elevated border-amber/30">
+          <CardHeader>
+            <CardTitle className="flex items-center text-foreground">
+              <Heart className="w-5 h-5 mr-2 text-amber" />
+              Subscription Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-1">Current Plan</p>
+                <Badge variant="secondary" className="text-lg px-4 py-2">
+                  {(user as any)?.subscriptionTier || 'Free'}
+                </Badge>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-1">Connections Initiated</p>
+                <p className="text-2xl font-bold text-amber">
+                  {sentInvitations.length + initiatedConnections.length} / {(user as any)?.maxConnections || 1}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-1">Total Connections</p>
+                <p className="text-2xl font-bold text-primary">
+                  {acceptedConnections.length}
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                Paid members can invite others without charge. Invitees inherit your subscription benefits.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Welcome Section */}
         <div className="mb-8 smooth-enter">
           <h1 className="text-3xl font-inter font-bold text-foreground mb-2">
@@ -145,7 +187,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-foreground">Pending Invites</h3>
-                  <p className="text-2xl font-bold text-secondary-foreground">{pendingConnections.length}</p>
+                  <p className="text-2xl font-bold text-secondary-foreground">{pendingInvitations.length}</p>
                 </div>
                 <Mail className="w-8 h-8 text-secondary-foreground" />
               </div>
@@ -166,7 +208,7 @@ export default function Dashboard() {
         </div>
 
         {/* Pending Invitations */}
-        {pendingConnections.length > 0 && (
+        {pendingInvitations.length > 0 && (
           <Card className="mb-8 card-elevated">
             <CardHeader>
               <CardTitle className="flex items-center text-foreground">
@@ -176,7 +218,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {pendingConnections.map((connection) => (
+                {pendingInvitations.map((connection) => (
                   <div key={connection.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
                     <div>
                       <p className="font-medium text-foreground">{connection.inviterEmail}</p>
@@ -204,6 +246,49 @@ export default function Dashboard() {
                       >
                         Decline
                       </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Sent Invitations */}
+        {sentInvitations.length > 0 && (
+          <Card className="mb-8 card-elevated">
+            <CardHeader>
+              <CardTitle className="flex items-center text-foreground">
+                <Clock className="w-5 h-5 mr-2 text-primary" />
+                Sent Invitations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {sentInvitations.map((connection) => (
+                  <div key={connection.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                    <div>
+                      <p className="font-medium text-foreground">{connection.inviteeEmail}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Relationship: {connection.relationshipType}
+                      </p>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <Badge variant="outline">Pending</Badge>
+                        <Badge variant="secondary">{connection.inviterSubscriptionTier || 'free'} tier</Badge>
+                      </div>
+                      {connection.personalMessage && (
+                        <p className="text-sm text-muted-foreground mt-1 italic">
+                          "{connection.personalMessage}"
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">
+                        Sent {new Date(connection.createdAt!).toLocaleDateString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        They'll inherit your {connection.inviterSubscriptionTier || 'free'} benefits
+                      </p>
                     </div>
                   </div>
                 ))}

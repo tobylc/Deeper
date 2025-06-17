@@ -226,6 +226,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invitee must register first before accepting connection" });
       }
 
+      // Apply inviter's subscription benefits to invitee when accepting
+      const inviterSubscriptionTier = existingConnection.inviterSubscriptionTier || 'free';
+      const tierBenefits: Record<string, { maxConnections: number }> = {
+        'free': { maxConnections: 1 },
+        'basic': { maxConnections: 5 },
+        'premium': { maxConnections: 20 },
+        'unlimited': { maxConnections: 999 }
+      };
+
+      const benefits = tierBenefits[inviterSubscriptionTier] || tierBenefits['free'];
+      
+      // Update invitee's subscription to match inviter's tier (without payment)
+      await storage.updateUserSubscription(inviteeUser.id, {
+        subscriptionTier: inviterSubscriptionTier,
+        subscriptionStatus: 'active',
+        maxConnections: benefits.maxConnections,
+        subscriptionExpiresAt: undefined // Inherited access doesn't expire
+      });
+
       const connection = await storage.updateConnectionStatus(id, 'accepted', new Date());
 
       if (!connection) {
