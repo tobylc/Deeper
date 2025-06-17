@@ -79,7 +79,7 @@ export default function InvitationLanding() {
           <div className="text-center mb-12">
             <div className="flex items-center justify-center mb-6">
               <div className="w-16 h-16 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center p-3">
-                <DeeperLogo size="md" className="brightness-0 invert" />
+                <DeeperLogo size="md" />
               </div>
             </div>
             <h1 className="text-4xl lg:text-6xl font-inter font-bold mb-4 leading-tight">

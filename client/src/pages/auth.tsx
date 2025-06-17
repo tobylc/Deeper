@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import DeeperLogo from "@/components/deeper-logo";
 
 export default function Auth() {
@@ -52,9 +52,10 @@ export default function Auth() {
           description: "Successfully logged in to your account.",
         });
         
-        // Redirect to dashboard
+        // Invalidate auth cache and redirect to dashboard
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         setTimeout(() => {
-          window.location.href = "/dashboard";
+          setLocation("/dashboard");
         }, 1000);
       } else {
         const error = await response.json();

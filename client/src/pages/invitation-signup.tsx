@@ -95,7 +95,7 @@ export default function InvitationSignup() {
               inviter: invitation.inviterEmail,
               relationship: invitation.relationshipType
             });
-            window.location.href = `/dashboard?${welcomeParams.toString()}`;
+            setLocation(`/dashboard?${welcomeParams.toString()}`);
           }, 1000);
         } else {
           toast({
@@ -105,7 +105,7 @@ export default function InvitationSignup() {
           });
           
           setTimeout(() => {
-            window.location.href = "/auth";
+            setLocation("/auth");
           }, 2000);
         }
       } else {
