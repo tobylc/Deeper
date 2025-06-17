@@ -309,6 +309,13 @@ Changelog:
   * Enhanced auth page to properly invalidate authentication cache after login
   * Improved routing logic to separate authenticated vs unauthenticated routes cleanly
   * Fixed invitee login redirect issues by implementing proper query invalidation
+- June 17, 2025. Conversation messaging functionality and UI color consistency fixes:
+  * Fixed conversation page messaging functionality with proper API authentication for production
+  * Enhanced conversation page with loading states and comprehensive error handling
+  * Removed unnecessary PATCH requests for conversation turns (backend handles automatically)
+  * Updated all invitation page icons to use consistent blue color matching quotation marks
+  * Fixed invitee welcome popup text readability by changing all text to white or blue colors
+  * Improved production messaging functionality with proper authentication and turn management
 ```
 
 ## User Preferences

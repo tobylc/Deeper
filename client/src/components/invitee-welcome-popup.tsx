@@ -56,10 +56,10 @@ export default function InviteeWelcomePopup({
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm text-muted-foreground font-inter">Welcome to</span>
+                <span className="text-sm text-white font-inter">Welcome to</span>
                 <QuotesIcon size="sm" />
               </div>
-              <p className="text-sm text-muted-foreground font-inter">
+              <p className="text-sm text-ocean font-inter">
                 Your connection journey begins here
               </p>
             </div>
@@ -71,13 +71,13 @@ export default function InviteeWelcomePopup({
           <div className="p-4 rounded-2xl bg-gradient-to-r from-ocean/10 to-teal/10 border border-ocean/20">
             <div className="flex items-center gap-3 mb-3">
               <CheckCircle className="w-5 h-5 text-ocean" />
-              <h3 className="font-semibold text-foreground font-inter">
+              <h3 className="font-semibold text-white font-inter">
                 Connection Established
               </h3>
             </div>
-            <p className="text-sm text-ocean font-inter leading-relaxed">
-              <span className="font-medium text-white">{inviterName}</span> has invited you to connect as{' '}
-              <span className="font-medium text-white">{relationshipType}</span>. 
+            <p className="text-sm text-white font-inter leading-relaxed">
+              <span className="font-medium text-ocean">{inviterName}</span> has invited you to connect as{' '}
+              <span className="font-medium text-ocean">{relationshipType}</span>. 
               Your account has been created and you're ready to begin meaningful conversations.
             </p>
           </div>
@@ -85,14 +85,14 @@ export default function InviteeWelcomePopup({
           {/* What Happens Next */}
           <div className="space-y-4">
             <h3 className="font-semibold text-white font-inter flex items-center gap-2">
-              <Clock className="w-5 h-5 text-amber" />
+              <Clock className="w-5 h-5 text-ocean" />
               What happens next?
             </h3>
             
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-amber/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-amber">1</span>
+                <div className="w-6 h-6 rounded-full bg-ocean/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-ocean">1</span>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white font-inter">
@@ -105,8 +105,8 @@ export default function InviteeWelcomePopup({
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-amber/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-amber">2</span>
+                <div className="w-6 h-6 rounded-full bg-ocean/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-ocean">2</span>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white font-inter">
@@ -119,8 +119,8 @@ export default function InviteeWelcomePopup({
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-amber/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-amber">3</span>
+                <div className="w-6 h-6 rounded-full bg-ocean/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-ocean">3</span>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white font-inter">
@@ -135,14 +135,14 @@ export default function InviteeWelcomePopup({
           </div>
 
           {/* Tips for Great Conversations */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber/10 to-orange/10 border border-amber/20">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-ocean/10 to-teal/10 border border-ocean/20">
             <div className="flex items-center gap-2 mb-2">
-              <MessageCircle className="w-4 h-4 text-amber" />
+              <MessageCircle className="w-4 h-4 text-ocean" />
               <h4 className="text-sm font-semibold text-white font-inter">
                 Tips for meaningful conversations
               </h4>
             </div>
-            <ul className="text-xs text-ocean font-inter space-y-1">
+            <ul className="text-xs text-white font-inter space-y-1">
               <li>• Be open and authentic in your responses</li>
               <li>• Take time to thoughtfully consider each question</li>
               <li>• Ask follow-up questions to deepen understanding</li>
@@ -159,7 +159,7 @@ export default function InviteeWelcomePopup({
             I'm Ready to Connect
           </Button>
 
-          <p className="text-xs text-center text-ocean font-inter">
+          <p className="text-xs text-center text-white font-inter">
             You can always return to your dashboard to check for new conversations
           </p>
         </CardContent>
