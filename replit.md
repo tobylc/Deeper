@@ -292,6 +292,15 @@ Changelog:
   * Maintains brand identity while providing better visual integration
   * Automatically applied across all QuotesIcon component locations throughout application
   * Enhanced visual hierarchy with improved contrast and professional appearance
+- June 17, 2025. Subscription plan restructure with new pricing and invitation limits:
+  * Redesigned pricing page with three distinct plans: Basic ($4.95), Advanced ($9.95), and Unlimited ($19.95)
+  * Basic plan allows 1 invitation and 1 connection as inviter (down from previous 5 connections)
+  * Advanced plan allows 3 invitations and 3 connections as inviter (replaces previous Personal plan)
+  * Unlimited plan allows unlimited invitations and connections as inviter (updated pricing to $19.95)
+  * All plans include 7-day free trial with clear trial messaging on pricing page
+  * Updated backend tierBenefits configuration to enforce new connection limits
+  * Enhanced pricing page UI with new icons (Users, MessageCircle, Infinity) for each tier
+  * Maintained existing subscription inheritance system where invitees get inviter's benefits
 ```
 
 ## User Preferences
