@@ -330,7 +330,7 @@ ${connection.inviterEmail} has invited you to connect on Deeper for ${connection
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
 
 To accept this invitation:
-1. Visit ${appUrl}/auth
+1. Visit ${appUrl}/invitation?inviter=${encodeURIComponent(connection.inviterEmail)}&relationship=${encodeURIComponent(connection.relationshipType)}&id=${connection.id}
 2. Register with this email address: ${connection.inviteeEmail}
 3. Check your dashboard for pending invitations
 
