@@ -720,8 +720,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const inviterSubscriptionTier = existingConnection.inviterSubscriptionTier || 'free';
       const tierBenefits: Record<string, { maxConnections: number }> = {
         'free': { maxConnections: 1 },
-        'basic': { maxConnections: 5 },
-        'premium': { maxConnections: 20 },
+        'basic': { maxConnections: 1 },
+        'advanced': { maxConnections: 3 },
         'unlimited': { maxConnections: 999 }
       };
 
@@ -837,9 +837,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const tierBenefits: Record<string, { maxConnections: number, price: number }> = {
-        'basic': { maxConnections: 5, price: 9.99 },
-        'premium': { maxConnections: 20, price: 19.99 },
-        'unlimited': { maxConnections: 999, price: 39.99 }
+        'basic': { maxConnections: 1, price: 4.95 },
+        'advanced': { maxConnections: 3, price: 9.95 },
+        'unlimited': { maxConnections: 999, price: 19.95 }
       };
 
       const benefits = tierBenefits[tier];

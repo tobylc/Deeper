@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Star, Zap, Crown, Gift } from "lucide-react";
+import { CheckCircle, Star, Zap, Crown, Gift, Users, MessageCircle, Infinity } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import DeeperLogo from "@/components/deeper-logo";
 
 export default function Pricing() {
-  const [selectedCard, setSelectedCard] = useState<string | null>('free');
+  const [selectedCard, setSelectedCard] = useState<string | null>('basic');
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -63,22 +63,22 @@ export default function Pricing() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 max-h-[480px]">
             
-            {/* Free Trial */}
+            {/* Basic Plan */}
             <Card 
-              className={`pricing-card relative h-full flex flex-col ${selectedCard === 'free' ? 'selected' : ''}`}
-              onClick={() => setSelectedCard('free')}
+              className={`pricing-card relative h-full flex flex-col ${selectedCard === 'basic' ? 'selected' : ''}`}
+              onClick={() => setSelectedCard('basic')}
             >
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-primary text-white px-3 py-1 text-xs">Most Popular</Badge>
               </div>
               <CardHeader className="text-center pt-5 pb-3">
                 <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <Gift className="w-6 h-6" />
+                  <Users className="w-6 h-6" />
                 </div>
-                <CardTitle className="text-lg font-inter">Free Trial</CardTitle>
+                <CardTitle className="text-lg font-inter">Basic</CardTitle>
                 <div className="mt-2">
-                  <span className="text-2xl font-bold text-foreground">$0</span>
-                  <span className="text-muted-foreground ml-1 text-xs">for 7 days</span>
+                  <span className="text-2xl font-bold text-foreground">$4.95</span>
+                  <span className="text-muted-foreground ml-1 text-xs">per month</span>
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">Perfect for getting started</p>
               </CardHeader>
@@ -86,7 +86,11 @@ export default function Pricing() {
                 <ul className="space-y-2 mb-4 flex-grow">
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-primary flex-shrink-0" />
-                    <span className="text-foreground text-xs">3 conversation spaces</span>
+                    <span className="text-foreground text-xs font-medium">1 invitation allowed</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-3 h-3 text-primary flex-shrink-0" />
+                    <span className="text-foreground text-xs font-medium">1 connection as inviter</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-primary flex-shrink-0" />
@@ -98,38 +102,38 @@ export default function Pricing() {
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-primary flex-shrink-0" />
-                    <span className="text-foreground text-xs">Basic conversation timeline</span>
+                    <span className="text-foreground text-xs">All relationship types</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-primary flex-shrink-0" />
-                    <span className="text-foreground text-xs">All relationship types</span>
+                    <span className="text-foreground text-xs">7-day free trial</span>
                   </li>
                 </ul>
                 <div className="mt-auto">
                   <p className="text-xs text-muted-foreground mb-4 text-center">
-                    No credit card required • Cancel anytime
+                    7-day free trial • Cancel anytime
                   </p>
                   <Link href="/auth">
                     <Button className="w-full card-button py-2 text-xs">
-                      Start Free Trial
+                      Start Basic Plan
                     </Button>
                   </Link>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Personal Plan */}
+            {/* Advanced Plan */}
             <Card 
-              className={`pricing-card h-full flex flex-col ${selectedCard === 'personal' ? 'selected' : ''}`}
-              onClick={() => setSelectedCard('personal')}
+              className={`pricing-card h-full flex flex-col ${selectedCard === 'advanced' ? 'selected' : ''}`}
+              onClick={() => setSelectedCard('advanced')}
             >
               <CardHeader className="text-center pt-5 pb-3">
-                <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2 p-2">
-                  <DeeperLogo size="sm" />
+                <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <MessageCircle className="w-6 h-6" />
                 </div>
-                <CardTitle className="text-lg font-inter">Personal</CardTitle>
+                <CardTitle className="text-lg font-inter">Advanced</CardTitle>
                 <div className="mt-2">
-                  <span className="text-2xl font-bold text-foreground">$9</span>
+                  <span className="text-2xl font-bold text-foreground">$9.95</span>
                   <span className="text-muted-foreground ml-1 text-xs">per month</span>
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">For meaningful relationships</p>
@@ -138,7 +142,11 @@ export default function Pricing() {
                 <ul className="space-y-2 mb-4 flex-grow">
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-secondary-foreground flex-shrink-0" />
-                    <span className="text-foreground text-xs">Unlimited conversation spaces</span>
+                    <span className="text-foreground text-xs font-medium">3 invitations allowed</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-3 h-3 text-secondary-foreground flex-shrink-0" />
+                    <span className="text-foreground text-xs font-medium">3 connections as inviter</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-secondary-foreground flex-shrink-0" />
@@ -154,35 +162,34 @@ export default function Pricing() {
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-secondary-foreground flex-shrink-0" />
-                    <span className="text-foreground text-xs">Conversation insights</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-3 h-3 text-secondary-foreground flex-shrink-0" />
-                    <span className="text-foreground text-xs">Email support</span>
+                    <span className="text-foreground text-xs">7-day free trial</span>
                   </li>
                 </ul>
                 <div className="mt-auto">
+                  <p className="text-xs text-muted-foreground mb-4 text-center">
+                    7-day free trial • Cancel anytime
+                  </p>
                   <Link href="/auth">
                     <Button className="w-full card-button py-2 text-xs">
-                      Choose Personal
+                      Choose Advanced
                     </Button>
                   </Link>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Premium Plan */}
+            {/* Unlimited Plan */}
             <Card 
-              className={`pricing-card h-full flex flex-col ${selectedCard === 'premium' ? 'selected' : ''}`}
-              onClick={() => setSelectedCard('premium')}
+              className={`pricing-card h-full flex flex-col ${selectedCard === 'unlimited' ? 'selected' : ''}`}
+              onClick={() => setSelectedCard('unlimited')}
             >
               <CardHeader className="text-center pt-5 pb-3">
                 <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <Crown className="w-6 h-6" />
+                  <Infinity className="w-6 h-6" />
                 </div>
-                <CardTitle className="text-lg font-inter">Premium</CardTitle>
+                <CardTitle className="text-lg font-inter">Unlimited</CardTitle>
                 <div className="mt-2">
-                  <span className="text-2xl font-bold text-foreground">$19</span>
+                  <span className="text-2xl font-bold text-foreground">$19.95</span>
                   <span className="text-muted-foreground ml-1 text-xs">per month</span>
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">For relationship experts</p>
@@ -191,7 +198,11 @@ export default function Pricing() {
                 <ul className="space-y-2 mb-4 flex-grow">
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-accent-foreground flex-shrink-0" />
-                    <span className="text-foreground text-xs">Everything in Personal</span>
+                    <span className="text-foreground text-xs font-medium">Unlimited invitations</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-3 h-3 text-accent-foreground flex-shrink-0" />
+                    <span className="text-foreground text-xs font-medium">Unlimited connections as inviter</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-accent-foreground flex-shrink-0" />
@@ -203,21 +214,20 @@ export default function Pricing() {
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-accent-foreground flex-shrink-0" />
-                    <span className="text-foreground text-xs">Relationship health metrics</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-3 h-3 text-accent-foreground flex-shrink-0" />
-                    <span className="text-foreground text-xs">Export conversation history</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-3 h-3 text-accent-foreground flex-shrink-0" />
                     <span className="text-foreground text-xs">Priority support</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle className="w-3 h-3 text-accent-foreground flex-shrink-0" />
+                    <span className="text-foreground text-xs">7-day free trial</span>
                   </li>
                 </ul>
                 <div className="mt-auto">
+                  <p className="text-xs text-muted-foreground mb-4 text-center">
+                    7-day free trial • Cancel anytime
+                  </p>
                   <Link href="/auth">
                     <Button className="w-full card-button py-2 text-xs">
-                      Choose Premium
+                      Choose Unlimited
                     </Button>
                   </Link>
                 </div>
