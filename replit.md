@@ -247,6 +247,14 @@ Changelog:
   * Enhanced visual hierarchy with logo sizing that matches surrounding UI elements (e.g., login button prominence)
   * Updated landing page, dashboard, auth, features, pricing pages, and welcome popup components
   * Consistent branding experience across all user touchpoints
+- June 17, 2025. Heart icon replacement with brand consistency:
+  * Replaced all Heart icons throughout application with DeeperLogo component
+  * Updated dashboard subscription status, connection acceptance, and conversation ready sections
+  * Modified conversation interface welcome messages and response badges to use logo
+  * Enhanced question suggestions, invitation pages, and signup flows with logo consistency
+  * Applied appropriate logo sizing and styling (inverted colors for dark backgrounds)
+  * Maintained visual hierarchy while strengthening brand identity across all interactions
+  * Covers all components: dashboard, conversation interface, question suggestions, invitation flows, welcome popups
 ```
 
 ## User Preferences

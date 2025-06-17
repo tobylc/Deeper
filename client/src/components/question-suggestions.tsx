@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lightbulb, Shuffle, Sparkles, ArrowRight, Heart, MessageCircle } from "lucide-react";
+import { Lightbulb, Shuffle, Sparkles, ArrowRight, MessageCircle } from "lucide-react";
+import DeeperLogo from "@/components/deeper-logo";
 import { getQuestionsByCategory } from "@/lib/questions";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -61,7 +62,7 @@ export default function QuestionSuggestions({ relationshipType, onQuestionSelect
               variant="secondary" 
               className="w-fit bg-gradient-to-r from-amber/20 to-amber/10 text-amber-800 border-amber/30 shadow-sm"
             >
-              <Heart className="w-3 h-3 mr-1" />
+              <DeeperLogo size="sm" className="mr-1" />
               {relationshipType}
             </Badge>
           </CardHeader>

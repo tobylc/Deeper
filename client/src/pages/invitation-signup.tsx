@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
-import { Heart } from "lucide-react";
+import DeeperLogo from "@/components/deeper-logo";
 
 export default function InvitationSignup() {
   const [, setLocation] = useLocation();
@@ -173,8 +173,8 @@ export default function InvitationSignup() {
       <Card className="relative z-10 w-full max-w-lg mx-4 bg-card/50 border-border backdrop-blur-sm rounded-3xl shadow-2xl">
         <CardHeader className="text-center pb-6">
           <div className="flex items-center justify-center mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center">
-              <Heart className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center p-2">
+              <DeeperLogo size="sm" className="brightness-0 invert" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold text-foreground font-inter">

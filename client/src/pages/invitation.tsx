@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, Shield, MessageCircle, Users, Sparkles, CheckCircle } from "lucide-react";
+import { Shield, MessageCircle, Users, Sparkles, CheckCircle } from "lucide-react";
+import DeeperLogo from "@/components/deeper-logo";
 import { Link } from "wouter";
 
 export default function InvitationLanding() {
@@ -76,8 +77,8 @@ export default function InvitationLanding() {
           {/* Header */}
           <div className="text-center mb-12">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center">
-                <Heart className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center p-3">
+                <DeeperLogo size="md" className="brightness-0 invert" />
               </div>
             </div>
             <h1 className="text-4xl lg:text-6xl font-inter font-bold text-white mb-4 leading-tight">
@@ -177,8 +178,8 @@ export default function InvitationLanding() {
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-amber/10 flex items-center justify-center mx-auto mb-4">
-                    <Heart className="w-6 h-6 text-amber" />
+                  <div className="w-12 h-12 rounded-full bg-amber/10 flex items-center justify-center mx-auto mb-4 p-2">
+                    <DeeperLogo size="sm" />
                   </div>
                   <h4 className="font-inter font-semibold text-foreground mb-2">3. Begin Your Journey</h4>
                   <p className="text-sm text-slate-600">
