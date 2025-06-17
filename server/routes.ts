@@ -27,22 +27,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(securityHeaders);
   app.use(requestLogger);
 
-  // CRITICAL: Invitation routes MUST be before static serving to work in production
-  // In development, these will be handled by Vite's dev server
-  // In production, we need to serve the built index.html
-  if (process.env.NODE_ENV !== "development") {
-    app.get("/invitation", (req, res) => {
-      console.log("[INVITATION] Production route hit with query:", req.query);
-      const distPath = path.resolve(import.meta.dirname, "public");
-      res.sendFile(path.resolve(distPath, "index.html"));
-    });
+  // CRITICAL: Universal invitation routes for both development and production
+  app.get("/invitation", (req, res, next) => {
+    console.log("[INVITATION] Route hit with query:", req.query);
+    
+    // In development, let Vite handle it
+    if (process.env.NODE_ENV === "development") {
+      return next();
+    }
+    
+    // In production, serve the built index.html
+    const distPath = path.resolve(import.meta.dirname, "public");
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
 
-    app.get("/invitation/*", (req, res) => {
-      console.log("[INVITATION] Production wildcard route hit with params:", req.params, "query:", req.query);
-      const distPath = path.resolve(import.meta.dirname, "public");
-      res.sendFile(path.resolve(distPath, "index.html"));
-    });
-  }
+  app.get("/invitation/*", (req, res, next) => {
+    console.log("[INVITATION] Wildcard route hit with params:", req.params, "query:", req.query);
+    
+    // In development, let Vite handle it
+    if (process.env.NODE_ENV === "development") {
+      return next();
+    }
+    
+    // In production, serve the built index.html
+    const distPath = path.resolve(import.meta.dirname, "public");
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
 
   // Health check endpoints
   app.get("/api/health", async (req, res) => {
