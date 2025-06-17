@@ -352,22 +352,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(inviteeEmail);
-      if (existingUser) {
-        return res.status(409).json({ message: "User with this email already exists" });
+      if (existingUser && existingUser.passwordHash) {
+        return res.status(409).json({ message: "User with this email already exists and has completed setup" });
       }
 
       // Hash the password securely
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      // Create user account for invitee with hashed password
-      const newUser = await storage.upsertUser({
-        id: randomUUID(),
-        email: inviteeEmail,
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        passwordHash: hashedPassword,
-      });
+      let newUser;
+      if (existingUser) {
+        // Update existing user with password and name information
+        newUser = await storage.upsertUser({
+          id: existingUser.id,
+          email: inviteeEmail,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          passwordHash: hashedPassword,
+        });
+      } else {
+        // Create new user account for invitee with hashed password
+        newUser = await storage.upsertUser({
+          id: randomUUID(),
+          email: inviteeEmail,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          passwordHash: hashedPassword,
+        });
+      }
 
       // Update connection status to accepted
       const updatedConnection = await storage.updateConnectionStatus(
