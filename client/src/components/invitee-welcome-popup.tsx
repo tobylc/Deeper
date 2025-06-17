@@ -72,16 +72,16 @@ export default function InviteeWelcomePopup({
                 Connection Established
               </h3>
             </div>
-            <p className="text-sm text-slate-100 font-inter leading-relaxed">
-              <span className="font-medium text-white">{inviterName}</span> has invited you to connect as{' '}
-              <span className="font-medium text-blue-300">{relationshipType}</span>. 
+            <p className="text-sm text-slate-700 font-inter leading-relaxed">
+              <span className="font-medium text-slate-900">{inviterName}</span> has invited you to connect as{' '}
+              <span className="font-medium text-blue-600">{relationshipType}</span>. 
               Your account has been created and you're ready to begin meaningful conversations.
             </p>
           </div>
 
           {/* What Happens Next */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-white font-inter flex items-center gap-2">
+            <h3 className="font-semibold text-slate-800 font-inter flex items-center gap-2">
               <Clock className="w-5 h-5 text-amber" />
               What happens next?
             </h3>
@@ -92,10 +92,10 @@ export default function InviteeWelcomePopup({
                   <span className="text-xs font-bold text-amber">1</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white font-inter">
+                  <p className="text-sm font-medium text-slate-800 font-inter">
                     Wait for {inviterName} to start your first conversation
                   </p>
-                  <p className="text-xs text-slate-100 font-inter">
+                  <p className="text-xs text-slate-600 font-inter">
                     They'll choose a meaningful question to begin your dialogue
                   </p>
                 </div>
