@@ -32,9 +32,11 @@ export default function ProfileImageUpload({
       const formData = new FormData();
       formData.append('image', file);
       
+      // Get credentials with session cookie
       const response = await fetch('/api/users/profile-image/upload', {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Include session cookies
       });
       
       if (!response.ok) {
@@ -71,6 +73,7 @@ export default function ProfileImageUpload({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ provider }),
+        credentials: 'include', // Include session cookies
       });
       
       if (!response.ok) {
