@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Lock, MessageCircle, Lightbulb, History, Mail, Users, Star, Globe, Shield, CheckCircle, Clock, Target, Zap, Eye } from "lucide-react";
+import { Lock, MessageCircle, Lightbulb, History, Mail, Users, Star, Globe, Shield, CheckCircle, Clock, Target, Zap, Eye } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import DeeperLogo from "@/components/deeper-logo";
@@ -239,17 +239,17 @@ export default function Features() {
             {/* Relationship Categories */}
             <div className="flex items-start space-x-4 p-6 bg-card rounded-xl shadow-lg border-2 border-gray-600">
               <div 
-                className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:scale-110 cursor-pointer ${
+                className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 hover:scale-110 cursor-pointer p-2 ${
                   activeIcon === 'heart' 
                     ? 'bg-primary shadow-lg' 
                     : 'bg-accent/10 hover:bg-primary'
                 }`}
                 onClick={() => setActiveIcon('heart')}
               >
-                <Heart className={`w-6 h-6 transition-colors duration-300 ${
+                <DeeperLogo size="sm" className={`transition-all duration-300 ${
                   activeIcon === 'heart' 
-                    ? 'text-white' 
-                    : 'text-accent-foreground hover:text-white'
+                    ? 'brightness-0 invert' 
+                    : 'hover:brightness-0 hover:invert'
                 }`} />
               </div>
               <div>

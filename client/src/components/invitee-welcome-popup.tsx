@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, Heart, MessageCircle, Clock, CheckCircle } from "lucide-react";
+import { X, MessageCircle, Clock, CheckCircle } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
 
 interface InviteeWelcomePopupProps {
@@ -50,8 +50,8 @@ export default function InviteeWelcomePopup({
           </Button>
           
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-ocean to-teal flex items-center justify-center">
-              <Heart className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-ocean to-teal flex items-center justify-center p-2">
+              <DeeperLogo size="sm" className="brightness-0 invert" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -154,7 +154,7 @@ export default function InviteeWelcomePopup({
             onClick={handleClose}
             className="w-full btn-ocean font-inter rounded-2xl py-3"
           >
-            <Heart className="w-4 h-4 mr-2" />
+            <DeeperLogo size="sm" className="brightness-0 invert mr-2" />
             I'm Ready to Connect
           </Button>
 

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Heart, Star, Zap, Crown, Gift } from "lucide-react";
+import { CheckCircle, Star, Zap, Crown, Gift } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import DeeperLogo from "@/components/deeper-logo";
@@ -124,8 +124,8 @@ export default function Pricing() {
               onClick={() => setSelectedCard('personal')}
             >
               <CardHeader className="text-center pt-5 pb-3">
-                <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <Heart className="w-6 h-6" />
+                <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2 p-2">
+                  <DeeperLogo size="sm" />
                 </div>
                 <CardTitle className="text-lg font-inter">Personal</CardTitle>
                 <div className="mt-2">
