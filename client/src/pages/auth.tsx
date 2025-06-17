@@ -88,7 +88,7 @@ export default function Auth() {
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
               <ArrowLeft className="w-5 h-5 text-white/80" />
-              <DeeperLogo size="lg" />
+              <DeeperLogo size="header" />
             </Link>
           </div>
         </div>
