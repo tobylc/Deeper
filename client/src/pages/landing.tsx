@@ -46,12 +46,11 @@ export default function Landing() {
               <Link href="/pricing" className="text-white/80 hover:text-white transition-colors font-inter font-medium">
                 Pricing
               </Link>
-              <Button 
-                className="btn-ocean px-6 py-2"
-                onClick={() => window.location.href = '/api/login'}
-              >
-                Login
-              </Button>
+              <Link href="/auth">
+                <Button className="btn-ocean px-6 py-2">
+                  Login
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
