@@ -78,15 +78,18 @@ export default function InvitationSignup() {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        
         toast({
           title: "Welcome to Deeper!",
           description: `Connection established with ${getInviterName()}. Redirecting to your dashboard...`,
         });
         
-        // Redirect to dashboard after brief delay
+        // Wait a moment for session to be established, then redirect
         setTimeout(() => {
-          setLocation("/dashboard");
-        }, 2000);
+          // Force a full page navigation to ensure authentication state is updated
+          window.location.href = "/dashboard";
+        }, 1500);
       } else {
         const error = await response.json();
         toast({

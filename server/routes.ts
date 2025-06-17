@@ -227,15 +227,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Don't fail the request if email fails
       }
 
-      res.json({
-        message: "Connection established successfully",
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          firstName: newUser.firstName
-        },
-        connection: updatedConnection,
-        conversation: conversation
+      // Log in the new user by setting up the session
+      (req as any).login(newUser, (err: any) => {
+        if (err) {
+          console.error("Session creation error:", err);
+          return res.status(500).json({ message: "Account created but login failed" });
+        }
+
+        res.json({
+          message: "Connection established successfully",
+          user: {
+            id: newUser.id,
+            email: newUser.email,
+            firstName: newUser.firstName
+          },
+          connection: updatedConnection,
+          conversation: conversation
+        });
       });
 
     } catch (error: any) {
