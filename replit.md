@@ -255,6 +255,12 @@ Changelog:
   * Applied appropriate logo sizing and styling (inverted colors for dark backgrounds)
   * Maintained visual hierarchy while strengthening brand identity across all interactions
   * Covers all components: dashboard, conversation interface, question suggestions, invitation flows, welcome popups
+- June 17, 2025. Enhanced logo system with new transparent design:
+  * Replaced existing logo with new blue transparent gradient design throughout application
+  * Enhanced flexible sizing system with 6 size options (xs, sm, md, lg, xl, header)
+  * Updated header logo size to match login button height (h-10 = 40px) for perfect alignment
+  * Applied consistent logo implementation across landing, auth, features, and pricing pages
+  * Added object-contain styling for optimal logo display and transparency handling
 ```
 
 ## User Preferences
