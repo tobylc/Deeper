@@ -88,7 +88,7 @@ export default function Auth() {
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
               <ArrowLeft className="w-5 h-5 text-white/80" />
-              <DeeperLogo size="md" />
+              <DeeperLogo size="lg" />
             </Link>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function Auth() {
             <CardHeader className="text-center">
               <div className="flex flex-col items-center gap-2 mb-2">
                 <span className="text-lg text-muted-foreground font-inter">Welcome to</span>
-                <DeeperLogo size="lg" />
+                <DeeperLogo size="xl" />
               </div>
               <CardDescription className="text-muted-foreground font-inter">
                 {showEmailLogin ? "Sign in with your email and password" : "Sign in to start building deeper relationships"}

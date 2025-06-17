@@ -5,9 +5,9 @@ interface DeeperLogoProps {
 
 export default function DeeperLogo({ className = "", size = 'md' }: DeeperLogoProps) {
   const sizeClasses = {
-    sm: 'h-6 w-auto', // Small size for compact areas
-    md: 'h-8 w-auto', // Default size for headers
-    lg: 'h-12 w-auto', // Large size for landing pages
+    sm: 'h-5 w-auto', // Small size for popups and compact areas
+    md: 'h-8 w-auto', // Medium size for dashboard headers
+    lg: 'h-10 w-auto', // Large size for auth pages and navigation headers
     xl: 'h-16 w-auto', // Extra large for hero sections
   };
 
