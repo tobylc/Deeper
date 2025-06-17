@@ -22,14 +22,14 @@ export function getSession() {
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
-    resave: true, // Force session resave for better persistence
-    saveUninitialized: true, // Save uninitialized sessions
+    resave: false, // Don't save session if unmodified
+    saveUninitialized: false, // Don't create session until something stored
     rolling: true, // Reset expiry on activity
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: sessionTtl,
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax',
     },
     name: 'deeper.session', // Custom session name
   });
@@ -107,16 +107,23 @@ export async function setupAuth(app: Express) {
     });
     
     app.get("/api/auth/google/callback", 
-      passport.authenticate("google", { failureRedirect: "/?error=auth_failed" }),
+      passport.authenticate("google", { failureRedirect: "/auth?error=auth_failed" }),
       (req, res) => {
-        const isLinking = (req.session as any).isLinking;
-        delete (req.session as any).isLinking; // Clean up session
-        
-        if (isLinking) {
-          res.redirect("/dashboard?linked=google");
-        } else {
-          res.redirect("/dashboard");
-        }
+        // Ensure session is saved before redirect
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+          }
+          
+          const isLinking = (req.session as any).isLinking;
+          delete (req.session as any).isLinking; // Clean up session
+          
+          if (isLinking) {
+            res.redirect("/dashboard?linked=google");
+          } else {
+            res.redirect("/dashboard");
+          }
+        });
       }
     );
   }

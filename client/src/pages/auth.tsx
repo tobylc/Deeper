@@ -78,6 +78,8 @@ export default function Auth() {
   };
 
   const handleOAuthLogin = () => {
+    // Clear any existing auth state before redirecting
+    queryClient.clear();
     window.location.href = `/api/auth/google`;
   };
 
