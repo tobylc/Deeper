@@ -171,32 +171,26 @@ export default function ConversationInterface({
 
           {/* Message Bubble */}
           <div className={cn(
-            "relative p-4 rounded-2xl shadow-lg backdrop-blur-sm border",
+            "relative p-4 rounded-2xl shadow-lg border-0",
             isFromCurrentUser 
               ? cn(
-                  "bg-gradient-to-br from-ocean to-ocean/90 text-white border-ocean/30",
+                  "bg-ocean text-white",
                   "rounded-br-md"
                 )
               : cn(
-                  "bg-gradient-to-br from-slate-50 to-white text-slate-800 border-slate-200/60",
+                  "bg-slate-600 text-white",
                   "rounded-bl-md"
                 ),
             isFirstMessage && "animate-in slide-in-from-bottom-4 duration-500",
             isLastMessage && "ring-2 ring-ocean/20 ring-offset-2"
           )}>
             {/* Content */}
-            <div className={cn(
-              "text-sm leading-relaxed",
-              isFromCurrentUser ? "text-white" : "text-slate-800"
-            )}>
+            <div className="text-sm leading-relaxed text-white">
               {message.content}
             </div>
 
             {/* Timestamp */}
-            <div className={cn(
-              "flex items-center space-x-1 mt-3 text-xs",
-              isFromCurrentUser ? "text-white/70" : "text-slate-500"
-            )}>
+            <div className="flex items-center space-x-1 mt-3 text-xs text-white/80">
               <Clock className="h-3 w-3" />
               <span>{formatDistanceToNow(new Date(message.createdAt!), { addSuffix: true })}</span>
             </div>
@@ -206,7 +200,7 @@ export default function ConversationInterface({
               "absolute w-3 h-3 rotate-45",
               isFromCurrentUser 
                 ? "bg-ocean bottom-0 right-0 translate-x-1 translate-y-1" 
-                : "bg-slate-50 bottom-0 left-0 -translate-x-1 translate-y-1"
+                : "bg-slate-600 bottom-0 left-0 -translate-x-1 translate-y-1"
             )} />
           </div>
         </div>
@@ -225,14 +219,14 @@ export default function ConversationInterface({
         className="shadow-lg border-2 border-white/20"
       />
       
-      <div className="bg-gradient-to-r from-slate-100 to-slate-50 p-4 rounded-2xl rounded-bl-md border border-slate-200/60 shadow-lg">
+      <div className="bg-slate-600 p-4 rounded-2xl rounded-bl-md shadow-lg">
         <div className="flex items-center space-x-3">
           <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-ocean rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-            <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+            <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
           </div>
-          <span className="text-sm text-slate-600 font-medium">
+          <span className="text-sm text-white font-medium">
             <UserDisplayName email={otherParticipantEmail} /> is thinking...
           </span>
         </div>
@@ -335,7 +329,7 @@ export default function ConversationInterface({
                 )}
               </Badge>
               
-              <div className="text-sm text-slate-500">
+              <div className="text-sm text-slate-600">
                 {nextMessageType === 'question' 
                   ? "Ask something meaningful to deepen your connection"
                   : "Share your thoughts and continue the conversation"
@@ -402,11 +396,11 @@ export default function ConversationInterface({
                 <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                 <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
               </div>
-              <span className="text-sm text-slate-600 font-medium">
+              <span className="text-sm text-slate-700 font-medium">
                 Waiting for <UserDisplayName email={otherParticipantEmail} />
               </span>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-600">
               You'll be notified when it's your turn to respond
             </p>
           </div>

@@ -106,12 +106,12 @@ export default function QuestionSuggestions({ relationshipType, onQuestionSelect
 
       {/* Footer Guidance */}
       <div className="text-center">
-        <div className="inline-flex items-center space-x-2 text-sm text-slate-500 bg-slate-50/80 px-4 py-2 rounded-full border border-slate-200/60">
+        <div className="inline-flex items-center space-x-2 text-sm text-slate-700 bg-slate-50/80 px-4 py-2 rounded-full border border-slate-200/60">
           <Lightbulb className="w-4 h-4 text-amber-500" />
           <span>Questions spark meaningful conversations</span>
         </div>
         
-        <div className="mt-3 text-xs text-slate-400">
+        <div className="mt-3 text-xs text-slate-600">
           {questions.length} total questions available • Set {currentSet + 1} of {Math.ceil(questions.length / questionsPerSet)}
         </div>
       </div>

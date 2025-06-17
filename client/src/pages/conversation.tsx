@@ -229,7 +229,7 @@ export default function ConversationPage() {
                       <h3 className="font-semibold text-foreground font-inter mb-2">
                         Waiting for Response
                       </h3>
-                      <p className="text-sm text-muted-foreground font-inter leading-relaxed">
+                      <p className="text-sm text-slate-700 font-inter leading-relaxed">
                         <UserDisplayName email={otherParticipant} /> is preparing their response. 
                         You'll receive an email notification when it's your turn.
                       </p>
