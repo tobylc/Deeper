@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Heart, Plus, MessageCircle, Clock, Users, Mail } from "lucide-react";
 import InvitationForm from "@/components/invitation-form";
 import AccountLinking from "@/components/account-linking";
@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [showInviteForm, setShowInviteForm] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Check for account linking success
   useEffect(() => {
@@ -412,8 +413,20 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Account Security */}
-        <AccountLinking />
+        {/* Profile Management Section */}
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          {/* Profile Image Upload */}
+          <ProfileImageUpload 
+            currentImageUrl={user?.profileImageUrl}
+            onImageUpdate={() => {
+              // Refresh user data
+              queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+            }}
+          />
+          
+          {/* Account Security */}
+          <AccountLinking />
+        </div>
       </div>
 
       {/* Invitation Form Modal */}
