@@ -183,42 +183,60 @@ export default function ConversationPage() {
               relationshipType={conversation.relationshipType}
             />
 
-            {/* Message Input */}
-            {isMyTurn && (
-              <Card className="mt-6">
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    {nextMessageType === 'question' ? 'Ask a Question' : 'Share Your Response'}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Textarea
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder={
-                        nextMessageType === 'question' 
-                          ? "What would you like to ask?" 
-                          : "Share your thoughts..."
-                      }
-                      className="min-h-[100px]"
-                    />
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">
-                        {nextMessageType === 'question' ? 'Asking a question' : 'Responding'}
-                      </span>
-                      <Button 
-                        onClick={handleSendMessage}
-                        disabled={!newMessage.trim() || sendMessageMutation.isPending}
+            {/* Message Input - Always visible but contextual */}
+            <Card className="mt-6 card-elevated border-slate-200/60">
+              <CardHeader>
+                <CardTitle className="text-lg text-foreground font-inter">
+                  {isMyTurn 
+                    ? (nextMessageType === 'question' ? 'Ask a Question' : 'Share Your Response')
+                    : 'Waiting for their turn'
+                  }
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Textarea
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder={
+                      isMyTurn 
+                        ? (nextMessageType === 'question' 
+                            ? "What would you like to ask?" 
+                            : "Share your thoughts...")
+                        : "It's their turn to respond..."
+                    }
+                    disabled={!isMyTurn}
+                    className="min-h-[120px] bg-input border-border text-foreground focus:border-ocean rounded-2xl font-inter resize-none"
+                  />
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <Badge 
+                        variant={isMyTurn ? "default" : "outline"}
+                        className={isMyTurn ? "bg-ocean text-white" : "border-slate-300 text-slate-600"}
                       >
-                        <Send className="w-4 h-4 mr-2" />
-                        {sendMessageMutation.isPending ? 'Sending...' : 'Send'}
-                      </Button>
+                        {isMyTurn 
+                          ? (nextMessageType === 'question' ? 'Asking a question' : 'Responding')
+                          : 'Their turn'
+                        }
+                      </Badge>
+                      {!isMyTurn && (
+                        <span className="text-sm text-muted-foreground font-inter">
+                          You'll be notified when it's your turn
+                        </span>
+                      )}
                     </div>
+                    <Button 
+                      onClick={handleSendMessage}
+                      disabled={!isMyTurn || !newMessage.trim() || sendMessageMutation.isPending}
+                      className="btn-ocean font-inter rounded-2xl"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      {sendMessageMutation.isPending ? 'Sending...' : 'Send'}
+                    </Button>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Question Suggestions Sidebar */}
@@ -228,6 +246,28 @@ export default function ConversationPage() {
                 relationshipType={conversation.relationshipType}
                 onQuestionSelect={handleQuestionSelect}
               />
+            )}
+            
+            {/* Turn Status and Instructions */}
+            {!isMyTurn && (
+              <Card className="card-elevated border-amber/30 bg-amber/5">
+                <CardContent className="p-6">
+                  <div className="text-center space-y-4">
+                    <div className="w-12 h-12 rounded-full bg-amber/20 flex items-center justify-center mx-auto">
+                      <Clock className="w-6 h-6 text-amber" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground font-inter mb-2">
+                        Waiting for Response
+                      </h3>
+                      <p className="text-sm text-muted-foreground font-inter leading-relaxed">
+                        <UserDisplayName email={otherParticipant} /> is preparing their response. 
+                        You'll receive an email notification when it's your turn.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </div>
         </div>
