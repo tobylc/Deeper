@@ -9,13 +9,15 @@ interface ConversationInterfaceProps {
   currentUserEmail: string;
   participant1Email: string;
   participant2Email: string;
+  isMyTurn: boolean;
 }
 
 export default function ConversationInterface({ 
   messages, 
   currentUserEmail, 
   participant1Email, 
-  participant2Email 
+  participant2Email,
+  isMyTurn
 }: ConversationInterfaceProps) {
   const getParticipantName = (email: string) => {
     if (email === currentUserEmail) return "You";
@@ -28,9 +30,25 @@ export default function ConversationInterface({
         <div className="space-y-6 max-h-96 overflow-y-auto">
           {messages.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-muted-foreground mb-4">
-                No messages yet. Start the conversation by asking a question!
-              </div>
+              {isMyTurn ? (
+                <div className="space-y-4">
+                  <div className="text-lg font-medium text-slate-700">
+                    It's your turn to start the conversation!
+                  </div>
+                  <div className="text-muted-foreground">
+                    Ask your first question below to begin this meaningful exchange.
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="text-lg font-medium text-slate-700">
+                    Waiting for them to start
+                  </div>
+                  <div className="text-muted-foreground">
+                    Your conversation partner will ask the first question soon.
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             messages.map((message, index) => {

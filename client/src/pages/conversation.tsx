@@ -75,7 +75,11 @@ export default function ConversationPage() {
   const otherParticipant = conversation.participant1Email === user.email 
     ? conversation.participant2Email 
     : conversation.participant1Email;
-  const isMyTurn = conversation.currentTurn === user.email;
+  
+  // Fix turn logic: if no messages exist, it should be the inviter's turn (participant1)
+  const isMyTurn = messages.length === 0 
+    ? conversation.participant1Email === user.email  // Inviter starts first
+    : conversation.currentTurn === user.email;
   
   // Determine if the next message should be a question or response
   const lastMessage = messages[messages.length - 1];
@@ -146,6 +150,7 @@ export default function ConversationPage() {
               currentUserEmail={user.email || ''}
               participant1Email={conversation.participant1Email}
               participant2Email={conversation.participant2Email}
+              isMyTurn={isMyTurn}
             />
 
             {/* Message Input */}
