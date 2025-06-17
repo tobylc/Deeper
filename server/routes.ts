@@ -864,12 +864,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Profile image file upload
+  // Profile image file upload with enhanced authentication
   app.post("/api/users/profile-image/upload", 
-    isAuthenticated, 
     rateLimit(5, 60 * 60 * 1000), // 5 uploads per hour
     upload.single('image'),
     async (req: any, res) => {
+    // Enhanced authentication check
+    if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
+      console.log("[UPLOAD] Authentication failed:", {
+        isAuthenticated: req.isAuthenticated?.(),
+        hasUser: !!req.user,
+        sessionID: req.sessionID
+      });
+      return res.status(401).json({ message: "Authentication required. Please log in again." });
+    }
     try {
       const userId = req.user.claims?.sub || req.user.id;
       
@@ -887,14 +895,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileName = `profile_${userId}_${Date.now()}.${fileExtension}`;
       const filePath = path.join(uploadsDir, fileName);
       
-      // Process image with sharp - resize and optimize
-      await sharp(req.file.buffer)
-        .resize(400, 400, { 
-          fit: 'cover',
-          position: 'center'
-        })
-        .jpeg({ quality: 85 })
-        .toFile(filePath);
+      // Process image with sharp - resize and optimize with error handling
+      try {
+        await sharp(req.file.buffer)
+          .resize(400, 400, { 
+            fit: 'cover',
+            position: 'center'
+          })
+          .jpeg({ quality: 85 })
+          .toFile(filePath);
+      } catch (imageError) {
+        console.error("Image processing error:", imageError);
+        return res.status(400).json({ message: "Invalid image file. Please try a different image." });
+      }
       
       // Update user profile with new image URL
       const profileImageUrl = `/uploads/${fileName}`;
@@ -915,11 +928,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Import profile image from OAuth provider
+  // Import profile image from OAuth provider with enhanced authentication
   app.post("/api/users/profile-image/import", 
-    isAuthenticated, 
     rateLimit(3, 60 * 60 * 1000), // 3 imports per hour
     async (req: any, res) => {
+    // Enhanced authentication check
+    if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
+      console.log("[IMPORT] Authentication failed:", {
+        isAuthenticated: req.isAuthenticated?.(),
+        hasUser: !!req.user,
+        sessionID: req.sessionID
+      });
+      return res.status(401).json({ message: "Authentication required. Please log in again." });
+    }
     try {
       const userId = req.user.claims?.sub || req.user.id;
       const { provider } = req.body;
@@ -967,14 +988,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const fileName = `profile_${userId}_${provider}_${Date.now()}.jpg`;
         const filePath = path.join(uploadsDir, fileName);
         
-        // Process image with sharp - resize and optimize
-        await sharp(buffer)
-          .resize(400, 400, { 
-            fit: 'cover',
-            position: 'center'
-          })
-          .jpeg({ quality: 85 })
-          .toFile(filePath);
+        // Process image with sharp - resize and optimize with error handling
+        try {
+          await sharp(buffer)
+            .resize(400, 400, { 
+              fit: 'cover',
+              position: 'center'
+            })
+            .jpeg({ quality: 85 })
+            .toFile(filePath);
+        } catch (imageError) {
+          console.error("OAuth image processing error:", imageError);
+          return res.status(400).json({ message: "Failed to process profile image from OAuth provider." });
+        }
         
         // Update user profile with new image URL
         const localImageUrl = `/uploads/${fileName}`;

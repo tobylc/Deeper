@@ -22,14 +22,16 @@ export function getSession() {
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
+    resave: true, // Force session resave for better persistence
+    saveUninitialized: true, // Save uninitialized sessions
+    rolling: true, // Reset expiry on activity
     cookie: {
       httpOnly: true,
-      secure: false, // Disabled for development
+      secure: process.env.NODE_ENV === 'production',
       maxAge: sessionTtl,
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     },
+    name: 'deeper.session', // Custom session name
   });
 }
 
@@ -194,19 +196,42 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  console.log("[AUTH] Checking authentication:", {
-    isAuthenticated: req.isAuthenticated?.(),
-    hasUser: !!req.user,
+  // Enhanced authentication check with session validation
+  const isAuth = req.isAuthenticated && req.isAuthenticated();
+  const hasUser = !!req.user;
+  const hasSession = !!req.session && !!req.sessionID;
+  
+  console.log("[AUTH] Authentication check:", {
+    isAuthenticated: isAuth,
+    hasUser,
+    hasSession,
     sessionID: req.sessionID,
     method: req.method,
-    url: req.url
+    url: req.url,
+    userAgent: req.headers['user-agent']?.substring(0, 50)
   });
 
-  if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
-    console.log("[AUTH] Authentication failed - no user or not authenticated");
-    return res.status(401).json({ message: "Unauthorized" });
+  if (!isAuth || !hasUser || !hasSession) {
+    console.log("[AUTH] Authentication failed - missing session or user data");
+    return res.status(401).json({ 
+      message: "Authentication required. Please refresh the page and log in again.",
+      details: process.env.NODE_ENV === 'development' ? {
+        isAuthenticated: isAuth,
+        hasUser,
+        hasSession
+      } : undefined
+    });
   }
   
-  console.log("[AUTH] Authentication successful for user:", (req.user as any).id || (req.user as any).claims?.sub);
+  // Additional validation for user data integrity
+  const user = req.user as any;
+  const userId = user.claims?.sub || user.id;
+  
+  if (!userId) {
+    console.log("[AUTH] Authentication failed - invalid user data");
+    return res.status(401).json({ message: "Invalid session. Please log in again." });
+  }
+  
+  console.log("[AUTH] Authentication successful for user:", userId);
   next();
 };
