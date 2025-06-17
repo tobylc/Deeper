@@ -398,7 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         connectionId: connection.id,
         participant1Email: connection.inviterEmail,
         participant2Email: connection.inviteeEmail,
-        currentTurn: connection.inviterEmail // Inviter starts the conversation
+        currentTurn: connection.inviteeEmail // Invitee (newly joined user) starts the conversation
       });
 
       // Send acceptance notification email to inviter
