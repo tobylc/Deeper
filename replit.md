@@ -224,6 +224,13 @@ Changelog:
   * Fixed conversation turn logic so inviters properly start first conversations
   * Corrected "Your turn" vs "Their turn" display based on actual conversation state
   * Enhanced conversation header to display participant names instead of email addresses
+- June 17, 2025. Email system enhancement to use proper names:
+  * All email services now use getUserDisplayNameByEmail to fetch proper user names
+  * Invitation emails display inviter's full name instead of email address
+  * Connection acceptance emails show invitee's name instead of email
+  * Connection decline emails use proper names for better personalization
+  * Enhanced user experience with more personal and professional email communications
+  * Applies to ConsoleEmailService, ProductionEmailService, and InternalEmailService
 ```
 
 ## User Preferences

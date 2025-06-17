@@ -336,7 +336,7 @@ export class InternalEmailService implements EmailService {
     const textContent = `
 Hi there!
 
-${connection.inviterEmail} has invited you to connect on Deeper for ${connection.relationshipType} conversations.
+${inviterName} has invited you to connect on Deeper for ${connection.relationshipType} conversations.
 
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
 
@@ -369,8 +369,9 @@ The Deeper Team
     const appUrl = process.env.REPLIT_DEV_DOMAIN 
       ? `https://${process.env.REPLIT_DEV_DOMAIN}`
       : 'https://deeper.app';
+    const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
 
-    const subject = `${connection.inviteeEmail} accepted your invitation!`;
+    const subject = `${inviteeName} accepted your invitation!`;
     
     const htmlContent = `
       <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -381,7 +382,7 @@ The Deeper Team
         
         <div style="background: #f0fdf4; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
           <p style="color: #166534; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
-            <strong>${connection.inviteeEmail}</strong> has accepted your invitation to connect!
+            <strong>${inviteeName}</strong> has accepted your invitation to connect!
           </p>
           
           <p style="color: #166534; line-height: 1.6; margin: 0 0 20px 0;">
@@ -404,7 +405,7 @@ The Deeper Team
     `;
 
     const textContent = `
-Great news! ${connection.inviteeEmail} has accepted your invitation to connect.
+Great news! ${inviteeName} has accepted your invitation to connect.
 
 Your private conversation space is now ready. You can start by asking the first question.
 
@@ -428,6 +429,8 @@ The Deeper Team
   }
 
   async sendConnectionDeclined(connection: Connection): Promise<void> {
+    const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
+    
     const subject = "Connection invitation update";
     
     const htmlContent = `
@@ -438,7 +441,7 @@ The Deeper Team
         
         <div style="background: #f9fafb; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
           <p style="color: #374151; line-height: 1.6; margin: 0 0 20px 0;">
-            ${connection.inviteeEmail} has respectfully declined your invitation to connect.
+            ${inviteeName} has respectfully declined your invitation to connect.
           </p>
           
           <p style="color: #6B7280; line-height: 1.6; margin: 0;">
@@ -455,7 +458,7 @@ The Deeper Team
     `;
 
     const textContent = `
-${connection.inviteeEmail} has respectfully declined your invitation to connect.
+${inviteeName} has respectfully declined your invitation to connect.
 
 Don't worry - meaningful connections take time. You can always try reaching out through other channels or invite them again in the future.
 
