@@ -12,6 +12,8 @@ export interface EmailService {
 // Simple console email service for development
 export class ConsoleEmailService implements EmailService {
   async sendConnectionInvitation(connection: Connection): Promise<void> {
+    const inviterName = await storage.getUserDisplayNameByEmail(connection.inviterEmail);
+    
     console.log(`
 📧 INVITATION EMAIL
 To: ${connection.inviteeEmail}
@@ -20,7 +22,7 @@ Subject: You're invited to start a meaningful conversation on Deeper
 
 Hi there!
 
-${connection.inviterEmail} has invited you to connect on Deeper for ${connection.relationshipType} conversations.
+${inviterName} has invited you to connect on Deeper for ${connection.relationshipType} conversations.
 
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
 
@@ -37,12 +39,14 @@ The Deeper Team
   }
 
   async sendConnectionAccepted(connection: Connection): Promise<void> {
+    const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
+    
     console.log(`
 📧 CONNECTION ACCEPTED EMAIL
 To: ${connection.inviterEmail}
-Subject: ${connection.inviteeEmail} accepted your invitation!
+Subject: ${inviteeName} accepted your invitation!
 
-Great news! ${connection.inviteeEmail} has accepted your invitation to connect.
+Great news! ${inviteeName} has accepted your invitation to connect.
 
 Your private conversation space is now ready. You can start by asking the first question.
 
@@ -54,12 +58,14 @@ The Deeper Team
   }
 
   async sendConnectionDeclined(connection: Connection): Promise<void> {
+    const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
+    
     console.log(`
 📧 CONNECTION DECLINED EMAIL
 To: ${connection.inviterEmail}
 Subject: Connection invitation update
 
-${connection.inviteeEmail} has respectfully declined your invitation to connect.
+${inviteeName} has respectfully declined your invitation to connect.
 
 Don't worry - meaningful connections take time. You can always try reaching out through other channels or invite them again in the future.
 
@@ -80,6 +86,7 @@ export class ProductionEmailService implements EmailService {
 
   async sendConnectionInvitation(connection: Connection): Promise<void> {
     const appUrl = 'https://deepersocial.replit.app';
+    const inviterName = await storage.getUserDisplayNameByEmail(connection.inviterEmail);
 
     const msg = {
       to: connection.inviteeEmail,
@@ -95,7 +102,7 @@ export class ProductionEmailService implements EmailService {
           <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
             <h2 style="color: #1e293b; margin: 0 0 20px 0;">You've been invited to connect!</h2>
             <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
-              <strong>${connection.inviterEmail}</strong> has invited you to start meaningful ${connection.relationshipType} conversations on Deeper.
+              <strong>${inviterName}</strong> has invited you to start meaningful ${connection.relationshipType} conversations on Deeper.
             </p>
             
             ${connection.personalMessage ? `
@@ -131,7 +138,7 @@ export class ProductionEmailService implements EmailService {
       text: `
 Hi there!
 
-${connection.inviterEmail} has invited you to connect on Deeper for ${connection.relationshipType} conversations.
+${inviterName} has invited you to connect on Deeper for ${connection.relationshipType} conversations.
 
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
 
@@ -161,11 +168,12 @@ The Deeper Team
     const appUrl = process.env.REPLIT_DEV_DOMAIN 
       ? `https://${process.env.REPLIT_DEV_DOMAIN}`
       : 'https://deeper.app';
+    const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
 
     const msg = {
       to: connection.inviterEmail,
       from: this.fromEmail,
-      subject: `${connection.inviteeEmail} accepted your invitation!`,
+      subject: `${inviteeName} accepted your invitation!`,
       html: `
         <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
@@ -175,7 +183,7 @@ The Deeper Team
           
           <div style="background: #f0fdf4; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
             <p style="color: #166534; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
-              <strong>${connection.inviteeEmail}</strong> has accepted your invitation to connect!
+              <strong>${inviteeName}</strong> has accepted your invitation to connect!
             </p>
             
             <p style="color: #166534; line-height: 1.6; margin: 0 0 20px 0;">
@@ -197,7 +205,7 @@ The Deeper Team
         </div>
       `,
       text: `
-Great news! ${connection.inviteeEmail} has accepted your invitation to connect.
+Great news! ${inviteeName} has accepted your invitation to connect.
 
 Your private conversation space is now ready. You can start by asking the first question.
 
@@ -218,6 +226,8 @@ The Deeper Team
   }
 
   async sendConnectionDeclined(connection: Connection): Promise<void> {
+    const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
+    
     const msg = {
       to: connection.inviterEmail,
       from: this.fromEmail,
@@ -230,7 +240,7 @@ The Deeper Team
           
           <div style="background: #f9fafb; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
             <p style="color: #374151; line-height: 1.6; margin: 0 0 20px 0;">
-              ${connection.inviteeEmail} has respectfully declined your invitation to connect.
+              ${inviteeName} has respectfully declined your invitation to connect.
             </p>
             
             <p style="color: #6B7280; line-height: 1.6; margin: 0;">
@@ -246,7 +256,7 @@ The Deeper Team
         </div>
       `,
       text: `
-${connection.inviteeEmail} has respectfully declined your invitation to connect.
+${inviteeName} has respectfully declined your invitation to connect.
 
 Don't worry - meaningful connections take time. You can always try reaching out through other channels or invite them again in the future.
 
@@ -275,6 +285,7 @@ export class InternalEmailService implements EmailService {
 
   async sendConnectionInvitation(connection: Connection): Promise<void> {
     const appUrl = 'https://deepersocial.replit.app';
+    const inviterName = await storage.getUserDisplayNameByEmail(connection.inviterEmail);
 
     const subject = "You're invited to start a meaningful conversation on Deeper";
     
@@ -288,7 +299,7 @@ export class InternalEmailService implements EmailService {
         <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
           <h2 style="color: #1e293b; margin: 0 0 20px 0;">You've been invited to connect!</h2>
           <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
-            <strong>${connection.inviterEmail}</strong> has invited you to start meaningful ${connection.relationshipType} conversations on Deeper.
+            <strong>${inviterName}</strong> has invited you to start meaningful ${connection.relationshipType} conversations on Deeper.
           </p>
           
           ${connection.personalMessage ? `
