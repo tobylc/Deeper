@@ -83,48 +83,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Production Auth endpoints
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      // Check if user is authenticated
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Get user ID from session
+      let userId = req.user.id;
+      
+      // Handle different authentication sources
+      if (req.user.claims && req.user.claims.sub) {
+        userId = req.user.claims.sub;
+      }
+
+      if (!userId) {
+        return res.status(401).json({ message: "Invalid session" });
+      }
+
       const user = await storage.getUser(userId);
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.json(user);
+
+      // Return sanitized user data
+      res.json({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        subscriptionTier: user.subscriptionTier,
+        subscriptionStatus: user.subscriptionStatus,
+        maxConnections: user.maxConnections,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
-  // Logout endpoint
-  app.post('/api/auth/logout', (req, res) => {
-    req.logout((err) => {
-      if (err) {
-        console.error("Logout error:", err);
-        return res.status(500).json({ error: "Logout failed" });
-      }
-      req.session.destroy((err) => {
+  // Logout endpoint with enhanced security
+  app.post('/api/auth/logout', 
+    rateLimit(10, 60 * 1000), // 10 logout attempts per minute
+    (req, res) => {
+    try {
+      req.logout((err) => {
         if (err) {
-          console.error("Session destroy error:", err);
-          return res.status(500).json({ error: "Session cleanup failed" });
+          console.error("Logout error:", err);
+          return res.status(500).json({ 
+            error: "Logout failed",
+            message: "Unable to terminate session properly"
+          });
         }
-        res.clearCookie('connect.sid');
-        res.json({ success: true });
+        
+        req.session.destroy((sessionErr) => {
+          if (sessionErr) {
+            console.error("Session destroy error:", sessionErr);
+            // Still clear cookie even if session destroy fails
+          }
+          
+          // Clear all session cookies
+          res.clearCookie('connect.sid', {
+            path: '/',
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production'
+          });
+          
+          res.json({ 
+            success: true,
+            message: "Successfully logged out"
+          });
+        });
       });
-    });
+    } catch (error) {
+      console.error("Logout exception:", error);
+      res.status(500).json({ 
+        error: "Logout failed",
+        message: "Server error during logout"
+      });
+    }
   });
 
-  // Get user display name endpoint
-  app.get("/api/users/display-name/:email", async (req, res) => {
+  // Get user display name endpoint with enhanced validation
+  app.get("/api/users/display-name/:email", 
+    rateLimit(100, 60 * 1000), // 100 requests per minute
+    async (req, res) => {
     try {
-      const email = decodeURIComponent(req.params.email);
+      const rawEmail = req.params.email;
+      
+      if (!rawEmail) {
+        return res.status(400).json({ message: "Email parameter required" });
+      }
+
+      const email = decodeURIComponent(rawEmail);
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
       const displayName = await storage.getUserDisplayNameByEmail(email);
+      
+      if (!displayName) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
       res.json({ displayName });
     } catch (error: any) {
       console.error("Get display name error:", error);
-      res.status(500).json({ message: "Failed to get display name" });
+      res.status(500).json({ 
+        message: "Failed to get display name",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
     }
   });
 

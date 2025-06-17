@@ -13,25 +13,39 @@ import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 
 export default function Dashboard() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [showInviteForm, setShowInviteForm] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!user) {
+    if (!isLoading && !isAuthenticated) {
       setLocation("/auth");
     }
-  }, [user, setLocation]);
+  }, [isLoading, isAuthenticated, setLocation]);
+
+  // Show loading state while authentication is being checked
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-radial from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  // Redirect if not authenticated
+  if (!isAuthenticated || !user) {
+    return null;
+  }
 
   const { data: connections = [], refetch: refetchConnections } = useQuery<Connection[]>({
-    queryKey: [`/api/connections/${user?.email}`],
-    enabled: !!user?.email,
+    queryKey: [`/api/connections/${user.email}`],
+    enabled: !!user.email,
   });
 
   const { data: conversations = [] } = useQuery<Conversation[]>({
-    queryKey: [`/api/conversations/${user?.email}`],
-    enabled: !!user?.email,
+    queryKey: [`/api/conversations/${user.email}`],
+    enabled: !!user.email,
   });
 
   const handleAcceptConnection = async (connectionId: number) => {
