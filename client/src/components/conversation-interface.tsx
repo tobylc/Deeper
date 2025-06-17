@@ -145,7 +145,7 @@ export default function ConversationInterface({
                 </>
               ) : (
                 <>
-                  <DeeperLogo size="sm" className="mr-1" />
+                  <QuotesIcon size="sm" className="mr-1" />
                   Response
                 </>
               )}
