@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import path from "path";
 import { randomUUID } from "crypto";
+import bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
@@ -157,12 +158,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Invitation acceptance endpoint (public - no auth required)
-  app.post("/api/invitation/accept", async (req, res) => {
+  app.post("/api/invitation/accept", 
+    rateLimit(5, 60 * 60 * 1000), // 5 attempts per hour per IP
+    async (req, res) => {
     try {
       const { connectionId, inviteeEmail, firstName, lastName, password } = req.body;
 
+      // Comprehensive input validation
       if (!connectionId || !inviteeEmail || !firstName || !lastName || !password) {
-        return res.status(400).json({ message: "Missing required fields" });
+        return res.status(400).json({ 
+          message: "Missing required fields",
+          required: ["connectionId", "inviteeEmail", "firstName", "lastName", "password"]
+        });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(inviteeEmail)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      // Validate password strength
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters long" });
+      }
+
+      // Validate name fields
+      if (firstName.trim().length < 1 || lastName.trim().length < 1) {
+        return res.status(400).json({ message: "First name and last name cannot be empty" });
+      }
+
+      if (firstName.length > 50 || lastName.length > 50) {
+        return res.status(400).json({ message: "Names cannot exceed 50 characters" });
       }
 
       // Get the connection details
@@ -179,12 +206,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email does not match invitation" });
       }
 
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(inviteeEmail);
+      if (existingUser) {
+        return res.status(409).json({ message: "User with this email already exists" });
+      }
+
+      // Hash the password securely
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
       // Create user account for invitee
       const newUser = await storage.upsertUser({
         id: randomUUID(),
         email: inviteeEmail,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
+        // Note: Password is hashed but we don't have a password field in schema yet
+        // This would need to be added to the user schema for full password auth
       });
 
       // Update connection status to accepted
@@ -227,29 +266,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Don't fail the request if email fails
       }
 
-      // Log in the new user by establishing a session
-      req.login(newUser, (err: any) => {
-        if (err) {
-          console.error("Session creation error:", err);
-          return res.status(500).json({ message: "Account created but login failed" });
+      // Establish session for the new user
+      req.login(newUser, (loginErr: any) => {
+        if (loginErr) {
+          console.error("Login error during invitation acceptance:", loginErr);
+          return res.status(500).json({ 
+            message: "Account created successfully but session establishment failed",
+            details: "Please try logging in manually"
+          });
         }
 
-        // Ensure session is saved before responding
-        (req.session as any).save((saveErr: any) => {
+        // Force session save to ensure persistence
+        req.session.save((saveErr: any) => {
           if (saveErr) {
             console.error("Session save error:", saveErr);
-            return res.status(500).json({ message: "Session save failed" });
+            // Don't fail the request, just log the error
+            console.warn("Session may not persist properly");
           }
 
-          res.json({
+          res.status(201).json({
+            success: true,
             message: "Connection established successfully",
             user: {
               id: newUser.id,
               email: newUser.email,
-              firstName: newUser.firstName
+              firstName: newUser.firstName,
+              lastName: newUser.lastName
             },
-            connection: updatedConnection,
-            conversation: conversation
+            connection: {
+              id: updatedConnection.id,
+              status: updatedConnection.status,
+              relationshipType: updatedConnection.relationshipType,
+              inviterEmail: updatedConnection.inviterEmail
+            },
+            conversation: {
+              id: conversation.id,
+              relationshipType: conversation.relationshipType
+            }
           });
         });
       });

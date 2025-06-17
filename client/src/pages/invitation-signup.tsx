@@ -80,21 +80,40 @@ export default function InvitationSignup() {
       if (response.ok) {
         const result = await response.json();
         
-        toast({
-          title: "Welcome to Deeper!",
-          description: `Connection established with ${getInviterName()}. Redirecting to your dashboard...`,
-        });
-        
-        // Wait a moment for session to be established, then redirect
-        setTimeout(() => {
-          // Force a full page navigation to ensure authentication state is updated
-          window.location.href = "/dashboard";
-        }, 1500);
+        if (result.success) {
+          toast({
+            title: "Welcome to Deeper!",
+            description: `Connection established with ${getInviterName()}. Taking you to your dashboard...`,
+          });
+          
+          // Redirect immediately since session is established
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 1000);
+        } else {
+          toast({
+            title: "Account Created",
+            description: result.details || "Please sign in to continue.",
+            variant: "default",
+          });
+          
+          setTimeout(() => {
+            window.location.href = "/auth";
+          }, 2000);
+        }
       } else {
         const error = await response.json();
+        
+        let errorMessage = "Failed to create account. Please try again.";
+        if (error.message) {
+          errorMessage = error.message;
+        } else if (error.required) {
+          errorMessage = `Missing required fields: ${error.required.join(", ")}`;
+        }
+        
         toast({
           title: "Signup Failed",
-          description: error.message || "Failed to create account. Please try again.",
+          description: errorMessage,
           variant: "destructive",
         });
       }
