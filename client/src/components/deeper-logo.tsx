@@ -10,7 +10,7 @@ export default function DeeperLogo({ className = "", size = 'md' }: DeeperLogoPr
     md: 'h-8 w-auto', // Medium size for dashboard headers
     lg: 'h-10 w-auto', // Large size for auth pages and navigation headers
     xl: 'h-16 w-auto', // Extra large for hero sections
-    header: 'h-10 w-auto', // Matches login button height (h-10 = 40px)
+    header: 'h-12 w-auto', // Maximizes header space (h-12 = 48px) with small padding
   };
 
   return (
