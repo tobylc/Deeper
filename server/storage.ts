@@ -45,6 +45,9 @@ export interface IStorage {
   getEmailsByEmail(email: string): Promise<Email[]>;
   createEmail(email: InsertEmail): Promise<Email>;
   getEmailById(id: number): Promise<Email | undefined>;
+
+  // Helper methods for user display names
+  getUserDisplayNameByEmail(email: string): Promise<string>;
 }
 
 export class DatabaseStorage implements IStorage {

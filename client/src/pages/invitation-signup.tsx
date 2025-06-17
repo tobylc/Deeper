@@ -11,6 +11,8 @@ import { useQuery } from "@tanstack/react-query";
 export default function InvitationSignup() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +38,15 @@ export default function InvitationSignup() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!firstName.trim() || !lastName.trim()) {
+      toast({
+        title: "Full Name Required",
+        description: "Please enter your first and last name.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast({
         title: "Password Mismatch",
@@ -61,6 +72,8 @@ export default function InvitationSignup() {
       const response = await apiRequest("POST", "/api/invitation/accept", {
         connectionId: invitation?.id,
         inviteeEmail: invitation?.inviteeEmail,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
         password,
       });
 
@@ -133,6 +146,33 @@ export default function InvitationSignup() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="firstName" className="text-slate-300">First Name</Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  className="bg-slate-700/50 border-slate-600 text-white focus:border-blue-400"
+                  placeholder="Your first name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName" className="text-slate-300">Last Name</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                  className="bg-slate-700/50 border-slate-600 text-white focus:border-blue-400"
+                  placeholder="Your last name"
+                />
+              </div>
+            </div>
+
             <div>
               <Label htmlFor="inviteeEmail" className="text-slate-300">Your Email Address</Label>
               <Input

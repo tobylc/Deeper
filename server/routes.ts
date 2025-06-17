@@ -147,9 +147,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Invitation acceptance endpoint (public - no auth required)
   app.post("/api/invitation/accept", async (req, res) => {
     try {
-      const { connectionId, inviteeEmail, password } = req.body;
+      const { connectionId, inviteeEmail, firstName, lastName, password } = req.body;
 
-      if (!connectionId || !inviteeEmail || !password) {
+      if (!connectionId || !inviteeEmail || !firstName || !lastName || !password) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
@@ -171,7 +171,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newUser = await storage.upsertUser({
         id: randomUUID(),
         email: inviteeEmail,
-        firstName: inviteeEmail.split('@')[0],
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
       });
 
       // Update connection status to accepted
