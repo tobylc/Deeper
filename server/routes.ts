@@ -50,6 +50,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug routes for invitation page (place before static serving)
+  app.get("/invitation", (req, res) => {
+    console.log("[DEBUG] Direct invitation route hit with query:", req.query);
+    const path = require('path');
+    const distPath = path.resolve(import.meta.dirname, "public");
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+
+  app.get("/invitation/*", (req, res) => {
+    console.log("[DEBUG] Wildcard invitation route hit with params:", req.params, "query:", req.query);
+    const path = require('path');
+    const distPath = path.resolve(import.meta.dirname, "public");
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+
   // Production Auth endpoints
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {

@@ -53,19 +53,7 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Client-side routing support for production
-  if (app.get("env") !== "development") {
-    app.get('*', (req, res, next) => {
-      // Skip API routes - let them 404 properly
-      if (req.path.startsWith('/api/')) {
-        return next();
-      }
-      
-      // Serve index.html for all other routes to support client-side routing
-      const distPath = path.resolve(import.meta.dirname, "public");
-      res.sendFile(path.resolve(distPath, "index.html"));
-    });
-  }
+
 
   // 404 handler for unmatched API routes only (after Vite setup)
   app.use('/api/*', notFoundHandler);
