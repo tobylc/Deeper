@@ -496,4 +496,5 @@ Changelog:
 ## User Preferences
 ```
 Preferred communication style: Simple, everyday language.
+Change authorization policy: NEVER make changes to any elements, pages, or functionality without explicit user authorization in advance. Always ask for permission before modifying existing features or design.
 ```
