@@ -558,23 +558,79 @@ export default function ConversationInterface({
         </div>
       )}
 
-      {/* Turn Status for Non-Turn */}
+      {/* Beautiful Waiting State */}
       {!isMyTurn && (
-        <div className="border-t border-slate-200/60 p-4 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm flex-shrink-0">
-          <div className="text-center space-y-2">
-            <div className="flex items-center justify-center space-x-2">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-ocean rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+        <div className="border-t border-amber-200/60 p-6 bg-gradient-to-br from-amber-50/60 via-yellow-50/40 to-orange-50/30 backdrop-blur-sm flex-shrink-0 relative">
+          {/* Paper texture overlay */}
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,_rgba(139,69,19,0.1)_0%,_transparent_50%)] pointer-events-none" />
+          
+          {/* Subtle ruled lines effect */}
+          <div className="absolute inset-0 opacity-5 pointer-events-none" 
+               style={{
+                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 24px, rgba(139,69,19,0.3) 24px, rgba(139,69,19,0.3) 25px)',
+               }} />
+
+          <div className="relative z-10">
+            {/* Elegant waiting parchment */}
+            <div className="relative bg-gradient-to-br from-white to-yellow-50/60 p-6 border border-amber-100/60 shadow-md transform rotate-0 transition-transform duration-300 rounded-lg max-w-md mx-auto"
+                 style={{
+                   clipPath: "polygon(5% 0%, 100% 3%, 97% 100%, 0% 95%)",
+                   filter: 'drop-shadow(2px 4px 8px rgba(139, 69, 19, 0.15))'
+                 }}>
+              {/* Aged parchment texture */}
+              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_rgba(160,82,45,0.08)_0%,_rgba(210,180,140,0.05)_50%,_transparent_100%)] pointer-events-none rounded-lg" />
+              
+              {/* Subtle aging stains */}
+              <div className="absolute inset-0 opacity-15 pointer-events-none">
+                <div className="absolute top-4 right-6 w-4 h-4 rounded-full bg-gradient-radial from-amber-300/20 to-transparent"></div>
+                <div className="absolute bottom-4 left-8 w-3 h-3 rounded-full bg-gradient-radial from-amber-400/15 to-transparent"></div>
               </div>
-              <span className="text-sm text-slate-700 font-medium">
-                Waiting for <UserDisplayName email={otherParticipantEmail} />
-              </span>
+              
+              {/* Red margin line */}
+              <div className="absolute top-0 bottom-0 w-px bg-gradient-to-b from-red-300/40 via-red-300/60 to-red-300/30 left-8" />
+              
+              {/* Ruled lines background */}
+              <div className="absolute inset-0 opacity-12 pointer-events-none rounded-lg" 
+                   style={{
+                     backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(139,69,19,0.3) 23px, rgba(139,69,19,0.3) 24px)',
+                   }} />
+
+              <div className="pl-4 text-center space-y-4">
+                {/* Elegant waiting message */}
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ocean/20 to-ocean/10 flex items-center justify-center border border-ocean/30">
+                    <div className="flex space-x-1">
+                      <div className="w-1.5 h-1.5 bg-ocean rounded-full animate-pulse"></div>
+                      <div className="w-1.5 h-1.5 bg-ocean rounded-full animate-pulse" style={{animationDelay: '0.3s'}}></div>
+                      <div className="w-1.5 h-1.5 bg-ocean rounded-full animate-pulse" style={{animationDelay: '0.6s'}}></div>
+                    </div>
+                  </div>
+                  <div className="text-slate-700">
+                    <div className="text-base font-serif italic">
+                      Waiting for <UserDisplayName email={otherParticipantEmail} />
+                    </div>
+                    <div className="text-sm text-slate-600 font-handwriting">
+                      to finish writing...
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Gentle explanation */}
+                <div className="text-xs text-slate-500 italic font-serif leading-relaxed">
+                  Take a moment to reflect while they craft their response. 
+                  <br />
+                  You'll be notified when it's your turn to continue the conversation.
+                </div>
+                
+                {/* Decorative flourish */}
+                <div className="flex justify-center pt-2">
+                  <svg width="32" height="20" viewBox="0 0 32 20" className="text-amber-600 opacity-30">
+                    <path d="M2 10c0 0 6-8 14-8s14 8 14 8-6 8-14 8S2 10 2 10z" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                    <path d="M10 10h12M8 8l2 2-2 2M24 8l-2 2 2 2" stroke="currentColor" strokeWidth="0.3" opacity="0.7" />
+                  </svg>
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-slate-600">
-              You'll be notified when it's your turn to respond
-            </p>
           </div>
         </div>
       )}

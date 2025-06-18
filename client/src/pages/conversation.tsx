@@ -275,6 +275,7 @@ export default function ConversationPage() {
                 relationshipType={conversation.relationshipType}
                 onThreadSelect={handleThreadSelect}
                 selectedConversationId={selectedConversationId || parseInt(id!)}
+                isMyTurn={isMyTurn}
               />
             )}
           </div>

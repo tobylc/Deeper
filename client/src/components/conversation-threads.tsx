@@ -27,6 +27,7 @@ interface ConversationThreadsProps {
   relationshipType: string;
   onThreadSelect: (conversationId: number) => void;
   selectedConversationId?: number;
+  isMyTurn: boolean;
 }
 
 // AI-generated questions based on relationship type
@@ -67,7 +68,8 @@ export default function ConversationThreads({
   otherParticipantEmail,
   relationshipType,
   onThreadSelect,
-  selectedConversationId
+  selectedConversationId,
+  isMyTurn
 }: ConversationThreadsProps) {
   const [expandedThreads, setExpandedThreads] = useState<Set<number>>(new Set());
   const [showNewQuestionDialog, setShowNewQuestionDialog] = useState(false);
@@ -140,6 +142,15 @@ export default function ConversationThreads({
 
   const handleCreateThread = () => {
     if (!newQuestionTopic.trim()) return;
+    
+    // Prevent new thread creation when it's not user's turn
+    if (!isMyTurn) {
+      // Close dialog and don't show error - the waiting state will be visible
+      setShowNewQuestionDialog(false);
+      setNewQuestionTopic("");
+      return;
+    }
+    
     createThreadMutation.mutate({ topic: newQuestionTopic.trim() });
   };
 
@@ -178,73 +189,94 @@ export default function ConversationThreads({
       <div className="flex-shrink-0 mb-3">
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-sm font-semibold text-slate-800">Questions</h3>
-          <Dialog open={showNewQuestionDialog} onOpenChange={setShowNewQuestionDialog}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="btn-ocean text-xs px-2 py-1 h-7">
-                <Plus className="w-3 h-3 mr-1" />
-                New Question
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Ask a New Question</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-2 block">
-                    What would you like to ask?
-                  </label>
-                  <Input
-                    value={newQuestionTopic}
-                    onChange={(e) => setNewQuestionTopic(e.target.value)}
-                    placeholder="Type your question..."
-                    className="w-full"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleCreateThread();
-                      }
-                    }}
-                  />
-                </div>
-                
-                {/* AI Question Suggestions */}
-                <div>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Lightbulb className="w-4 h-4 text-amber" />
-                    <span className="text-sm font-medium text-slate-700">Question Ideas</span>
+          {isMyTurn ? (
+            <Dialog open={showNewQuestionDialog} onOpenChange={setShowNewQuestionDialog}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="btn-ocean text-xs px-2 py-1 h-7">
+                  <Plus className="w-3 h-3 mr-1" />
+                  New Question
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Ask a New Question</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-2 block">
+                      What would you like to ask?
+                    </label>
+                    <Input
+                      value={newQuestionTopic}
+                      onChange={(e) => setNewQuestionTopic(e.target.value)}
+                      placeholder="Type your question..."
+                      className="w-full"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleCreateThread();
+                        }
+                      }}
+                    />
                   </div>
-                  <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {aiSuggestions.map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleSuggestionClick(suggestion)}
-                        className="w-full text-left p-2 text-xs bg-slate-50 hover:bg-slate-100 rounded border text-slate-700 transition-colors"
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
+                  
+                  {/* AI Question Suggestions */}
+                  <div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Lightbulb className="w-4 h-4 text-amber" />
+                      <span className="text-sm font-medium text-slate-700">Question Ideas</span>
+                    </div>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {aiSuggestions.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleSuggestionClick(suggestion)}
+                          className="w-full text-left p-2 text-xs bg-slate-50 hover:bg-slate-100 rounded border text-slate-700 transition-colors"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    <Button 
+                      onClick={handleCreateThread}
+                      disabled={!newQuestionTopic.trim() || createThreadMutation.isPending}
+                      className="btn-ocean flex-1"
+                    >
+                      {createThreadMutation.isPending ? "Creating..." : "Ask Question"}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowNewQuestionDialog(false)}
+                    >
+                      Cancel
+                    </Button>
                   </div>
                 </div>
-                
-                <div className="flex space-x-2">
-                  <Button 
-                    onClick={handleCreateThread}
-                    disabled={!newQuestionTopic.trim() || createThreadMutation.isPending}
-                    className="btn-ocean flex-1"
-                  >
-                    {createThreadMutation.isPending ? "Creating..." : "Ask Question"}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowNewQuestionDialog(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <div className="relative bg-gradient-to-br from-amber-50/80 to-yellow-50/60 p-2 border border-amber-200/60 shadow-sm transform rotate-0 transition-transform duration-300 rounded-md"
+                 style={{
+                   clipPath: "polygon(3% 0%, 100% 2%, 98% 100%, 0% 97%)",
+                   filter: 'drop-shadow(1px 2px 4px rgba(139, 69, 19, 0.1))'
+                 }}>
+              {/* Paper texture */}
+              <div className="absolute inset-0 opacity-15 bg-[radial-gradient(ellipse_at_center,_rgba(160,82,45,0.06)_0%,_rgba(210,180,140,0.03)_50%,_transparent_100%)] pointer-events-none rounded-md" />
+              
+              {/* Subtle ruled lines */}
+              <div className="absolute inset-0 opacity-8 pointer-events-none rounded-md" 
+                   style={{
+                     backgroundImage: 'repeating-linear-gradient(transparent, transparent 8px, rgba(139,69,19,0.2) 8px, rgba(139,69,19,0.2) 9px)',
+                   }} />
+              
+              <div className="text-xs text-slate-600 font-serif italic text-center px-1">
+                Their turn to write
               </div>
-            </DialogContent>
-          </Dialog>
+            </div>
+          )}
         </div>
         <p className="text-xs text-slate-600">
           {conversations.length} {conversations.length === 1 ? 'question' : 'questions'} with{' '}
