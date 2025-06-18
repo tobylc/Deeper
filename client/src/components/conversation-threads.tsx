@@ -264,11 +264,11 @@ export default function ConversationThreads({
             <Card 
               key={conversation.id}
               className={cn(
-                "transition-all duration-200 cursor-pointer border",
+                "transition-all duration-200 cursor-pointer border-0 shadow-sm hover:shadow-md bg-white/80 backdrop-blur-sm",
                 isSelected 
-                  ? "ring-2 ring-ocean/20 border-ocean/30 bg-ocean/5" 
-                  : "hover:shadow-sm hover:border-slate-300",
-                conversation.isMainThread && "border-l-4 border-l-amber"
+                  ? "ring-2 ring-ocean/20 bg-ocean/5 shadow-lg shadow-ocean/10" 
+                  : "hover:bg-white/90 hover:shadow-slate-200/60",
+                conversation.isMainThread && "border-l-4 border-l-amber shadow-amber/10"
               )}
             >
               <CardContent className="p-3">

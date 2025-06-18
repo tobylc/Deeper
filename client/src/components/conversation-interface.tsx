@@ -287,7 +287,7 @@ export default function ConversationInterface({
   );
 
   return (
-    <div className="h-full flex flex-col bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Conversation Header */}
       <div className="border-b border-slate-200/60 p-4 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm flex-shrink-0">
         <div className="flex items-center justify-between">

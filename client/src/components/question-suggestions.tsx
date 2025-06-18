@@ -99,7 +99,7 @@ export default function QuestionSuggestions({ relationshipType, onQuestionSelect
             "flex-1 text-xs h-8",
             !showAI 
               ? "bg-ocean text-white hover:bg-ocean/90" 
-              : "border-slate-300 text-slate-700 hover:bg-slate-50"
+              : "border-ocean/30 text-ocean hover:bg-ocean/10"
           )}
         >
           <MessageCircle className="w-3 h-3 mr-1" />
