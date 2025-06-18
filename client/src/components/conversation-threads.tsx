@@ -99,14 +99,12 @@ export default function ConversationThreads({
   const createThreadMutation = useMutation({
     mutationFn: async (data: { topic: string; title?: string }) => {
       const response = await apiRequest('POST', `/api/connections/${connectionId}/conversations`, {
-        body: JSON.stringify({
-          topic: data.topic,
-          title: data.title || data.topic,
-          participant1Email: currentUserEmail,
-          participant2Email: otherParticipantEmail,
-          relationshipType,
-          isMainThread: false
-        }),
+        topic: data.topic,
+        title: data.title || data.topic,
+        participant1Email: currentUserEmail,
+        participant2Email: otherParticipantEmail,
+        relationshipType,
+        isMainThread: false
       });
       return response.json();
     },
@@ -121,10 +119,11 @@ export default function ConversationThreads({
         description: `Created new conversation: ${newConversation.topic}`,
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Create thread error:", error);
       toast({
         title: "Error",
-        description: "Failed to create new question thread",
+        description: error.message || "Failed to create new question thread",
         variant: "destructive",
       });
     },

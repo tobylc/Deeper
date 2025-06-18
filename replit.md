@@ -464,6 +464,7 @@ Changelog:
   * Updated backend storage with updateConversationTitle method for title management
   * Enhanced conversation threads UI to display auto-generated titles instead of generic topic names
   * Thread naming preserves key question context while keeping titles concise (under 50 characters)
+  * Fixed new question thread creation error by correcting API request format
 ```
 
 ## User Preferences
