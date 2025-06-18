@@ -446,6 +446,14 @@ Changelog:
   * Applied consistent ruled lines (25% opacity) and paper textures across all page elements
   * Updated bottom conversation area to use ocean blue theme instead of amber/yellow
   * Achieved beautiful, consistent, clean aesthetic throughout entire conversation interface
+- June 18, 2025. Paper stacking system for long conversations:
+  * Implemented automatic paper stacking when conversations reach 4+ messages total
+  * Created StackedPapers component with realistic depth effects using multiple paper layers
+  * Added slight offsets and rotations to simulate natural paper pile appearance
+  * Shows message count summary on top visible paper in the stack
+  * Main conversation area now displays only latest 2 full paper entries for readability
+  * Maintains hyper-realistic paper styling consistency with subtle textures and ruled lines
+  * Prevents conversation window clutter while preserving focus on recent exchanges
 ```
 
 ## User Preferences

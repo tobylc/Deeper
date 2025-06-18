@@ -282,6 +282,74 @@ export default function ConversationInterface({
     );
   };
 
+  const StackedPapers = ({ messages }: { messages: Message[] }) => (
+    <div className="mb-6 relative">
+      {/* Paper stack with slight offsets to show depth */}
+      <div className="relative">
+        {/* Background papers showing depth */}
+        {[...Array(Math.min(messages.length, 3))].map((_, i) => (
+          <div
+            key={`stack-${i}`}
+            className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/30 to-amber-50/10 border border-gray-200/40 rounded-sm shadow-md"
+            style={{
+              transform: `translateX(${i * 2}px) translateY(${i * 2}px) rotate(${i * 0.5}deg)`,
+              zIndex: 10 - i,
+              background: `
+                linear-gradient(135deg, 
+                  rgba(255,255,255,0.95) 0%, 
+                  rgba(248,250,252,0.93) 30%, 
+                  rgba(255,251,235,0.91) 70%, 
+                  rgba(255,251,235,0.89) 100%
+                )
+              `,
+              filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.05))',
+            }}
+          />
+        ))}
+        
+        {/* Top visible paper with message count */}
+        <div
+          className="relative bg-gradient-to-br from-white via-gray-50/20 to-amber-50/10 border border-gray-200/40 rounded-sm shadow-lg p-4"
+          style={{
+            transform: `translateX(${Math.min(messages.length, 3) * 2}px) translateY(${Math.min(messages.length, 3) * 2}px)`,
+            zIndex: 15,
+            background: `
+              linear-gradient(135deg, 
+                rgba(255,255,255,0.98) 0%, 
+                rgba(248,250,252,0.96) 30%, 
+                rgba(255,251,235,0.94) 70%, 
+                rgba(255,251,235,0.92) 100%
+              )
+            `,
+            filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.08))',
+            backdropFilter: 'blur(0.5px)'
+          }}
+        >
+          {/* Subtle paper texture */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.01)_0%,_transparent_50%)]"></div>
+          </div>
+          
+          {/* Very subtle ruled lines */}
+          <div className="absolute inset-0 opacity-15 pointer-events-none" 
+               style={{
+                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 20px, rgba(156,163,175,0.08) 20px, rgba(156,163,175,0.08) 21px)',
+               }} />
+          
+          <div className="relative z-10 text-center">
+            <div className="text-sm text-gray-600 font-serif italic">
+              {messages.length} earlier {messages.length === 1 ? 'exchange' : 'exchanges'}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              Click to expand conversation history
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const TypingIndicator = () => (
     <div className="group mb-8 relative mr-12">
       {/* Hyper-realistic Paper Sheet - typing variant with amber theme for other user */}
@@ -416,8 +484,18 @@ export default function ConversationInterface({
           <EmptyState />
         ) : (
           <div className="space-y-6 relative z-10">
-            {messages.map((message, index) => (
-              <JournalEntry key={message.id} message={message} index={index} />
+            {/* Show stacked papers when 4+ messages */}
+            {messages.length >= 4 && (
+              <StackedPapers messages={messages.slice(0, -2)} />
+            )}
+            
+            {/* Show either all messages (if <4) or just the latest 2 (if 4+) */}
+            {(messages.length >= 4 ? messages.slice(-2) : messages).map((message, index) => (
+              <JournalEntry 
+                key={message.id} 
+                message={message} 
+                index={messages.length >= 4 ? messages.length - 2 + index : index} 
+              />
             ))}
             
             {/* Typing Indicator */}
