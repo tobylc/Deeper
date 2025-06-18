@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -10,18 +10,15 @@ import {
   Plus, 
   ChevronDown, 
   ChevronRight, 
-  Calendar, 
-  Users,
   Sparkles,
-  ArrowRight
+  Lightbulb
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
-import QuotesIcon from "@/components/quotes-icon";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Conversation, Message } from "@shared/schema";
+import type { Conversation } from "@shared/schema";
 
 interface ConversationThreadsProps {
   connectionId: number;
@@ -32,6 +29,38 @@ interface ConversationThreadsProps {
   selectedConversationId?: number;
 }
 
+// Sample AI-generated questions based on relationship type
+const getAIQuestionSuggestions = (relationshipType: string): string[] => {
+  const suggestions = {
+    "Parent-Child": [
+      "What's one family tradition you hope to continue?",
+      "When did you feel most proud of me recently?",
+      "What was your biggest worry as a teenager?",
+      "What life lesson do you wish you'd learned earlier?"
+    ],
+    "Romantic Partners": [
+      "What's something new you'd like us to try together?",
+      "When do you feel most loved by me?",
+      "What's your happiest memory of us?",
+      "What dream would you like us to pursue together?"
+    ],
+    "Friends": [
+      "What's the best advice you've ever received?",
+      "What adventure would you want us to go on?",
+      "How have you changed in the past year?",
+      "What's something you're excited about right now?"
+    ],
+    "Siblings": [
+      "What's your favorite childhood memory of us?",
+      "How do you think we've influenced each other?",
+      "What family trait do you see in yourself?",
+      "What would you want to tell our younger selves?"
+    ]
+  };
+  
+  return suggestions[relationshipType as keyof typeof suggestions] || suggestions["Friends"];
+};
+
 export default function ConversationThreads({
   connectionId,
   currentUserEmail,
@@ -41,8 +70,8 @@ export default function ConversationThreads({
   selectedConversationId
 }: ConversationThreadsProps) {
   const [expandedThreads, setExpandedThreads] = useState<Set<number>>(new Set());
-  const [showNewThreadDialog, setShowNewThreadDialog] = useState(false);
-  const [newThreadTopic, setNewThreadTopic] = useState("");
+  const [showNewQuestionDialog, setShowNewQuestionDialog] = useState(false);
+  const [newQuestionTopic, setNewQuestionTopic] = useState("");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -82,18 +111,18 @@ export default function ConversationThreads({
     onSuccess: (newConversation) => {
       queryClient.invalidateQueries({ queryKey: [`/api/connections/${connectionId}/conversations`] });
       queryClient.invalidateQueries({ queryKey: [`/api/connections/${connectionId}/conversations/message-counts`] });
-      setShowNewThreadDialog(false);
-      setNewThreadTopic("");
+      setShowNewQuestionDialog(false);
+      setNewQuestionTopic("");
       onThreadSelect(newConversation.id);
       toast({
-        title: "New conversation started",
-        description: `Created new thread: ${newConversation.topic}`,
+        title: "New question started",
+        description: `Created new conversation: ${newConversation.topic}`,
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to create new conversation thread",
+        description: "Failed to create new question thread",
         variant: "destructive",
       });
     },
@@ -110,8 +139,12 @@ export default function ConversationThreads({
   };
 
   const handleCreateThread = () => {
-    if (!newThreadTopic.trim()) return;
-    createThreadMutation.mutate({ topic: newThreadTopic.trim() });
+    if (!newQuestionTopic.trim()) return;
+    createThreadMutation.mutate({ topic: newQuestionTopic.trim() });
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setNewQuestionTopic(suggestion);
   };
 
   // Sort conversations: main thread first, then by last activity
@@ -122,14 +155,16 @@ export default function ConversationThreads({
            new Date(a.lastActivityAt || a.createdAt!).getTime();
   });
 
+  const aiSuggestions = getAIQuestionSuggestions(relationshipType);
+
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="h-full flex flex-col space-y-3">
         {[1, 2, 3].map((i) => (
           <Card key={i} className="animate-pulse">
-            <CardContent className="p-4">
-              <div className="h-4 bg-slate-200 rounded mb-2"></div>
-              <div className="h-3 bg-slate-100 rounded w-2/3"></div>
+            <CardContent className="p-3">
+              <div className="h-3 bg-slate-200 rounded mb-2"></div>
+              <div className="h-2 bg-slate-100 rounded w-2/3"></div>
             </CardContent>
           </Card>
         ))}
@@ -138,68 +173,87 @@ export default function ConversationThreads({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-800">Conversation Threads</h3>
-          <p className="text-sm text-slate-600">
-            {conversations.length} {conversations.length === 1 ? 'conversation' : 'conversations'} with{' '}
-            <UserDisplayName email={otherParticipantEmail} />
-          </p>
+      <div className="flex-shrink-0 mb-3">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-sm font-semibold text-slate-800">Questions</h3>
+          <Dialog open={showNewQuestionDialog} onOpenChange={setShowNewQuestionDialog}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="btn-ocean text-xs px-2 py-1 h-7">
+                <Plus className="w-3 h-3 mr-1" />
+                New Question
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Ask a New Question</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">
+                    What would you like to ask?
+                  </label>
+                  <Input
+                    value={newQuestionTopic}
+                    onChange={(e) => setNewQuestionTopic(e.target.value)}
+                    placeholder="Type your question..."
+                    className="w-full"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleCreateThread();
+                      }
+                    }}
+                  />
+                </div>
+                
+                {/* AI Question Suggestions */}
+                <div>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Lightbulb className="w-4 h-4 text-amber" />
+                    <span className="text-sm font-medium text-slate-700">Question Ideas</span>
+                  </div>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {aiSuggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="w-full text-left p-2 text-xs bg-slate-50 hover:bg-slate-100 rounded border text-slate-700 transition-colors"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="flex space-x-2">
+                  <Button 
+                    onClick={handleCreateThread}
+                    disabled={!newQuestionTopic.trim() || createThreadMutation.isPending}
+                    className="btn-ocean flex-1"
+                  >
+                    {createThreadMutation.isPending ? "Creating..." : "Ask Question"}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowNewQuestionDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
-        
-        <Dialog open={showNewThreadDialog} onOpenChange={setShowNewThreadDialog}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="btn-ocean">
-              <Plus className="w-4 h-4 mr-2" />
-              New Topic
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Start New Conversation</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                  What would you like to talk about?
-                </label>
-                <Input
-                  value={newThreadTopic}
-                  onChange={(e) => setNewThreadTopic(e.target.value)}
-                  placeholder="e.g., 'Weekend plans', 'Childhood memories', 'Future goals'..."
-                  className="w-full"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleCreateThread();
-                    }
-                  }}
-                />
-              </div>
-              <div className="flex space-x-2">
-                <Button 
-                  onClick={handleCreateThread}
-                  disabled={!newThreadTopic.trim() || createThreadMutation.isPending}
-                  className="btn-ocean flex-1"
-                >
-                  {createThreadMutation.isPending ? "Creating..." : "Start Conversation"}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowNewThreadDialog(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <p className="text-xs text-slate-600">
+          {conversations.length} {conversations.length === 1 ? 'question' : 'questions'} with{' '}
+          <UserDisplayName email={otherParticipantEmail} />
+        </p>
       </div>
 
       {/* Conversation Threads */}
-      <div className="space-y-3">
+      <div className="flex-1 overflow-y-auto space-y-2">
         {sortedConversations.map((conversation) => {
           const messageCount = messageCounts[conversation.id] || 0;
           const isExpanded = expandedThreads.has(conversation.id);
@@ -213,86 +267,80 @@ export default function ConversationThreads({
                 "transition-all duration-200 cursor-pointer border",
                 isSelected 
                   ? "ring-2 ring-ocean/20 border-ocean/30 bg-ocean/5" 
-                  : "hover:shadow-md hover:border-slate-300",
+                  : "hover:shadow-sm hover:border-slate-300",
                 conversation.isMainThread && "border-l-4 border-l-amber"
               )}
             >
-              <CardContent className="p-4">
+              <CardContent className="p-3">
                 {/* Thread Header */}
                 <div 
                   className="flex items-center justify-between"
                   onClick={() => onThreadSelect(conversation.id)}
                 >
-                  <div className="flex items-center space-x-3 flex-1">
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="p-0 h-6 w-6"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleThreadExpansion(conversation.id);
-                        }}
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="w-4 h-4" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4" />
-                        )}
-                      </Button>
-                      
-                      {conversation.isMainThread ? (
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber to-amber/80 flex items-center justify-center">
-                          <Sparkles className="w-4 h-4 text-white" />
-                        </div>
+                  <div className="flex items-center space-x-2 flex-1 min-w-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="p-0 h-4 w-4 flex-shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleThreadExpansion(conversation.id);
+                      }}
+                    >
+                      {isExpanded ? (
+                        <ChevronDown className="w-3 h-3" />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ocean to-teal flex items-center justify-center">
-                          <MessageCircle className="w-4 h-4 text-white" />
-                        </div>
+                        <ChevronRight className="w-3 h-3" />
                       )}
-                    </div>
+                    </Button>
+                    
+                    {conversation.isMainThread ? (
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber to-amber/80 flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="w-3 h-3 text-white" />
+                      </div>
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-ocean to-teal flex items-center justify-center flex-shrink-0">
+                        <MessageCircle className="w-3 h-3 text-white" />
+                      </div>
+                    )}
 
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <h4 className="font-medium text-slate-800">
-                          {conversation.topic || conversation.title || 'Untitled Conversation'}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-1">
+                        <h4 className="font-medium text-slate-800 text-xs truncate">
+                          {conversation.topic || conversation.title || 'Untitled Question'}
                         </h4>
                         {conversation.isMainThread && (
-                          <Badge variant="outline" className="text-xs bg-amber/10 text-amber-800 border-amber/30">
+                          <Badge variant="outline" className="text-xs bg-amber/10 text-amber-800 border-amber/30 px-1 py-0">
                             Main
                           </Badge>
                         )}
                       </div>
                       
-                      <div className="flex items-center space-x-4 mt-1 text-xs text-slate-500">
+                      <div className="flex items-center space-x-3 mt-1 text-xs text-slate-500">
                         <span className="flex items-center space-x-1">
-                          <MessageCircle className="w-3 h-3" />
-                          <span>{messageCount} exchanges</span>
+                          <MessageCircle className="w-2 h-2" />
+                          <span>{messageCount}</span>
                         </span>
-                        <span className="flex items-center space-x-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>
-                            {formatDistanceToNow(new Date(conversation.lastActivityAt || conversation.createdAt!), { addSuffix: true })}
-                          </span>
+                        <span className="truncate">
+                          {formatDistanceToNow(new Date(conversation.lastActivityAt || conversation.createdAt!), { addSuffix: true })}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={isMyTurn ? "default" : "outline"} className="text-xs">
+                  <div className="flex items-center space-x-1 flex-shrink-0">
+                    <Badge variant={isMyTurn ? "default" : "outline"} className="text-xs px-1 py-0">
                       {isMyTurn ? "Your turn" : "Their turn"}
                     </Badge>
-                    <ArrowRight className="w-4 h-4 text-slate-400" />
                   </div>
                 </div>
 
                 {/* Expanded Thread Details */}
                 {isExpanded && (
-                  <div className="mt-4 pt-4 border-t border-slate-100">
-                    <div className="text-sm text-slate-600 space-y-2">
+                  <div className="mt-3 pt-3 border-t border-slate-100">
+                    <div className="text-xs text-slate-600 space-y-1">
                       <div className="flex items-center justify-between">
-                        <span>Relationship: {relationshipType}</span>
+                        <span>Type: {relationshipType}</span>
                         <span>Status: {conversation.status}</span>
                       </div>
                       <div>
@@ -311,18 +359,18 @@ export default function ConversationThreads({
       </div>
 
       {conversations.length === 0 && (
-        <Card className="border-dashed border-2 border-slate-200">
-          <CardContent className="p-8 text-center">
-            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-              <MessageCircle className="w-6 h-6 text-slate-400" />
+        <Card className="border-dashed border-2 border-slate-200 flex-1">
+          <CardContent className="p-6 text-center flex flex-col justify-center h-full">
+            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+              <MessageCircle className="w-5 h-5 text-slate-400" />
             </div>
-            <h3 className="font-medium text-slate-800 mb-2">No conversations yet</h3>
-            <p className="text-sm text-slate-600 mb-4">
+            <h3 className="font-medium text-slate-800 mb-2 text-sm">No questions yet</h3>
+            <p className="text-xs text-slate-600 mb-4">
               Start your first conversation with <UserDisplayName email={otherParticipantEmail} />
             </p>
-            <Button onClick={() => setShowNewThreadDialog(true)} className="btn-ocean">
-              <Plus className="w-4 h-4 mr-2" />
-              Start First Conversation
+            <Button onClick={() => setShowNewQuestionDialog(true)} className="btn-ocean text-xs">
+              <Plus className="w-3 h-3 mr-1" />
+              Ask First Question
             </Button>
           </CardContent>
         </Card>

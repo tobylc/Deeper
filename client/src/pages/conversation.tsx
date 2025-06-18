@@ -175,29 +175,29 @@ export default function ConversationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
+    <div className="h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex flex-col">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+      <div className="bg-white shadow-sm border-b border-gray-100 flex-shrink-0">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
             <Button 
               variant="ghost" 
               onClick={() => setLocation("/dashboard")}
-              className="flex items-center"
+              className="flex items-center text-sm"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
             </Button>
             
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
-                <Users className="text-white w-5 h-5" />
+              <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
+                <Users className="text-white w-4 h-4" />
               </div>
               <div>
-                <div className="font-semibold text-darkslate">
+                <div className="font-semibold text-darkslate text-sm">
                   {user.firstName || user.email?.split('@')[0] || 'You'} & <UserDisplayName email={otherParticipant} />
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-xs text-gray-600">
                   {conversation.relationshipType}
                 </div>
               </div>
@@ -208,16 +208,16 @@ export default function ConversationPage() {
                 variant="outline" 
                 size="sm"
                 onClick={() => setShowThreadsView(!showThreadsView)}
-                className="lg:hidden"
+                className="lg:hidden text-xs px-2 py-1"
               >
-                <Grid3X3 className="w-4 h-4 mr-2" />
-                Threads
+                <Grid3X3 className="w-3 h-3 mr-1" />
+                Questions
               </Button>
-              <Badge variant={isMyTurn ? "default" : "outline"}>
+              <Badge variant={isMyTurn ? "default" : "outline"} className="text-xs">
                 {isMyTurn ? "Your turn" : "Their turn"}
               </Badge>
-              <div className="text-sm text-gray-600 flex items-center">
-                <Clock className="w-4 h-4 mr-1" />
+              <div className="text-xs text-gray-600 flex items-center">
+                <Clock className="w-3 h-3 mr-1" />
                 {messages.length} exchanges
               </div>
             </div>
@@ -225,10 +225,10 @@ export default function ConversationPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-4 gap-8">
+      <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-4 min-h-0">
+        <div className="grid lg:grid-cols-4 gap-4 h-full">
           {/* Conversation Threads Sidebar */}
-          <div className={`lg:col-span-1 ${showThreadsView ? 'block' : 'hidden lg:block'}`}>
+          <div className={`lg:col-span-1 ${showThreadsView ? 'block' : 'hidden lg:block'} h-full`}>
             {conversation && connection && (
               <ConversationThreads
                 connectionId={conversation.connectionId}
@@ -242,7 +242,7 @@ export default function ConversationPage() {
           </div>
 
           {/* Main Conversation */}
-          <div className={`lg:col-span-2 ${showThreadsView ? 'hidden lg:block' : 'block'}`}>
+          <div className={`lg:col-span-2 ${showThreadsView ? 'hidden lg:block' : 'block'} h-full`}>
             <ConversationInterface 
               messages={messages}
               currentUserEmail={user.email || ''}
@@ -260,7 +260,7 @@ export default function ConversationPage() {
           </div>
 
           {/* Question Suggestions Sidebar */}
-          <div className={`lg:col-span-1 ${showThreadsView ? 'hidden lg:block' : 'block'}`}>
+          <div className={`lg:col-span-1 ${showThreadsView ? 'hidden lg:block' : 'block'} h-full`}>
             {isMyTurn && nextMessageType === 'question' && (
               <QuestionSuggestions 
                 relationshipType={conversation.relationshipType}
@@ -270,17 +270,17 @@ export default function ConversationPage() {
             
             {/* Turn Status and Instructions */}
             {!isMyTurn && (
-              <Card className="card-elevated border-amber/30 bg-amber/5">
-                <CardContent className="p-6">
-                  <div className="text-center space-y-4">
-                    <div className="w-12 h-12 rounded-full bg-amber/20 flex items-center justify-center mx-auto">
-                      <Clock className="w-6 h-6 text-amber" />
+              <Card className="card-elevated border-amber/30 bg-amber/5 h-fit">
+                <CardContent className="p-4">
+                  <div className="text-center space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-amber/20 flex items-center justify-center mx-auto">
+                      <Clock className="w-5 h-5 text-amber" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground font-inter mb-2">
+                      <h3 className="font-semibold text-foreground font-inter mb-2 text-sm">
                         Waiting for Response
                       </h3>
-                      <p className="text-sm text-slate-700 font-inter leading-relaxed">
+                      <p className="text-xs text-slate-700 font-inter leading-relaxed">
                         <UserDisplayName email={otherParticipant} /> is preparing their response. 
                         You'll receive an email notification when it's your turn.
                       </p>
