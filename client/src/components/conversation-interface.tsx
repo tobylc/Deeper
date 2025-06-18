@@ -64,50 +64,102 @@ export default function ConversationInterface({
     return otherUser;
   };
 
-  const EmptyState = () => (
-    <div className="flex flex-col items-center justify-center py-16 px-8">
-      <div className="relative mb-8">
-        <div className="absolute inset-0 bg-gradient-to-r from-ocean/20 to-amber/20 rounded-full blur-xl"></div>
-        <div className="relative bg-gradient-to-br from-ocean to-amber p-6 rounded-2xl shadow-xl">
-          <Sparkles className="h-12 w-12 text-white animate-pulse" />
-        </div>
-      </div>
-      
-      {isMyTurn ? (
-        <div className="text-center space-y-4 max-w-md">
-          <h3 className="text-2xl font-bold bg-gradient-to-r from-ocean to-amber bg-clip-text text-transparent">
-            Begin Your Journey
-          </h3>
-          <p className="text-slate-400 leading-relaxed">
-            You're about to start a meaningful {relationshipType.toLowerCase()} conversation. 
-            Ask the first question to begin this deeper connection.
-          </p>
-          <div className="flex items-center justify-center space-x-2 text-sm text-amber/80">
-            <QuotesIcon size="sm" />
-            <span>Every great conversation starts with curiosity</span>
+  // Sample questions based on relationship type for empty state
+  const getExampleQuestions = (relationshipType: string): string[] => {
+    const examples = {
+      "Parent-Child": [
+        "What's one family tradition you hope to continue?",
+        "When did you feel most proud of me recently?",
+        "What was your biggest worry as a teenager?"
+      ],
+      "Romantic Partners": [
+        "What's something new you'd like us to try together?",
+        "When do you feel most loved by me?",
+        "What's your happiest memory of us?"
+      ],
+      "Friends": [
+        "What's the best advice you've ever received?",
+        "What adventure would you want us to go on?",
+        "How have you changed in the past year?"
+      ],
+      "Siblings": [
+        "What's your favorite childhood memory of us?",
+        "How do you think we've influenced each other?",
+        "What family trait do you see in yourself?"
+      ]
+    };
+    
+    return examples[relationshipType as keyof typeof examples] || examples["Friends"];
+  };
+
+  const EmptyState = () => {
+    const exampleQuestions = getExampleQuestions(relationshipType);
+    
+    return (
+      <div className="flex flex-col items-center justify-center h-full py-8 px-6">
+        <div className="relative mb-6">
+          <div className="absolute inset-0 bg-gradient-to-r from-ocean/20 to-amber/20 rounded-full blur-xl"></div>
+          <div className="relative bg-gradient-to-br from-ocean to-amber p-4 rounded-2xl shadow-xl">
+            <Sparkles className="h-8 w-8 text-white animate-pulse" />
           </div>
         </div>
-      ) : (
-        <div className="text-center space-y-4 max-w-md">
-          <h3 className="text-2xl font-bold bg-gradient-to-r from-ocean to-amber bg-clip-text text-transparent">
-            Waiting for Magic
-          </h3>
-          <p className="text-slate-400 leading-relaxed">
-            Your conversation partner is preparing the first question. 
-            Great conversations are worth the wait.
-          </p>
-          <div className="flex items-center justify-center space-x-2">
-            <div className="flex space-x-1">
-              <div className="w-2 h-2 bg-ocean rounded-full animate-bounce"></div>
-              <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-              <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+        
+        {isMyTurn ? (
+          <div className="text-center space-y-6 max-w-lg w-full">
+            <h3 className="text-xl font-bold bg-gradient-to-r from-ocean to-amber bg-clip-text text-transparent">
+              Begin Your Journey
+            </h3>
+            <p className="text-slate-600 leading-relaxed">
+              You're about to start a meaningful {relationshipType.toLowerCase()} conversation. 
+              Ask the first question to begin this deeper connection.
+            </p>
+            
+            {/* Example Questions */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-center space-x-2 text-sm text-amber">
+                <QuotesIcon size="sm" />
+                <span className="font-medium">Try one of these conversation starters:</span>
+              </div>
+              <div className="space-y-2">
+                {exampleQuestions.map((question, index) => (
+                  <button
+                    key={index}
+                    onClick={() => onQuestionSelect(question)}
+                    className="w-full p-3 text-left bg-white border border-slate-200 hover:border-ocean/30 hover:bg-ocean/5 rounded-xl transition-all duration-200 text-sm text-slate-700 hover:text-slate-900 shadow-sm hover:shadow-md"
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
             </div>
-            <span className="text-sm text-ocean/80">Anticipating...</span>
+            
+            <div className="flex items-center justify-center space-x-2 text-xs text-slate-500">
+              <QuotesIcon size="xs" />
+              <span>Every great conversation starts with curiosity</span>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
+        ) : (
+          <div className="text-center space-y-4 max-w-md">
+            <h3 className="text-xl font-bold bg-gradient-to-r from-ocean to-amber bg-clip-text text-transparent">
+              Waiting for Magic
+            </h3>
+            <p className="text-slate-600 leading-relaxed">
+              <UserDisplayName email={otherParticipantEmail} /> is preparing the first question. 
+              Great conversations are worth the wait.
+            </p>
+            <div className="flex items-center justify-center space-x-2">
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-ocean rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+              </div>
+              <span className="text-sm text-ocean/80">Anticipating...</span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const MessageBubble = ({ message, index }: { message: Message; index: number }) => {
     const isFromCurrentUser = message.senderEmail === currentUserEmail;
@@ -235,18 +287,18 @@ export default function ConversationInterface({
   );
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
       {/* Conversation Header */}
-      <div className="border-b border-slate-200/60 p-6 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm">
+      <div className="border-b border-slate-200/60 p-4 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm flex-shrink-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <div className="flex -space-x-2">
               <ProfileAvatar
                 email={participant1Email}
                 firstName={currentUserEmail === participant1Email ? currentUser?.firstName ?? undefined : otherUser?.firstName ?? undefined}
                 lastName={currentUserEmail === participant1Email ? currentUser?.lastName ?? undefined : otherUser?.lastName ?? undefined}
                 profileImageUrl={currentUserEmail === participant1Email ? currentUser?.profileImageUrl ?? undefined : otherUser?.profileImageUrl ?? undefined}
-                size="md"
+                size="sm"
                 className="border-2 border-white shadow-lg z-10"
               />
               <ProfileAvatar
@@ -254,15 +306,15 @@ export default function ConversationInterface({
                 firstName={currentUserEmail === participant2Email ? currentUser?.firstName ?? undefined : otherUser?.firstName ?? undefined}
                 lastName={currentUserEmail === participant2Email ? currentUser?.lastName ?? undefined : otherUser?.lastName ?? undefined}
                 profileImageUrl={currentUserEmail === participant2Email ? currentUser?.profileImageUrl ?? undefined : otherUser?.profileImageUrl ?? undefined}
-                size="md"
+                size="sm"
                 className="border-2 border-white shadow-lg"
               />
             </div>
             <div>
-              <h3 className="font-semibold text-slate-800">
+              <h3 className="font-semibold text-slate-800 text-sm">
                 {relationshipType} Conversation
               </h3>
-              <p className="text-sm text-slate-500">
+              <p className="text-xs text-slate-500">
                 {messages.length} exchanges • Deeper connection
               </p>
             </div>
@@ -271,10 +323,10 @@ export default function ConversationInterface({
           <Badge 
             variant={isMyTurn ? "default" : "outline"} 
             className={cn(
-              "shadow-sm",
+              "shadow-sm font-medium px-3 py-1 text-xs",
               isMyTurn 
-                ? "bg-gradient-to-r from-ocean to-ocean/80 text-white border-0" 
-                : "border-slate-300 text-slate-600"
+                ? "bg-gradient-to-r from-ocean to-ocean/80 text-white border-0 shadow-ocean/20" 
+                : "bg-gradient-to-r from-amber/10 to-amber/5 border-amber/30 text-amber-800"
             )}
           >
             {isMyTurn ? "Your turn" : "Their turn"}
@@ -283,7 +335,7 @@ export default function ConversationInterface({
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-50/30 via-white/50 to-slate-50/30">
+      <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-br from-slate-50/30 via-white/50 to-slate-50/30 min-h-0">
         {messages.length === 0 ? (
           <EmptyState />
         ) : (
@@ -303,14 +355,14 @@ export default function ConversationInterface({
 
       {/* Message Input Area */}
       {isMyTurn && (
-        <div className="border-t border-slate-200/60 p-6 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm">
-          <div className="space-y-4">
+        <div className="border-t border-slate-200/60 p-4 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm flex-shrink-0">
+          <div className="space-y-3">
             {/* Message Type Indicator */}
             <div className="flex items-center justify-between">
               <Badge 
                 variant="outline" 
                 className={cn(
-                  "border-slate-300 text-slate-700 font-medium",
+                  "border-slate-300 text-slate-700 font-medium text-xs",
                   nextMessageType === 'question' 
                     ? "bg-ocean/10 border-ocean/30 text-ocean" 
                     : "bg-amber/10 border-amber/30 text-amber-800"
@@ -329,7 +381,7 @@ export default function ConversationInterface({
                 )}
               </Badge>
               
-              <div className="text-sm text-slate-600">
+              <div className="text-xs text-slate-600">
                 {nextMessageType === 'question' 
                   ? "Ask something meaningful to deepen your connection"
                   : "Share your thoughts and continue the conversation"
@@ -348,7 +400,7 @@ export default function ConversationInterface({
                       ? "Type your question or click a suggestion from the right sidebar..." 
                       : "Share your response..."
                   }
-                  className="min-h-[80px] resize-none bg-white/80 backdrop-blur-sm border-slate-200/60 focus:border-ocean/50 focus:ring-ocean/20 rounded-xl"
+                  className="min-h-[60px] resize-none bg-white/80 backdrop-blur-sm border-slate-200/60 focus:border-ocean/50 focus:ring-ocean/20 rounded-xl text-sm"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
@@ -364,15 +416,20 @@ export default function ConversationInterface({
                   onClick={onSendMessage}
                   disabled={!newMessage.trim() || isSending}
                   className={cn(
-                    "h-12 w-12 rounded-xl shadow-lg transition-all duration-200",
-                    "bg-gradient-to-r from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean/70",
-                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                    "h-10 w-10 rounded-xl shadow-lg transition-all duration-200 border-0 group",
+                    newMessage.trim() 
+                      ? "bg-gradient-to-r from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean/70 hover:shadow-xl hover:scale-105" 
+                      : "bg-gradient-to-r from-ocean/60 to-ocean/40 cursor-default",
+                    isSending && "animate-pulse"
                   )}
                 >
                   {isSending ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <Send className="h-4 w-4 text-white" />
+                    <Send className={cn(
+                      "h-3 w-3 text-white transition-transform duration-200",
+                      newMessage.trim() && "group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                    )} />
                   )}
                 </Button>
               </div>
@@ -388,8 +445,8 @@ export default function ConversationInterface({
 
       {/* Turn Status for Non-Turn */}
       {!isMyTurn && (
-        <div className="border-t border-slate-200/60 p-6 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm">
-          <div className="text-center space-y-3">
+        <div className="border-t border-slate-200/60 p-4 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm flex-shrink-0">
+          <div className="text-center space-y-2">
             <div className="flex items-center justify-center space-x-2">
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-ocean rounded-full animate-bounce"></div>
