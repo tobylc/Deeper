@@ -172,10 +172,8 @@ export default function ConversationInterface({
     const isFollowUp = messages.length >= 2 && index >= 2;
     const messageTypeLabel = isFollowUp ? "Follow up" : (isQuestion ? "Question" : "Response");
     
-    // Unique paper variations for each message
-    const paperRotations = ['rotate-1', '-rotate-1', 'rotate-2', '-rotate-2', 'rotate-0.5', '-rotate-0.5'];
-    const paperRotation = paperRotations[index % paperRotations.length];
-    const paperShadow = index % 3 === 0 ? 'shadow-lg' : index % 3 === 1 ? 'shadow-md' : 'shadow-sm';
+    // Horizontal paper with realistic shadows
+    const paperShadow = index % 3 === 0 ? 'shadow-xl' : index % 3 === 1 ? 'shadow-lg' : 'shadow-md';
     
     // Generate unique tattered edge shapes for each paper
     const tatteredEdges = [
@@ -193,96 +191,41 @@ export default function ConversationInterface({
         "group mb-8 relative",
         isFromCurrentUser ? "ml-12" : "mr-12"
       )}>
-        {/* Parchment Sheet */}
+        {/* Hyper-realistic Paper Sheet */}
         <div className={cn(
-          "relative bg-gradient-to-br from-amber-50/90 via-yellow-50/70 to-orange-50/60 p-6 transform",
-          paperRotation,
+          "relative bg-gradient-to-br from-white via-gray-50/30 to-amber-50/20 p-8 rounded-sm border border-gray-200/40",
           paperShadow,
-          "shadow-amber-300/50",
-          "border-0"
+          "shadow-gray-400/20"
         )}
         style={{
-          clipPath: clipPath,
-          filter: 'drop-shadow(2px 4px 8px rgba(139, 69, 19, 0.15))'
+          background: `
+            linear-gradient(135deg, 
+              rgba(255,255,255,0.98) 0%, 
+              rgba(248,250,252,0.96) 30%, 
+              rgba(254,252,232,0.94) 70%, 
+              rgba(255,251,235,0.92) 100%
+            )
+          `,
+          filter: 'drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.08))',
+          backdropFilter: 'blur(0.5px)'
         }}>
-          {/* Aged parchment texture overlay */}
-          <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_at_center,_rgba(160,82,45,0.1)_0%,_rgba(210,180,140,0.05)_50%,_transparent_100%)] pointer-events-none" />
-          
-          {/* Coffee stains and aging effects - unique for each paper */}
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
-            {/* Generate unique stains based on index */}
-            {index % 6 === 0 && (
-              <>
-                <div className="absolute top-4 right-8 w-6 h-6 rounded-full bg-gradient-radial from-amber-300/30 to-transparent"></div>
-                <div className="absolute bottom-6 left-10 w-4 h-4 rounded-full bg-gradient-radial from-amber-400/20 to-transparent"></div>
-                <div className="absolute top-1/3 left-1/4 w-8 h-3 rounded-full bg-gradient-radial from-amber-200/15 to-transparent transform rotate-45"></div>
-              </>
-            )}
-            {index % 6 === 1 && (
-              <>
-                <div className="absolute top-8 left-6 w-5 h-7 rounded-full bg-gradient-radial from-amber-400/25 to-transparent transform rotate-12"></div>
-                <div className="absolute bottom-4 right-12 w-3 h-3 rounded-full bg-gradient-radial from-amber-300/30 to-transparent"></div>
-                <div className="absolute top-2/3 right-1/3 w-6 h-4 rounded-full bg-gradient-radial from-amber-200/20 to-transparent transform -rotate-30"></div>
-              </>
-            )}
-            {index % 6 === 2 && (
-              <>
-                <div className="absolute top-6 right-4 w-4 h-8 rounded-full bg-gradient-radial from-amber-500/20 to-transparent transform -rotate-45"></div>
-                <div className="absolute bottom-8 left-6 w-7 h-5 rounded-full bg-gradient-radial from-amber-300/25 to-transparent"></div>
-                <div className="absolute top-1/4 left-1/2 w-3 h-6 rounded-full bg-gradient-radial from-amber-400/15 to-transparent transform rotate-60"></div>
-              </>
-            )}
-            {index % 6 === 3 && (
-              <>
-                <div className="absolute top-10 left-8 w-8 h-4 rounded-full bg-gradient-radial from-amber-300/35 to-transparent transform rotate-75"></div>
-                <div className="absolute bottom-5 right-6 w-5 h-5 rounded-full bg-gradient-radial from-amber-400/25 to-transparent"></div>
-                <div className="absolute top-1/2 right-1/4 w-4 h-7 rounded-full bg-gradient-radial from-amber-200/20 to-transparent transform -rotate-15"></div>
-              </>
-            )}
-            {index % 6 === 4 && (
-              <>
-                <div className="absolute top-3 right-10 w-6 h-5 rounded-full bg-gradient-radial from-amber-400/30 to-transparent transform rotate-30"></div>
-                <div className="absolute bottom-10 left-4 w-4 h-6 rounded-full bg-gradient-radial from-amber-300/20 to-transparent"></div>
-                <div className="absolute top-2/5 left-2/3 w-5 h-4 rounded-full bg-gradient-radial from-amber-500/15 to-transparent transform -rotate-60"></div>
-              </>
-            )}
-            {index % 6 === 5 && (
-              <>
-                <div className="absolute top-5 left-12 w-7 h-6 rounded-full bg-gradient-radial from-amber-300/25 to-transparent transform -rotate-20"></div>
-                <div className="absolute bottom-3 right-8 w-3 h-4 rounded-full bg-gradient-radial from-amber-400/30 to-transparent"></div>
-                <div className="absolute top-3/4 left-1/3 w-6 h-3 rounded-full bg-gradient-radial from-amber-200/20 to-transparent transform rotate-45"></div>
-              </>
-            )}
-            
-            {/* Random burn marks and tears */}
-            {index % 4 === 0 && (
-              <div className="absolute top-2 right-2 w-2 h-2 bg-amber-800/10 rounded-full"></div>
-            )}
-            {index % 3 === 1 && (
-              <div className="absolute bottom-2 left-2 w-1 h-3 bg-amber-700/15 transform rotate-45"></div>
-            )}
-            {index % 5 === 2 && (
-              <div className="absolute top-1/2 right-1 w-1 h-4 bg-amber-600/10 transform -rotate-30"></div>
-            )}
+          {/* Subtle paper texture */}
+          <div className="absolute inset-0 opacity-15 pointer-events-none">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
           </div>
           
-          {/* Subtle ruled lines effect - more organic */}
-          <div className="absolute inset-0 opacity-8 pointer-events-none" 
+          {/* Very subtle ruled lines */}
+          <div className="absolute inset-0 opacity-25 pointer-events-none" 
                style={{
-                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 26px, rgba(139,69,19,0.2) 26px, rgba(139,69,19,0.2) 27px)',
+                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, rgba(156,163,175,0.15) 27px, rgba(156,163,175,0.15) 28px)',
                }} />
           
-          {/* Faded margin line */}
-          <div className={cn(
-            "absolute top-0 bottom-0 w-px bg-gradient-to-b from-red-300/40 via-red-300/60 to-red-300/30",
-            isFromCurrentUser ? "left-12" : "right-12"
-          )} />
+          {/* Subtle left margin line */}
+          <div className="absolute top-0 bottom-0 left-16 w-px bg-gradient-to-b from-transparent via-red-200/30 to-transparent opacity-40" />
 
-          {/* Journal Header */}
-          <div className={cn(
-            "flex items-start justify-between mb-4 relative z-10",
-            isFromCurrentUser ? "pl-6" : "pr-6"
-          )}>
+          {/* Clean Header */}
+          <div className="flex items-start justify-between mb-6 relative z-10 pl-20">
             <div className="flex items-center space-x-3">
               <ProfileAvatar
                 email={message.senderEmail}
@@ -290,63 +233,36 @@ export default function ConversationInterface({
                 lastName={userData?.lastName ?? undefined}
                 profileImageUrl={userData?.profileImageUrl ?? undefined}
                 size="sm"
-                className="shadow-md border-2 border-white"
+                className="shadow-sm border border-gray-200"
               />
               <div>
-                <div className="text-sm font-semibold text-slate-800 font-serif">
+                <div className="text-sm font-medium text-gray-800">
                   <UserDisplayName email={message.senderEmail} />
                 </div>
-                <div className="text-xs text-slate-600 italic">
+                <div className="text-xs text-gray-500">
                   {formatDistanceToNow(new Date(message.createdAt!), { addSuffix: true })}
                 </div>
               </div>
             </div>
             
-            {/* Message type label - handwritten style */}
+            {/* Clean message type badge */}
             <div className={cn(
-              "px-2 py-1 text-xs font-handwriting transform -rotate-12 relative",
+              "px-3 py-1 text-xs font-medium rounded-full",
               isFollowUp
-                ? "text-slate-600 bg-slate-100/50 border border-slate-200"
+                ? "text-gray-600 bg-gray-100 border border-gray-200"
                 : isQuestion 
-                  ? "text-ocean bg-ocean/10 border border-ocean/30" 
-                  : "text-amber-700 bg-amber/20 border border-amber/40",
-              "rounded-lg shadow-sm"
+                  ? "text-blue-700 bg-blue-50 border border-blue-200" 
+                  : "text-amber-700 bg-amber-50 border border-amber-200"
             )}>
               {isFollowUp ? "Follow up" : isQuestion ? "Question" : "Response"}
-              {/* Small arrow pointing to content */}
-              <div className={cn(
-                "absolute w-2 h-2 rotate-45 border-r border-b",
-                "top-full left-1/2 -translate-x-1/2 -mt-1",
-                isFollowUp ? "border-slate-200 bg-slate-100/50" : isQuestion ? "border-ocean/30 bg-ocean/10" : "border-amber/40 bg-amber/20"
-              )} />
             </div>
           </div>
 
-          {/* Journal Content - handwritten style */}
-          <div className={cn(
-            "relative z-10 text-slate-800 leading-relaxed font-serif text-base",
-            isFromCurrentUser ? "pl-6" : "pr-6"
-          )}>
-            <div className="relative">
-              {/* Subtle ink bleed effect */}
-              <div className="absolute -inset-1 opacity-5 bg-gradient-to-r from-blue-600 to-indigo-600 blur-sm pointer-events-none" />
-              
-              {/* Main text content */}
-              <div className="relative italic text-slate-700 whitespace-pre-wrap">
-                {message.content}
-              </div>
+          {/* Clean Content */}
+          <div className="relative z-10 pl-20 pr-6">
+            <div className="text-gray-900 leading-relaxed text-base whitespace-pre-wrap">
+              {message.content}
             </div>
-          </div>
-          
-          {/* Decorative flourish */}
-          <div className={cn(
-            "absolute bottom-2 opacity-30",
-            isFromCurrentUser ? "right-4" : "left-4"
-          )}>
-            <svg width="24" height="16" viewBox="0 0 24 16" className="text-amber-600">
-              <path d="M2 8c0 0 4-6 10-6s10 6 10 6-4 6-10 6S2 8 2 8z" fill="none" stroke="currentColor" strokeWidth="0.5" />
-              <path d="M8 8h8M6 6l2 2-2 2M18 6l-2 2 2 2" stroke="currentColor" strokeWidth="0.3" opacity="0.6" />
-            </svg>
           </div>
         </div>
       </div>
@@ -355,32 +271,37 @@ export default function ConversationInterface({
 
   const TypingIndicator = () => (
     <div className="group mb-8 relative mr-12">
-      {/* Parchment Sheet - typing variant */}
-      <div className="relative bg-gradient-to-br from-blue-50/90 via-indigo-50/70 to-purple-50/60 p-6 transform -rotate-1 shadow-md shadow-blue-300/40"
+      {/* Hyper-realistic Paper Sheet - typing variant */}
+      <div className="relative bg-gradient-to-br from-white via-gray-50/30 to-blue-50/20 p-8 rounded-sm border border-gray-200/40 shadow-lg shadow-gray-400/20"
            style={{
-             clipPath: "polygon(5% 0%, 100% 5%, 100% 95%, 92% 100%, 5% 100%, 0% 92%, 0% 8%, 5% 0%)",
-             filter: 'drop-shadow(2px 4px 8px rgba(59, 130, 246, 0.15))'
+             background: `
+               linear-gradient(135deg, 
+                 rgba(255,255,255,0.98) 0%, 
+                 rgba(248,250,252,0.96) 30%, 
+                 rgba(239,246,255,0.94) 70%, 
+                 rgba(219,234,254,0.92) 100%
+               )
+             `,
+             filter: 'drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.08))',
+             backdropFilter: 'blur(0.5px)'
            }}>
-        {/* Aged parchment texture overlay - blue tinted */}
-        <div className="absolute inset-0 opacity-25 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,246,0.08)_0%,_rgba(147,197,253,0.05)_50%,_transparent_100%)] pointer-events-none" />
-        
-        {/* Subtle coffee stains */}
+        {/* Subtle paper texture */}
         <div className="absolute inset-0 opacity-15 pointer-events-none">
-          <div className="absolute top-6 right-10 w-5 h-5 rounded-full bg-gradient-radial from-blue-300/20 to-transparent"></div>
-          <div className="absolute bottom-8 left-8 w-3 h-3 rounded-full bg-gradient-radial from-indigo-400/15 to-transparent"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
         </div>
         
-        {/* Subtle ruled lines effect */}
-        <div className="absolute inset-0 opacity-8 pointer-events-none" 
+        {/* Very subtle ruled lines */}
+        <div className="absolute inset-0 opacity-25 pointer-events-none" 
              style={{
-               backgroundImage: 'repeating-linear-gradient(transparent, transparent 26px, rgba(59,130,246,0.15) 26px, rgba(59,130,246,0.15) 27px)',
+               backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, rgba(156,163,175,0.15) 27px, rgba(156,163,175,0.15) 28px)',
              }} />
         
-        {/* Faded margin line */}
-        <div className="absolute top-0 bottom-0 w-px bg-gradient-to-b from-red-300/30 via-red-300/50 to-red-300/25 right-12" />
+        {/* Subtle left margin line */}
+        <div className="absolute top-0 bottom-0 left-16 w-px bg-gradient-to-b from-transparent via-red-200/30 to-transparent opacity-40" />
 
-        {/* Journal Header */}
-        <div className="flex items-start justify-between mb-4 relative z-10 pr-6">
+        {/* Clean Header */}
+        <div className="flex items-start justify-between mb-6 relative z-10 pl-20">
           <div className="flex items-center space-x-3">
             <ProfileAvatar
               email={otherParticipantEmail}
@@ -388,43 +309,32 @@ export default function ConversationInterface({
               lastName={otherUser?.lastName ?? undefined}
               profileImageUrl={otherUser?.profileImageUrl ?? undefined}
               size="sm"
-              className="shadow-md border-2 border-white"
+              className="shadow-sm border border-gray-200"
             />
             <div>
-              <div className="text-sm font-semibold text-slate-800 font-serif">
+              <div className="text-sm font-medium text-gray-800">
                 <UserDisplayName email={otherParticipantEmail} />
               </div>
-              <div className="text-xs text-slate-600 italic">
+              <div className="text-xs text-gray-500">
                 writing...
               </div>
             </div>
           </div>
           
-          {/* Thinking label */}
-          <div className="px-2 py-1 text-xs font-handwriting transform -rotate-12 relative text-blue-600 bg-blue/10 border border-blue/30 rounded-lg shadow-sm">
+          {/* Clean thinking badge */}
+          <div className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-full">
             Thinking
           </div>
         </div>
 
         {/* Animated writing content */}
-        <div className="relative z-10 text-slate-800 leading-relaxed font-serif text-base pr-6">
-          <div className="relative">
-            {/* Animated dots simulating writing */}
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
-              <span className="text-sm text-slate-500 italic ml-2">composing thoughts...</span>
-            </div>
+        <div className="relative z-10 pl-20 pr-6">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+            <span className="text-sm text-gray-500 ml-2">composing thoughts...</span>
           </div>
-        </div>
-        
-        {/* Decorative flourish */}
-        <div className="absolute bottom-2 left-4 opacity-30">
-          <svg width="24" height="16" viewBox="0 0 24 16" className="text-blue-600">
-            <path d="M2 8c0 0 4-6 10-6s10 6 10 6-4 6-10 6S2 8 2 8z" fill="none" stroke="currentColor" strokeWidth="0.5" />
-            <path d="M8 8h8M6 6l2 2-2 2M18 6l-2 2 2 2" stroke="currentColor" strokeWidth="0.3" opacity="0.6" />
-          </svg>
         </div>
       </div>
     </div>
