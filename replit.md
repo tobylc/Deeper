@@ -509,6 +509,15 @@ Changelog:
   * Both users now see identical conversation states: current conversation in middle column, rolled up conversations in left column
   * Unified behavior ensures clicking any suggestion in right column causes current conversation to roll up for both participants
   * Real-time conversation threading synchronization maintains consistent user experience across all devices and sessions
+- June 18, 2025. One-time onboarding popup system implementation:
+  * Added hasSeenOnboarding field to user schema with default false for tracking first-time users
+  * Created OnboardingPopup component explaining turn-based communication system to new users
+  * Enhanced database storage interface with updateUser method for onboarding completion tracking
+  * Added API endpoint /api/users/mark-onboarding-complete for updating onboarding status
+  * Integrated onboarding popup into conversation page to appear before first question or response
+  * Popup explains thoughtful turn-based communication system with relationship-specific messaging
+  * One-time educational experience helps users understand the unique conversation flow
+  * System automatically tracks completion and prevents popup from showing again
 ```
 
 ## User Preferences

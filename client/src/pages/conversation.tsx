@@ -95,24 +95,6 @@ export default function ConversationPage() {
     enabled: !!user?.email,
   });
 
-  // Check if user needs to see onboarding popup
-  useEffect(() => {
-    if (currentUserData && !currentUserData.hasSeenOnboarding && conversation && messages) {
-      // Show onboarding before first interaction
-      setShowOnboardingPopup(true);
-    }
-  }, [currentUserData, conversation, messages]);
-
-  // Mutation to mark onboarding as complete
-  const markOnboardingCompleteMutation = useMutation({
-    mutationFn: async () => {
-      return apiRequest('POST', '/api/users/mark-onboarding-complete');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/users/by-email/${user?.email}`] });
-    },
-  });
-
   const { data: otherUserData } = useQuery<User>({
     queryKey: [`/api/users/by-email/${otherParticipant}`],
     queryFn: async () => {
@@ -130,6 +112,25 @@ export default function ConversationPage() {
       return response.json();
     },
     enabled: !!(selectedConversationId || id) && !!user,
+  });
+
+  // Check if user needs to see onboarding popup
+  useEffect(() => {
+    if (currentUserData && !currentUserData.hasSeenOnboarding && conversation && messages !== undefined) {
+      // Show onboarding before first interaction
+      setShowOnboardingPopup(true);
+    }
+  }, [currentUserData, conversation, messages]);
+
+  // Mutation to mark onboarding as complete
+  const markOnboardingCompleteMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('POST', '/api/users/mark-onboarding-complete');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/users/by-email/${user?.email}`] });
+      setShowOnboardingPopup(false);
+    },
   });
 
   const sendMessageMutation = useMutation({
@@ -360,6 +361,19 @@ export default function ConversationPage() {
           </div>
         </div>
       </div>
+
+      {/* Onboarding Popup */}
+      {showOnboardingPopup && conversation && (
+        <OnboardingPopup
+          isOpen={showOnboardingPopup}
+          onClose={() => {
+            markOnboardingCompleteMutation.mutate();
+          }}
+          userRole={conversation.participant1Email === user?.email ? 'questioner' : 'responder'}
+          otherParticipant={otherParticipant}
+          relationshipType={conversation.relationshipType}
+        />
+      )}
     </div>
   );
 }
