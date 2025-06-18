@@ -197,6 +197,12 @@ export default function ConversationPage() {
     setShowThreadsView(false); // Hide threads view on mobile after selection
   };
 
+  const handleNewQuestion = () => {
+    // Stack current conversation automatically and trigger new question creation
+    // This will be handled by the ConversationThreads component
+    setShowThreadsView(true); // Show threads view to trigger new question dialog
+  };
+
   return (
     <div className="h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex flex-col">
       {/* Header */}
@@ -305,6 +311,7 @@ export default function ConversationPage() {
               onQuestionSelect={handleQuestionSelect}
               isMyTurn={isMyTurn}
               otherParticipant={otherParticipant}
+              onNewQuestion={handleNewQuestion}
             />
           </div>
         </div>

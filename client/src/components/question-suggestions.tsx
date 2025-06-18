@@ -1,22 +1,27 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lightbulb, Shuffle, Sparkles, ArrowRight, MessageCircle, Wand2, Clock } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Lightbulb, Shuffle, Sparkles, ArrowRight, MessageCircle, Wand2, Clock, Plus } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import { getQuestionsByCategory } from "@/lib/questions";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 interface QuestionSuggestionsProps {
   relationshipType: string;
   onQuestionSelect: (question: string) => void;
   isMyTurn: boolean;
   otherParticipant: string;
+  onNewQuestion: () => void;
 }
 
-export default function QuestionSuggestions({ relationshipType, onQuestionSelect, isMyTurn, otherParticipant }: QuestionSuggestionsProps) {
+export default function QuestionSuggestions({ relationshipType, onQuestionSelect, isMyTurn, otherParticipant, onNewQuestion }: QuestionSuggestionsProps) {
   const [currentSet, setCurrentSet] = useState(0);
   const [aiQuestions, setAiQuestions] = useState<string[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -75,6 +80,15 @@ export default function QuestionSuggestions({ relationshipType, onQuestionSelect
         </Card>
       ) : (
         <>
+          {/* New Question Button */}
+          <Button 
+            onClick={onNewQuestion}
+            className="w-full bg-gradient-to-r from-ocean to-teal text-white hover:from-ocean/90 hover:to-teal/90 transition-all duration-200 shadow-lg hover:shadow-xl mb-4"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            New Question
+          </Button>
+
           {/* Header Card */}
           <Card className="bg-white border border-slate-200/60 shadow-sm">
             <CardHeader className="pb-3">
