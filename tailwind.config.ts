@@ -68,6 +68,9 @@ export default {
         'handwriting': ['Kalam', 'cursive'],
         'serif': ['Georgia', 'serif'],
       },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      },
       keyframes: {
         "accordion-down": {
           from: {

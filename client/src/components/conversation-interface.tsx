@@ -172,37 +172,98 @@ export default function ConversationInterface({
     const isFollowUp = messages.length >= 2 && index >= 2;
     const messageTypeLabel = isFollowUp ? "Follow up" : (isQuestion ? "Question" : "Response");
     
-    // Subtle paper variations for authenticity
-    const paperRotation = isFromCurrentUser ? 'rotate-1' : '-rotate-1';
-    const paperShadow = index % 2 === 0 ? 'shadow-lg' : 'shadow-md';
+    // Unique paper variations for each message
+    const paperRotations = ['rotate-1', '-rotate-1', 'rotate-2', '-rotate-2', 'rotate-0.5', '-rotate-0.5'];
+    const paperRotation = paperRotations[index % paperRotations.length];
+    const paperShadow = index % 3 === 0 ? 'shadow-lg' : index % 3 === 1 ? 'shadow-md' : 'shadow-sm';
+    
+    // Generate unique tattered edge shapes for each paper
+    const tatteredEdges = [
+      "polygon(2% 0%, 98% 3%, 99% 8%, 100% 15%, 97% 22%, 100% 30%, 98% 40%, 100% 50%, 97% 60%, 99% 70%, 100% 85%, 95% 92%, 98% 100%, 5% 100%, 0% 95%, 3% 88%, 0% 78%, 2% 70%, 0% 60%, 3% 50%, 0% 40%, 2% 30%, 0% 20%, 3% 10%, 0% 5%)",
+      "polygon(0% 2%, 5% 0%, 15% 3%, 25% 0%, 35% 2%, 45% 0%, 55% 3%, 65% 0%, 75% 2%, 85% 0%, 95% 3%, 100% 8%, 98% 18%, 100% 28%, 97% 38%, 100% 48%, 98% 58%, 100% 68%, 97% 78%, 100% 88%, 95% 97%, 85% 100%, 75% 98%, 65% 100%, 55% 97%, 45% 100%, 35% 98%, 25% 100%, 15% 97%, 5% 100%, 0% 92%)",
+      "polygon(3% 0%, 10% 2%, 18% 0%, 28% 3%, 38% 0%, 48% 2%, 58% 0%, 68% 3%, 78% 0%, 88% 2%, 97% 0%, 100% 7%, 98% 17%, 100% 27%, 97% 37%, 100% 47%, 98% 57%, 100% 67%, 97% 77%, 100% 87%, 97% 97%, 88% 100%, 78% 98%, 68% 100%, 58% 97%, 48% 100%, 38% 98%, 28% 100%, 18% 97%, 10% 100%, 3% 98%, 0% 87%)",
+      "polygon(0% 5%, 8% 0%, 18% 4%, 28% 0%, 38% 3%, 48% 0%, 58% 4%, 68% 0%, 78% 3%, 88% 0%, 98% 4%, 100% 12%, 97% 22%, 100% 32%, 96% 42%, 100% 52%, 97% 62%, 100% 72%, 96% 82%, 100% 92%, 92% 100%, 82% 96%, 72% 100%, 62% 97%, 52% 100%, 42% 96%, 32% 100%, 22% 97%, 12% 100%, 2% 96%, 0% 85%)",
+      "polygon(4% 0%, 14% 3%, 24% 0%, 34% 4%, 44% 0%, 54% 3%, 64% 0%, 74% 4%, 84% 0%, 94% 3%, 100% 9%, 96% 19%, 100% 29%, 97% 39%, 100% 49%, 96% 59%, 100% 69%, 97% 79%, 100% 89%, 94% 97%, 84% 100%, 74% 96%, 64% 100%, 54% 97%, 44% 100%, 34% 96%, 24% 100%, 14% 97%, 4% 100%, 0% 91%)",
+      "polygon(1% 3%, 11% 0%, 21% 4%, 31% 0%, 41% 3%, 51% 0%, 61% 4%, 71% 0%, 81% 3%, 91% 0%, 99% 3%, 100% 13%, 97% 23%, 100% 33%, 96% 43%, 100% 53%, 97% 63%, 100% 73%, 96% 83%, 100% 93%, 91% 100%, 81% 97%, 71% 100%, 61% 96%, 51% 100%, 41% 97%, 31% 100%, 21% 96%, 11% 100%, 1% 97%, 0% 83%)"
+    ];
+    const clipPath = tatteredEdges[index % tatteredEdges.length];
     
     return (
       <div className={cn(
-        "group mb-8 smooth-enter relative",
+        "group mb-8 relative",
         isFromCurrentUser ? "ml-12" : "mr-12"
       )}>
         {/* Parchment Sheet */}
         <div className={cn(
-          "relative bg-gradient-to-br from-amber-50/90 via-yellow-50/70 to-orange-50/60 p-6 transform transition-all duration-300 hover:scale-[1.01]",
+          "relative bg-gradient-to-br from-amber-50/90 via-yellow-50/70 to-orange-50/60 p-6 transform",
           paperRotation,
           paperShadow,
           "shadow-amber-300/50",
           "border-0"
         )}
         style={{
-          clipPath: isFromCurrentUser 
-            ? "polygon(0% 5%, 5% 0%, 95% 0%, 100% 8%, 100% 92%, 95% 100%, 8% 100%, 0% 95%)"
-            : "polygon(5% 0%, 100% 5%, 100% 95%, 92% 100%, 5% 100%, 0% 92%, 0% 8%, 5% 0%)",
+          clipPath: clipPath,
           filter: 'drop-shadow(2px 4px 8px rgba(139, 69, 19, 0.15))'
         }}>
           {/* Aged parchment texture overlay */}
           <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_at_center,_rgba(160,82,45,0.1)_0%,_rgba(210,180,140,0.05)_50%,_transparent_100%)] pointer-events-none" />
           
-          {/* Coffee stains and aging effects */}
+          {/* Coffee stains and aging effects - unique for each paper */}
           <div className="absolute inset-0 opacity-20 pointer-events-none">
-            <div className="absolute top-4 right-8 w-6 h-6 rounded-full bg-gradient-radial from-amber-300/30 to-transparent"></div>
-            <div className="absolute bottom-6 left-10 w-4 h-4 rounded-full bg-gradient-radial from-amber-400/20 to-transparent"></div>
-            <div className="absolute top-1/3 left-1/4 w-8 h-3 rounded-full bg-gradient-radial from-amber-200/15 to-transparent transform rotate-45"></div>
+            {/* Generate unique stains based on index */}
+            {index % 6 === 0 && (
+              <>
+                <div className="absolute top-4 right-8 w-6 h-6 rounded-full bg-gradient-radial from-amber-300/30 to-transparent"></div>
+                <div className="absolute bottom-6 left-10 w-4 h-4 rounded-full bg-gradient-radial from-amber-400/20 to-transparent"></div>
+                <div className="absolute top-1/3 left-1/4 w-8 h-3 rounded-full bg-gradient-radial from-amber-200/15 to-transparent transform rotate-45"></div>
+              </>
+            )}
+            {index % 6 === 1 && (
+              <>
+                <div className="absolute top-8 left-6 w-5 h-7 rounded-full bg-gradient-radial from-amber-400/25 to-transparent transform rotate-12"></div>
+                <div className="absolute bottom-4 right-12 w-3 h-3 rounded-full bg-gradient-radial from-amber-300/30 to-transparent"></div>
+                <div className="absolute top-2/3 right-1/3 w-6 h-4 rounded-full bg-gradient-radial from-amber-200/20 to-transparent transform -rotate-30"></div>
+              </>
+            )}
+            {index % 6 === 2 && (
+              <>
+                <div className="absolute top-6 right-4 w-4 h-8 rounded-full bg-gradient-radial from-amber-500/20 to-transparent transform -rotate-45"></div>
+                <div className="absolute bottom-8 left-6 w-7 h-5 rounded-full bg-gradient-radial from-amber-300/25 to-transparent"></div>
+                <div className="absolute top-1/4 left-1/2 w-3 h-6 rounded-full bg-gradient-radial from-amber-400/15 to-transparent transform rotate-60"></div>
+              </>
+            )}
+            {index % 6 === 3 && (
+              <>
+                <div className="absolute top-10 left-8 w-8 h-4 rounded-full bg-gradient-radial from-amber-300/35 to-transparent transform rotate-75"></div>
+                <div className="absolute bottom-5 right-6 w-5 h-5 rounded-full bg-gradient-radial from-amber-400/25 to-transparent"></div>
+                <div className="absolute top-1/2 right-1/4 w-4 h-7 rounded-full bg-gradient-radial from-amber-200/20 to-transparent transform -rotate-15"></div>
+              </>
+            )}
+            {index % 6 === 4 && (
+              <>
+                <div className="absolute top-3 right-10 w-6 h-5 rounded-full bg-gradient-radial from-amber-400/30 to-transparent transform rotate-30"></div>
+                <div className="absolute bottom-10 left-4 w-4 h-6 rounded-full bg-gradient-radial from-amber-300/20 to-transparent"></div>
+                <div className="absolute top-2/5 left-2/3 w-5 h-4 rounded-full bg-gradient-radial from-amber-500/15 to-transparent transform -rotate-60"></div>
+              </>
+            )}
+            {index % 6 === 5 && (
+              <>
+                <div className="absolute top-5 left-12 w-7 h-6 rounded-full bg-gradient-radial from-amber-300/25 to-transparent transform -rotate-20"></div>
+                <div className="absolute bottom-3 right-8 w-3 h-4 rounded-full bg-gradient-radial from-amber-400/30 to-transparent"></div>
+                <div className="absolute top-3/4 left-1/3 w-6 h-3 rounded-full bg-gradient-radial from-amber-200/20 to-transparent transform rotate-45"></div>
+              </>
+            )}
+            
+            {/* Random burn marks and tears */}
+            {index % 4 === 0 && (
+              <div className="absolute top-2 right-2 w-2 h-2 bg-amber-800/10 rounded-full"></div>
+            )}
+            {index % 3 === 1 && (
+              <div className="absolute bottom-2 left-2 w-1 h-3 bg-amber-700/15 transform rotate-45"></div>
+            )}
+            {index % 5 === 2 && (
+              <div className="absolute top-1/2 right-1 w-1 h-4 bg-amber-600/10 transform -rotate-30"></div>
+            )}
           </div>
           
           {/* Subtle ruled lines effect - more organic */}
