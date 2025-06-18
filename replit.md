@@ -389,6 +389,17 @@ Changelog:
   * Email design matches existing application color scheme with ocean blue gradients
   * Turn notifications include sender name, message type, and direct conversation link
   * Production-ready turn-based communication system with comprehensive email notification flow
+- June 18, 2025. Comprehensive SMS/text notification system implementation:
+  * Added SMS notification capability alongside existing email system using Twilio integration
+  * Enhanced user schema with phoneNumber, phoneVerified, and notificationPreference fields
+  * Created unified notification service supporting email, SMS, or both notification types
+  * Implemented phone verification system with 6-digit SMS codes and 10-minute expiration
+  * Added API endpoints for phone verification (/api/users/send-verification, /api/users/verify-phone)
+  * Enhanced notification preference management with email/SMS/both options
+  * Turn notifications now sent via user's preferred method (email, SMS, or both)
+  * Production-ready SMS service with Console, Production (Twilio), and Internal implementations
+  * Rate limiting on verification endpoints (5 attempts per 15 minutes for sending codes)
+  * Complete SMS notification flow for connection invitations, acceptances, declines, and turn notifications
 ```
 
 ## User Preferences
