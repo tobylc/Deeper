@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, CheckCircle } from "lucide-react";
+import { relationshipRoles, getRolesForRelationship, getValidRolePairs } from "@shared/relationship-roles";
 
 interface InvitationFormProps {
   onClose: () => void;

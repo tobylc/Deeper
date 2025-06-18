@@ -9,6 +9,7 @@ import sharp from "sharp";
 import fs from "fs/promises";
 import { storage } from "./storage";
 import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "@shared/schema";
+import { getRolesForRelationship, isValidRolePair } from "@shared/relationship-roles";
 import { z } from "zod";
 import { 
   rateLimit, 
@@ -580,7 +581,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req: any, res) => {
     try {
       // Enhanced input validation
-      const { inviteeEmail, relationshipType, personalMessage } = req.body;
+      const { inviteeEmail, relationshipType, inviterRole, inviteeRole, personalMessage } = req.body;
       
       // Comprehensive input validation
       if (!inviteeEmail || typeof inviteeEmail !== 'string' || inviteeEmail.trim().length === 0) {
@@ -600,10 +601,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate relationship type against allowed values
       const allowedRelationshipTypes = [
         'Parent-Child', 'Romantic Partners', 'Friends', 'Siblings', 
-        'Colleagues', 'Mentor-Mentee', 'Other Family', 'Other'
+        'Grandparents', 'Long-distance', 'Other'
       ];
       if (!allowedRelationshipTypes.includes(relationshipType)) {
         return res.status(400).json({ message: "Invalid relationship type" });
+      }
+
+      // Validate role fields
+      if (!inviterRole || typeof inviterRole !== 'string' || inviterRole.trim().length === 0) {
+        return res.status(400).json({ message: "Your role in the relationship is required" });
+      }
+
+      if (!inviteeRole || typeof inviteeRole !== 'string' || inviteeRole.trim().length === 0) {
+        return res.status(400).json({ message: "Their role in the relationship is required" });
+      }
+
+      // Validate roles against allowed options for the relationship type
+      const validRoles = getRolesForRelationship(relationshipType);
+      if (!validRoles.includes(inviterRole)) {
+        return res.status(400).json({ message: "Invalid role for this relationship type" });
+      }
+
+      if (!validRoles.includes(inviteeRole)) {
+        return res.status(400).json({ message: "Invalid invitee role for this relationship type" });
+      }
+
+      // Validate role pair compatibility
+      if (!isValidRolePair(relationshipType, inviterRole, inviteeRole)) {
+        return res.status(400).json({ message: "Invalid role combination for this relationship type" });
       }
 
       // Validate personal message length
@@ -651,6 +676,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const connectionData = {
         inviteeEmail,
         relationshipType,
+        inviterRole,
+        inviteeRole,
         personalMessage: personalMessage || "",
         inviterEmail: currentUser.email,
         inviterSubscriptionTier: currentUser.subscriptionTier || 'free'
