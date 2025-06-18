@@ -289,7 +289,7 @@ export default function ConversationThreads({
             </div>
           )}
         </div>
-        <p className="text-xs text-slate-600">
+        <p className="text-xs text-gray-600 relative z-10">
           {conversations.length} {conversations.length === 1 ? 'question' : 'questions'} with{' '}
           <UserDisplayName email={otherParticipantEmail} />
         </p>
@@ -381,9 +381,9 @@ export default function ConversationThreads({
                       </div>
                     )}
 
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 relative z-10">
                       <div className="flex items-center space-x-1">
-                        <h4 className="font-medium text-slate-800 text-xs truncate">
+                        <h4 className="font-medium text-gray-800 text-xs truncate">
                           {conversation.topic || conversation.title || 'Untitled Question'}
                         </h4>
                         {conversation.isMainThread && (
@@ -393,7 +393,7 @@ export default function ConversationThreads({
                         )}
                       </div>
                       
-                      <div className="flex items-center space-x-3 mt-1 text-xs text-slate-500">
+                      <div className="flex items-center space-x-3 mt-1 text-xs text-gray-600">
                         <span className="flex items-center space-x-1">
                           <MessageCircle className="w-2 h-2" />
                           <span>{messageCount}</span>
@@ -405,8 +405,16 @@ export default function ConversationThreads({
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-1 flex-shrink-0">
-                    <Badge variant={isMyTurn ? "default" : "outline"} className="text-xs px-1 py-0">
+                  <div className="flex items-center space-x-1 flex-shrink-0 relative z-10">
+                    <Badge 
+                      variant={isMyTurn ? "default" : "outline"} 
+                      className={cn(
+                        "text-xs px-1 py-0",
+                        isMyTurn 
+                          ? "bg-ocean text-white border-ocean" 
+                          : "bg-amber/10 text-amber-800 border-amber/30"
+                      )}
+                    >
                       {isMyTurn ? "Your turn" : "Their turn"}
                     </Badge>
                   </div>
@@ -414,8 +422,8 @@ export default function ConversationThreads({
 
                 {/* Expanded Thread Details */}
                 {isExpanded && (
-                  <div className="mt-3 pt-3 border-t border-slate-100">
-                    <div className="text-xs text-slate-600 space-y-1">
+                  <div className="mt-3 pt-3 border-t border-gray-100 relative z-10">
+                    <div className="text-xs text-gray-600 space-y-1">
                       <div className="flex items-center justify-between">
                         <span>Type: {relationshipType}</span>
                         <span>Status: {conversation.status}</span>
