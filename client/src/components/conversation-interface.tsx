@@ -181,42 +181,40 @@ export default function ConversationInterface({
         "group mb-8 smooth-enter relative",
         isFromCurrentUser ? "ml-12" : "mr-12"
       )}>
-        {/* Paper Sheet */}
+        {/* Parchment Sheet */}
         <div className={cn(
-          "relative bg-gradient-to-br from-amber-50 to-yellow-50/80 p-6 transform transition-all duration-300 hover:scale-[1.02]",
+          "relative bg-gradient-to-br from-amber-50/90 via-yellow-50/70 to-orange-50/60 p-6 transform transition-all duration-300 hover:scale-[1.01]",
           paperRotation,
           paperShadow,
-          "shadow-amber-200/40",
-          "border border-amber-100/60",
-          isFromCurrentUser ? "rounded-tl-3xl rounded-tr-lg rounded-bl-lg rounded-br-3xl" : "rounded-tl-lg rounded-tr-3xl rounded-bl-3xl rounded-br-lg"
-        )}>
-          {/* Paper texture overlay */}
-          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_50%_50%,_rgba(139,69,19,0.1)_0%,_transparent_50%)] pointer-events-none" />
+          "shadow-amber-300/50",
+          "border-0"
+        )}
+        style={{
+          clipPath: isFromCurrentUser 
+            ? "polygon(0% 5%, 5% 0%, 95% 0%, 100% 8%, 100% 92%, 95% 100%, 8% 100%, 0% 95%)"
+            : "polygon(5% 0%, 100% 5%, 100% 95%, 92% 100%, 5% 100%, 0% 92%, 0% 8%, 5% 0%)",
+          filter: 'drop-shadow(2px 4px 8px rgba(139, 69, 19, 0.15))'
+        }}>
+          {/* Aged parchment texture overlay */}
+          <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_at_center,_rgba(160,82,45,0.1)_0%,_rgba(210,180,140,0.05)_50%,_transparent_100%)] pointer-events-none" />
           
-          {/* Subtle ruled lines effect */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none" 
+          {/* Coffee stains and aging effects */}
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
+            <div className="absolute top-4 right-8 w-6 h-6 rounded-full bg-gradient-radial from-amber-300/30 to-transparent"></div>
+            <div className="absolute bottom-6 left-10 w-4 h-4 rounded-full bg-gradient-radial from-amber-400/20 to-transparent"></div>
+            <div className="absolute top-1/3 left-1/4 w-8 h-3 rounded-full bg-gradient-radial from-amber-200/15 to-transparent transform rotate-45"></div>
+          </div>
+          
+          {/* Subtle ruled lines effect - more organic */}
+          <div className="absolute inset-0 opacity-8 pointer-events-none" 
                style={{
-                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 24px, rgba(139,69,19,0.3) 24px, rgba(139,69,19,0.3) 25px)',
+                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 26px, rgba(139,69,19,0.2) 26px, rgba(139,69,19,0.2) 27px)',
                }} />
           
-          {/* Red margin line */}
+          {/* Faded margin line */}
           <div className={cn(
-            "absolute top-0 bottom-0 w-px bg-red-300/60",
+            "absolute top-0 bottom-0 w-px bg-gradient-to-b from-red-300/40 via-red-300/60 to-red-300/30",
             isFromCurrentUser ? "left-12" : "right-12"
-          )} />
-          
-          {/* Three-hole punch effect */}
-          <div className={cn(
-            "absolute top-6 w-3 h-3 rounded-full bg-white shadow-inner border border-slate-200",
-            isFromCurrentUser ? "-left-1.5" : "-right-1.5"
-          )} />
-          <div className={cn(
-            "absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-inner border border-slate-200",
-            isFromCurrentUser ? "-left-1.5" : "-right-1.5"
-          )} />
-          <div className={cn(
-            "absolute bottom-6 w-3 h-3 rounded-full bg-white shadow-inner border border-slate-200",
-            isFromCurrentUser ? "-left-1.5" : "-right-1.5"
           )} />
 
           {/* Journal Header */}
@@ -290,40 +288,35 @@ export default function ConversationInterface({
             </svg>
           </div>
         </div>
-        
-        {/* Paper clip effect for special messages */}
-        {(isFirstMessage || isLastMessage) && (
-          <div className={cn(
-            "absolute -top-2 w-8 h-4 bg-gradient-to-b from-slate-300 to-slate-400 rounded-t-lg border border-slate-400 shadow-sm",
-            isFromCurrentUser ? "-right-2" : "-left-2"
-          )}>
-            <div className="absolute inset-1 bg-gradient-to-b from-slate-200 to-slate-300 rounded-t-md" />
-          </div>
-        )}
       </div>
     );
   };
 
   const TypingIndicator = () => (
     <div className="group mb-8 smooth-enter relative mr-12">
-      {/* Paper Sheet - slightly different for typing */}
-      <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50/80 p-6 transform -rotate-1 shadow-md shadow-blue-200/40 border border-blue-100/60 rounded-tl-lg rounded-tr-3xl rounded-bl-3xl rounded-br-lg transition-all duration-300">
-        {/* Paper texture overlay */}
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_50%_50%,_rgba(59,130,246,0.1)_0%,_transparent_50%)] pointer-events-none" />
+      {/* Parchment Sheet - typing variant */}
+      <div className="relative bg-gradient-to-br from-blue-50/90 via-indigo-50/70 to-purple-50/60 p-6 transform -rotate-1 shadow-md shadow-blue-300/40 transition-all duration-300"
+           style={{
+             clipPath: "polygon(5% 0%, 100% 5%, 100% 95%, 92% 100%, 5% 100%, 0% 92%, 0% 8%, 5% 0%)",
+             filter: 'drop-shadow(2px 4px 8px rgba(59, 130, 246, 0.15))'
+           }}>
+        {/* Aged parchment texture overlay - blue tinted */}
+        <div className="absolute inset-0 opacity-25 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,246,0.08)_0%,_rgba(147,197,253,0.05)_50%,_transparent_100%)] pointer-events-none" />
+        
+        {/* Subtle coffee stains */}
+        <div className="absolute inset-0 opacity-15 pointer-events-none">
+          <div className="absolute top-6 right-10 w-5 h-5 rounded-full bg-gradient-radial from-blue-300/20 to-transparent"></div>
+          <div className="absolute bottom-8 left-8 w-3 h-3 rounded-full bg-gradient-radial from-indigo-400/15 to-transparent"></div>
+        </div>
         
         {/* Subtle ruled lines effect */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none" 
+        <div className="absolute inset-0 opacity-8 pointer-events-none" 
              style={{
-               backgroundImage: 'repeating-linear-gradient(transparent, transparent 24px, rgba(59,130,246,0.3) 24px, rgba(59,130,246,0.3) 25px)',
+               backgroundImage: 'repeating-linear-gradient(transparent, transparent 26px, rgba(59,130,246,0.15) 26px, rgba(59,130,246,0.15) 27px)',
              }} />
         
-        {/* Red margin line */}
-        <div className="absolute top-0 bottom-0 w-px bg-red-300/60 right-12" />
-        
-        {/* Three-hole punch effect */}
-        <div className="absolute top-6 w-3 h-3 rounded-full bg-white shadow-inner border border-slate-200 -right-1.5" />
-        <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-inner border border-slate-200 -right-1.5" />
-        <div className="absolute bottom-6 w-3 h-3 rounded-full bg-white shadow-inner border border-slate-200 -right-1.5" />
+        {/* Faded margin line */}
+        <div className="absolute top-0 bottom-0 w-px bg-gradient-to-b from-red-300/30 via-red-300/50 to-red-300/25 right-12" />
 
         {/* Journal Header */}
         <div className="flex items-start justify-between mb-4 relative z-10 pr-6">
@@ -347,9 +340,8 @@ export default function ConversationInterface({
           </div>
           
           {/* Thinking label */}
-          <div className="px-2 py-1 text-xs transform -rotate-12 relative text-blue-600 bg-blue/10 border border-blue/30 rounded-lg shadow-sm">
+          <div className="px-2 py-1 text-xs font-handwriting transform -rotate-12 relative text-blue-600 bg-blue/10 border border-blue/30 rounded-lg shadow-sm">
             Thinking
-            <div className="absolute w-2 h-2 rotate-45 border-r border-b top-full left-1/2 -translate-x-1/2 -mt-1 border-blue/30 bg-blue/10" />
           </div>
         </div>
 

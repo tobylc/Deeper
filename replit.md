@@ -418,6 +418,9 @@ Changelog:
   * Added paper clips for first/last messages and decorative flourishes throughout
   * Created novel conversation experience completely unlike typical messaging applications
   * Journal entries feel intimate and personal with authentic paper textures and handwritten elements
+  * Removed distracting paper clip elements and perfected parchment aesthetic with organic edges
+  * Enhanced papers with aged textures, coffee stains, and natural color variations for authentic feel
+  * Used CSS clip-path for organic parchment edges instead of perfect geometric shapes
 ```
 
 ## User Preferences
