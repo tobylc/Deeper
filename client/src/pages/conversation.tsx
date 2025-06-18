@@ -11,6 +11,7 @@ import ConversationInterface from "@/components/conversation-interface";
 import ConversationThreads from "@/components/conversation-threads";
 import QuestionSuggestions from "@/components/question-suggestions";
 import ProfileAvatar from "@/components/profile-avatar";
+import OnboardingPopup from "@/components/onboarding-popup";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";

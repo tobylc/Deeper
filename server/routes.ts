@@ -302,6 +302,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Onboarding tracking endpoint
+  app.post("/api/users/mark-onboarding-complete", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      await storage.updateUser(userId, { hasSeenOnboarding: true });
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Mark onboarding complete error:", error);
+      res.status(500).json({ message: "Failed to update onboarding status" });
+    }
+  });
+
   // Get user display name endpoint with enhanced validation
   app.get("/api/users/display-name/:email", 
     rateLimit(100, 60 * 1000), // 100 requests per minute

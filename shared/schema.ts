@@ -42,6 +42,7 @@ export const users = pgTable("users", {
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   subscriptionExpiresAt: timestamp("subscription_expires_at"),
+  hasSeenOnboarding: boolean("has_seen_onboarding").default(false), // One-time onboarding popup tracking
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -16,6 +16,7 @@ export interface IStorage {
   getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   upsertUser(user: InsertUser): Promise<User>;
+  updateUser(userId: string, updates: Partial<InsertUser>): Promise<User | undefined>;
   linkGoogleAccount(userId: string, googleId: string): Promise<User | undefined>;
   updateUserProfileImage(email: string, profileImageUrl: string): Promise<User | undefined>;
   updateUserSubscription(userId: string, subscriptionData: {
