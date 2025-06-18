@@ -92,6 +92,10 @@ export function useWebSocket() {
         handleConnectionUpdate(message.data);
         break;
 
+      case 'conversation_update':
+        handleConversationUpdate(message.data);
+        break;
+
       case 'pong':
         // Response to ping - connection is alive
         break;
@@ -127,6 +131,25 @@ export function useWebSocket() {
 
     // Invalidate connections query to refresh dashboard
     queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
+  };
+
+  const handleConversationUpdate = (data: any) => {
+    if (!data) return;
+
+    console.log('[WebSocket] Conversation update received:', data);
+
+    // Invalidate relevant queries to refresh dashboard and conversation threads
+    queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
+    queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+    
+    if (data.conversationId) {
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
+      
+      // Also invalidate conversation threads for the specific connection
+      queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations/message-counts`] });
+    }
 
     // Show appropriate notification based on status
     if (data.status === 'accepted') {

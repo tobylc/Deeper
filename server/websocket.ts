@@ -144,6 +144,18 @@ export class WebSocketManager {
     });
   }
 
+  public notifyConversationUpdate(email: string, conversationData: {
+    conversationId: number;
+    action: string;
+    relationshipType?: string;
+  }) {
+    this.notifyUser(email, {
+      type: 'conversation_update',
+      data: conversationData,
+      timestamp: new Date().toISOString()
+    });
+  }
+
   public broadcast(data: any) {
     this.clients.forEach((clients) => {
       clients.forEach(client => {

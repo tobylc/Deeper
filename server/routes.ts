@@ -1194,6 +1194,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const conversation = await storage.createConversation(conversationData);
+
+      // Send real-time WebSocket notifications to both participants about new conversation
+      try {
+        const { getWebSocketManager } = await import('./websocket');
+        const wsManager = getWebSocketManager();
+        if (wsManager) {
+          // Notify both participants that a new conversation was created
+          wsManager.notifyConversationUpdate(participant1Email, {
+            conversationId: conversation.id,
+            action: 'conversation_created',
+            relationshipType
+          });
+          
+          if (participant1Email !== participant2Email) {
+            wsManager.notifyConversationUpdate(participant2Email, {
+              conversationId: conversation.id,
+              action: 'conversation_created',
+              relationshipType
+            });
+          }
+        }
+      } catch (error) {
+        console.error('[WEBSOCKET] Failed to send conversation creation notification:', error);
+      }
+
       res.json(conversation);
     } catch (error) {
       console.error("Create conversation error:", error);
@@ -1377,17 +1402,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Don't fail the message sending if notification fails
       }
 
-      // Send real-time WebSocket notification to recipient
+      // Send real-time WebSocket notifications to both participants
       try {
         const { getWebSocketManager } = await import('./websocket');
         const wsManager = getWebSocketManager();
         if (wsManager) {
           const senderName = await storage.getUserDisplayNameByEmail(messageData.senderEmail);
+          
+          // Notify recipient about new message
           wsManager.notifyNewMessage(nextTurn, {
             conversationId,
             senderEmail: messageData.senderEmail,
             senderName,
             messageType: messageData.type,
+            relationshipType: conversation.relationshipType
+          });
+          
+          // Notify sender that their dashboard should refresh (conversation thread updated)
+          wsManager.notifyConversationUpdate(messageData.senderEmail, {
+            conversationId,
+            action: 'message_sent',
             relationshipType: conversation.relationshipType
           });
         }
