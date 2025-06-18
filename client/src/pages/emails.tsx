@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
+import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import { Mail, ExternalLink } from "lucide-react";
 
 interface Email {
@@ -75,9 +76,9 @@ export default function EmailsPage() {
                     <div className="flex-1">
                       <CardTitle className="text-white text-lg mb-2">{email.subject}</CardTitle>
                       <div className="flex items-center gap-3 text-sm text-gray-300">
-                        <span>To: {email.toEmail}</span>
+                        <span>To: <UserDisplayName email={email.toEmail} /></span>
                         <span>•</span>
-                        <span>From: {email.fromEmail}</span>
+                        <span>From: <UserDisplayName email={email.fromEmail} /></span>
                         <span>•</span>
                         <span>{formatDistanceToNow(new Date(email.sentAt), { addSuffix: true })}</span>
                       </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, MessageCircle, Users, Sparkles, CheckCircle } from "lucide-react";
@@ -12,6 +13,13 @@ export default function InvitationLanding() {
   const [inviterEmail, setInviterEmail] = useState<string>("");
   const [relationshipType, setRelationshipType] = useState<string>("");
   const [connectionId, setConnectionId] = useState<string>("");
+
+  // Fetch the inviter's display name using their email
+  const { data: inviterName } = useQuery<string>({
+    queryKey: ['/api/users/display-name', inviterEmail],
+    queryFn: () => fetch(`/api/users/display-name/${encodeURIComponent(inviterEmail)}`).then(res => res.text()),
+    enabled: !!inviterEmail,
+  });
 
   useEffect(() => {
     // Extract invitation details from URL parameters (both query and path formats)
@@ -43,7 +51,7 @@ export default function InvitationLanding() {
   }, []);
 
   const getInviterName = () => {
-    return inviterEmail ? inviterEmail.split('@')[0] : 'someone special';
+    return inviterName || (inviterEmail ? inviterEmail.split('@')[0] : 'someone special');
   };
 
   const getRelationshipDescription = () => {
