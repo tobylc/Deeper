@@ -161,7 +161,7 @@ export default function ConversationInterface({
     );
   };
 
-  const MessageBubble = ({ message, index }: { message: Message; index: number }) => {
+  const JournalEntry = ({ message, index }: { message: Message; index: number }) => {
     const isFromCurrentUser = message.senderEmail === currentUserEmail;
     const userData = getParticipantData(message.senderEmail);
     const isQuestion = message.type === 'question';
@@ -172,120 +172,206 @@ export default function ConversationInterface({
     const isFollowUp = messages.length >= 2 && index >= 2;
     const messageTypeLabel = isFollowUp ? "Follow up" : (isQuestion ? "Question" : "Response");
     
+    // Subtle paper variations for authenticity
+    const paperRotation = isFromCurrentUser ? 'rotate-1' : '-rotate-1';
+    const paperShadow = index % 2 === 0 ? 'shadow-lg' : 'shadow-md';
+    
     return (
       <div className={cn(
-        "group flex items-end space-x-3 mb-6 smooth-enter",
-        isFromCurrentUser ? "flex-row-reverse space-x-reverse" : "flex-row"
+        "group mb-8 smooth-enter relative",
+        isFromCurrentUser ? "ml-12" : "mr-12"
       )}>
-        {/* Avatar */}
-        <div className="flex-shrink-0">
-          <ProfileAvatar
-            email={message.senderEmail}
-            firstName={userData?.firstName ?? undefined}
-            lastName={userData?.lastName ?? undefined}
-            profileImageUrl={userData?.profileImageUrl ?? undefined}
-            size="md"
-            className="shadow-lg border-2 border-white/20"
-          />
-        </div>
-
-        {/* Message Content */}
+        {/* Paper Sheet */}
         <div className={cn(
-          "max-w-md relative",
-          isFromCurrentUser ? "items-end" : "items-start"
+          "relative bg-gradient-to-br from-amber-50 to-yellow-50/80 p-6 transform transition-all duration-300 hover:scale-[1.02]",
+          paperRotation,
+          paperShadow,
+          "shadow-amber-200/40",
+          "border border-amber-100/60",
+          isFromCurrentUser ? "rounded-tl-3xl rounded-tr-lg rounded-bl-lg rounded-br-3xl" : "rounded-tl-lg rounded-tr-3xl rounded-bl-3xl rounded-br-lg"
         )}>
-          {/* Message Type Indicator */}
+          {/* Paper texture overlay */}
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_50%_50%,_rgba(139,69,19,0.1)_0%,_transparent_50%)] pointer-events-none" />
+          
+          {/* Subtle ruled lines effect */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none" 
+               style={{
+                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 24px, rgba(139,69,19,0.3) 24px, rgba(139,69,19,0.3) 25px)',
+               }} />
+          
+          {/* Red margin line */}
           <div className={cn(
-            "flex items-center space-x-2 mb-2",
-            isFromCurrentUser ? "justify-end" : "justify-start"
+            "absolute top-0 bottom-0 w-px bg-red-300/60",
+            isFromCurrentUser ? "left-12" : "right-12"
+          )} />
+          
+          {/* Three-hole punch effect */}
+          <div className={cn(
+            "absolute top-6 w-3 h-3 rounded-full bg-white shadow-inner border border-slate-200",
+            isFromCurrentUser ? "-left-1.5" : "-right-1.5"
+          )} />
+          <div className={cn(
+            "absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-inner border border-slate-200",
+            isFromCurrentUser ? "-left-1.5" : "-right-1.5"
+          )} />
+          <div className={cn(
+            "absolute bottom-6 w-3 h-3 rounded-full bg-white shadow-inner border border-slate-200",
+            isFromCurrentUser ? "-left-1.5" : "-right-1.5"
+          )} />
+
+          {/* Journal Header */}
+          <div className={cn(
+            "flex items-start justify-between mb-4 relative z-10",
+            isFromCurrentUser ? "pl-6" : "pr-6"
           )}>
-            <Badge 
-              variant={isFollowUp ? "outline" : (isQuestion ? "default" : "secondary")} 
-              className={cn(
-                "text-xs font-medium shadow-sm",
-                isFollowUp
-                  ? "bg-gradient-to-r from-slate-100 to-slate-50 text-slate-700 border-slate-300"
-                  : isQuestion 
-                    ? "bg-gradient-to-r from-ocean to-ocean/80 text-white border-0" 
-                    : "bg-gradient-to-r from-amber/20 to-amber/10 text-amber-800 border-amber/30"
-              )}
-            >
-              {isFollowUp ? (
-                <>
-                  <ArrowRight className="h-3 w-3 mr-1" />
-                  Follow up
-                </>
-              ) : isQuestion ? (
-                <>
-                  <MessageCircle className="h-3 w-3 mr-1" />
-                  Question
-                </>
-              ) : (
-                <>
-                  <QuotesIcon size="sm" className="mr-1" />
-                  Response
-                </>
-              )}
-            </Badge>
-            <span className="text-xs text-slate-500 font-medium">
-              <UserDisplayName email={message.senderEmail} />
-            </span>
+            <div className="flex items-center space-x-3">
+              <ProfileAvatar
+                email={message.senderEmail}
+                firstName={userData?.firstName ?? undefined}
+                lastName={userData?.lastName ?? undefined}
+                profileImageUrl={userData?.profileImageUrl ?? undefined}
+                size="sm"
+                className="shadow-md border-2 border-white"
+              />
+              <div>
+                <div className="text-sm font-semibold text-slate-800 font-serif">
+                  <UserDisplayName email={message.senderEmail} />
+                </div>
+                <div className="text-xs text-slate-600 italic">
+                  {formatDistanceToNow(new Date(message.createdAt!), { addSuffix: true })}
+                </div>
+              </div>
+            </div>
+            
+            {/* Message type label - handwritten style */}
+            <div className={cn(
+              "px-2 py-1 text-xs font-handwriting transform -rotate-12 relative",
+              isFollowUp
+                ? "text-slate-600 bg-slate-100/50 border border-slate-200"
+                : isQuestion 
+                  ? "text-ocean bg-ocean/10 border border-ocean/30" 
+                  : "text-amber-700 bg-amber/20 border border-amber/40",
+              "rounded-lg shadow-sm"
+            )}>
+              {isFollowUp ? "Follow up" : isQuestion ? "Question" : "Response"}
+              {/* Small arrow pointing to content */}
+              <div className={cn(
+                "absolute w-2 h-2 rotate-45 border-r border-b",
+                "top-full left-1/2 -translate-x-1/2 -mt-1",
+                isFollowUp ? "border-slate-200 bg-slate-100/50" : isQuestion ? "border-ocean/30 bg-ocean/10" : "border-amber/40 bg-amber/20"
+              )} />
+            </div>
           </div>
 
-          {/* Message Bubble */}
+          {/* Journal Content - handwritten style */}
           <div className={cn(
-            "relative p-4 rounded-2xl shadow-lg border-0",
-            isFromCurrentUser 
-              ? "bg-ocean text-white rounded-br-md"
-              : "bg-slate-600 text-white rounded-bl-md",
-            isFirstMessage && "animate-in slide-in-from-bottom-4 duration-500",
-            isLastMessage && "ring-2 ring-ocean/20 ring-offset-2"
+            "relative z-10 text-slate-800 leading-relaxed font-serif text-base",
+            isFromCurrentUser ? "pl-6" : "pr-6"
           )}>
-            {/* Content */}
-            <div className="text-sm leading-relaxed text-white font-medium">
-              {message.content}
+            <div className="relative">
+              {/* Subtle ink bleed effect */}
+              <div className="absolute -inset-1 opacity-5 bg-gradient-to-r from-blue-600 to-indigo-600 blur-sm pointer-events-none" />
+              
+              {/* Main text content */}
+              <div className="relative italic text-slate-700 whitespace-pre-wrap">
+                {message.content}
+              </div>
             </div>
-
-            {/* Timestamp */}
-            <div className="flex items-center space-x-1 mt-3 text-xs text-white/80">
-              <Clock className="h-3 w-3" />
-              <span>{formatDistanceToNow(new Date(message.createdAt!), { addSuffix: true })}</span>
-            </div>
-
-            {/* Message bubble tail */}
-            <div className={cn(
-              "absolute w-3 h-3 rotate-45",
-              isFromCurrentUser 
-                ? "bg-ocean bottom-0 right-0 translate-x-1 translate-y-1" 
-                : "bg-slate-600 bottom-0 left-0 -translate-x-1 translate-y-1"
-            )} />
+          </div>
+          
+          {/* Decorative flourish */}
+          <div className={cn(
+            "absolute bottom-2 opacity-30",
+            isFromCurrentUser ? "right-4" : "left-4"
+          )}>
+            <svg width="24" height="16" viewBox="0 0 24 16" className="text-amber-600">
+              <path d="M2 8c0 0 4-6 10-6s10 6 10 6-4 6-10 6S2 8 2 8z" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              <path d="M8 8h8M6 6l2 2-2 2M18 6l-2 2 2 2" stroke="currentColor" strokeWidth="0.3" opacity="0.6" />
+            </svg>
           </div>
         </div>
+        
+        {/* Paper clip effect for special messages */}
+        {(isFirstMessage || isLastMessage) && (
+          <div className={cn(
+            "absolute -top-2 w-8 h-4 bg-gradient-to-b from-slate-300 to-slate-400 rounded-t-lg border border-slate-400 shadow-sm",
+            isFromCurrentUser ? "-right-2" : "-left-2"
+          )}>
+            <div className="absolute inset-1 bg-gradient-to-b from-slate-200 to-slate-300 rounded-t-md" />
+          </div>
+        )}
       </div>
     );
   };
 
   const TypingIndicator = () => (
-    <div className="flex items-end space-x-3 mb-6">
-      <ProfileAvatar
-        email={otherParticipantEmail}
-        firstName={otherUser?.firstName ?? undefined}
-        lastName={otherUser?.lastName ?? undefined}
-        profileImageUrl={otherUser?.profileImageUrl ?? undefined}
-        size="md"
-        className="shadow-lg border-2 border-white/20"
-      />
-      
-      <div className="bg-slate-600 p-4 rounded-2xl rounded-bl-md shadow-lg">
-        <div className="flex items-center space-x-3">
-          <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+    <div className="group mb-8 smooth-enter relative mr-12">
+      {/* Paper Sheet - slightly different for typing */}
+      <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50/80 p-6 transform -rotate-1 shadow-md shadow-blue-200/40 border border-blue-100/60 rounded-tl-lg rounded-tr-3xl rounded-bl-3xl rounded-br-lg transition-all duration-300">
+        {/* Paper texture overlay */}
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_50%_50%,_rgba(59,130,246,0.1)_0%,_transparent_50%)] pointer-events-none" />
+        
+        {/* Subtle ruled lines effect */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none" 
+             style={{
+               backgroundImage: 'repeating-linear-gradient(transparent, transparent 24px, rgba(59,130,246,0.3) 24px, rgba(59,130,246,0.3) 25px)',
+             }} />
+        
+        {/* Red margin line */}
+        <div className="absolute top-0 bottom-0 w-px bg-red-300/60 right-12" />
+        
+        {/* Three-hole punch effect */}
+        <div className="absolute top-6 w-3 h-3 rounded-full bg-white shadow-inner border border-slate-200 -right-1.5" />
+        <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-inner border border-slate-200 -right-1.5" />
+        <div className="absolute bottom-6 w-3 h-3 rounded-full bg-white shadow-inner border border-slate-200 -right-1.5" />
+
+        {/* Journal Header */}
+        <div className="flex items-start justify-between mb-4 relative z-10 pr-6">
+          <div className="flex items-center space-x-3">
+            <ProfileAvatar
+              email={otherParticipantEmail}
+              firstName={otherUser?.firstName ?? undefined}
+              lastName={otherUser?.lastName ?? undefined}
+              profileImageUrl={otherUser?.profileImageUrl ?? undefined}
+              size="sm"
+              className="shadow-md border-2 border-white"
+            />
+            <div>
+              <div className="text-sm font-semibold text-slate-800 font-serif">
+                <UserDisplayName email={otherParticipantEmail} />
+              </div>
+              <div className="text-xs text-slate-600 italic">
+                writing...
+              </div>
+            </div>
           </div>
-          <span className="text-sm text-white font-medium">
-            <UserDisplayName email={otherParticipantEmail} /> is thinking...
-          </span>
+          
+          {/* Thinking label */}
+          <div className="px-2 py-1 text-xs transform -rotate-12 relative text-blue-600 bg-blue/10 border border-blue/30 rounded-lg shadow-sm">
+            Thinking
+            <div className="absolute w-2 h-2 rotate-45 border-r border-b top-full left-1/2 -translate-x-1/2 -mt-1 border-blue/30 bg-blue/10" />
+          </div>
+        </div>
+
+        {/* Animated writing content */}
+        <div className="relative z-10 text-slate-800 leading-relaxed font-serif text-base pr-6">
+          <div className="relative">
+            {/* Animated dots simulating writing */}
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+              <span className="text-sm text-slate-500 italic ml-2">composing thoughts...</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Decorative flourish */}
+        <div className="absolute bottom-2 left-4 opacity-30">
+          <svg width="24" height="16" viewBox="0 0 24 16" className="text-blue-600">
+            <path d="M2 8c0 0 4-6 10-6s10 6 10 6-4 6-10 6S2 8 2 8z" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <path d="M8 8h8M6 6l2 2-2 2M18 6l-2 2 2 2" stroke="currentColor" strokeWidth="0.3" opacity="0.6" />
+          </svg>
         </div>
       </div>
     </div>
@@ -339,14 +425,23 @@ export default function ConversationInterface({
         </div>
       </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-br from-slate-50/30 via-white/50 to-slate-50/30 min-h-0">
+      {/* Messages Container - Journal Workspace */}
+      <div className="flex-1 overflow-y-auto p-8 min-h-0 relative bg-gradient-to-br from-amber-50/40 via-yellow-50/30 to-orange-50/20">
+        {/* Wood desk texture background */}
+        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(ellipse_at_center,_rgba(139,69,19,0.4)_0%,_transparent_70%)]" />
+        
+        {/* Subtle paper scattered texture */}
+        <div className="absolute inset-0 opacity-10" 
+             style={{
+               backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4a574' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+             }} />
+
         {messages.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="space-y-0">
+          <div className="space-y-6 relative z-10">
             {messages.map((message, index) => (
-              <MessageBubble key={message.id} message={message} index={index} />
+              <JournalEntry key={message.id} message={message} index={index} />
             ))}
             
             {/* Typing Indicator */}

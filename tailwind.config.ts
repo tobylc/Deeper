@@ -64,6 +64,10 @@ export default {
           ring: "var(--sidebar-ring)",
         },
       },
+      fontFamily: {
+        'handwriting': ['Kalam', 'cursive'],
+        'serif': ['Georgia', 'serif'],
+      },
       keyframes: {
         "accordion-down": {
           from: {
