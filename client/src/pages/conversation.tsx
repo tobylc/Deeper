@@ -352,6 +352,8 @@ export default function ConversationPage() {
           <div className={`lg:col-span-1 ${showThreadsView ? 'hidden lg:block' : 'block'} h-full`}>
             <QuestionSuggestions 
               relationshipType={conversation.relationshipType}
+              userRole={currentUserRole}
+              otherUserRole={otherUserRole}
               onQuestionSelect={handleQuestionSelect}
               isMyTurn={isMyTurn}
               otherParticipant={otherParticipant}

@@ -8,6 +8,7 @@ import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import { getQuestionsByCategory } from "@/lib/questions";
+import { getRoleSpecificQuestions, getGeneralRelationshipQuestions } from "@shared/role-specific-questions";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -16,6 +17,8 @@ import { useAuth } from "@/hooks/useAuth";
 
 interface QuestionSuggestionsProps {
   relationshipType: string;
+  userRole: string;
+  otherUserRole: string;
   onQuestionSelect: (question: string) => void;
   isMyTurn: boolean;
   otherParticipant: string;
@@ -23,7 +26,7 @@ interface QuestionSuggestionsProps {
   onNewThreadCreated: (conversationId: number) => void;
 }
 
-export default function QuestionSuggestions({ relationshipType, onQuestionSelect, isMyTurn, otherParticipant, connectionId, onNewThreadCreated }: QuestionSuggestionsProps) {
+export default function QuestionSuggestions({ relationshipType, userRole, otherUserRole, onQuestionSelect, isMyTurn, otherParticipant, connectionId, onNewThreadCreated }: QuestionSuggestionsProps) {
   const [currentSet, setCurrentSet] = useState(0);
   const [aiQuestions, setAiQuestions] = useState<string[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -87,7 +90,11 @@ export default function QuestionSuggestions({ relationshipType, onQuestionSelect
     createThreadMutation.mutate(newQuestionText.trim());
   };
   
-  const questions = getQuestionsByCategory(relationshipType);
+  // Get role-specific questions for the current user
+  const roleSpecificQuestions = getRoleSpecificQuestions(relationshipType, userRole);
+  const fallbackQuestions = getGeneralRelationshipQuestions(relationshipType);
+  const questions = roleSpecificQuestions.length > 0 ? roleSpecificQuestions : fallbackQuestions;
+  
   const questionsPerSet = 3;
   const currentQuestions = questions.slice(currentSet * questionsPerSet, (currentSet + 1) * questionsPerSet);
   
