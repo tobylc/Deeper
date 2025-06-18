@@ -1,7 +1,7 @@
 import { emailService, EmailService } from "./email";
 import { smsService, SMSService } from "./sms";
 import { Connection } from "../shared/schema";
-import { getUserByEmail, getUserDisplayNameByEmail } from "./storage";
+import { storage } from "./storage";
 
 export interface NotificationParams {
   recipientEmail: string;
@@ -18,7 +18,7 @@ export class UnifiedNotificationService {
   ) {}
 
   async sendConnectionInvitation(connection: Connection): Promise<void> {
-    const invitee = await getUserByEmail(connection.inviteeEmail);
+    const invitee = await storage.getUserByEmail(connection.inviteeEmail);
     
     // Always send email notification for invitations
     await this.emailService.sendConnectionInvitation(connection);
@@ -29,14 +29,14 @@ export class UnifiedNotificationService {
       const connectionWithPhone = {
         ...connection,
         inviteePhone: invitee.phoneNumber,
-        inviterName: await getUserDisplayNameByEmail(connection.inviterEmail)
+        inviterName: await storage.getUserDisplayNameByEmail(connection.inviterEmail)
       };
       await this.smsService.sendConnectionInvitation(connectionWithPhone);
     }
   }
 
   async sendConnectionAccepted(connection: Connection): Promise<void> {
-    const inviter = await getUserByEmail(connection.inviterEmail);
+    const inviter = await storage.getUserByEmail(connection.inviterEmail);
     
     // Always send email notification
     await this.emailService.sendConnectionAccepted(connection);
@@ -47,14 +47,14 @@ export class UnifiedNotificationService {
       const connectionWithPhone = {
         ...connection,
         inviterPhone: inviter.phoneNumber,
-        inviteeName: await getUserDisplayNameByEmail(connection.inviteeEmail)
+        inviteeName: await storage.getUserDisplayNameByEmail(connection.inviteeEmail)
       };
       await this.smsService.sendConnectionAccepted(connectionWithPhone);
     }
   }
 
   async sendConnectionDeclined(connection: Connection): Promise<void> {
-    const inviter = await getUserByEmail(connection.inviterEmail);
+    const inviter = await storage.getUserByEmail(connection.inviterEmail);
     
     // Always send email notification
     await this.emailService.sendConnectionDeclined(connection);
@@ -65,15 +65,15 @@ export class UnifiedNotificationService {
       const connectionWithPhone = {
         ...connection,
         inviterPhone: inviter.phoneNumber,
-        inviteeName: await getUserDisplayNameByEmail(connection.inviteeEmail)
+        inviteeName: await storage.getUserDisplayNameByEmail(connection.inviteeEmail)
       };
       await this.smsService.sendConnectionDeclined(connectionWithPhone);
     }
   }
 
   async sendTurnNotification(params: NotificationParams): Promise<void> {
-    const recipient = await getUserByEmail(params.recipientEmail);
-    const senderName = await getUserDisplayNameByEmail(params.senderEmail);
+    const recipient = await storage.getUserByEmail(params.recipientEmail);
+    const senderName = await storage.getUserDisplayNameByEmail(params.senderEmail);
     
     // Email notification parameters
     const emailParams = {

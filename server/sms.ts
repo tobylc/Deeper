@@ -24,7 +24,7 @@ export interface SMSService {
 }
 
 export class ConsoleSMSService implements SMSService {
-  async sendConnectionInvitation(connection: Connection): Promise<void> {
+  async sendConnectionInvitation(connection: ConnectionWithSMS): Promise<void> {
     console.log('📱 SMS - Connection Invitation:', {
       to: connection.inviteePhone,
       from: connection.inviterEmail,
@@ -33,7 +33,7 @@ export class ConsoleSMSService implements SMSService {
     });
   }
 
-  async sendConnectionAccepted(connection: Connection): Promise<void> {
+  async sendConnectionAccepted(connection: ConnectionWithSMS): Promise<void> {
     console.log('📱 SMS - Connection Accepted:', {
       to: connection.inviterPhone,
       invitee: connection.inviteeEmail,
@@ -41,7 +41,7 @@ export class ConsoleSMSService implements SMSService {
     });
   }
 
-  async sendConnectionDeclined(connection: Connection): Promise<void> {
+  async sendConnectionDeclined(connection: ConnectionWithSMS): Promise<void> {
     console.log('📱 SMS - Connection Declined:', {
       to: connection.inviterPhone,
       invitee: connection.inviteeEmail,

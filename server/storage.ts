@@ -297,3 +297,7 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
+
+// Export individual functions for convenience
+export const getUserByEmail = (email: string) => storage.getUserByEmail(email);
+export const getUserDisplayNameByEmail = (email: string) => storage.getUserDisplayNameByEmail(email);
