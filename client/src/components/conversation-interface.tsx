@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, ArrowRight, Sparkles, Clock, Send, Plus } from "lucide-react";
+import { MessageCircle, ArrowRight, Sparkles, Clock, Send, Plus, ChevronDown } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
 import type { Message, User } from "@shared/schema";
@@ -11,6 +11,7 @@ import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import ProfileAvatar from "@/components/profile-avatar";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 interface ConversationInterfaceProps {
   messages: Message[];
@@ -41,6 +42,8 @@ export default function ConversationInterface({
   isSending,
   nextMessageType
 }: ConversationInterfaceProps) {
+  const [showFullHistory, setShowFullHistory] = useState(false);
+
   // Fetch user data for profile avatars
   const { data: currentUser } = useQuery<User>({
     queryKey: [`/api/users/by-email/${currentUserEmail}`],
@@ -307,9 +310,9 @@ export default function ConversationInterface({
           />
         ))}
         
-        {/* Top visible paper with message count */}
+        {/* Top visible paper with message count - clickable */}
         <div
-          className="relative bg-gradient-to-br from-white via-gray-50/20 to-amber-50/10 border border-gray-200/40 rounded-sm shadow-lg p-4"
+          className="relative bg-gradient-to-br from-white via-gray-50/20 to-amber-50/10 border border-gray-200/40 rounded-sm shadow-lg p-4 cursor-pointer hover:shadow-xl transition-all duration-200 hover:scale-[1.02]"
           style={{
             transform: `translateX(${Math.min(messages.length, 3) * 2}px) translateY(${Math.min(messages.length, 3) * 2}px)`,
             zIndex: 15,
@@ -324,6 +327,7 @@ export default function ConversationInterface({
             filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.08))',
             backdropFilter: 'blur(0.5px)'
           }}
+          onClick={() => setShowFullHistory(!showFullHistory)}
         >
           {/* Subtle paper texture */}
           <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -341,8 +345,9 @@ export default function ConversationInterface({
             <div className="text-sm text-gray-600 font-serif italic">
               {messages.length} earlier {messages.length === 1 ? 'exchange' : 'exchanges'}
             </div>
-            <div className="text-xs text-gray-500 mt-1">
-              Click to expand conversation history
+            <div className="text-xs text-gray-500 mt-1 flex items-center justify-center space-x-1">
+              <span>{showFullHistory ? 'Click to collapse' : 'Click to expand'} conversation history</span>
+              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${showFullHistory ? 'rotate-180' : ''}`} />
             </div>
           </div>
         </div>
@@ -484,19 +489,34 @@ export default function ConversationInterface({
           <EmptyState />
         ) : (
           <div className="space-y-6 relative z-10">
-            {/* Show stacked papers when 4+ messages */}
-            {messages.length >= 4 && (
+            {/* Show stacked papers when 4+ messages and not expanded */}
+            {messages.length >= 4 && !showFullHistory && (
               <StackedPapers messages={messages.slice(0, -2)} />
             )}
             
-            {/* Show either all messages (if <4) or just the latest 2 (if 4+) */}
-            {(messages.length >= 4 ? messages.slice(-2) : messages).map((message, index) => (
-              <JournalEntry 
-                key={message.id} 
-                message={message} 
-                index={messages.length >= 4 ? messages.length - 2 + index : index} 
-              />
-            ))}
+            {/* Show messages based on state */}
+            {(() => {
+              if (messages.length < 4) {
+                // Show all messages if less than 4
+                return messages.map((message, index) => (
+                  <JournalEntry key={message.id} message={message} index={index} />
+                ));
+              } else if (showFullHistory) {
+                // Show all messages when expanded
+                return messages.map((message, index) => (
+                  <JournalEntry key={message.id} message={message} index={index} />
+                ));
+              } else {
+                // Show only latest 2 when collapsed
+                return messages.slice(-2).map((message, index) => (
+                  <JournalEntry 
+                    key={message.id} 
+                    message={message} 
+                    index={messages.length - 2 + index} 
+                  />
+                ));
+              }
+            })()}
             
             {/* Typing Indicator */}
             {messages.length > 0 && messages[messages.length - 1]?.type === 'question' && 
