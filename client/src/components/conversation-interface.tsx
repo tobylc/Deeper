@@ -562,14 +562,14 @@ export default function ConversationInterface({
 
       {/* Beautiful Waiting State */}
       {!isMyTurn && (
-        <div className="border-t border-amber/20 p-6 bg-gradient-to-br from-white via-amber-50/20 to-amber/5 flex-shrink-0 relative"
+        <div className="border-t border-ocean/20 p-6 bg-gradient-to-br from-white via-ocean/5 to-ocean/8 flex-shrink-0 relative"
              style={{
                background: `
                  linear-gradient(135deg, 
                    rgba(255,255,255,0.98) 0%, 
-                   rgba(255,251,235,0.96) 30%, 
-                   rgba(215,160,135,0.08) 70%, 
-                   rgba(215,160,135,0.12) 100%
+                   rgba(239,246,255,0.96) 30%, 
+                   rgba(79,172,254,0.08) 70%, 
+                   rgba(79,172,254,0.12) 100%
                  )
                `,
                filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.06))',
@@ -594,31 +594,36 @@ export default function ConversationInterface({
                }} />
 
           <div className="relative z-10">
-            {/* Elegant waiting parchment */}
-            <div className="relative bg-gradient-to-br from-white to-yellow-50/60 p-6 border border-amber-100/60 shadow-md transform rotate-0 transition-transform duration-300 rounded-lg max-w-md mx-auto"
+            {/* Elegant waiting paper with ocean blue accents */}
+            <div className="relative bg-gradient-to-br from-white via-ocean/8 to-ocean/12 p-6 border border-ocean/20 shadow-md rounded-sm max-w-md mx-auto"
                  style={{
-                   clipPath: "polygon(5% 0%, 100% 3%, 97% 100%, 0% 95%)",
-                   filter: 'drop-shadow(2px 4px 8px rgba(139, 69, 19, 0.15))'
+                   background: `
+                     linear-gradient(135deg, 
+                       rgba(255,255,255,0.98) 0%, 
+                       rgba(239,246,255,0.96) 30%, 
+                       rgba(79,172,254,0.12) 70%, 
+                       rgba(79,172,254,0.15) 100%
+                     )
+                   `,
+                   filter: 'drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.08))',
+                   backdropFilter: 'blur(0.5px)'
                  }}>
-              {/* Aged parchment texture */}
-              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_rgba(160,82,45,0.08)_0%,_rgba(210,180,140,0.05)_50%,_transparent_100%)] pointer-events-none rounded-lg" />
-              
-              {/* Subtle aging stains */}
+              {/* Subtle paper texture */}
               <div className="absolute inset-0 opacity-15 pointer-events-none">
-                <div className="absolute top-4 right-6 w-4 h-4 rounded-full bg-gradient-radial from-amber-300/20 to-transparent"></div>
-                <div className="absolute bottom-4 left-8 w-3 h-3 rounded-full bg-gradient-radial from-amber-400/15 to-transparent"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
               </div>
               
               {/* Red margin line */}
-              <div className="absolute top-0 bottom-0 w-px bg-gradient-to-b from-red-300/40 via-red-300/60 to-red-300/30 left-8" />
+              <div className="absolute top-0 bottom-0 w-px bg-red-400/40 left-8" />
               
-              {/* Ruled lines background */}
-              <div className="absolute inset-0 opacity-12 pointer-events-none rounded-lg" 
+              {/* Very subtle ruled lines */}
+              <div className="absolute inset-0 opacity-25 pointer-events-none" 
                    style={{
-                     backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(139,69,19,0.3) 23px, rgba(139,69,19,0.3) 24px)',
+                     backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(156,163,175,0.12) 23px, rgba(156,163,175,0.12) 24px)',
                    }} />
 
-              <div className="pl-4 text-center space-y-4">
+              <div className="pl-4 text-center space-y-4 relative z-10">
                 {/* Elegant waiting message */}
                 <div className="flex items-center justify-center space-x-3">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ocean/20 to-ocean/10 flex items-center justify-center border border-ocean/30">
@@ -628,18 +633,18 @@ export default function ConversationInterface({
                       <div className="w-1.5 h-1.5 bg-ocean rounded-full animate-pulse" style={{animationDelay: '0.6s'}}></div>
                     </div>
                   </div>
-                  <div className="text-slate-700">
+                  <div className="text-gray-700">
                     <div className="text-base font-serif italic">
                       Waiting for <UserDisplayName email={otherParticipantEmail} />
                     </div>
-                    <div className="text-sm text-slate-600 font-handwriting">
+                    <div className="text-sm text-gray-600">
                       to finish writing...
                     </div>
                   </div>
                 </div>
                 
                 {/* Gentle explanation */}
-                <div className="text-xs text-slate-500 italic font-serif leading-relaxed">
+                <div className="text-xs text-gray-600 italic font-serif leading-relaxed">
                   Take a moment to reflect while they craft their response. 
                   <br />
                   You'll be notified when it's your turn to continue the conversation.
@@ -647,7 +652,7 @@ export default function ConversationInterface({
                 
                 {/* Decorative flourish */}
                 <div className="flex justify-center pt-2">
-                  <svg width="32" height="20" viewBox="0 0 32 20" className="text-amber-600 opacity-30">
+                  <svg width="32" height="20" viewBox="0 0 32 20" className="text-ocean opacity-30">
                     <path d="M2 10c0 0 6-8 14-8s14 8 14 8-6 8-14 8S2 10 2 10z" fill="none" stroke="currentColor" strokeWidth="0.5" />
                     <path d="M10 10h12M8 8l2 2-2 2M24 8l-2 2 2 2" stroke="currentColor" strokeWidth="0.3" opacity="0.7" />
                   </svg>
