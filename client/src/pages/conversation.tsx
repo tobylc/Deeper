@@ -10,10 +10,11 @@ import { ArrowLeft, Send, Users, Clock, MessageCircle, Grid3X3 } from "lucide-re
 import ConversationInterface from "@/components/conversation-interface";
 import ConversationThreads from "@/components/conversation-threads";
 import QuestionSuggestions from "@/components/question-suggestions";
+import ProfileAvatar from "@/components/profile-avatar";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
-import type { Conversation, Message, Connection } from "@shared/schema";
+import type { Conversation, Message, Connection, User } from "@shared/schema";
 
 export default function ConversationPage() {
   const { user } = useAuth();
@@ -48,6 +49,13 @@ export default function ConversationPage() {
     enabled: !!(selectedConversationId || id) && !!user,
   });
 
+  // Determine other participant after conversation is loaded
+  const otherParticipant = conversation && user?.email 
+    ? (conversation.participant1Email === user.email 
+        ? conversation.participant2Email 
+        : conversation.participant1Email)
+    : '';
+
   // Get connection info for threading
   const { data: connection } = useQuery<Connection>({
     queryKey: [`/api/connections/${conversation?.connectionId}`],
@@ -56,6 +64,25 @@ export default function ConversationPage() {
       return response.json();
     },
     enabled: !!conversation?.connectionId && !!user,
+  });
+
+  // Get user data for both participants
+  const { data: currentUserData } = useQuery<User>({
+    queryKey: [`/api/users/by-email/${user?.email}`],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/users/by-email/${user?.email}`);
+      return response.json();
+    },
+    enabled: !!user?.email,
+  });
+
+  const { data: otherUserData } = useQuery<User>({
+    queryKey: [`/api/users/by-email/${otherParticipant}`],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/users/by-email/${otherParticipant}`);
+      return response.json();
+    },
+    enabled: !!otherParticipant,
   });
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
@@ -143,10 +170,6 @@ export default function ConversationPage() {
     );
   }
 
-  const otherParticipant = conversation.participant1Email === user.email 
-    ? conversation.participant2Email 
-    : conversation.participant1Email;
-  
   // Correct turn logic: inviter (participant1) always starts the conversation
   const isMyTurn = conversation.currentTurn === user.email;
   
@@ -190,14 +213,29 @@ export default function ConversationPage() {
             </Button>
             
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
-                <Users className="text-white w-4 h-4" />
+              <div className="flex -space-x-2">
+                <ProfileAvatar
+                  email={user?.email || ''}
+                  firstName={currentUserData?.firstName}
+                  lastName={currentUserData?.lastName}
+                  profileImageUrl={currentUserData?.profileImageUrl}
+                  size="sm"
+                  className="border-2 border-white shadow-md z-10"
+                />
+                <ProfileAvatar
+                  email={otherParticipant}
+                  firstName={otherUserData?.firstName}
+                  lastName={otherUserData?.lastName}
+                  profileImageUrl={otherUserData?.profileImageUrl}
+                  size="sm"
+                  className="border-2 border-white shadow-md"
+                />
               </div>
               <div>
-                <div className="font-semibold text-darkslate text-sm">
-                  {user.firstName || user.email?.split('@')[0] || 'You'} & <UserDisplayName email={otherParticipant} />
+                <div className="font-semibold text-slate-800 text-sm">
+                  {currentUserData?.firstName || user?.firstName || user?.email?.split('@')[0] || 'You'} & <UserDisplayName email={otherParticipant} />
                 </div>
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-slate-600">
                   {conversation.relationshipType}
                 </div>
               </div>
