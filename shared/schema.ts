@@ -52,6 +52,8 @@ export const connections = pgTable("connections", {
   inviterEmail: text("inviter_email").notNull(),
   inviteeEmail: text("invitee_email").notNull(),
   relationshipType: text("relationship_type").notNull(),
+  inviterRole: text("inviter_role").notNull(), // e.g., "Father", "Mother", "Friend", "Boyfriend"
+  inviteeRole: text("invitee_role").notNull(), // e.g., "Son", "Daughter", "Friend", "Girlfriend"
   status: text("status").notNull(), // 'pending', 'accepted', 'declined'
   personalMessage: text("personal_message"),
   inviterSubscriptionTier: text("inviter_subscription_tier").default("free"), // tier when invitation was sent
@@ -123,6 +125,8 @@ export const insertConnectionSchema = createInsertSchema(connections).pick({
   inviterEmail: true,
   inviteeEmail: true,
   relationshipType: true,
+  inviterRole: true,
+  inviteeRole: true,
   personalMessage: true,
   inviterSubscriptionTier: true,
 }).extend({
