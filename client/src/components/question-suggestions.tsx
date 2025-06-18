@@ -108,7 +108,12 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
       const response = await fetch('/api/ai/generate-questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ relationshipType, count: 3 })
+        body: JSON.stringify({ 
+          relationshipType, 
+          userRole,
+          otherUserRole,
+          count: 3 
+        })
       });
       
       if (response.ok) {

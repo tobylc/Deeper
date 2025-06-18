@@ -1629,7 +1629,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     isAuthenticated, 
     async (req: any, res) => {
     try {
-      const { relationshipType, count = 3 } = req.body;
+      const { relationshipType, userRole, otherUserRole, count = 3 } = req.body;
       
       if (!relationshipType) {
         return res.status(400).json({ message: "Relationship type is required" });
@@ -1638,52 +1638,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate count
       const questionCount = Math.min(Math.max(parseInt(count) || 3, 1), 5);
       
-      // Generate context-specific questions using a simple algorithm
+      // Generate role-specific questions using a simple algorithm
       // In production, this would use OpenAI API
-      const questionTemplates = {
-        "Parent-Child": [
-          "What's something you've learned about yourself recently that you'd like to share?",
-          "When you think about your future, what excites you most?",
-          "What's a challenge you're facing that we could work through together?",
-          "What's something you wish I understood better about your world?",
-          "If you could teach me one thing, what would it be?",
-          "What's a memory of ours that always makes you smile?",
-          "How do you think we've both grown in the past year?",
-          "What's something you're proud of that maybe I don't know about?"
-        ],
-        "Romantic Partners": [
-          "What's something new you'd like us to experience together?",
-          "When do you feel most connected to me?",
-          "What's a dream you have for our relationship?",
-          "How can I better support you in your goals?",
-          "What's something you appreciate about our relationship that you don't say often?",
-          "If we could go anywhere together, where would you choose and why?",
-          "What's something about our future that you're most excited about?",
-          "How do you think we've grown stronger together recently?"
-        ],
-        "Friends": [
-          "What's the most important lesson life has taught you lately?",
-          "If you could change one thing about your current situation, what would it be?",
-          "What's something you're working on that you'd like support with?",
-          "What adventure should we plan together?",
-          "How has our friendship changed or deepened over time?",
-          "What's something you've been thinking about a lot recently?",
-          "If you could have any superpower for a day, what would you do?",
-          "What's the best advice someone has given you this year?"
-        ],
-        "Siblings": [
-          "What's your favorite memory of us growing up?",
-          "How do you think being siblings has shaped who we are?",
-          "What family tradition means the most to you?",
-          "What's something you've always wanted to tell me but never have?",
-          "How do you think we're similar and different from our parents?",
-          "What's something you hope our family continues to do?",
-          "If we could relive one day from our childhood, which would you choose?",
-          "What's something you've learned from watching me?"
-        ]
+      const roleSpecificTemplates = {
+        "Parent-Child": {
+          "Father": [
+            "What's something you've learned about yourself recently that you'd like to share with your dad?",
+            "What's a challenge you're facing that we could work through together?",
+            "What's something you wish your father understood better about your world?",
+            "If you could teach your dad one thing, what would it be?",
+            "What's a memory of us that always makes you smile?",
+            "How do you think we've both grown as father and child in the past year?",
+            "What's something you're proud of that maybe your dad doesn't know about?",
+            "What's one thing you appreciate about having me as your father?"
+          ],
+          "Mother": [
+            "What's something you've learned about yourself recently that you'd like to share with your mom?",
+            "What's a challenge you're facing that we could work through together?",
+            "What's something you wish your mother understood better about your world?",
+            "If you could teach your mom one thing, what would it be?",
+            "What's a memory of us that always makes you smile?",
+            "How do you think we've both grown as mother and child in the past year?",
+            "What's something you're proud of that maybe your mom doesn't know about?",
+            "What's one thing you appreciate about having me as your mother?"
+          ],
+          "Son": [
+            "What's something you've learned about parenting that surprised you?",
+            "What's a challenge you're facing as a parent that we could discuss?",
+            "What's something you wish I understood better about being a parent?",
+            "If you could share one piece of wisdom with me, what would it be?",
+            "What's a memory of us that you cherish most?",
+            "How do you think our relationship has evolved over the years?",
+            "What's something you're proud of in your role as a parent?",
+            "What's one thing you appreciate about having me as your son?"
+          ],
+          "Daughter": [
+            "What's something you've learned about parenting that surprised you?",
+            "What's a challenge you're facing as a parent that we could discuss?",
+            "What's something you wish I understood better about being a parent?",
+            "If you could share one piece of wisdom with me, what would it be?",
+            "What's a memory of us that you cherish most?",
+            "How do you think our relationship has evolved over the years?",
+            "What's something you're proud of in your role as a parent?",
+            "What's one thing you appreciate about having me as your daughter?"
+          ]
+        },
+        "Romantic Partners": {
+          "Partner": [
+            "What's something new you'd like us to experience together?",
+            "When do you feel most connected to me?",
+            "What's a dream you have for our relationship?",
+            "What's something you've learned about love from being with me?",
+            "How do you see us growing together in the next year?",
+            "What's a challenge we've overcome that made us stronger?",
+            "What's something you appreciate about how we communicate?",
+            "If you could relive one moment with me, what would it be?"
+          ]
+        },
+        "Friends": {
+          "Friend": [
+            "What's something you've learned about yourself through our friendship?",
+            "What's a memory of ours that always makes you laugh?",
+            "How has our friendship changed you for the better?",
+            "What's something you're grateful for in our friendship?",
+            "What's a goal or dream you'd like to share with me?",
+            "What's something you wish more people knew about you?",
+            "How do you think we've both grown since we became friends?",
+            "What's an adventure you'd like us to go on together?"
+          ]
+        },
+        "Siblings": {
+          "Brother": [
+            "What's something you've learned from being my brother?",
+            "What's a childhood memory of ours that you treasure?",
+            "How do you think we've influenced each other growing up?",
+            "What's something you're proud of that I might not know about?",
+            "What's a challenge you're facing that we could talk through?",
+            "How do you see our relationship evolving as we get older?",
+            "What's something you appreciate about having me as your sister?",
+            "What's a tradition or inside joke of ours that makes you smile?"
+          ],
+          "Sister": [
+            "What's something you've learned from being my sister?",
+            "What's a childhood memory of ours that you treasure?",
+            "How do you think we've influenced each other growing up?",
+            "What's something you're proud of that I might not know about?",
+            "What's a challenge you're facing that we could talk through?",
+            "How do you see our relationship evolving as we get older?",
+            "What's something you appreciate about having me as your brother?",
+            "What's a tradition or inside joke of ours that makes you smile?"
+          ]
+        }
       };
       
-      const templates = questionTemplates[relationshipType as keyof typeof questionTemplates] || questionTemplates["Friends"];
+      // Get role-specific templates or fall back to general questions
+      let templates: string[] = [];
+      
+      if (userRole && roleSpecificTemplates[relationshipType as keyof typeof roleSpecificTemplates]) {
+        const relationshipTemplates = roleSpecificTemplates[relationshipType as keyof typeof roleSpecificTemplates];
+        if (typeof relationshipTemplates === 'object' && relationshipTemplates[userRole as keyof typeof relationshipTemplates]) {
+          templates = relationshipTemplates[userRole as keyof typeof relationshipTemplates];
+        }
+      }
+      
+      // Fallback to general questions if no role-specific templates found
+      if (templates.length === 0) {
+        const fallbackTemplates = {
+          "Parent-Child": [
+            "What's something you've learned about yourself recently?",
+            "What's a challenge you're facing that we could work through together?",
+            "What's something you wish I understood better about your world?",
+            "What's a memory of ours that always makes you smile?"
+          ],
+          "Romantic Partners": [
+            "What's something new you'd like us to experience together?",
+            "When do you feel most connected to me?",
+            "What's a dream you have for our relationship?"
+          ],
+          "Friends": [
+            "What's something you've learned about yourself through our friendship?",
+            "What's a memory of ours that always makes you laugh?",
+            "How has our friendship changed you for the better?"
+          ],
+          "Siblings": [
+            "What's a childhood memory of ours that you treasure?",
+            "How do you think we've influenced each other growing up?",
+            "What's something you're proud of that I might not know about?"
+          ]
+        };
+        
+        templates = fallbackTemplates[relationshipType as keyof typeof fallbackTemplates] || fallbackTemplates["Friends"];
+      }
       
       // Randomly select questions
       const shuffled = [...templates].sort(() => Math.random() - 0.5);

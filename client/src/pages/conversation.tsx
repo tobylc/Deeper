@@ -85,6 +85,19 @@ export default function ConversationPage() {
     enabled: !!conversation?.connectionId && !!user,
   });
 
+  // Determine user roles based on connection data
+  const currentUserRole = connection && user?.email 
+    ? (connection.inviterEmail === user.email 
+        ? connection.inviterRole 
+        : connection.inviteeRole)
+    : '';
+
+  const otherUserRole = connection && user?.email 
+    ? (connection.inviterEmail === user.email 
+        ? connection.inviteeRole 
+        : connection.inviterRole)
+    : '';
+
   // Get user data for both participants
   const { data: currentUserData } = useQuery<User>({
     queryKey: [`/api/users/by-email/${user?.email}`],
@@ -352,8 +365,8 @@ export default function ConversationPage() {
           <div className={`lg:col-span-1 ${showThreadsView ? 'hidden lg:block' : 'block'} h-full`}>
             <QuestionSuggestions 
               relationshipType={conversation.relationshipType}
-              userRole={currentUserRole}
-              otherUserRole={otherUserRole}
+              userRole={currentUserRole || ''}
+              otherUserRole={otherUserRole || ''}
               onQuestionSelect={handleQuestionSelect}
               isMyTurn={isMyTurn}
               otherParticipant={otherParticipant}
