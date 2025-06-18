@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
 
 interface QuestionSuggestionsProps {
   relationshipType: string;
@@ -31,18 +32,50 @@ export default function QuestionSuggestions({ relationshipType, onQuestionSelect
   const [newQuestionText, setNewQuestionText] = useState("");
   
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   // Thread creation mutation
   const createThreadMutation = useMutation({
     mutationFn: async (question: string) => {
-      return fetch(`/api/connections/${connectionId}/conversations`, {
+      // First create the conversation thread
+      const conversationResponse = await fetch(`/api/connections/${connectionId}/conversations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: question })
-      }).then(res => res.json());
+        body: JSON.stringify({ 
+          topic: question,
+          participant1Email: user?.email || '',
+          participant2Email: otherParticipant,
+          relationshipType: relationshipType,
+          isMainThread: false
+        })
+      });
+      
+      if (!conversationResponse.ok) {
+        throw new Error('Failed to create conversation thread');
+      }
+      
+      const conversation = await conversationResponse.json();
+      
+      // Then send the first message (the question) automatically
+      const messageResponse = await fetch(`/api/conversations/${conversation.id}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: question,
+          senderEmail: user?.email || '',
+          type: 'question'
+        })
+      });
+      
+      if (!messageResponse.ok) {
+        throw new Error('Failed to send initial message');
+      }
+      
+      return conversation;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [`/api/connections/${connectionId}/conversations`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.id}/messages`] });
       setShowNewQuestionDialog(false);
       setNewQuestionText("");
       onNewThreadCreated(data.id);

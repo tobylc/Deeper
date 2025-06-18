@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Users, Clock, ChevronDown, ChevronUp } from 'lucide-react';
@@ -129,43 +130,19 @@ export default function ConversationThreads({
   selectedConversationId,
   isMyTurn
 }: ConversationThreadsProps) {
-  // Mock conversations data - this would come from your API
-  const conversations: Conversation[] = [
-    {
-      id: 1,
-      title: "Family: Growing up memories",
-      topic: "What's your favorite childhood memory?",
-      lastMessageAt: new Date('2025-06-18'),
-      messageCount: 6,
-      currentTurn: currentUserEmail,
-      status: 'active',
-      isMainThread: false,
-      parentConversationId: null,
-      lastActivityAt: new Date('2025-06-18'),
-      connectionId,
-      participant1Email: currentUserEmail,
-      participant2Email: otherParticipantEmail,
-      relationshipType,
-      createdAt: new Date('2025-06-17')
-    },
-    {
-      id: 2,
-      title: "Family: Dreams and aspirations",
-      topic: "What are your biggest dreams for the future?",
-      lastMessageAt: new Date('2025-06-17'),
-      messageCount: 3,
-      currentTurn: otherParticipantEmail,
-      status: 'active',
-      isMainThread: false,
-      parentConversationId: null,
-      lastActivityAt: new Date('2025-06-17'),
-      connectionId,
-      participant1Email: currentUserEmail,
-      participant2Email: otherParticipantEmail,
-      relationshipType,
-      createdAt: new Date('2025-06-16')
-    }
-  ];
+  // Fetch real conversations from API
+  const { data: conversations = [], isLoading } = useQuery({
+    queryKey: [`/api/connections/${connectionId}/conversations`],
+    queryFn: () => fetch(`/api/connections/${connectionId}/conversations`).then(res => res.json()),
+    enabled: !!connectionId
+  });
+
+  // Fetch message counts for each conversation
+  const { data: messageCounts = {} } = useQuery({
+    queryKey: [`/api/connections/${connectionId}/conversations/message-counts`],
+    queryFn: () => fetch(`/api/connections/${connectionId}/conversations/message-counts`).then(res => res.json()),
+    enabled: !!connectionId
+  });
 
   // Sort conversations: main thread first, then by last activity
   const sortedConversations = conversations
