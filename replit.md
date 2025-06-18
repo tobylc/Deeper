@@ -340,6 +340,13 @@ Changelog:
   * Redesigned conversation page with 4-column layout: threads sidebar, main conversation, question suggestions
   * Mobile-responsive threading interface with toggle button for thread visibility
   * Thread sorting: main thread first, then by last activity date for intuitive conversation flow
+- June 18, 2025. Conversation page optimization and question terminology update:
+  * Redesigned conversation page to utilize full screen space with h-screen layout and proper flex containers
+  * Changed all "topic" references to "question" terminology throughout the threading interface
+  * Optimized left column layout to prevent text cutoff and ensure all elements fit within constraints
+  * Added AI-generated question suggestions in "New Question" popup based on relationship type
+  * Compact header design (h-14) and optimized spacing for maximum content area utilization
+  * Enhanced mobile responsiveness with proper column hiding/showing on small screens
 - June 17, 2025. Authentication infinite loading issue resolution:
   * Fixed authentication hook to properly handle 401 responses without infinite loading
   * Added 3-second timeout to authentication requests to prevent hanging

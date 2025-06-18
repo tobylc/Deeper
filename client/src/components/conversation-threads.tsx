@@ -29,7 +29,7 @@ interface ConversationThreadsProps {
   selectedConversationId?: number;
 }
 
-// Sample AI-generated questions based on relationship type
+// AI-generated questions based on relationship type
 const getAIQuestionSuggestions = (relationshipType: string): string[] => {
   const suggestions = {
     "Parent-Child": [
