@@ -454,6 +454,15 @@ Changelog:
   * Main conversation area now displays only latest 2 full paper entries for readability
   * Maintains hyper-realistic paper styling consistency with subtle textures and ruled lines
   * Prevents conversation window clutter while preserving focus on recent exchanges
+  * Added clickable expand/collapse functionality for paper stacks with smooth animations
+- June 18, 2025. Automatic thread naming system implementation:
+  * Created intelligent thread naming system that summarizes original questions into meaningful titles
+  * Implemented generateRelationshipSpecificTitle function with context-aware question analysis
+  * Added relationship-specific prefixes (Family:, Love:, Friendship:) for better organization
+  * Thread titles automatically generated when first question is sent in conversation
+  * Updated backend storage with updateConversationTitle method for title management
+  * Enhanced conversation threads UI to display auto-generated titles instead of generic topic names
+  * Thread naming preserves key question context while keeping titles concise (under 50 characters)
 ```
 
 ## User Preferences

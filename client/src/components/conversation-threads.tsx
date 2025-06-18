@@ -384,7 +384,7 @@ export default function ConversationThreads({
                     <div className="flex-1 min-w-0 relative z-10">
                       <div className="flex items-center space-x-1">
                         <h4 className="font-medium text-gray-800 text-xs truncate">
-                          {conversation.topic || conversation.title || 'Untitled Question'}
+                          {conversation.title || conversation.topic || 'Untitled Question'}
                         </h4>
                         {conversation.isMainThread && (
                           <Badge variant="outline" className="text-xs bg-amber/10 text-amber-800 border-amber/30 px-1 py-0">
