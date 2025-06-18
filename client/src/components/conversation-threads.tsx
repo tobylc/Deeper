@@ -258,21 +258,32 @@ export default function ConversationThreads({
               </DialogContent>
             </Dialog>
           ) : (
-            <div className="relative bg-gradient-to-br from-amber-50/80 to-yellow-50/60 p-2 border border-amber-200/60 shadow-sm transform rotate-0 transition-transform duration-300 rounded-md"
+            <div className="relative bg-gradient-to-br from-white via-amber-50/20 to-amber/5 p-3 rounded-sm border border-amber/20 shadow-md shadow-amber/10"
                  style={{
-                   clipPath: "polygon(3% 0%, 100% 2%, 98% 100%, 0% 97%)",
-                   filter: 'drop-shadow(1px 2px 4px rgba(139, 69, 19, 0.1))'
+                   background: `
+                     linear-gradient(135deg, 
+                       rgba(255,255,255,0.98) 0%, 
+                       rgba(255,251,235,0.96) 30%, 
+                       rgba(215,160,135,0.08) 70%, 
+                       rgba(215,160,135,0.12) 100%
+                     )
+                   `,
+                   filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.06))',
+                   backdropFilter: 'blur(0.5px)'
                  }}>
-              {/* Paper texture */}
-              <div className="absolute inset-0 opacity-15 bg-[radial-gradient(ellipse_at_center,_rgba(160,82,45,0.06)_0%,_rgba(210,180,140,0.03)_50%,_transparent_100%)] pointer-events-none rounded-md" />
+              {/* Subtle paper texture */}
+              <div className="absolute inset-0 opacity-15 pointer-events-none">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
+              </div>
               
-              {/* Subtle ruled lines */}
-              <div className="absolute inset-0 opacity-8 pointer-events-none rounded-md" 
+              {/* Very subtle ruled lines */}
+              <div className="absolute inset-0 opacity-20 pointer-events-none" 
                    style={{
-                     backgroundImage: 'repeating-linear-gradient(transparent, transparent 8px, rgba(139,69,19,0.2) 8px, rgba(139,69,19,0.2) 9px)',
+                     backgroundImage: 'repeating-linear-gradient(transparent, transparent 12px, rgba(156,163,175,0.1) 12px, rgba(156,163,175,0.1) 13px)',
                    }} />
               
-              <div className="text-xs text-slate-600 font-serif italic text-center px-1">
+              <div className="text-xs text-gray-700 text-center relative z-10">
                 Their turn to write
               </div>
             </div>
@@ -296,14 +307,48 @@ export default function ConversationThreads({
             <Card 
               key={conversation.id}
               className={cn(
-                "transition-all duration-200 cursor-pointer border-0 shadow-sm hover:shadow-md bg-white/80 backdrop-blur-sm",
-                isSelected 
-                  ? "ring-2 ring-ocean/20 bg-ocean/5 shadow-lg shadow-ocean/10" 
-                  : "hover:bg-white/90 hover:shadow-slate-200/60",
-                conversation.isMainThread && "border-l-4 border-l-amber shadow-amber/10"
+                "transition-all duration-200 cursor-pointer border rounded-sm",
+                isSelected ? [
+                  "bg-gradient-to-br from-white via-ocean/10 to-ocean/5",
+                  "border-ocean/30 shadow-lg shadow-ocean/15"
+                ] : [
+                  "bg-gradient-to-br from-white via-gray-50/30 to-amber-50/10", 
+                  "border-gray-200/40 shadow-md shadow-gray-400/10 hover:shadow-lg"
+                ],
+                conversation.isMainThread && "border-l-4 border-l-amber"
               )}
+              style={{
+                background: isSelected ? `
+                  linear-gradient(135deg, 
+                    rgba(255,255,255,0.98) 0%, 
+                    rgba(239,246,255,0.96) 30%, 
+                    rgba(79,172,254,0.12) 70%, 
+                    rgba(79,172,254,0.15) 100%
+                  )
+                ` : `
+                  linear-gradient(135deg, 
+                    rgba(255,255,255,0.98) 0%, 
+                    rgba(248,250,252,0.96) 30%, 
+                    rgba(255,251,235,0.94) 70%, 
+                    rgba(255,251,235,0.92) 100%
+                  )
+                `,
+                filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.06))',
+                backdropFilter: 'blur(0.5px)'
+              }}
             >
-              <CardContent className="p-3">
+              <CardContent className="p-3 relative">
+                {/* Subtle paper texture */}
+                <div className="absolute inset-0 opacity-10 pointer-events-none">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.01)_0%,_transparent_50%)]"></div>
+                </div>
+                
+                {/* Very subtle ruled lines */}
+                <div className="absolute inset-0 opacity-15 pointer-events-none" 
+                     style={{
+                       backgroundImage: 'repeating-linear-gradient(transparent, transparent 18px, rgba(156,163,175,0.08) 18px, rgba(156,163,175,0.08) 19px)',
+                     }} />
                 {/* Thread Header */}
                 <div 
                   className="flex items-center justify-between"

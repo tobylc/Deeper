@@ -191,19 +191,32 @@ export default function ConversationInterface({
         "group mb-8 relative",
         isFromCurrentUser ? "ml-12" : "mr-12"
       )}>
-        {/* Hyper-realistic Paper Sheet */}
+        {/* Hyper-realistic Paper Sheet with User Color Differentiation */}
         <div className={cn(
-          "relative bg-gradient-to-br from-white via-gray-50/30 to-amber-50/20 p-8 rounded-sm border border-gray-200/40",
+          "relative p-8 rounded-sm border",
           paperShadow,
-          "shadow-gray-400/20"
+          isFromCurrentUser ? [
+            "bg-gradient-to-br from-white via-blue-50/20 to-ocean/5",
+            "border-ocean/20 shadow-ocean/10"
+          ] : [
+            "bg-gradient-to-br from-white via-amber-50/20 to-amber/5", 
+            "border-amber/20 shadow-amber/10"
+          ]
         )}
         style={{
-          background: `
+          background: isFromCurrentUser ? `
             linear-gradient(135deg, 
               rgba(255,255,255,0.98) 0%, 
-              rgba(248,250,252,0.96) 30%, 
-              rgba(254,252,232,0.94) 70%, 
-              rgba(255,251,235,0.92) 100%
+              rgba(239,246,255,0.96) 30%, 
+              rgba(79,172,254,0.08) 70%, 
+              rgba(79,172,254,0.12) 100%
+            )
+          ` : `
+            linear-gradient(135deg, 
+              rgba(255,255,255,0.98) 0%, 
+              rgba(255,251,235,0.96) 30%, 
+              rgba(215,160,135,0.08) 70%, 
+              rgba(215,160,135,0.12) 100%
             )
           `,
           filter: 'drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.08))',
@@ -271,15 +284,15 @@ export default function ConversationInterface({
 
   const TypingIndicator = () => (
     <div className="group mb-8 relative mr-12">
-      {/* Hyper-realistic Paper Sheet - typing variant */}
-      <div className="relative bg-gradient-to-br from-white via-gray-50/30 to-blue-50/20 p-8 rounded-sm border border-gray-200/40 shadow-lg shadow-gray-400/20"
+      {/* Hyper-realistic Paper Sheet - typing variant with amber theme for other user */}
+      <div className="relative bg-gradient-to-br from-white via-amber-50/20 to-amber/5 p-8 rounded-sm border border-amber/20 shadow-lg shadow-amber/10"
            style={{
              background: `
                linear-gradient(135deg, 
                  rgba(255,255,255,0.98) 0%, 
-                 rgba(248,250,252,0.96) 30%, 
-                 rgba(239,246,255,0.94) 70%, 
-                 rgba(219,234,254,0.92) 100%
+                 rgba(255,251,235,0.96) 30%, 
+                 rgba(215,160,135,0.08) 70%, 
+                 rgba(215,160,135,0.12) 100%
                )
              `,
              filter: 'drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.08))',
@@ -458,14 +471,32 @@ export default function ConversationInterface({
             {/* Writing Surface */}
             <div className="relative">
               {/* Paper sheet for writing */}
-              <div className="relative bg-gradient-to-br from-white to-yellow-50/60 p-6 border border-amber-100/60 shadow-md transform rotate-0 hover:rotate-0 transition-transform duration-300 rounded-lg">
-                {/* Red margin line */}
-                <div className="absolute top-0 bottom-0 w-px bg-red-300/60 left-8" />
+              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 border border-ocean/20 shadow-md rounded-sm"
+                   style={{
+                     background: `
+                       linear-gradient(135deg, 
+                         rgba(255,255,255,0.98) 0%, 
+                         rgba(239,246,255,0.96) 30%, 
+                         rgba(79,172,254,0.08) 70%, 
+                         rgba(79,172,254,0.12) 100%
+                       )
+                     `,
+                     filter: 'drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.06))',
+                     backdropFilter: 'blur(0.5px)'
+                   }}>
+                {/* Subtle paper texture */}
+                <div className="absolute inset-0 opacity-15 pointer-events-none">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
+                </div>
                 
-                {/* Ruled lines background */}
-                <div className="absolute inset-0 opacity-15 pointer-events-none rounded-lg" 
+                {/* Red margin line */}
+                <div className="absolute top-0 bottom-0 w-px bg-red-400/40 left-8" />
+                
+                {/* Very subtle ruled lines */}
+                <div className="absolute inset-0 opacity-25 pointer-events-none" 
                      style={{
-                       backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(139,69,19,0.4) 23px, rgba(139,69,19,0.4) 24px)',
+                       backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(156,163,175,0.12) 23px, rgba(156,163,175,0.12) 24px)',
                      }} />
 
                 <div className="flex space-x-4">
@@ -531,9 +562,30 @@ export default function ConversationInterface({
 
       {/* Beautiful Waiting State */}
       {!isMyTurn && (
-        <div className="border-t border-amber-200/60 p-6 bg-gradient-to-br from-amber-50/60 via-yellow-50/40 to-orange-50/30 backdrop-blur-sm flex-shrink-0 relative">
-          {/* Paper texture overlay */}
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,_rgba(139,69,19,0.1)_0%,_transparent_50%)] pointer-events-none" />
+        <div className="border-t border-amber/20 p-6 bg-gradient-to-br from-white via-amber-50/20 to-amber/5 flex-shrink-0 relative"
+             style={{
+               background: `
+                 linear-gradient(135deg, 
+                   rgba(255,255,255,0.98) 0%, 
+                   rgba(255,251,235,0.96) 30%, 
+                   rgba(215,160,135,0.08) 70%, 
+                   rgba(215,160,135,0.12) 100%
+                 )
+               `,
+               filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.06))',
+               backdropFilter: 'blur(0.5px)'
+             }}>
+          {/* Subtle paper texture */}
+          <div className="absolute inset-0 opacity-15 pointer-events-none">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
+          </div>
+          
+          {/* Very subtle ruled lines */}
+          <div className="absolute inset-0 opacity-20 pointer-events-none" 
+               style={{
+                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 16px, rgba(156,163,175,0.1) 16px, rgba(156,163,175,0.1) 17px)',
+               }} />
           
           {/* Subtle ruled lines effect */}
           <div className="absolute inset-0 opacity-5 pointer-events-none" 
