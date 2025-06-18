@@ -3,6 +3,7 @@ import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { globalErrorHandler, notFoundHandler, setupGracefulShutdown } from "./error-handling";
+import { initializeWebSocket } from "./websocket";
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -43,6 +44,10 @@ app.use((req, res, next) => {
 
 (async () => {
   const server = await registerRoutes(app);
+
+  // Initialize WebSocket server for real-time updates
+  const wsManager = initializeWebSocket(server);
+  log('[WebSocket] Real-time dashboard updates enabled');
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route

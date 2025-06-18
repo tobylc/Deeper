@@ -1351,6 +1351,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Don't fail the message sending if notification fails
       }
 
+      // Send real-time WebSocket notification to recipient
+      try {
+        const { getWebSocketManager } = await import('./websocket');
+        const wsManager = getWebSocketManager();
+        if (wsManager) {
+          const senderName = await storage.getUserDisplayNameByEmail(messageData.senderEmail);
+          wsManager.notifyNewMessage(nextTurn, {
+            conversationId,
+            senderEmail: messageData.senderEmail,
+            senderName,
+            messageType: messageData.type,
+            relationshipType: conversation.relationshipType
+          });
+        }
+      } catch (error) {
+        console.error('[WEBSOCKET] Failed to send real-time notification:', error);
+        // Don't fail the message sending if WebSocket fails
+      }
+
       // Track message sending
       analytics.track({
         type: 'message_sent',
