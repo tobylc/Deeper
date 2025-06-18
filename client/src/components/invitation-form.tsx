@@ -23,6 +23,8 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
   const [formData, setFormData] = useState({
     inviteeEmail: "",
     relationshipType: "",
+    inviterRole: "",
+    inviteeRole: "",
     personalMessage: "",
   });
 
@@ -59,6 +61,24 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
       return;
     }
 
+    if (!formData.inviterRole) {
+      toast({
+        title: "Validation Error",
+        description: "Please select your role in this relationship",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.inviteeRole) {
+      toast({
+        title: "Validation Error",
+        description: "Please select their role in this relationship",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (formData.inviteeEmail.toLowerCase() === user.email?.toLowerCase()) {
       toast({
         title: "Validation Error",
@@ -73,6 +93,8 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
       await apiRequest("POST", "/api/connections", {
         inviteeEmail: formData.inviteeEmail.trim(),
         relationshipType: formData.relationshipType,
+        inviterRole: formData.inviterRole,
+        inviteeRole: formData.inviteeRole,
         personalMessage: formData.personalMessage.trim(),
       });
       
@@ -145,7 +167,7 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
             <Label htmlFor="relationship">Relationship Type</Label>
             <Select 
               value={formData.relationshipType} 
-              onValueChange={(value) => setFormData({ ...formData, relationshipType: value })}
+              onValueChange={(value) => setFormData({ ...formData, relationshipType: value, inviterRole: "", inviteeRole: "" })}
               required
             >
               <SelectTrigger>
@@ -160,6 +182,59 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
               </SelectContent>
             </Select>
           </div>
+
+          {/* Role Selection - Only show after relationship type is selected */}
+          {formData.relationshipType && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="inviterRole">Your Role</Label>
+                <Select 
+                  value={formData.inviterRole} 
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, inviterRole: value, inviteeRole: "" });
+                  }}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="What are you in this relationship?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getRolesForRelationship(formData.relationshipType).map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.inviterRole && (
+                <div className="space-y-2">
+                  <Label htmlFor="inviteeRole">Their Role</Label>
+                  <Select 
+                    value={formData.inviteeRole} 
+                    onValueChange={(value) => setFormData({ ...formData, inviteeRole: value })}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="What are they in this relationship?" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from(new Set(
+                        getValidRolePairs(formData.relationshipType)
+                          .filter(pair => pair.role1 === formData.inviterRole || pair.role2 === formData.inviterRole)
+                          .map(pair => pair.role1 === formData.inviterRole ? pair.role2 : pair.role1)
+                      )).map(role => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="message">Personal Message (Optional)</Label>
