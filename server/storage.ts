@@ -25,6 +25,9 @@ export interface IStorage {
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
     subscriptionExpiresAt?: Date;
+    phoneNumber?: string;
+    phoneVerified?: boolean;
+    notificationPreference?: string;
   }): Promise<User | undefined>;
 
   // Connections
@@ -128,18 +131,39 @@ export class DatabaseStorage implements IStorage {
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
     subscriptionExpiresAt?: Date;
+    phoneNumber?: string;
+    phoneVerified?: boolean;
+    notificationPreference?: string;
   }): Promise<User | undefined> {
+    const updateData: any = {
+      subscriptionTier: subscriptionData.subscriptionTier,
+      subscriptionStatus: subscriptionData.subscriptionStatus,
+      maxConnections: subscriptionData.maxConnections,
+      updatedAt: new Date(),
+    };
+
+    if (subscriptionData.stripeCustomerId !== undefined) {
+      updateData.stripeCustomerId = subscriptionData.stripeCustomerId;
+    }
+    if (subscriptionData.stripeSubscriptionId !== undefined) {
+      updateData.stripeSubscriptionId = subscriptionData.stripeSubscriptionId;
+    }
+    if (subscriptionData.subscriptionExpiresAt !== undefined) {
+      updateData.subscriptionExpiresAt = subscriptionData.subscriptionExpiresAt;
+    }
+    if (subscriptionData.phoneNumber !== undefined) {
+      updateData.phoneNumber = subscriptionData.phoneNumber;
+    }
+    if (subscriptionData.phoneVerified !== undefined) {
+      updateData.phoneVerified = subscriptionData.phoneVerified;
+    }
+    if (subscriptionData.notificationPreference !== undefined) {
+      updateData.notificationPreference = subscriptionData.notificationPreference;
+    }
+
     const [user] = await db
       .update(users)
-      .set({
-        subscriptionTier: subscriptionData.subscriptionTier,
-        subscriptionStatus: subscriptionData.subscriptionStatus,
-        maxConnections: subscriptionData.maxConnections,
-        stripeCustomerId: subscriptionData.stripeCustomerId,
-        stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
-        subscriptionExpiresAt: subscriptionData.subscriptionExpiresAt,
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(users.id, userId))
       .returning();
     return user || undefined;

@@ -19,6 +19,7 @@ import {
   requestLogger 
 } from "./middleware";
 import { emailService } from "./email";
+import { notificationService } from "./notifications";
 import { analytics } from "./analytics";
 import { healthService } from "./health";
 import { jobQueue } from "./jobs";
@@ -1329,9 +1330,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : conversation.participant1Email;
       await storage.updateConversationTurn(conversationId, nextTurn);
 
-      // Send turn notification email to the waiting user
+      // Send turn notification (email and/or SMS based on user preferences)
       try {
-        await emailService.sendTurnNotification({
+        await notificationService.sendTurnNotification({
           recipientEmail: nextTurn,
           senderEmail: messageData.senderEmail,
           conversationId,
@@ -1339,8 +1340,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           messageType: messageData.type
         });
       } catch (error) {
-        console.error('[EMAIL] Failed to send turn notification:', error);
-        // Don't fail the message sending if email fails
+        console.error('[NOTIFICATION] Failed to send turn notification:', error);
+        // Don't fail the message sending if notification fails
       }
 
       // Track message sending
@@ -1501,6 +1502,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("AI question generation error:", error);
       res.status(500).json({ message: "Failed to generate questions" });
+    }
+  });
+
+  // Phone verification endpoints for SMS notifications
+  app.post("/api/users/send-verification", rateLimit(5, 15 * 60 * 1000), async (req, res) => {
+    try {
+      const { phoneNumber, email } = req.body;
+
+      if (!phoneNumber || !email) {
+        return res.status(400).json({ message: "Phone number and email are required" });
+      }
+
+      // Validate phone number format (basic US format)
+      const phoneRegex = /^\+?1?[2-9]\d{2}[2-9]\d{2}\d{4}$/;
+      if (!phoneRegex.test(phoneNumber.replace(/\D/g, ''))) {
+        return res.status(400).json({ message: "Invalid phone number format" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Generate and send verification code
+      const verificationCode = await notificationService.sendPhoneVerification(phoneNumber);
+
+      // Store verification code temporarily
+      const verificationKey = `${email}:${phoneNumber}`;
+      global.verificationCodes = global.verificationCodes || new Map();
+      global.verificationCodes.set(verificationKey, {
+        code: verificationCode,
+        expires: Date.now() + 10 * 60 * 1000 // 10 minutes
+      });
+
+      res.json({ message: "Verification code sent successfully" });
+    } catch (error) {
+      console.error("Send verification error:", error);
+      res.status(500).json({ message: "Failed to send verification code" });
+    }
+  });
+
+  app.post("/api/users/verify-phone", rateLimit(10, 15 * 60 * 1000), async (req, res) => {
+    try {
+      const { phoneNumber, email, code } = req.body;
+
+      if (!phoneNumber || !email || !code) {
+        return res.status(400).json({ message: "Phone number, email, and verification code are required" });
+      }
+
+      const verificationKey = `${email}:${phoneNumber}`;
+      const storedVerification = global.verificationCodes?.get(verificationKey);
+
+      if (!storedVerification || Date.now() > storedVerification.expires) {
+        return res.status(400).json({ message: "Verification code expired or invalid" });
+      }
+
+      if (storedVerification.code !== code) {
+        return res.status(400).json({ message: "Invalid verification code" });
+      }
+
+      // Update user with verified phone number
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      await storage.updateUserSubscription(user.id, {
+        subscriptionTier: user.subscriptionTier || 'free',
+        subscriptionStatus: user.subscriptionStatus || 'active',
+        maxConnections: user.maxConnections || 1
+      });
+
+      // Clean up verification code
+      global.verificationCodes?.delete(verificationKey);
+
+      res.json({ message: "Phone number verified successfully" });
+    } catch (error) {
+      console.error("Verify phone error:", error);
+      res.status(500).json({ message: "Failed to verify phone number" });
+    }
+  });
+
+  app.patch("/api/users/notification-preference", async (req, res) => {
+    try {
+      const { email, notificationPreference } = req.body;
+
+      if (!email || !notificationPreference) {
+        return res.status(400).json({ message: "Email and notification preference are required" });
+      }
+
+      const validPreferences = ['email', 'sms', 'both'];
+      if (!validPreferences.includes(notificationPreference)) {
+        return res.status(400).json({ message: "Invalid notification preference. Must be 'email', 'sms', or 'both'" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      await storage.updateUserSubscription(user.id, {
+        subscriptionTier: user.subscriptionTier || 'free',
+        subscriptionStatus: user.subscriptionStatus || 'active',
+        maxConnections: user.maxConnections || 1
+      });
+
+      res.json({ message: "Notification preference updated successfully" });
+    } catch (error) {
+      console.error("Update notification preference error:", error);
+      res.status(500).json({ message: "Failed to update notification preference" });
     }
   });
 
