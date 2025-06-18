@@ -464,14 +464,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Failed to update connection" });
       }
 
-      // Create conversation between the two users
-      const conversation = await storage.createConversation({
-        relationshipType: connection.relationshipType,
-        connectionId: connection.id,
-        participant1Email: connection.inviterEmail,
-        participant2Email: connection.inviteeEmail,
-        currentTurn: connection.inviterEmail // Inviter starts the conversation
-      });
+      // Don't auto-create conversation - let inviter start it manually from dashboard
 
       // Send acceptance notification email to inviter
       try {
@@ -525,10 +518,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               status: updatedConnection.status,
               relationshipType: updatedConnection.relationshipType,
               inviterEmail: updatedConnection.inviterEmail
-            },
-            conversation: {
-              id: conversation.id,
-              relationshipType: conversation.relationshipType
             }
           });
         });
@@ -750,14 +739,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Failed to update connection status" });
       }
 
-      // Create conversation when connection is accepted
-      const conversation = await storage.createConversation({
-        connectionId: connection.id,
-        participant1Email: connection.inviterEmail,
-        participant2Email: connection.inviteeEmail,
-        relationshipType: connection.relationshipType,
-        currentTurn: connection.inviterEmail, // Inviter asks first question
-      });
+      // Don't auto-create conversation - let inviter start it manually from dashboard
 
       // Queue acceptance notification email
       jobQueue.addJob('send_email', {
@@ -792,7 +774,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      res.json({ connection, conversation });
+      res.json({ connection });
     } catch (error) {
       console.error("Accept connection error:", error);
       res.status(500).json({ message: "Failed to accept connection" });
