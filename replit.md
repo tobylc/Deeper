@@ -473,6 +473,16 @@ Changelog:
   * Enhanced QuestionSuggestions component to handle both turn states appropriately
   * Automatic conversation stacking when switching between different question threads
   * Consistent navigation and functionality regardless of user role (inviter/invitee)
+- June 18, 2025. Production-ready conversation threading system implementation:
+  * Fixed "New Question" button placement to right column (QuestionSuggestions component) only
+  * Removed all "New Question" functionality from left column ConversationThreads component
+  * Enhanced thread creation to automatically send first message when creating new conversation thread
+  * Updated ConversationThreads to fetch real conversation data from API endpoints
+  * Implemented proper TypeScript typing for all conversation thread components
+  * Added empty state handling for users with no previous conversations
+  * Fixed thread creation mutation to create separate conversation threads for new questions
+  * Enhanced thread naming system with automatic title generation from question content
+  * Production-ready API integration with proper error handling and loading states
 ```
 
 ## User Preferences

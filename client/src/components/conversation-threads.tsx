@@ -146,13 +146,18 @@ export default function ConversationThreads({
 
   // Sort conversations: main thread first, then by last activity
   const sortedConversations = conversations
-    .sort((a, b) => {
+    .map((conv: Conversation) => ({
+      ...conv,
+      messageCount: messageCounts[conv.id] || 0,
+      lastMessageAt: conv.lastActivityAt
+    }))
+    .sort((a: Conversation, b: Conversation) => {
       if (a.isMainThread && !b.isMainThread) return -1;
       if (!a.isMainThread && b.isMainThread) return 1;
       return new Date(b.lastActivityAt || 0).getTime() - new Date(a.lastActivityAt || 0).getTime();
     });
 
-  if (!conversations.length) {
+  if (isLoading) {
     return (
       <div className="h-full flex flex-col space-y-3">
         {[1, 2, 3].map((i) => (
@@ -215,16 +220,26 @@ export default function ConversationThreads({
 
       {/* Conversations List */}
       <div className="flex-1 overflow-y-auto space-y-2">
-        {sortedConversations.map((conversation) => (
-          <StackedConversation
-            key={conversation.id}
-            conversation={conversation}
-            isSelected={selectedConversationId === conversation.id}
-            onClick={() => onThreadSelect(conversation.id)}
-            currentUserEmail={currentUserEmail}
-            isMyTurn={isMyTurn}
-          />
-        ))}
+        {sortedConversations.length === 0 ? (
+          <Card className="border-dashed border-slate-300">
+            <CardContent className="p-6 text-center">
+              <MessageSquare className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+              <p className="text-sm text-slate-600">No previous conversations yet.</p>
+              <p className="text-xs text-slate-500">Start a new question to begin your conversation history.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          sortedConversations.map((conversation: Conversation) => (
+            <StackedConversation
+              key={conversation.id}
+              conversation={conversation}
+              isSelected={selectedConversationId === conversation.id}
+              onClick={() => onThreadSelect(conversation.id)}
+              currentUserEmail={currentUserEmail}
+              isMyTurn={isMyTurn}
+            />
+          ))
+        )}
       </div>
     </div>
   );
