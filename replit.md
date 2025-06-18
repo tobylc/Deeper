@@ -465,6 +465,14 @@ Changelog:
   * Enhanced conversation threads UI to display auto-generated titles instead of generic topic names
   * Thread naming preserves key question context while keeping titles concise (under 50 characters)
   * Fixed new question thread creation error by correcting API request format
+- June 18, 2025. Unified conversation page layout for consistent invitee/inviter experience:
+  * Restructured conversation page with standardized 3-column layout for both user types
+  * Left column: Question threads with "Ask New Question" button and automatic stacking functionality
+  * Middle column: Active conversation with paper journal interface and stacking system
+  * Right column: Question suggestions with waiting states for non-turn users
+  * Enhanced QuestionSuggestions component to handle both turn states appropriately
+  * Automatic conversation stacking when switching between different question threads
+  * Consistent navigation and functionality regardless of user role (inviter/invitee)
 ```
 
 ## User Preferences

@@ -153,6 +153,14 @@ export default function ConversationThreads({
     createThreadMutation.mutate({ topic: newQuestionTopic.trim() });
   };
 
+  const handleThreadSelect = (conversationId: number) => {
+    // Automatically stack current conversation if switching to different thread
+    if (selectedConversationId !== conversationId) {
+      // The onThreadSelect callback will handle the actual navigation
+      onThreadSelect(conversationId);
+    }
+  };
+
   const handleSuggestionClick = (suggestion: string) => {
     setNewQuestionTopic(suggestion);
   };
@@ -351,7 +359,7 @@ export default function ConversationThreads({
                 {/* Thread Header */}
                 <div 
                   className="flex items-center justify-between"
-                  onClick={() => onThreadSelect(conversation.id)}
+                  onClick={() => handleThreadSelect(conversation.id)}
                 >
                   <div className="flex items-center space-x-2 flex-1 min-w-0">
                     <Button

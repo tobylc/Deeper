@@ -115,92 +115,92 @@ export default function QuestionSuggestions({ relationshipType, onQuestionSelect
           </Card>
 
           {/* Toggle Buttons */}
-      <div className="flex space-x-2">
-        <Button
-          variant={!showAI ? "default" : "outline"}
-          size="sm"
-          onClick={() => setShowAI(false)}
-          className={cn(
-            "flex-1 text-xs h-8",
-            !showAI 
-              ? "bg-ocean text-white hover:bg-ocean/90" 
-              : "border-ocean/30 text-ocean hover:bg-ocean/10"
-          )}
-        >
-          <MessageCircle className="w-3 h-3 mr-1" />
-          Curated
-        </Button>
-        <Button
-          variant={showAI ? "default" : "outline"}
-          size="sm"
-          onClick={() => {
-            if (!showAI && aiQuestions.length === 0) {
-              generateAIQuestions();
-            } else {
-              setShowAI(true);
-            }
-          }}
-          disabled={isGeneratingAI}
-          className={cn(
-            "flex-1 text-xs h-8",
-            showAI 
-              ? "bg-amber text-white hover:bg-amber/90" 
-              : "border-slate-300 text-slate-700 hover:bg-slate-50"
-          )}
-        >
-          {isGeneratingAI ? (
-            <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin mr-1" />
-          ) : (
-            <Wand2 className="w-3 h-3 mr-1" />
-          )}
-          AI Generated
-        </Button>
-      </div>
-
-      {/* Questions List */}
-      <div className="space-y-2">
-        {(showAI ? aiQuestions : currentQuestions).map((question, index) => (
-          <div
-            key={index}
-            onClick={() => onQuestionSelect(question)}
-            className={cn(
-              "group cursor-pointer transition-all duration-200 p-3 rounded-xl border",
-              "hover:shadow-md hover:scale-[1.01]",
-              showAI 
-                ? "bg-gradient-to-br from-amber/5 to-amber/10 border-amber/20 hover:border-amber/40 hover:bg-amber/15"
-                : "bg-gradient-to-br from-ocean/5 to-ocean/10 border-ocean/20 hover:border-ocean/40 hover:bg-ocean/15"
-            )}
-          >
-            <div className="flex items-start space-x-2">
-              <div className="flex-shrink-0 mt-0.5">
-                <MessageCircle className={cn(
-                  "w-3 h-3",
-                  showAI ? "text-amber-600" : "text-ocean"
-                )} />
-              </div>
-              
-              <div className="flex-1">
-                <div className="text-sm leading-relaxed text-slate-700 group-hover:text-slate-900">
-                  "{question}"
-                </div>
-                
-                <div className="flex items-center mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <span className={cn(
-                    "text-xs font-medium mr-1",
-                    showAI ? "text-amber-600" : "text-ocean"
-                  )}>
-                    Click to use
-                  </span>
-                  <ArrowRight className={cn(
-                    "w-2 h-2",
-                    showAI ? "text-amber-600" : "text-ocean"
-                  )} />
-                </div>
-              </div>
-            </div>
+          <div className="flex space-x-2">
+            <Button
+              variant={!showAI ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowAI(false)}
+              className={cn(
+                "flex-1 text-xs h-8",
+                !showAI 
+                  ? "bg-ocean text-white hover:bg-ocean/90" 
+                  : "border-ocean/30 text-ocean hover:bg-ocean/10"
+              )}
+            >
+              <MessageCircle className="w-3 h-3 mr-1" />
+              Curated
+            </Button>
+            <Button
+              variant={showAI ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                if (!showAI && aiQuestions.length === 0) {
+                  generateAIQuestions();
+                } else {
+                  setShowAI(true);
+                }
+              }}
+              disabled={isGeneratingAI}
+              className={cn(
+                "flex-1 text-xs h-8",
+                showAI 
+                  ? "bg-amber text-white hover:bg-amber/90" 
+                  : "border-slate-300 text-slate-700 hover:bg-slate-50"
+              )}
+            >
+              {isGeneratingAI ? (
+                <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin mr-1" />
+              ) : (
+                <Wand2 className="w-3 h-3 mr-1" />
+              )}
+              AI Generated
+            </Button>
           </div>
-        ))}
-      </div>
+
+          {/* Questions List */}
+          <div className="space-y-2">
+            {(showAI ? aiQuestions : currentQuestions).map((question, index) => (
+              <div
+                key={index}
+                onClick={() => onQuestionSelect(question)}
+                className={cn(
+                  "group cursor-pointer transition-all duration-200 p-3 rounded-xl border",
+                  "hover:shadow-md hover:scale-[1.01]",
+                  showAI 
+                    ? "bg-gradient-to-br from-amber/5 to-amber/10 border-amber/20 hover:border-amber/40 hover:bg-amber/15"
+                    : "bg-gradient-to-br from-ocean/5 to-ocean/10 border-ocean/20 hover:border-ocean/40 hover:bg-ocean/15"
+                )}
+              >
+                <div className="flex items-start space-x-2">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <MessageCircle className={cn(
+                      "w-3 h-3",
+                      showAI ? "text-amber-600" : "text-ocean"
+                    )} />
+                  </div>
+                  
+                  <div className="flex-1">
+                    <div className="text-sm leading-relaxed text-slate-700 group-hover:text-slate-900">
+                      "{question}"
+                    </div>
+                    
+                    <div className="flex items-center mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <span className={cn(
+                        "text-xs font-medium mr-1",
+                        showAI ? "text-amber-600" : "text-ocean"
+                      )}>
+                        Click to use
+                      </span>
+                      <ArrowRight className={cn(
+                        "w-2 h-2",
+                        showAI ? "text-amber-600" : "text-ocean"
+                      )} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
           {/* Footer */}
           <div className="text-center pt-2">
