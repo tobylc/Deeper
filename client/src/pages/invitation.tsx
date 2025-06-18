@@ -109,11 +109,11 @@ export default function InvitationLanding() {
             <CardContent className="p-8 text-center">
               <div className="flex items-center justify-center mb-6">
                 <Sparkles className="w-8 h-8 text-ocean mr-3" />
-                <h2 className="text-2xl font-inter font-bold text-foreground">
+                <h2 className="text-2xl font-inter font-bold text-white">
                   This invitation is just for you
                 </h2>
               </div>
-              <p className="text-lg text-slate-700 mb-6 font-inter leading-relaxed">
+              <p className="text-lg text-slate-100 mb-6 font-inter leading-relaxed">
                 {getInviterName()} has invited you to begin a {getRelationshipDescription()} journey together on Deeper. 
                 This isn't a group chat or social network - it's a sacred space created exclusively for meaningful 
                 one-on-one conversations between you and {getInviterName()}.
@@ -139,10 +139,10 @@ export default function InvitationLanding() {
                 <div className="w-12 h-12 rounded-xl bg-ocean/10 flex items-center justify-center mb-6">
                   <Shield className="w-6 h-6 text-ocean" />
                 </div>
-                <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
+                <h3 className="text-xl font-inter font-semibold text-white mb-4">
                   Completely Private & Secure
                 </h3>
-                <p className="text-slate-600 leading-relaxed">
+                <p className="text-slate-100 leading-relaxed">
                   Your conversation space is encrypted and completely private. Only you and {getInviterName()} 
                   will ever have access. No algorithms, no ads, no interruptions.
                 </p>
@@ -154,10 +154,10 @@ export default function InvitationLanding() {
                 <div className="w-12 h-12 rounded-xl bg-ocean/10 flex items-center justify-center mb-6">
                   <MessageCircle className="w-6 h-6 text-ocean" />
                 </div>
-                <h3 className="text-xl font-inter font-semibold text-foreground mb-4">
+                <h3 className="text-xl font-inter font-semibold text-white mb-4">
                   Thoughtfully Guided Conversations
                 </h3>
-                <p className="text-slate-600 leading-relaxed">
+                <p className="text-slate-100 leading-relaxed">
                   Our expertly curated questions help you explore deeper topics naturally, 
                   creating meaningful dialogue that strengthens your connection over time.
                 </p>
@@ -168,7 +168,7 @@ export default function InvitationLanding() {
           {/* What Happens Next */}
           <Card className="bg-card/50 border-border backdrop-blur-sm rounded-3xl">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-inter font-bold text-foreground mb-8 text-center">
+              <h3 className="text-2xl font-inter font-bold text-white mb-8 text-center">
                 What happens when you accept?
               </h3>
               <div className="grid md:grid-cols-3 gap-8">
@@ -176,8 +176,8 @@ export default function InvitationLanding() {
                   <div className="w-12 h-12 rounded-full bg-ocean/10 flex items-center justify-center mx-auto mb-4">
                     <CheckCircle className="w-6 h-6 text-ocean" />
                   </div>
-                  <h4 className="font-inter font-semibold text-foreground mb-2">1. Quick Registration</h4>
-                  <p className="text-sm text-slate-600">
+                  <h4 className="font-inter font-semibold text-white mb-2">1. Quick Registration</h4>
+                  <p className="text-sm text-slate-100">
                     Sign up with your preferred method - Google, Facebook, Apple, or email
                   </p>
                 </div>
@@ -185,8 +185,8 @@ export default function InvitationLanding() {
                   <div className="w-12 h-12 rounded-full bg-ocean/10 flex items-center justify-center mx-auto mb-4">
                     <Users className="w-6 h-6 text-ocean" />
                   </div>
-                  <h4 className="font-inter font-semibold text-foreground mb-2">2. Private Space Created</h4>
-                  <p className="text-sm text-slate-600">
+                  <h4 className="font-inter font-semibold text-white mb-2">2. Private Space Created</h4>
+                  <p className="text-sm text-slate-100">
                     Your exclusive conversation space with {getInviterName()} becomes available immediately
                   </p>
                 </div>
@@ -194,8 +194,8 @@ export default function InvitationLanding() {
                   <div className="w-12 h-12 rounded-full bg-ocean/10 flex items-center justify-center mx-auto mb-4 p-2">
                     <QuotesIcon size="sm" />
                   </div>
-                  <h4 className="font-inter font-semibold text-foreground mb-2">3. Begin Your Journey</h4>
-                  <p className="text-sm text-slate-600">
+                  <h4 className="font-inter font-semibold text-white mb-2">3. Begin Your Journey</h4>
+                  <p className="text-sm text-slate-100">
                     Start exchanging thoughtful questions and responses, deepening your connection
                   </p>
                 </div>
