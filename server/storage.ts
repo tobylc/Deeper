@@ -101,6 +101,18 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
+  async updateUser(userId: string, updates: Partial<InsertUser>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
+  }
+
   async linkGoogleAccount(userId: string, googleId: string): Promise<User | undefined> {
     const [user] = await db
       .update(users)

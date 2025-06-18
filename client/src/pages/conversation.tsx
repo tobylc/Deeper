@@ -24,6 +24,7 @@ export default function ConversationPage() {
   const [newMessage, setNewMessage] = useState("");
   const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
   const [showThreadsView, setShowThreadsView] = useState(false);
+  const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -92,6 +93,24 @@ export default function ConversationPage() {
       return response.json();
     },
     enabled: !!user?.email,
+  });
+
+  // Check if user needs to see onboarding popup
+  useEffect(() => {
+    if (currentUserData && !currentUserData.hasSeenOnboarding && conversation && messages) {
+      // Show onboarding before first interaction
+      setShowOnboardingPopup(true);
+    }
+  }, [currentUserData, conversation, messages]);
+
+  // Mutation to mark onboarding as complete
+  const markOnboardingCompleteMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('POST', '/api/users/mark-onboarding-complete');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/users/by-email/${user?.email}`] });
+    },
   });
 
   const { data: otherUserData } = useQuery<User>({

@@ -107,6 +107,16 @@ export const insertUserSchema = createInsertSchema(users).pick({
   passwordHash: true,
   googleId: true,
   profileImageUrl: true,
+  phoneNumber: true,
+  phoneVerified: true,
+  notificationPreference: true,
+  subscriptionTier: true,
+  subscriptionStatus: true,
+  maxConnections: true,
+  stripeCustomerId: true,
+  stripeSubscriptionId: true,
+  subscriptionExpiresAt: true,
+  hasSeenOnboarding: true,
 });
 
 export const insertConnectionSchema = createInsertSchema(connections).pick({
