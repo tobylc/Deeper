@@ -144,8 +144,9 @@ export default function ConversationThreads({
     enabled: !!connectionId
   });
 
-  // Sort conversations: main thread first, then by last activity
+  // Filter out the currently active conversation and sort remaining conversations
   const sortedConversations = conversations
+    .filter((conv: Conversation) => conv.id !== selectedConversationId) // Hide currently active conversation
     .map((conv: Conversation) => ({
       ...conv,
       messageCount: messageCounts[conv.id] || 0,
@@ -224,8 +225,15 @@ export default function ConversationThreads({
           <Card className="border-dashed border-slate-300">
             <CardContent className="p-6 text-center">
               <MessageSquare className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-              <p className="text-sm text-slate-600">No previous conversations yet.</p>
-              <p className="text-xs text-slate-500">Start a new question to begin your conversation history.</p>
+              <p className="text-sm text-slate-600">
+                {conversations.length === 0 ? "No conversations yet." : "Current conversation is active."}
+              </p>
+              <p className="text-xs text-slate-500">
+                {conversations.length === 0 
+                  ? "Start a new question to begin your conversation history." 
+                  : "Previous conversations will appear here when you start new questions."
+                }
+              </p>
             </CardContent>
           </Card>
         ) : (
@@ -233,7 +241,7 @@ export default function ConversationThreads({
             <StackedConversation
               key={conversation.id}
               conversation={conversation}
-              isSelected={selectedConversationId === conversation.id}
+              isSelected={false} // Never selected since active conversation is hidden
               onClick={() => onThreadSelect(conversation.id)}
               currentUserEmail={currentUserEmail}
               isMyTurn={isMyTurn}

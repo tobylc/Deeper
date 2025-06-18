@@ -483,6 +483,14 @@ Changelog:
   * Fixed thread creation mutation to create separate conversation threads for new questions
   * Enhanced thread naming system with automatic title generation from question content
   * Production-ready API integration with proper error handling and loading states
+- June 18, 2025. Single-conversation display system with automatic thread stacking:
+  * Implemented conversation filtering to show only ONE active conversation in middle pane at all times
+  * Current active conversation is automatically hidden from left column conversation threads
+  * When new question is asked, previous conversation moves to left column as stacked conversation
+  * URL routing updated to reflect active conversation changes automatically
+  * Thread selection properly updates URL and switches displayed conversation
+  * Enhanced empty state messaging to differentiate between no conversations vs active conversation
+  * Complete single-conversation display system ensuring clean, focused conversation experience
 ```
 
 ## User Preferences

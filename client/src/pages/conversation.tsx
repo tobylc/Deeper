@@ -195,12 +195,18 @@ export default function ConversationPage() {
     setSelectedConversationId(conversationId);
     setNewMessage(""); // Clear message when switching threads
     setShowThreadsView(false); // Hide threads view on mobile after selection
+    
+    // Update the URL to reflect the selected conversation
+    setLocation(`/conversation/${conversationId}`);
   };
 
   const handleNewThreadCreated = (conversationId: number) => {
     // Switch to the new conversation thread automatically
     setSelectedConversationId(conversationId);
     setNewMessage(""); // Clear any existing message
+    
+    // Update the URL to reflect the new conversation
+    setLocation(`/conversation/${conversationId}`);
   };
 
   return (
