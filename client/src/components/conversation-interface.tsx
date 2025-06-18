@@ -225,19 +225,13 @@ export default function ConversationInterface({
           <div className={cn(
             "relative p-4 rounded-2xl shadow-lg border-0",
             isFromCurrentUser 
-              ? cn(
-                  "bg-ocean text-white",
-                  "rounded-br-md"
-                )
-              : cn(
-                  "bg-slate-600 text-white",
-                  "rounded-bl-md"
-                ),
+              ? "bg-ocean text-white rounded-br-md"
+              : "bg-slate-600 text-white rounded-bl-md",
             isFirstMessage && "animate-in slide-in-from-bottom-4 duration-500",
             isLastMessage && "ring-2 ring-ocean/20 ring-offset-2"
           )}>
             {/* Content */}
-            <div className="text-sm leading-relaxed text-white">
+            <div className="text-sm leading-relaxed text-white font-medium">
               {message.content}
             </div>
 
