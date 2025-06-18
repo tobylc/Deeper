@@ -463,6 +463,7 @@ export default function Dashboard() {
                               try {
                                 // Create a new conversation
                                 const response = await apiRequest("POST", "/api/conversations", {
+                                  connectionId: connection.id,
                                   participant1Email: connection.inviterEmail,
                                   participant2Email: connection.inviteeEmail,
                                   relationshipType: connection.relationshipType,

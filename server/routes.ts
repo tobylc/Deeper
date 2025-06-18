@@ -1112,6 +1112,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Conversation creation endpoint for dashboard
+  app.post("/api/conversations", isAuthenticated, async (req: any, res) => {
+    try {
+      const { participant1Email, participant2Email, relationshipType, currentTurn, connectionId } = req.body;
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // Verify user is authorized to create this conversation
+      if (currentUser.email !== participant1Email && currentUser.email !== participant2Email) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const conversationData = {
+        connectionId,
+        participant1Email,
+        participant2Email,
+        relationshipType,
+        currentTurn,
+        status: 'active',
+        isMainThread: true
+      };
+      
+      const conversation = await storage.createConversation(conversationData);
+
+      // Send real-time WebSocket notifications to both participants
+      try {
+        const { getWebSocketManager } = await import('./websocket');
+        const wsManager = getWebSocketManager();
+        if (wsManager) {
+          // Notify both participants that a new conversation was created
+          wsManager.notifyConversationUpdate(participant1Email, {
+            conversationId: conversation.id,
+            action: 'conversation_created',
+            relationshipType
+          });
+          
+          if (participant1Email !== participant2Email) {
+            wsManager.notifyConversationUpdate(participant2Email, {
+              conversationId: conversation.id,
+              action: 'conversation_created',
+              relationshipType
+            });
+          }
+        }
+      } catch (error) {
+        console.error('[WEBSOCKET] Failed to send conversation creation notification:', error);
+      }
+
+      res.json(conversation);
+    } catch (error) {
+      console.error("Create conversation error:", error);
+      res.status(500).json({ message: "Failed to create conversation" });
+    }
+  });
+
   // Conversation threading endpoints
   app.get("/api/connections/:connectionId/conversations", isAuthenticated, async (req: any, res) => {
     try {

@@ -491,6 +491,16 @@ Changelog:
   * Thread selection properly updates URL and switches displayed conversation
   * Enhanced empty state messaging to differentiate between no conversations vs active conversation
   * Complete single-conversation display system ensuring clean, focused conversation experience
+- June 18, 2025. Connection acceptance flash issue and production-ready real-time dashboard system:
+  * Fixed automatic conversation creation during connection acceptance - conversations now only created when inviter manually clicks "Start Your First Conversation"
+  * Eliminated brief flash of "Start Your First Conversation" button before redirecting to active conversation
+  * Removed auto-conversation creation from both invitation signup and connection acceptance endpoints
+  * Enhanced WebSocket real-time dashboard updates to notify both participants of conversation changes
+  * Added comprehensive conversation update notifications for message sending, conversation creation, and thread changes
+  * Implemented production-ready WebSocket server with proper error handling and reconnection logic
+  * Added missing POST /api/conversations endpoint for dashboard conversation creation with real-time notifications
+  * Dashboard now auto-refreshes for both participants when conversations are created, messages sent, or threads updated
+  * Complete real-time notification system ensuring immediate dashboard updates across all user interactions
 ```
 
 ## User Preferences
