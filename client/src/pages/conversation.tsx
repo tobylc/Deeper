@@ -298,36 +298,14 @@ export default function ConversationPage() {
             />
           </div>
 
-          {/* Question Suggestions Sidebar */}
+          {/* Question Suggestions Sidebar - Always visible */}
           <div className={`lg:col-span-1 ${showThreadsView ? 'hidden lg:block' : 'block'} h-full`}>
-            {isMyTurn && nextMessageType === 'question' && (
-              <QuestionSuggestions 
-                relationshipType={conversation.relationshipType}
-                onQuestionSelect={handleQuestionSelect}
-              />
-            )}
-            
-            {/* Turn Status and Instructions */}
-            {!isMyTurn && (
-              <Card className="card-elevated border-amber/30 bg-amber/5 h-fit">
-                <CardContent className="p-4">
-                  <div className="text-center space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-amber/20 flex items-center justify-center mx-auto">
-                      <Clock className="w-5 h-5 text-amber" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground font-inter mb-2 text-sm">
-                        Waiting for Response
-                      </h3>
-                      <p className="text-xs text-slate-700 font-inter leading-relaxed">
-                        <UserDisplayName email={otherParticipant} /> is preparing their response. 
-                        You'll receive an email notification when it's your turn.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            <QuestionSuggestions 
+              relationshipType={conversation.relationshipType}
+              onQuestionSelect={handleQuestionSelect}
+              isMyTurn={isMyTurn}
+              otherParticipant={otherParticipant}
+            />
           </div>
         </div>
       </div>
