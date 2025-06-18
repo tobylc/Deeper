@@ -18,14 +18,41 @@ interface QuestionSuggestionsProps {
   onQuestionSelect: (question: string) => void;
   isMyTurn: boolean;
   otherParticipant: string;
-  onNewQuestion: () => void;
+  connectionId: number;
+  onNewThreadCreated: (conversationId: number) => void;
 }
 
-export default function QuestionSuggestions({ relationshipType, onQuestionSelect, isMyTurn, otherParticipant, onNewQuestion }: QuestionSuggestionsProps) {
+export default function QuestionSuggestions({ relationshipType, onQuestionSelect, isMyTurn, otherParticipant, connectionId, onNewThreadCreated }: QuestionSuggestionsProps) {
   const [currentSet, setCurrentSet] = useState(0);
   const [aiQuestions, setAiQuestions] = useState<string[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [showAI, setShowAI] = useState(false);
+  const [showNewQuestionDialog, setShowNewQuestionDialog] = useState(false);
+  const [newQuestionText, setNewQuestionText] = useState("");
+  
+  const queryClient = useQueryClient();
+  
+  // Thread creation mutation
+  const createThreadMutation = useMutation({
+    mutationFn: async (question: string) => {
+      return fetch(`/api/connections/${connectionId}/conversations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: question })
+      }).then(res => res.json());
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: [`/api/connections/${connectionId}/conversations`] });
+      setShowNewQuestionDialog(false);
+      setNewQuestionText("");
+      onNewThreadCreated(data.id);
+    }
+  });
+
+  const handleCreateNewThread = () => {
+    if (!newQuestionText.trim() || !isMyTurn) return;
+    createThreadMutation.mutate(newQuestionText.trim());
+  };
   
   const questions = getQuestionsByCategory(relationshipType);
   const questionsPerSet = 3;
@@ -81,13 +108,49 @@ export default function QuestionSuggestions({ relationshipType, onQuestionSelect
       ) : (
         <>
           {/* New Question Button */}
-          <Button 
-            onClick={onNewQuestion}
-            className="w-full bg-gradient-to-r from-ocean to-teal text-white hover:from-ocean/90 hover:to-teal/90 transition-all duration-200 shadow-lg hover:shadow-xl mb-4"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Question
-          </Button>
+          <Dialog open={showNewQuestionDialog} onOpenChange={setShowNewQuestionDialog}>
+            <DialogTrigger asChild>
+              <Button 
+                className="w-full bg-gradient-to-r from-ocean to-teal text-white hover:from-ocean/90 hover:to-teal/90 transition-all duration-200 shadow-lg hover:shadow-xl mb-4"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                New Question
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center space-x-2">
+                  <QuotesIcon size="sm" />
+                  <span>Ask a New Question</span>
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-slate-600 mb-4">
+                    Starting a new question will automatically save your current conversation and create a new thread.
+                  </p>
+                  <Textarea
+                    placeholder="What would you like to ask or explore together?"
+                    value={newQuestionText}
+                    onChange={(e) => setNewQuestionText(e.target.value)}
+                    className="min-h-[100px]"
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setShowNewQuestionDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleCreateNewThread}
+                    disabled={!newQuestionText.trim() || createThreadMutation.isPending}
+                    className="bg-ocean text-white hover:bg-ocean/90"
+                  >
+                    {createThreadMutation.isPending ? "Creating..." : "Start New Thread"}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Header Card */}
           <Card className="bg-white border border-slate-200/60 shadow-sm">

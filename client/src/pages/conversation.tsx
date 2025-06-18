@@ -197,10 +197,10 @@ export default function ConversationPage() {
     setShowThreadsView(false); // Hide threads view on mobile after selection
   };
 
-  const handleNewQuestion = () => {
-    // Stack current conversation automatically and trigger new question creation
-    // This will be handled by the ConversationThreads component
-    setShowThreadsView(true); // Show threads view to trigger new question dialog
+  const handleNewThreadCreated = (conversationId: number) => {
+    // Switch to the new conversation thread automatically
+    setSelectedConversationId(conversationId);
+    setNewMessage(""); // Clear any existing message
   };
 
   return (
@@ -311,7 +311,8 @@ export default function ConversationPage() {
               onQuestionSelect={handleQuestionSelect}
               isMyTurn={isMyTurn}
               otherParticipant={otherParticipant}
-              onNewQuestion={handleNewQuestion}
+              connectionId={conversation.connectionId}
+              onNewThreadCreated={handleNewThreadCreated}
             />
           </div>
         </div>
