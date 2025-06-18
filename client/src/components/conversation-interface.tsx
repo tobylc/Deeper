@@ -354,9 +354,9 @@ export default function ConversationInterface({
   };
 
   const TypingIndicator = () => (
-    <div className="group mb-8 smooth-enter relative mr-12">
+    <div className="group mb-8 relative mr-12">
       {/* Parchment Sheet - typing variant */}
-      <div className="relative bg-gradient-to-br from-blue-50/90 via-indigo-50/70 to-purple-50/60 p-6 transform -rotate-1 shadow-md shadow-blue-300/40 transition-all duration-300"
+      <div className="relative bg-gradient-to-br from-blue-50/90 via-indigo-50/70 to-purple-50/60 p-6 transform -rotate-1 shadow-md shadow-blue-300/40"
            style={{
              clipPath: "polygon(5% 0%, 100% 5%, 100% 95%, 92% 100%, 5% 100%, 0% 92%, 0% 8%, 5% 0%)",
              filter: 'drop-shadow(2px 4px 8px rgba(59, 130, 246, 0.15))'
