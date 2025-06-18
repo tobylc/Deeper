@@ -170,10 +170,10 @@ export default function InvitationSignup() {
               <QuotesIcon size="sm" className="brightness-0 invert" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-foreground font-inter">
+          <CardTitle className="text-2xl font-bold text-white font-inter">
             Complete Your Connection
           </CardTitle>
-          <CardDescription className="text-muted-foreground font-inter">
+          <CardDescription className="text-slate-100 font-inter">
             {getInviterName()} invited you to connect on Deeper
           </CardDescription>
         </CardHeader>
@@ -181,7 +181,7 @@ export default function InvitationSignup() {
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="firstName" className="text-foreground font-inter font-medium">First Name</Label>
+                <Label htmlFor="firstName" className="text-white font-inter font-medium">First Name</Label>
                 <Input
                   id="firstName"
                   type="text"
@@ -193,7 +193,7 @@ export default function InvitationSignup() {
                 />
               </div>
               <div>
-                <Label htmlFor="lastName" className="text-foreground font-inter font-medium">Last Name</Label>
+                <Label htmlFor="lastName" className="text-white font-inter font-medium">Last Name</Label>
                 <Input
                   id="lastName"
                   type="text"
@@ -207,7 +207,7 @@ export default function InvitationSignup() {
             </div>
 
             <div>
-              <Label htmlFor="inviteeEmail" className="text-foreground font-inter font-medium">Your Email Address</Label>
+              <Label htmlFor="inviteeEmail" className="text-white font-inter font-medium">Your Email Address</Label>
               <Input
                 id="inviteeEmail"
                 type="email"
@@ -215,13 +215,13 @@ export default function InvitationSignup() {
                 readOnly
                 className="bg-muted border-border text-muted-foreground cursor-not-allowed rounded-2xl font-inter"
               />
-              <p className="text-xs text-muted-foreground mt-1 font-inter">
+              <p className="text-xs text-slate-300 mt-1 font-inter">
                 This email was used for your invitation and cannot be changed
               </p>
             </div>
 
             <div>
-              <Label htmlFor="relationshipType" className="text-foreground font-inter font-medium">Relationship Type</Label>
+              <Label htmlFor="relationshipType" className="text-white font-inter font-medium">Relationship Type</Label>
               <Input
                 id="relationshipType"
                 value={invitation.relationshipType || ''}
@@ -231,7 +231,7 @@ export default function InvitationSignup() {
             </div>
 
             <div>
-              <Label htmlFor="password" className="text-foreground font-inter font-medium">Create Password</Label>
+              <Label htmlFor="password" className="text-white font-inter font-medium">Create Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -245,7 +245,7 @@ export default function InvitationSignup() {
             </div>
 
             <div>
-              <Label htmlFor="confirmPassword" className="text-foreground font-inter font-medium">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-white font-inter font-medium">Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -268,8 +268,8 @@ export default function InvitationSignup() {
           </form>
 
           <div className="mt-6 p-4 bg-card/30 rounded-2xl border border-border">
-            <h4 className="text-sm font-medium text-foreground mb-2 font-inter">What happens next?</h4>
-            <ul className="text-xs text-muted-foreground space-y-1 font-inter">
+            <h4 className="text-sm font-medium text-white mb-2 font-inter">What happens next?</h4>
+            <ul className="text-xs text-slate-300 space-y-1 font-inter">
               <li>• Your account will be created with your invitation email</li>
               <li>• A connection will be established with {getInviterName()}</li>
               <li>• You'll be taken to your dashboard to start conversations</li>
