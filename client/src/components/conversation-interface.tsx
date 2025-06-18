@@ -453,102 +453,114 @@ export default function ConversationInterface({
         )}
       </div>
 
-      {/* Message Input Area */}
+      {/* Journal Writing Area */}
       {isMyTurn && (
-        <div className="border-t border-slate-200/60 p-4 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm flex-shrink-0">
-          <div className="space-y-3">
-            {/* Message Type Indicator */}
+        <div className="border-t border-amber-200/60 p-6 bg-gradient-to-br from-amber-50/60 via-yellow-50/40 to-orange-50/30 backdrop-blur-sm flex-shrink-0 relative">
+          {/* Paper texture overlay */}
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,_rgba(139,69,19,0.1)_0%,_transparent_50%)] pointer-events-none" />
+          
+          {/* Subtle ruled lines effect */}
+          <div className="absolute inset-0 opacity-5 pointer-events-none" 
+               style={{
+                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 24px, rgba(139,69,19,0.3) 24px, rgba(139,69,19,0.3) 25px)',
+               }} />
+
+          <div className="space-y-4 relative z-10">
+            {/* Writing prompt */}
             <div className="flex items-center justify-between">
-              <Badge 
-                variant="outline" 
-                className={cn(
-                  "border-slate-300 text-slate-700 font-medium text-xs",
+              <div className="flex items-center space-x-3">
+                <div className={cn(
+                  "px-3 py-2 text-sm font-handwriting transform -rotate-1 relative shadow-sm",
                   messages.length >= 2
-                    ? "bg-slate-100 border-slate-300 text-slate-700"
+                    ? "text-slate-600 bg-slate-100/80 border border-slate-200"
                     : nextMessageType === 'question' 
-                      ? "bg-ocean/10 border-ocean/30 text-ocean" 
-                      : "bg-amber/10 border-amber/30 text-amber-800"
-                )}
-              >
-                {messages.length >= 2 ? (
-                  <>
-                    <ArrowRight className="h-3 w-3 mr-1" />
-                    Your Follow up
-                  </>
-                ) : nextMessageType === 'question' ? (
-                  <>
-                    <MessageCircle className="h-3 w-3 mr-1" />
-                    Your Question
-                  </>
-                ) : (
-                  <>
-                    <QuotesIcon size="sm" className="mr-1" />
-                    Your Response
-                  </>
-                )}
-              </Badge>
-              
-              <div className="text-xs text-slate-600">
-                {messages.length >= 2
-                  ? "Continue the conversation with your follow-up thoughts"
-                  : nextMessageType === 'question' 
-                    ? "Ask something meaningful to deepen your connection"
-                    : "Share your thoughts and continue the conversation"
-                }
-              </div>
-            </div>
-
-            {/* Input Area */}
-            <div className="flex space-x-3">
-              <div className="flex-1">
-                <Textarea
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={
-                    messages.length >= 2
-                      ? "Continue the conversation with your follow-up thoughts..."
-                      : nextMessageType === 'question' 
-                        ? "Type your question or click a suggestion from the right sidebar..." 
-                        : "Share your response..."
+                      ? "text-ocean bg-ocean/10 border border-ocean/30" 
+                      : "text-amber-700 bg-amber/20 border border-amber/40",
+                  "rounded-lg"
+                )}>
+                  {messages.length >= 2 ? "Continue writing..." : nextMessageType === 'question' ? "Ask a question..." : "Share your thoughts..."}
+                </div>
+                
+                <div className="text-xs text-slate-600 italic font-serif">
+                  {messages.length >= 2
+                    ? "Let your thoughts flow naturally onto the page"
+                    : nextMessageType === 'question' 
+                      ? "What would you like to explore together?"
+                      : "Express what's in your heart"
                   }
-                  className="min-h-[60px] resize-none bg-white/80 backdrop-blur-sm border-slate-200/60 focus:border-ocean/50 focus:ring-ocean/20 rounded-xl text-sm"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      onSendMessage();
-                    }
-                  }}
-                  maxLength={500}
-                />
-              </div>
-              
-              <div className="flex flex-col space-y-2">
-                <Button 
-                  onClick={onSendMessage}
-                  disabled={!newMessage.trim() || isSending}
-                  className={cn(
-                    "h-10 w-10 rounded-xl shadow-lg transition-all duration-200 border-0 group",
-                    newMessage.trim() 
-                      ? "bg-gradient-to-r from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean/70 hover:shadow-xl hover:scale-105" 
-                      : "bg-gradient-to-r from-ocean/60 to-ocean/40 cursor-default",
-                    isSending && "animate-pulse"
-                  )}
-                >
-                  {isSending ? (
-                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Send className={cn(
-                      "h-3 w-3 text-white transition-transform duration-200",
-                      newMessage.trim() && "group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                    )} />
-                  )}
-                </Button>
+                </div>
               </div>
             </div>
 
-            {/* Character Count */}
-            <div className="text-xs text-slate-500 text-right">
-              {newMessage.length}/500 characters
+            {/* Writing Surface */}
+            <div className="relative">
+              {/* Paper sheet for writing */}
+              <div className="relative bg-gradient-to-br from-white to-yellow-50/60 p-6 border border-amber-100/60 shadow-md transform rotate-0 hover:rotate-0 transition-transform duration-300 rounded-lg">
+                {/* Red margin line */}
+                <div className="absolute top-0 bottom-0 w-px bg-red-300/60 left-8" />
+                
+                {/* Ruled lines background */}
+                <div className="absolute inset-0 opacity-15 pointer-events-none rounded-lg" 
+                     style={{
+                       backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(139,69,19,0.4) 23px, rgba(139,69,19,0.4) 24px)',
+                     }} />
+
+                <div className="flex space-x-4">
+                  <div className="flex-1 pl-4">
+                    <Textarea
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder={
+                        messages.length >= 2
+                          ? "Continue writing your thoughts here..."
+                          : nextMessageType === 'question' 
+                            ? "Write your question here... or choose from suggestions →" 
+                            : "Write your response here..."
+                      }
+                      className="min-h-[80px] resize-none bg-transparent border-0 focus:ring-0 text-slate-700 font-serif text-base leading-6 placeholder:text-slate-400/70 placeholder:italic"
+                      style={{ backgroundImage: 'none' }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          if (newMessage.trim() && !isSending) {
+                            onSendMessage();
+                          }
+                        }
+                      }}
+                      maxLength={500}
+                    />
+                    
+                    {/* Writing stats */}
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-amber-200/40">
+                      <div className="text-xs text-slate-500 italic">
+                        {newMessage.length} characters written
+                      </div>
+                      <div className="text-xs text-slate-400 italic">
+                        Press Enter to share • Shift+Enter for new line
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Send button styled as ink well */}
+                  <div className="flex flex-col items-center space-y-2">
+                    <Button
+                      onClick={onSendMessage}
+                      disabled={!newMessage.trim() || isSending}
+                      className={cn(
+                        "w-16 h-16 rounded-full bg-gradient-to-br from-blue-800 to-blue-900 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-blue/25 transition-all duration-200 border-2 border-blue-700",
+                        (!newMessage.trim() || isSending) && "opacity-50 cursor-not-allowed"
+                      )}
+                    >
+                      {isSending ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Send className="h-5 w-5" />
+                      )}
+                    </Button>
+                    <span className="text-xs text-slate-600 font-handwriting">Share</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
