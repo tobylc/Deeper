@@ -146,6 +146,7 @@ export class WebSocketManager {
 
   public notifyConversationUpdate(email: string, conversationData: {
     conversationId: number;
+    connectionId?: number;
     action: string;
     relationshipType?: string;
   }) {

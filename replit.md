@@ -501,6 +501,14 @@ Changelog:
   * Added missing POST /api/conversations endpoint for dashboard conversation creation with real-time notifications
   * Dashboard now auto-refreshes for both participants when conversations are created, messages sent, or threads updated
   * Complete real-time notification system ensuring immediate dashboard updates across all user interactions
+- June 18, 2025. Unified conversation threading system with synchronized right column "new question" behavior:
+  * Standardized all right column actions (curated questions, AI questions, custom questions) to create new conversation threads
+  * Eliminated question population behavior - all right column clicks now create immediate conversation threads with automatic message sending
+  * Enhanced WebSocket notifications to include connectionId for proper conversation state synchronization between both users
+  * Implemented custom event system to trigger URL changes and state updates when new conversation threads are created
+  * Both users now see identical conversation states: current conversation in middle column, rolled up conversations in left column
+  * Unified behavior ensures clicking any suggestion in right column causes current conversation to roll up for both participants
+  * Real-time conversation threading synchronization maintains consistent user experience across all devices and sessions
 ```
 
 ## User Preferences
