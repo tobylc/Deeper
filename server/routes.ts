@@ -1413,6 +1413,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Question Generation endpoint
+  app.post("/api/ai/generate-questions", 
+    rateLimit(5, 60 * 60 * 1000), // 5 generations per hour
+    isAuthenticated, 
+    async (req: any, res) => {
+    try {
+      const { relationshipType, count = 3 } = req.body;
+      
+      if (!relationshipType) {
+        return res.status(400).json({ message: "Relationship type is required" });
+      }
+      
+      // Validate count
+      const questionCount = Math.min(Math.max(parseInt(count) || 3, 1), 5);
+      
+      // Generate context-specific questions using a simple algorithm
+      // In production, this would use OpenAI API
+      const questionTemplates = {
+        "Parent-Child": [
+          "What's something you've learned about yourself recently that you'd like to share?",
+          "When you think about your future, what excites you most?",
+          "What's a challenge you're facing that we could work through together?",
+          "What's something you wish I understood better about your world?",
+          "If you could teach me one thing, what would it be?",
+          "What's a memory of ours that always makes you smile?",
+          "How do you think we've both grown in the past year?",
+          "What's something you're proud of that maybe I don't know about?"
+        ],
+        "Romantic Partners": [
+          "What's something new you'd like us to experience together?",
+          "When do you feel most connected to me?",
+          "What's a dream you have for our relationship?",
+          "How can I better support you in your goals?",
+          "What's something you appreciate about our relationship that you don't say often?",
+          "If we could go anywhere together, where would you choose and why?",
+          "What's something about our future that you're most excited about?",
+          "How do you think we've grown stronger together recently?"
+        ],
+        "Friends": [
+          "What's the most important lesson life has taught you lately?",
+          "If you could change one thing about your current situation, what would it be?",
+          "What's something you're working on that you'd like support with?",
+          "What adventure should we plan together?",
+          "How has our friendship changed or deepened over time?",
+          "What's something you've been thinking about a lot recently?",
+          "If you could have any superpower for a day, what would you do?",
+          "What's the best advice someone has given you this year?"
+        ],
+        "Siblings": [
+          "What's your favorite memory of us growing up?",
+          "How do you think being siblings has shaped who we are?",
+          "What family tradition means the most to you?",
+          "What's something you've always wanted to tell me but never have?",
+          "How do you think we're similar and different from our parents?",
+          "What's something you hope our family continues to do?",
+          "If we could relive one day from our childhood, which would you choose?",
+          "What's something you've learned from watching me?"
+        ]
+      };
+      
+      const templates = questionTemplates[relationshipType as keyof typeof questionTemplates] || questionTemplates["Friends"];
+      
+      // Randomly select questions
+      const shuffled = [...templates].sort(() => Math.random() - 0.5);
+      const selectedQuestions = shuffled.slice(0, questionCount);
+      
+      res.json({ 
+        questions: selectedQuestions,
+        relationshipType,
+        count: selectedQuestions.length
+      });
+    } catch (error) {
+      console.error("AI question generation error:", error);
+      res.status(500).json({ message: "Failed to generate questions" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

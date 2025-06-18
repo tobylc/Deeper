@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lightbulb, Shuffle, Sparkles, ArrowRight, MessageCircle } from "lucide-react";
+import { Lightbulb, Shuffle, Sparkles, ArrowRight, MessageCircle, Wand2 } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
 import { getQuestionsByCategory } from "@/lib/questions";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface QuestionSuggestionsProps {
@@ -15,6 +15,10 @@ interface QuestionSuggestionsProps {
 
 export default function QuestionSuggestions({ relationshipType, onQuestionSelect }: QuestionSuggestionsProps) {
   const [currentSet, setCurrentSet] = useState(0);
+  const [aiQuestions, setAiQuestions] = useState<string[]>([]);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [showAI, setShowAI] = useState(false);
+  
   const questions = getQuestionsByCategory(relationshipType);
   const questionsPerSet = 3;
   const currentQuestions = questions.slice(currentSet * questionsPerSet, (currentSet + 1) * questionsPerSet);
@@ -23,96 +27,164 @@ export default function QuestionSuggestions({ relationshipType, onQuestionSelect
     setCurrentSet((prev) => (prev + 1) % Math.ceil(questions.length / questionsPerSet));
   };
 
+  const generateAIQuestions = async () => {
+    setIsGeneratingAI(true);
+    try {
+      const response = await fetch('/api/ai/generate-questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ relationshipType, count: 3 })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAiQuestions(data.questions || []);
+        setShowAI(true);
+      }
+    } catch (error) {
+      console.error('Failed to generate AI questions:', error);
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header Card */}
-      <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-ocean/5 to-amber/5 backdrop-blur-sm">
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-ocean/10 to-amber/10 opacity-50"></div>
-          <CardHeader className="relative">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-ocean to-amber rounded-lg blur-sm opacity-60"></div>
-                  <div className="relative bg-gradient-to-br from-ocean to-amber p-2 rounded-lg">
-                    <Sparkles className="w-5 h-5 text-white" />
-                  </div>
-                </div>
-                <div>
-                  <CardTitle className="text-lg font-bold text-slate-800">
-                    Question Inspiration
-                  </CardTitle>
-                  <p className="text-sm text-slate-600 mt-1">
-                    Thoughtfully curated for deeper connection
-                  </p>
-                </div>
+      <Card className="bg-white border border-slate-200/60 shadow-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="bg-gradient-to-br from-ocean to-amber p-2 rounded-lg">
+                <Sparkles className="w-4 h-4 text-white" />
               </div>
-              
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={shuffleQuestions}
-                className="hover:bg-ocean/10 transition-all duration-200"
-              >
-                <Shuffle className="w-4 h-4 mr-2" />
-                More
-              </Button>
+              <div>
+                <CardTitle className="text-base font-semibold text-slate-800">
+                  Question Inspiration
+                </CardTitle>
+                <p className="text-xs text-slate-600">
+                  Thoughtfully curated for deeper connection
+                </p>
+              </div>
             </div>
             
-            <Badge 
-              variant="secondary" 
-              className="w-fit bg-gradient-to-r from-amber/20 to-amber/10 text-amber-800 border-amber/30 shadow-sm"
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={shuffleQuestions}
+              className="h-8 px-2 hover:bg-ocean/10 text-xs"
             >
-              <QuotesIcon size="sm" className="mr-1" />
-              {relationshipType}
-            </Badge>
-          </CardHeader>
-        </div>
+              <Shuffle className="w-3 h-3 mr-1" />
+              More
+            </Button>
+          </div>
+          
+          <Badge 
+            variant="secondary" 
+            className="w-fit bg-amber/10 text-amber-800 border-amber/30 text-xs"
+          >
+            <QuotesIcon size="xs" className="mr-1" />
+            {relationshipType}
+          </Badge>
+        </CardHeader>
       </Card>
 
-      {/* Questions Grid */}
-      <div className="space-y-3">
-        {currentQuestions.map((question, index) => (
-          <Card 
+      {/* Toggle Buttons */}
+      <div className="flex space-x-2">
+        <Button
+          variant={!showAI ? "default" : "outline"}
+          size="sm"
+          onClick={() => setShowAI(false)}
+          className={cn(
+            "flex-1 text-xs h-8",
+            !showAI 
+              ? "bg-ocean text-white hover:bg-ocean/90" 
+              : "border-slate-300 text-slate-700 hover:bg-slate-50"
+          )}
+        >
+          <MessageCircle className="w-3 h-3 mr-1" />
+          Curated
+        </Button>
+        <Button
+          variant={showAI ? "default" : "outline"}
+          size="sm"
+          onClick={() => {
+            if (!showAI && aiQuestions.length === 0) {
+              generateAIQuestions();
+            } else {
+              setShowAI(true);
+            }
+          }}
+          disabled={isGeneratingAI}
+          className={cn(
+            "flex-1 text-xs h-8",
+            showAI 
+              ? "bg-amber text-white hover:bg-amber/90" 
+              : "border-slate-300 text-slate-700 hover:bg-slate-50"
+          )}
+        >
+          {isGeneratingAI ? (
+            <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin mr-1" />
+          ) : (
+            <Wand2 className="w-3 h-3 mr-1" />
+          )}
+          AI Generated
+        </Button>
+      </div>
+
+      {/* Questions List */}
+      <div className="space-y-2">
+        {(showAI ? aiQuestions : currentQuestions).map((question, index) => (
+          <div
             key={index}
-            className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border-slate-200/60 hover:border-ocean/30 bg-gradient-to-br from-white to-slate-50/50 backdrop-blur-sm"
             onClick={() => onQuestionSelect(question)}
+            className={cn(
+              "group cursor-pointer transition-all duration-200 p-3 rounded-xl border",
+              "hover:shadow-md hover:scale-[1.01]",
+              showAI 
+                ? "bg-gradient-to-br from-amber/5 to-amber/10 border-amber/20 hover:border-amber/40 hover:bg-amber/15"
+                : "bg-gradient-to-br from-ocean/5 to-ocean/10 border-ocean/20 hover:border-ocean/40 hover:bg-ocean/15"
+            )}
           >
-            <CardContent className="p-4">
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 mt-1">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ocean/10 to-amber/10 flex items-center justify-center group-hover:from-ocean/20 group-hover:to-amber/20 transition-all duration-300">
-                    <MessageCircle className="w-4 h-4 text-ocean group-hover:text-ocean/80" />
-                  </div>
+            <div className="flex items-start space-x-2">
+              <div className="flex-shrink-0 mt-0.5">
+                <MessageCircle className={cn(
+                  "w-3 h-3",
+                  showAI ? "text-amber-600" : "text-ocean"
+                )} />
+              </div>
+              
+              <div className="flex-1">
+                <div className="text-sm leading-relaxed text-slate-700 group-hover:text-slate-900">
+                  "{question}"
                 </div>
                 
-                <div className="flex-1">
-                  <div className="text-sm leading-relaxed text-slate-700 group-hover:text-slate-900 transition-colors duration-300">
-                    "{question}"
-                  </div>
-                  
-                  <div className="flex items-center mt-3 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <span className="text-xs text-ocean font-medium mr-2">
-                      Click to use this question
-                    </span>
-                    <ArrowRight className="w-3 h-3 text-ocean" />
-                  </div>
+                <div className="flex items-center mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <span className={cn(
+                    "text-xs font-medium mr-1",
+                    showAI ? "text-amber-600" : "text-ocean"
+                  )}>
+                    Click to use
+                  </span>
+                  <ArrowRight className={cn(
+                    "w-2 h-2",
+                    showAI ? "text-amber-600" : "text-ocean"
+                  )} />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* Footer Guidance */}
-      <div className="text-center">
-        <div className="inline-flex items-center space-x-2 text-sm text-slate-700 bg-slate-50/80 px-4 py-2 rounded-full border border-slate-200/60">
-          <Lightbulb className="w-4 h-4 text-amber-500" />
-          <span>Questions spark meaningful conversations</span>
-        </div>
-        
-        <div className="mt-3 text-xs text-slate-600">
-          {questions.length} total questions available • Set {currentSet + 1} of {Math.ceil(questions.length / questionsPerSet)}
+      {/* Footer */}
+      <div className="text-center pt-2">
+        <div className="text-xs text-slate-600">
+          {showAI ? (
+            aiQuestions.length > 0 ? `${aiQuestions.length} AI-generated questions` : 'Generate personalized questions'
+          ) : (
+            `${questions.length} curated questions • Set ${currentSet + 1} of ${Math.ceil(questions.length / questionsPerSet)}`
+          )}
         </div>
       </div>
     </div>

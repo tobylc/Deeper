@@ -354,6 +354,13 @@ Changelog:
   * Enhanced send button with hover animations and visual feedback when message is ready
   * Redesigned conversation container with rounded corners and shadow to establish focal point
   * Compact header and input areas to maximize conversation space while maintaining professional appearance
+- June 18, 2025. Right column question suggestions enhancement:
+  * Added contrasting background colors: ocean blue gradient for curated questions, amber gradient for AI-generated
+  * Implemented toggle buttons to switch between curated and AI-generated question sets
+  * Created clean, professional design with proper text contrast (slate-700 to slate-900 on colored backgrounds)
+  * Added AI question generation backend endpoint with rate limiting (5 generations per hour)
+  * Integrated relationship-specific AI question templates for Parent-Child, Romantic Partners, Friends, and Siblings
+  * Maintained simple, uncluttered interface with clear visual hierarchy and user-friendly interactions
 - June 17, 2025. Authentication infinite loading issue resolution:
   * Fixed authentication hook to properly handle 401 responses without infinite loading
   * Added 3-second timeout to authentication requests to prevent hanging
