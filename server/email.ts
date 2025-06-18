@@ -7,6 +7,13 @@ export interface EmailService {
   sendConnectionInvitation(connection: Connection): Promise<void>;
   sendConnectionAccepted(connection: Connection): Promise<void>;
   sendConnectionDeclined(connection: Connection): Promise<void>;
+  sendTurnNotification(params: {
+    recipientEmail: string;
+    senderEmail: string;
+    conversationId: number;
+    relationshipType: string;
+    messageType: 'question' | 'response';
+  }): Promise<void>;
 }
 
 // Simple console email service for development
@@ -70,6 +77,36 @@ ${inviteeName} has respectfully declined your invitation to connect.
 Don't worry - meaningful connections take time. You can always try reaching out through other channels or invite them again in the future.
 
 Keep building meaningful relationships!
+The Deeper Team
+    `);
+  }
+
+  async sendTurnNotification(params: {
+    recipientEmail: string;
+    senderEmail: string;
+    conversationId: number;
+    relationshipType: string;
+    messageType: 'question' | 'response';
+  }): Promise<void> {
+    const senderName = await storage.getUserDisplayNameByEmail(params.senderEmail);
+    const actionText = params.messageType === 'question' ? 'asked a question' : 'shared a response';
+    
+    console.log(`
+📧 TURN NOTIFICATION EMAIL
+To: ${params.recipientEmail}
+Subject: It's your turn! ${senderName} ${actionText}
+
+Hi there!
+
+${senderName} just ${actionText} in your ${params.relationshipType.toLowerCase()} conversation.
+
+It's now your turn to respond and continue this meaningful dialogue.
+
+[Visit Conversation Button - ID: ${params.conversationId}]
+
+This is your private, turn-based conversation space designed to deepen your connection.
+
+Best regards,
 The Deeper Team
     `);
   }
@@ -270,6 +307,78 @@ The Deeper Team
       console.log(`[EMAIL] Decline notification sent to ${connection.inviterEmail}`);
     } catch (error) {
       console.error('[EMAIL] Failed to send decline notification:', error);
+      throw error;
+    }
+  }
+
+  async sendTurnNotification(params: {
+    recipientEmail: string;
+    senderEmail: string;
+    conversationId: number;
+    relationshipType: string;
+    messageType: 'question' | 'response';
+  }): Promise<void> {
+    const appUrl = 'https://deepersocial.replit.app';
+    const senderName = await storage.getUserDisplayNameByEmail(params.senderEmail);
+    const actionText = params.messageType === 'question' ? 'asked a question' : 'shared a response';
+    const responseText = params.messageType === 'question' ? 'respond' : 'continue the conversation';
+
+    const msg = {
+      to: params.recipientEmail,
+      from: this.fromEmail,
+      subject: `It's your turn! ${senderName} ${actionText}`,
+      html: `
+        <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+            <h1 style="margin: 0; font-size: 28px; font-weight: bold;">Your Turn!</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Time to continue your meaningful conversation</p>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+            <h2 style="color: #1e293b; margin: 0 0 20px 0;">Message waiting for you</h2>
+            <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
+              <strong>${senderName}</strong> just ${actionText} in your ${params.relationshipType.toLowerCase()} conversation.
+            </p>
+            
+            <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
+              It's now your turn to ${responseText} and continue this meaningful dialogue.
+            </p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${appUrl}/conversation/${params.conversationId}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
+                Continue Conversation
+              </a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+            <p style="color: #94a3b8; font-size: 14px; margin: 0;">
+              This is your private, turn-based conversation space designed to deepen relationships through meaningful dialogue.
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+Hi there!
+
+${senderName} just ${actionText} in your ${params.relationshipType.toLowerCase()} conversation.
+
+It's now your turn to ${responseText} and continue this meaningful dialogue.
+
+Visit your conversation: ${appUrl}/conversation/${params.conversationId}
+
+This is your private, turn-based conversation space designed to deepen your connection.
+
+Best regards,
+The Deeper Team
+      `
+    };
+
+    try {
+      await sgMail.send(msg);
+      console.log(`[EMAIL] Turn notification sent to ${params.recipientEmail}`);
+    } catch (error) {
+      console.error('[EMAIL] Failed to send turn notification:', error);
       throw error;
     }
   }
@@ -477,6 +586,80 @@ The Deeper Team
     });
 
     console.log(`[EMAIL] Decline notification stored for ${connection.inviterEmail}`);
+  }
+
+  async sendTurnNotification(params: {
+    recipientEmail: string;
+    senderEmail: string;
+    conversationId: number;
+    relationshipType: string;
+    messageType: 'question' | 'response';
+  }): Promise<void> {
+    const appUrl = 'https://deepersocial.replit.app';
+    const senderName = await storage.getUserDisplayNameByEmail(params.senderEmail);
+    const actionText = params.messageType === 'question' ? 'asked a question' : 'shared a response';
+    const responseText = params.messageType === 'question' ? 'respond' : 'continue the conversation';
+
+    const subject = `It's your turn! ${senderName} ${actionText}`;
+    
+    const htmlContent = `
+      <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: bold;">Your Turn!</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">Time to continue your meaningful conversation</p>
+        </div>
+        
+        <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+          <h2 style="color: #1e293b; margin: 0 0 20px 0;">Message waiting for you</h2>
+          <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
+            <strong>${senderName}</strong> just ${actionText} in your ${params.relationshipType.toLowerCase()} conversation.
+          </p>
+          
+          <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
+            It's now your turn to ${responseText} and continue this meaningful dialogue.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${appUrl}/conversation/${params.conversationId}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
+              Continue Conversation
+            </a>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+          <p style="color: #94a3b8; font-size: 14px; margin: 0;">
+            This is your private, turn-based conversation space designed to deepen relationships through meaningful dialogue.
+          </p>
+        </div>
+      </div>
+    `;
+
+    const textContent = `
+Hi there!
+
+${senderName} just ${actionText} in your ${params.relationshipType.toLowerCase()} conversation.
+
+It's now your turn to ${responseText} and continue this meaningful dialogue.
+
+Visit your conversation: ${appUrl}/conversation/${params.conversationId}
+
+This is your private, turn-based conversation space designed to deepen your connection.
+
+Best regards,
+The Deeper Team
+    `;
+
+    await storage.createEmail({
+      toEmail: params.recipientEmail,
+      fromEmail: this.fromEmail,
+      subject,
+      htmlContent,
+      textContent,
+      emailType: "turn_notification",
+      connectionId: params.conversationId,
+    });
+
+    console.log(`[EMAIL] Turn notification stored for ${params.recipientEmail}`);
   }
 }
 

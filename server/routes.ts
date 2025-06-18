@@ -1329,6 +1329,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : conversation.participant1Email;
       await storage.updateConversationTurn(conversationId, nextTurn);
 
+      // Send turn notification email to the waiting user
+      try {
+        await emailService.sendTurnNotification({
+          recipientEmail: nextTurn,
+          senderEmail: messageData.senderEmail,
+          conversationId,
+          relationshipType: conversation.relationshipType,
+          messageType: messageData.type
+        });
+      } catch (error) {
+        console.error('[EMAIL] Failed to send turn notification:', error);
+        // Don't fail the message sending if email fails
+      }
+
       // Track message sending
       analytics.track({
         type: 'message_sent',

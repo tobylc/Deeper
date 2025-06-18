@@ -381,6 +381,14 @@ Changelog:
   * Ensured consistent name display throughout: dashboard, conversations, invitations, emails
   * All user interfaces now prioritize full names over email addresses with proper fallback
   * Production-ready user name system with comprehensive error handling and caching
+- June 18, 2025. Turn notification email system implementation:
+  * Added turn notification emails sent automatically when users send messages or responses
+  * Implemented sendTurnNotification method across all email services (Console, Production, Internal)
+  * Enhanced message sending endpoint to trigger email notifications to waiting users
+  * Professional email templates with "Continue Conversation" one-click button for immediate access
+  * Email design matches existing application color scheme with ocean blue gradients
+  * Turn notifications include sender name, message type, and direct conversation link
+  * Production-ready turn-based communication system with comprehensive email notification flow
 ```
 
 ## User Preferences
