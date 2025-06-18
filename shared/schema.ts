@@ -33,6 +33,9 @@ export const users = pgTable("users", {
   passwordHash: varchar("password_hash"), // For email/password authentication
   googleId: varchar("google_id"), // Google OAuth ID for account linking
   profileImageUrl: varchar("profile_image_url"),
+  phoneNumber: varchar("phone_number"), // For SMS notifications
+  phoneVerified: boolean("phone_verified").default(false), // Phone number verification status
+  notificationPreference: varchar("notification_preference").default("email"), // email, sms, both
   subscriptionTier: varchar("subscription_tier").default("free"), // free, starter, pro, unlimited
   subscriptionStatus: varchar("subscription_status").default("active"), // active, cancelled, expired
   maxConnections: integer("max_connections").default(1), // connections user can initiate
