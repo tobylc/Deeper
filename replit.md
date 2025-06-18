@@ -361,6 +361,12 @@ Changelog:
   * Added AI question generation backend endpoint with rate limiting (5 generations per hour)
   * Integrated relationship-specific AI question templates for Parent-Child, Romantic Partners, Friends, and Siblings
   * Maintained simple, uncluttered interface with clear visual hierarchy and user-friendly interactions
+- June 18, 2025. Conversation page header enhancement with profile images:
+  * Replaced generic blue Users icon with actual profile images from user accounts
+  * Implemented overlapping ProfileAvatar components showing both conversation participants
+  * Added user data queries to fetch current user and other participant information
+  * Enhanced header displays proper names and profile images with white borders and shadows
+  * Clean, professional appearance with authentic user representation instead of placeholder icons
 - June 17, 2025. Authentication infinite loading issue resolution:
   * Fixed authentication hook to properly handle 401 responses without infinite loading
   * Added 3-second timeout to authentication requests to prevent hanging
