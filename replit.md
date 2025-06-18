@@ -455,6 +455,7 @@ Changelog:
   * Maintains hyper-realistic paper styling consistency with subtle textures and ruled lines
   * Prevents conversation window clutter while preserving focus on recent exchanges
   * Added clickable expand/collapse functionality for paper stacks with smooth animations
+  * Implemented restack button that appears when papers are expanded for easy re-collapsing
 - June 18, 2025. Automatic thread naming system implementation:
   * Created intelligent thread naming system that summarizes original questions into meaningful titles
   * Implemented generateRelationshipSpecificTitle function with context-aware question analysis

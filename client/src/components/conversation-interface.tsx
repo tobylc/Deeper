@@ -489,6 +489,46 @@ export default function ConversationInterface({
           <EmptyState />
         ) : (
           <div className="space-y-6 relative z-10">
+            {/* Restack Button - appears when conversation is expanded */}
+            {messages.length >= 4 && showFullHistory && (
+              <div className="flex justify-center mb-4">
+                <button
+                  onClick={() => setShowFullHistory(false)}
+                  className="bg-gradient-to-br from-white via-gray-50/20 to-amber-50/10 border border-gray-200/40 rounded-sm shadow-lg px-4 py-2 hover:shadow-xl transition-all duration-200 hover:scale-[1.02] cursor-pointer"
+                  style={{
+                    background: `
+                      linear-gradient(135deg, 
+                        rgba(255,255,255,0.98) 0%, 
+                        rgba(248,250,252,0.96) 30%, 
+                        rgba(255,251,235,0.94) 70%, 
+                        rgba(255,251,235,0.92) 100%
+                      )
+                    `,
+                    filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.08))',
+                    backdropFilter: 'blur(0.5px)'
+                  }}
+                >
+                  {/* Subtle paper texture */}
+                  <div className="absolute inset-0 opacity-10 pointer-events-none">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.01)_0%,_transparent_50%)]"></div>
+                  </div>
+                  
+                  {/* Very subtle ruled lines */}
+                  <div className="absolute inset-0 opacity-15 pointer-events-none" 
+                       style={{
+                         backgroundImage: 'repeating-linear-gradient(transparent, transparent 20px, rgba(156,163,175,0.08) 20px, rgba(156,163,175,0.08) 21px)',
+                       }} />
+                  
+                  <div className="relative z-10 text-center flex items-center space-x-2">
+                    <ArrowRight className="w-4 h-4 text-gray-600 rotate-90" />
+                    <span className="text-sm text-gray-700 font-serif">Restack papers</span>
+                    <ArrowRight className="w-4 h-4 text-gray-600 rotate-90" />
+                  </div>
+                </button>
+              </div>
+            )}
+
             {/* Show stacked papers when 4+ messages and not expanded */}
             {messages.length >= 4 && !showFullHistory && (
               <StackedPapers messages={messages.slice(0, -2)} />
