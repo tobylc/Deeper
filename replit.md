@@ -400,6 +400,13 @@ Changelog:
   * Production-ready SMS service with Console, Production (Twilio), and Internal implementations
   * Rate limiting on verification endpoints (5 attempts per 15 minutes for sending codes)
   * Complete SMS notification flow for connection invitations, acceptances, declines, and turn notifications
+- June 18, 2025. Follow-up conversation flow enhancement:
+  * Implemented progressive message labeling: Question → Response → Follow up for all subsequent messages
+  * After initial question-response exchange, all future messages display as "Follow up" with ArrowRight icon
+  * Updated input area to show "Your Follow up" badge and placeholder text for continuing conversations
+  * Enhanced message badge styling with distinct colors: ocean blue for questions, amber for responses, gray for follow-ups
+  * Improved conversation flow to encourage ongoing dialogue beyond initial exchange
+  * Applied follow-up logic consistently across message bubbles, input badges, and placeholder text
 ```
 
 ## User Preferences

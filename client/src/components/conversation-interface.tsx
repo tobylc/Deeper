@@ -168,6 +168,10 @@ export default function ConversationInterface({
     const isFirstMessage = index === 0;
     const isLastMessage = index === messages.length - 1;
     
+    // After first question-response pair, all subsequent messages are "Follow up"
+    const isFollowUp = messages.length >= 2 && index >= 2;
+    const messageTypeLabel = isFollowUp ? "Follow up" : (isQuestion ? "Question" : "Response");
+    
     return (
       <div className={cn(
         "group flex items-end space-x-3 mb-6 smooth-enter",
@@ -196,15 +200,22 @@ export default function ConversationInterface({
             isFromCurrentUser ? "justify-end" : "justify-start"
           )}>
             <Badge 
-              variant={isQuestion ? "default" : "secondary"} 
+              variant={isFollowUp ? "outline" : (isQuestion ? "default" : "secondary")} 
               className={cn(
                 "text-xs font-medium shadow-sm",
-                isQuestion 
-                  ? "bg-gradient-to-r from-ocean to-ocean/80 text-white border-0" 
-                  : "bg-gradient-to-r from-amber/20 to-amber/10 text-amber-800 border-amber/30"
+                isFollowUp
+                  ? "bg-gradient-to-r from-slate-100 to-slate-50 text-slate-700 border-slate-300"
+                  : isQuestion 
+                    ? "bg-gradient-to-r from-ocean to-ocean/80 text-white border-0" 
+                    : "bg-gradient-to-r from-amber/20 to-amber/10 text-amber-800 border-amber/30"
               )}
             >
-              {isQuestion ? (
+              {isFollowUp ? (
+                <>
+                  <ArrowRight className="h-3 w-3 mr-1" />
+                  Follow up
+                </>
+              ) : isQuestion ? (
                 <>
                   <MessageCircle className="h-3 w-3 mr-1" />
                   Question
@@ -357,12 +368,19 @@ export default function ConversationInterface({
                 variant="outline" 
                 className={cn(
                   "border-slate-300 text-slate-700 font-medium text-xs",
-                  nextMessageType === 'question' 
-                    ? "bg-ocean/10 border-ocean/30 text-ocean" 
-                    : "bg-amber/10 border-amber/30 text-amber-800"
+                  messages.length >= 2
+                    ? "bg-slate-100 border-slate-300 text-slate-700"
+                    : nextMessageType === 'question' 
+                      ? "bg-ocean/10 border-ocean/30 text-ocean" 
+                      : "bg-amber/10 border-amber/30 text-amber-800"
                 )}
               >
-                {nextMessageType === 'question' ? (
+                {messages.length >= 2 ? (
+                  <>
+                    <ArrowRight className="h-3 w-3 mr-1" />
+                    Your Follow up
+                  </>
+                ) : nextMessageType === 'question' ? (
                   <>
                     <MessageCircle className="h-3 w-3 mr-1" />
                     Your Question
@@ -376,9 +394,11 @@ export default function ConversationInterface({
               </Badge>
               
               <div className="text-xs text-slate-600">
-                {nextMessageType === 'question' 
-                  ? "Ask something meaningful to deepen your connection"
-                  : "Share your thoughts and continue the conversation"
+                {messages.length >= 2
+                  ? "Continue the conversation with your follow-up thoughts"
+                  : nextMessageType === 'question' 
+                    ? "Ask something meaningful to deepen your connection"
+                    : "Share your thoughts and continue the conversation"
                 }
               </div>
             </div>
@@ -390,9 +410,11 @@ export default function ConversationInterface({
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder={
-                    nextMessageType === 'question' 
-                      ? "Type your question or click a suggestion from the right sidebar..." 
-                      : "Share your response..."
+                    messages.length >= 2
+                      ? "Continue the conversation with your follow-up thoughts..."
+                      : nextMessageType === 'question' 
+                        ? "Type your question or click a suggestion from the right sidebar..." 
+                        : "Share your response..."
                   }
                   className="min-h-[60px] resize-none bg-white/80 backdrop-blur-sm border-slate-200/60 focus:border-ocean/50 focus:ring-ocean/20 rounded-xl text-sm"
                   onKeyDown={(e) => {
