@@ -151,6 +151,27 @@ export function useWebSocket() {
       queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations/message-counts`] });
     }
 
+    // Handle new conversation thread creation
+    if (data.action === 'conversation_created') {
+      // Trigger URL change for both users to synchronize conversation states
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/conversation/') && data.conversationId) {
+        // Update URL to new conversation for synchronized viewing
+        window.history.pushState(null, '', `/conversation/${data.conversationId}`);
+        
+        // Dispatch custom event to notify conversation page components
+        window.dispatchEvent(new CustomEvent('conversationThreadCreated', { 
+          detail: { conversationId: data.conversationId } 
+        }));
+      }
+      
+      toast({
+        title: "New conversation thread started!",
+        description: `A new ${data.relationshipType?.toLowerCase()} conversation has begun.`,
+        duration: 3000,
+      });
+    }
+
     // Show appropriate notification based on status
     if (data.status === 'accepted') {
       toast({

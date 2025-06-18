@@ -1148,6 +1148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Notify both participants that a new conversation was created
           wsManager.notifyConversationUpdate(participant1Email, {
             conversationId: conversation.id,
+            connectionId: connectionId,
             action: 'conversation_created',
             relationshipType
           });
@@ -1155,6 +1156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (participant1Email !== participant2Email) {
             wsManager.notifyConversationUpdate(participant2Email, {
               conversationId: conversation.id,
+              connectionId: connectionId,
               action: 'conversation_created',
               relationshipType
             });
@@ -1262,6 +1264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Notify both participants that a new conversation was created
           wsManager.notifyConversationUpdate(participant1Email, {
             conversationId: conversation.id,
+            connectionId: connectionId,
             action: 'conversation_created',
             relationshipType
           });
@@ -1269,6 +1272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (participant1Email !== participant2Email) {
             wsManager.notifyConversationUpdate(participant2Email, {
               conversationId: conversation.id,
+              connectionId: connectionId,
               action: 'conversation_created',
               relationshipType
             });

@@ -272,7 +272,7 @@ export default function QuestionSuggestions({ relationshipType, onQuestionSelect
             {(showAI ? aiQuestions : currentQuestions).map((question, index) => (
               <div
                 key={index}
-                onClick={() => onQuestionSelect(question)}
+                onClick={() => createThreadMutation.mutate(question)}
                 className={cn(
                   "group cursor-pointer transition-all duration-200 p-3 rounded-xl border",
                   "hover:shadow-md hover:scale-[1.01]",

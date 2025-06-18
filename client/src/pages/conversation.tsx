@@ -39,6 +39,23 @@ export default function ConversationPage() {
     }
   }, [id, selectedConversationId]);
 
+  // Listen for WebSocket conversation thread creation events
+  useEffect(() => {
+    const handleConversationThreadCreated = (event: CustomEvent) => {
+      const { conversationId } = event.detail;
+      if (conversationId) {
+        setSelectedConversationId(conversationId);
+        setNewMessage(""); // Clear any existing message
+      }
+    };
+
+    window.addEventListener('conversationThreadCreated', handleConversationThreadCreated as EventListener);
+    
+    return () => {
+      window.removeEventListener('conversationThreadCreated', handleConversationThreadCreated as EventListener);
+    };
+  }, []);
+
   const { data: conversation, isLoading: conversationLoading } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${selectedConversationId || id}`],
     queryFn: async () => {
