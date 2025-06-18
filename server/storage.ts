@@ -254,6 +254,15 @@ export class DatabaseStorage implements IStorage {
     return conversation || undefined;
   }
 
+  async updateConversationTitle(id: number, title: string): Promise<Conversation | undefined> {
+    const [conversation] = await db
+      .update(conversations)
+      .set({ title })
+      .where(eq(conversations.id, id))
+      .returning();
+    return conversation || undefined;
+  }
+
   // Messages
   async getMessagesByConversationId(conversationId: number): Promise<Message[]> {
     return await db

@@ -24,6 +24,7 @@ import { analytics } from "./analytics";
 import { healthService } from "./health";
 import { jobQueue } from "./jobs";
 import { setupAuth, isAuthenticated } from "./oauthAuth";
+import { generateRelationshipSpecificTitle } from "./thread-naming";
 
 // Configure multer for file uploads
 const storage_config = multer.memoryStorage();
@@ -1364,6 +1365,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const message = await storage.createMessage(messageData);
+
+      // Generate thread title if this is the first question
+      if (existingMessages.length === 0 && messageData.type === 'question') {
+        const threadTitle = generateRelationshipSpecificTitle(
+          messageData.content, 
+          conversation.relationshipType
+        );
+        await storage.updateConversationTitle(conversationId, threadTitle);
+      }
 
       // Update conversation turn to the other participant
       const nextTurn = conversation.currentTurn === conversation.participant1Email 
