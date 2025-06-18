@@ -14,6 +14,7 @@ import type { Connection, Conversation } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
 
@@ -25,6 +26,9 @@ export default function Dashboard() {
   const [welcomeData, setWelcomeData] = useState<{inviterName: string, relationshipType: string} | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Initialize WebSocket for real-time dashboard updates
+  const { isConnected } = useWebSocket();
 
   // Fetch account status for profile image import options
   const { data: accountStatus } = useQuery({

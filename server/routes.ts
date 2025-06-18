@@ -764,6 +764,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         connection
       });
 
+      // Send real-time WebSocket notification to inviter
+      try {
+        const { getWebSocketManager } = await import('./websocket');
+        const wsManager = getWebSocketManager();
+        if (wsManager) {
+          wsManager.notifyConnectionUpdate(connection.inviterEmail, {
+            connectionId: connection.id,
+            status: 'accepted',
+            inviterEmail: connection.inviterEmail,
+            inviteeEmail: connection.inviteeEmail,
+            relationshipType: connection.relationshipType
+          });
+        }
+      } catch (error) {
+        console.error('[WEBSOCKET] Failed to send connection acceptance notification:', error);
+      }
+
       // Track connection acceptance
       analytics.track({
         type: 'connection_accepted',
@@ -811,6 +828,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emailType: 'declined',
         connection
       });
+
+      // Send real-time WebSocket notification to inviter
+      try {
+        const { getWebSocketManager } = await import('./websocket');
+        const wsManager = getWebSocketManager();
+        if (wsManager) {
+          wsManager.notifyConnectionUpdate(connection.inviterEmail, {
+            connectionId: connection.id,
+            status: 'declined',
+            inviterEmail: connection.inviterEmail,
+            inviteeEmail: connection.inviteeEmail,
+            relationshipType: connection.relationshipType
+          });
+        }
+      } catch (error) {
+        console.error('[WEBSOCKET] Failed to send connection decline notification:', error);
+      }
 
       // Track connection decline
       analytics.track({
