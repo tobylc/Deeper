@@ -17,7 +17,11 @@ export default function InvitationLanding() {
   // Fetch the inviter's display name using their email
   const { data: inviterName } = useQuery<string>({
     queryKey: ['/api/users/display-name', inviterEmail],
-    queryFn: () => fetch(`/api/users/display-name/${encodeURIComponent(inviterEmail)}`).then(res => res.text()),
+    queryFn: async () => {
+      const response = await fetch(`/api/users/display-name/${encodeURIComponent(inviterEmail)}`);
+      const data = await response.json();
+      return data.displayName;
+    },
     enabled: !!inviterEmail,
   });
 
@@ -93,7 +97,7 @@ export default function InvitationLanding() {
             <h1 className="text-4xl lg:text-6xl font-inter font-bold mb-4 leading-tight">
               <span className="text-ocean">You've been personally</span>
               <br />
-              <span className="bg-gradient-to-r from-ocean to-teal bg-clip-text text-transparent">invited to connect</span>
+              <span className="bg-gradient-to-r from-ocean to-amber bg-clip-text text-transparent">invited to connect</span>
             </h1>
             <p className="text-xl text-slate-50 font-inter max-w-2xl mx-auto leading-relaxed">
               {getInviterName()} has chosen you for something truly special - a private, intimate space designed exclusively for the two of you.

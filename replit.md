@@ -421,6 +421,14 @@ Changelog:
   * Removed distracting paper clip elements and perfected parchment aesthetic with organic edges
   * Enhanced papers with aged textures, coffee stains, and natural color variations for authentic feel
   * Used CSS clip-path for organic parchment edges instead of perfect geometric shapes
+- June 18, 2025. Elegant waiting state system and invitation email fixes:
+  * Replaced jarring red error toasts with beautiful parchment-style waiting states during non-turn interactions
+  * Created graceful "Their turn to write" indicators in thread sidebar matching journal aesthetic
+  * Added encouraging reflection text in main conversation area with organic parchment design
+  * Fixed invitation email text gradient from fading to white to using amber contrast color for readability
+  * Resolved HTML markup display issue where JSON data appeared instead of clean user names in emails
+  * Implemented turn validation to prevent error states and provide contextual waiting feedback
+  * All waiting states maintain consistent coffee-stained parchment aesthetic with organic edges
 ```
 
 ## User Preferences

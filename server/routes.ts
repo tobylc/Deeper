@@ -326,7 +326,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      res.json({ displayName });
+      // Return plain text for email templates, JSON for API consumers
+      const acceptHeader = req.headers.accept || '';
+      if (acceptHeader.includes('text/plain')) {
+        res.setHeader('Content-Type', 'text/plain');
+        res.send(displayName);
+      } else {
+        res.json({ displayName });
+      }
     } catch (error: any) {
       console.error("Get display name error:", error);
       res.status(500).json({ 
