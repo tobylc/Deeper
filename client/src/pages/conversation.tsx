@@ -130,11 +130,11 @@ export default function ConversationPage() {
 
   // Check if user needs to see onboarding popup
   useEffect(() => {
-    if (currentUserData && !currentUserData.hasSeenOnboarding && conversation && messages !== undefined) {
+    if (currentUserData && !currentUserData.hasSeenOnboarding && conversation && messages !== undefined && !showOnboardingPopup) {
       // Show onboarding before first interaction
       setShowOnboardingPopup(true);
     }
-  }, [currentUserData, conversation, messages]);
+  }, [currentUserData, conversation, messages, showOnboardingPopup]);
 
   // Mutation to mark onboarding as complete
   const markOnboardingCompleteMutation = useMutation({
@@ -142,7 +142,10 @@ export default function ConversationPage() {
       return apiRequest('POST', '/api/users/mark-onboarding-complete');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/users/by-email/${user?.email}`] });
+      // Delay the query invalidation to prevent immediate re-render
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: [`/api/users/by-email/${user?.email}`] });
+      }, 100);
       setShowOnboardingPopup(false);
     },
   });
@@ -391,7 +394,7 @@ export default function ConversationPage() {
       </div>
 
       {/* Onboarding Popup */}
-      {showOnboardingPopup && conversation && (
+      {conversation && (
         <OnboardingPopup
           isOpen={showOnboardingPopup}
           onClose={() => {
