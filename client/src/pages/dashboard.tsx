@@ -24,7 +24,7 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
-  const [welcomeData, setWelcomeData] = useState<{inviterName: string, relationshipType: string} | null>(null);
+  const [welcomeData, setWelcomeData] = useState<{inviterName: string, relationshipType: string, inviterRole?: string, inviteeRole?: string} | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -56,18 +56,37 @@ export default function Dashboard() {
     
     // Show welcome popup for new invitees
     if (newInvitee === 'true' && inviterEmail && relationshipType && user) {
-      // Fetch the inviter's display name for the welcome popup
-      fetch(`/api/users/display-name/${encodeURIComponent(inviterEmail)}`, {
-        credentials: 'include'
-      })
-      .then(response => response.json())
-      .then(data => {
-        const inviterName = data.displayName || inviterEmail.split('@')[0];
-        setWelcomeData({ inviterName, relationshipType });
+      // Fetch both the inviter's display name and connection details for role information
+      Promise.all([
+        fetch(`/api/users/display-name/${encodeURIComponent(inviterEmail)}`, {
+          credentials: 'include'
+        }).then(response => response.json()),
+        fetch(`/api/connections/received`, {
+          credentials: 'include'
+        }).then(response => response.json())
+      ])
+      .then(([userData, connections]) => {
+        const inviterName = userData.displayName || inviterEmail.split('@')[0];
+        
+        // Find the connection from this inviter to get role information
+        const connection = connections.find((conn: any) => 
+          conn.inviterEmail === inviterEmail && conn.inviteeEmail === user.email
+        );
+        
+        if (connection) {
+          setWelcomeData({ 
+            inviterName, 
+            relationshipType, 
+            inviterRole: connection.inviterRole,
+            inviteeRole: connection.inviteeRole
+          });
+        } else {
+          setWelcomeData({ inviterName, relationshipType });
+        }
         setShowWelcomePopup(true);
       })
       .catch(() => {
-        // Fallback to email username if API fails
+        // Fallback to basic data if API fails
         const inviterName = inviterEmail.split('@')[0];
         setWelcomeData({ inviterName, relationshipType });
         setShowWelcomePopup(true);
@@ -665,6 +684,8 @@ export default function Dashboard() {
         <InviteeWelcomePopup
           inviterName={welcomeData.inviterName}
           relationshipType={welcomeData.relationshipType}
+          inviterRole={welcomeData.inviterRole}
+          inviteeRole={welcomeData.inviteeRole}
           onClose={() => setShowWelcomePopup(false)}
         />
       )}
