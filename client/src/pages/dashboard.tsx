@@ -17,6 +17,7 @@ import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
+import { getRoleDisplayInfo, getDashboardSectionTitle } from "@shared/role-display-utils";
 
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -309,7 +310,14 @@ export default function Dashboard() {
                         <UserDisplayName email={connection.inviterEmail} />
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Wants to connect as: {connection.relationshipType}
+                        {(() => {
+                          const roleInfo = getRoleDisplayInfo(
+                            connection.relationshipType, 
+                            connection.inviterRole, 
+                            connection.inviteeRole
+                          );
+                          return `Wants to connect as: ${roleInfo.relationshipDisplay}`;
+                        })()}
                       </p>
                       {connection.personalMessage && (
                         <p className="text-sm text-muted-foreground mt-1 italic">
@@ -356,7 +364,14 @@ export default function Dashboard() {
                     <div>
                       <p className="font-medium text-foreground">{connection.inviteeEmail}</p>
                       <p className="text-sm text-muted-foreground">
-                        Relationship: {connection.relationshipType}
+                        {(() => {
+                          const roleInfo = getRoleDisplayInfo(
+                            connection.relationshipType, 
+                            connection.inviterRole, 
+                            connection.inviteeRole
+                          );
+                          return `Relationship: ${roleInfo.relationshipDisplay}`;
+                        })()}
                       </p>
                       <div className="flex items-center space-x-2 mt-1">
                         <Badge variant="outline">Pending</Badge>
@@ -432,7 +447,16 @@ export default function Dashboard() {
                           <div className="bg-amber/10 border border-amber/20 rounded-xl p-4 mb-4">
                             <div className="flex items-center gap-2 mb-2">
                               <MessageCircle className="w-4 h-4 text-amber" />
-                              <h4 className="font-medium text-foreground">Ready to begin your {connection.relationshipType.toLowerCase()} journey</h4>
+                              <h4 className="font-medium text-foreground">
+                                {(() => {
+                                  const roleInfo = getRoleDisplayInfo(
+                                    connection.relationshipType, 
+                                    connection.inviterRole, 
+                                    connection.inviteeRole
+                                  );
+                                  return `Ready to begin your ${roleInfo.conversationContext} journey`;
+                                })()}
+                              </h4>
                             </div>
                             <p className="text-sm text-slate-600">
                               Your private conversation space is ready. Start with a meaningful question to begin your dialogue together.
@@ -441,7 +465,14 @@ export default function Dashboard() {
 
                           <div className="flex items-center space-x-2 mb-4">
                             <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
-                              {connection.relationshipType}
+                              {(() => {
+                                const roleInfo = getRoleDisplayInfo(
+                                  connection.relationshipType, 
+                                  connection.inviterRole, 
+                                  connection.inviteeRole
+                                );
+                                return roleInfo.relationshipDisplay;
+                              })()}
                             </Badge>
                             <Badge variant="outline">
                               Accepted {new Date(connection.acceptedAt!).toLocaleDateString()}

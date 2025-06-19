@@ -574,8 +574,10 @@ The Deeper Team
 
   async sendConnectionDeclined(connection: Connection): Promise<void> {
     const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
-    
-    const subject = "Connection invitation update";
+    const subject = getEmailSubjectWithRoles('Connection Declined', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+    const roleDisplay = connection.inviterRole && connection.inviteeRole 
+      ? `${connection.inviterRole.toLowerCase()}/${connection.inviteeRole.toLowerCase()}`
+      : connection.relationshipType.toLowerCase();
     
     const htmlContent = `
       <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -585,7 +587,7 @@ The Deeper Team
         
         <div style="background: #f9fafb; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
           <p style="color: #374151; line-height: 1.6; margin: 0 0 20px 0;">
-            ${inviteeName} has respectfully declined your invitation to connect.
+            ${inviteeName} has respectfully declined your ${roleDisplay} connection invitation.
           </p>
           
           <p style="color: #6B7280; line-height: 1.6; margin: 0;">
@@ -628,12 +630,17 @@ The Deeper Team
     senderEmail: string;
     conversationId: number;
     relationshipType: string;
+    senderRole?: string;
+    recipientRole?: string;
     messageType: 'question' | 'response';
   }): Promise<void> {
     const appUrl = 'https://deepersocial.replit.app';
     const senderName = await storage.getUserDisplayNameByEmail(params.senderEmail);
     const actionText = params.messageType === 'question' ? 'asked a question' : 'shared a response';
     const responseText = params.messageType === 'question' ? 'respond' : 'continue the conversation';
+    const conversationContext = params.senderRole && params.recipientRole 
+      ? `${params.senderRole.toLowerCase()}/${params.recipientRole.toLowerCase()}`
+      : params.relationshipType.toLowerCase();
 
     const subject = `It's your turn! ${senderName} ${actionText}`;
     
@@ -647,7 +654,7 @@ The Deeper Team
         <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
           <h2 style="color: #1e293b; margin: 0 0 20px 0;">Message waiting for you</h2>
           <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
-            <strong>${senderName}</strong> just ${actionText} in your ${params.relationshipType.toLowerCase()} conversation.
+            <strong>${senderName}</strong> just ${actionText} in your ${conversationContext} conversation.
           </p>
           
           <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
