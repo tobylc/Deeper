@@ -38,9 +38,22 @@ export default function ConversationPage() {
   // Initialize selected conversation ID from URL
   useEffect(() => {
     if (id && !selectedConversationId) {
+      console.log("Setting conversation ID from URL:", id);
       setSelectedConversationId(parseInt(id));
     }
   }, [id, selectedConversationId]);
+
+  // Debug logging for conversation state
+  useEffect(() => {
+    console.log("Conversation page state:", {
+      user: user?.email,
+      id,
+      selectedConversationId,
+      conversationLoading,
+      conversation: conversation?.id,
+      conversationError
+    });
+  }, [user, id, selectedConversationId, conversationLoading, conversation, conversationError]);
 
   // Listen for WebSocket conversation thread creation events
   useEffect(() => {
@@ -59,14 +72,24 @@ export default function ConversationPage() {
     };
   }, []);
 
-  const { data: conversation, isLoading: conversationLoading } = useQuery<Conversation>({
+  const { data: conversation, isLoading: conversationLoading, error: conversationError } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${selectedConversationId || id}`],
     queryFn: async () => {
       const conversationId = selectedConversationId || id;
-      const response = await apiRequest('GET', `/api/conversations/${conversationId}`);
-      return response.json();
+      try {
+        const response = await apiRequest('GET', `/api/conversations/${conversationId}`);
+        if (!response.ok) {
+          throw new Error(`Failed to load conversation: ${response.status}`);
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Conversation loading error:', error);
+        throw error;
+      }
     },
     enabled: !!(selectedConversationId || id) && !!user,
+    retry: 3,
+    retryDelay: 1000,
   });
 
   // Determine other participant after conversation is loaded
@@ -209,12 +232,33 @@ export default function ConversationPage() {
     );
   }
 
+  if (conversationError) {
+    console.error('Conversation error:', conversationError);
+    return (
+      <div className="min-h-screen bg-gradient-radial from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="bg-[#1B2137]/90 backdrop-blur-md p-8 rounded-2xl shadow-lg text-center border border-[#4FACFE]/30">
+          <h2 className="text-xl font-semibold mb-4 text-white">Error loading conversation</h2>
+          <p className="text-slate-300 mb-4">There was an issue loading this conversation. This might be a temporary network issue.</p>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={() => window.location.reload()} className="bg-gradient-to-r from-[#4FACFE] to-teal text-white">
+              Try Again
+            </Button>
+            <Button onClick={() => setLocation("/dashboard")} variant="outline" className="border-[#4FACFE]/30 text-[#4FACFE] hover:bg-[#4FACFE]/10">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!conversation) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-          <h2 className="text-xl font-semibold mb-4">Conversation not found</h2>
-          <Button onClick={() => setLocation("/dashboard")} className="btn-ocean">
+      <div className="min-h-screen bg-gradient-radial from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="bg-[#1B2137]/90 backdrop-blur-md p-8 rounded-2xl shadow-lg text-center border border-[#4FACFE]/30">
+          <h2 className="text-xl font-semibold mb-4 text-white">Conversation not found</h2>
+          <p className="text-slate-300 mb-4">This conversation may not exist or you may not have access to it.</p>
+          <Button onClick={() => setLocation("/dashboard")} className="bg-gradient-to-r from-[#4FACFE] to-teal text-white">
             Back to Dashboard
           </Button>
         </div>

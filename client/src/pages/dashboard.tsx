@@ -492,6 +492,8 @@ export default function Dashboard() {
                           <Button 
                             onClick={async () => {
                               try {
+                                console.log("Creating conversation for connection:", connection.id);
+                                
                                 // Create a new conversation
                                 const response = await apiRequest("POST", "/api/conversations", {
                                   connectionId: connection.id,
@@ -501,26 +503,36 @@ export default function Dashboard() {
                                   currentTurn: connection.inviterEmail // Inviter starts first
                                 });
                                 
-                                const conversation = await response.json();
+                                if (!response.ok) {
+                                  const errorText = await response.text();
+                                  console.error("API Error Response:", response.status, errorText);
+                                  throw new Error(`API Error: ${response.status} - ${errorText}`);
+                                }
                                 
-                                // Refresh conversations data
-                                queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user.email}`] });
+                                const conversation = await response.json();
+                                console.log("Created conversation:", conversation);
                                 
                                 if (conversation && conversation.id) {
-                                  setLocation(`/conversation/${conversation.id}`);
+                                  // Refresh conversations data and wait for it
+                                  await queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user.email}`] });
+                                  
+                                  // Add a small delay to ensure the conversation is fully created
+                                  setTimeout(() => {
+                                    setLocation(`/conversation/${conversation.id}`);
+                                  }, 500);
                                 } else {
+                                  console.error("No conversation ID in response:", conversation);
                                   toast({
-                                    title: "Success!",
-                                    description: "Conversation space created. Redirecting...",
+                                    title: "Error",
+                                    description: "Failed to create conversation - no ID returned",
+                                    variant: "destructive",
                                   });
-                                  // Fallback: refresh the page to show updated state
-                                  setTimeout(() => window.location.reload(), 1000);
                                 }
-                              } catch (error) {
+                              } catch (error: any) {
                                 console.error("Conversation creation error:", error);
                                 toast({
                                   title: "Error",
-                                  description: "Failed to start conversation",
+                                  description: `Failed to start conversation: ${error?.message || 'Unknown error'}`,
                                   variant: "destructive",
                                 });
                               }
