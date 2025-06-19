@@ -9,6 +9,7 @@ import QuotesIcon from "@/components/quotes-icon";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import { getQuestionsByCategory } from "@/lib/questions";
 import { getRoleSpecificQuestions, getGeneralRelationshipQuestions } from "@shared/role-specific-questions";
+import { getRoleDisplayInfo } from "@shared/role-display-utils";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -143,8 +144,12 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
                   Waiting for Response
                 </h3>
                 <p className="text-xs text-slate-700 font-inter leading-relaxed">
-                  <UserDisplayName email={otherParticipant} /> is preparing their response. 
-                  You'll receive an email notification when it's your turn.
+                  <UserDisplayName email={otherParticipant} /> is preparing their response.
+                  {userRole && otherUserRole ? (
+                    ` Take this moment to reflect on your ${getRoleDisplayInfo(relationshipType, userRole, otherUserRole).conversationContext}.`
+                  ) : (
+                    ' You\'ll receive an email notification when it\'s your turn.'
+                  )}
                 </p>
               </div>
             </div>

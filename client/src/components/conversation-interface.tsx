@@ -116,8 +116,17 @@ export default function ConversationInterface({
               Begin Your Journey
             </h3>
             <p className="text-slate-600 leading-relaxed">
-              You're about to start a meaningful {relationshipType.toLowerCase()} conversation. 
-              Ask the first question to begin this deeper connection.
+              {(() => {
+                if (connection) {
+                  const roleInfo = getRoleDisplayInfo(
+                    connection.relationshipType, 
+                    connection.inviterRole, 
+                    connection.inviteeRole
+                  );
+                  return `You're about to start a meaningful ${roleInfo.conversationContext} conversation. Ask the first question to begin this deeper connection.`;
+                }
+                return `You're about to start a meaningful ${relationshipType.toLowerCase()} conversation. Ask the first question to begin this deeper connection.`;
+              })()}
             </p>
             
             {/* Example Questions */}

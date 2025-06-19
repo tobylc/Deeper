@@ -364,6 +364,7 @@ export default function ConversationPage() {
               participant2Email={conversation.participant2Email}
               isMyTurn={isMyTurn}
               relationshipType={conversation.relationshipType}
+              connection={connection}
               newMessage={newMessage}
               setNewMessage={setNewMessage}
               onSendMessage={handleSendMessage}

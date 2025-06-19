@@ -4,10 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, MessageCircle, Clock, CheckCircle } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
+import { getRoleDisplayInfo, getInvitationText } from "@shared/role-display-utils";
 
 interface InviteeWelcomePopupProps {
   inviterName: string;
   relationshipType: string;
+  inviterRole?: string;
+  inviteeRole?: string;
   onClose: () => void;
 }
 
