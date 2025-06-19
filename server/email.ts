@@ -99,10 +99,15 @@ The Deeper Team
     senderEmail: string;
     conversationId: number;
     relationshipType: string;
+    senderRole?: string;
+    recipientRole?: string;
     messageType: 'question' | 'response';
   }): Promise<void> {
     const senderName = await storage.getUserDisplayNameByEmail(params.senderEmail);
     const actionText = params.messageType === 'question' ? 'asked a question' : 'shared a response';
+    const conversationContext = params.senderRole && params.recipientRole 
+      ? `${params.senderRole.toLowerCase()}/${params.recipientRole.toLowerCase()}`
+      : params.relationshipType.toLowerCase();
     
     console.log(`
 📧 TURN NOTIFICATION EMAIL
@@ -111,7 +116,7 @@ Subject: It's your turn! ${senderName} ${actionText}
 
 Hi there!
 
-${senderName} just ${actionText} in your ${params.relationshipType.toLowerCase()} conversation.
+${senderName} just ${actionText} in your ${conversationContext} conversation.
 
 It's now your turn to respond and continue this meaningful dialogue.
 
@@ -137,11 +142,13 @@ export class ProductionEmailService implements EmailService {
   async sendConnectionInvitation(connection: Connection): Promise<void> {
     const appUrl = 'https://deepersocial.replit.app';
     const inviterName = await storage.getUserDisplayNameByEmail(connection.inviterEmail);
+    const invitationText = getInvitationText(connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+    const subject = getEmailSubjectWithRoles('Invitation', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
 
     const msg = {
       to: connection.inviteeEmail,
       from: this.fromEmail,
-      subject: "You're invited to start a meaningful conversation on Deeper",
+      subject: subject,
       html: `
         <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
@@ -152,7 +159,7 @@ export class ProductionEmailService implements EmailService {
           <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
             <h2 style="color: #1e293b; margin: 0 0 20px 0;">You've been invited to connect!</h2>
             <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
-              <strong>${inviterName}</strong> has invited you to start meaningful ${connection.relationshipType} conversations on Deeper.
+              <strong>${inviterName}</strong> has invited you to start ${invitationText} on Deeper.
             </p>
             
             ${connection.personalMessage ? `
@@ -219,11 +226,15 @@ The Deeper Team
       ? `https://${process.env.REPLIT_DEV_DOMAIN}`
       : 'https://deeper.app';
     const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
+    const subject = getEmailSubjectWithRoles('Connection Accepted', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+    const roleDisplay = connection.inviterRole && connection.inviteeRole 
+      ? `${connection.inviterRole.toLowerCase()}/${connection.inviteeRole.toLowerCase()}`
+      : connection.relationshipType.toLowerCase();
 
     const msg = {
       to: connection.inviterEmail,
       from: this.fromEmail,
-      subject: `${inviteeName} accepted your invitation!`,
+      subject: subject,
       html: `
         <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
@@ -233,11 +244,11 @@ The Deeper Team
           
           <div style="background: #f0fdf4; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
             <p style="color: #166534; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
-              <strong>${inviteeName}</strong> has accepted your invitation to connect!
+              <strong>${inviteeName}</strong> has accepted your ${roleDisplay} connection invitation!
             </p>
             
             <p style="color: #166534; line-height: 1.6; margin: 0 0 20px 0;">
-              Your private conversation space is now ready. You can start by asking the first question.
+              Your private ${roleDisplay} conversation space is now ready. You can start by asking the first question.
             </p>
             
             <div style="text-align: center; margin: 30px 0;">
@@ -277,11 +288,15 @@ The Deeper Team
 
   async sendConnectionDeclined(connection: Connection): Promise<void> {
     const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
+    const subject = getEmailSubjectWithRoles('Connection Declined', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+    const roleDisplay = connection.inviterRole && connection.inviteeRole 
+      ? `${connection.inviterRole.toLowerCase()}/${connection.inviteeRole.toLowerCase()}`
+      : connection.relationshipType.toLowerCase();
     
     const msg = {
       to: connection.inviterEmail,
       from: this.fromEmail,
-      subject: "Connection invitation update",
+      subject: subject,
       html: `
         <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
@@ -290,7 +305,7 @@ The Deeper Team
           
           <div style="background: #f9fafb; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
             <p style="color: #374151; line-height: 1.6; margin: 0 0 20px 0;">
-              ${inviteeName} has respectfully declined your invitation to connect.
+              ${inviteeName} has respectfully declined your ${roleDisplay} connection invitation.
             </p>
             
             <p style="color: #6B7280; line-height: 1.6; margin: 0;">
@@ -329,12 +344,17 @@ The Deeper Team
     senderEmail: string;
     conversationId: number;
     relationshipType: string;
+    senderRole?: string;
+    recipientRole?: string;
     messageType: 'question' | 'response';
   }): Promise<void> {
     const appUrl = 'https://deepersocial.replit.app';
     const senderName = await storage.getUserDisplayNameByEmail(params.senderEmail);
     const actionText = params.messageType === 'question' ? 'asked a question' : 'shared a response';
     const responseText = params.messageType === 'question' ? 'respond' : 'continue the conversation';
+    const conversationContext = params.senderRole && params.recipientRole 
+      ? `${params.senderRole.toLowerCase()}/${params.recipientRole.toLowerCase()}`
+      : params.relationshipType.toLowerCase();
 
     const msg = {
       to: params.recipientEmail,
@@ -350,7 +370,7 @@ The Deeper Team
           <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
             <h2 style="color: #1e293b; margin: 0 0 20px 0;">Message waiting for you</h2>
             <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
-              <strong>${senderName}</strong> just ${actionText} in your ${params.relationshipType.toLowerCase()} conversation.
+              <strong>${senderName}</strong> just ${actionText} in your ${conversationContext} conversation.
             </p>
             
             <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
@@ -408,8 +428,8 @@ export class InternalEmailService implements EmailService {
   async sendConnectionInvitation(connection: Connection): Promise<void> {
     const appUrl = 'https://deepersocial.replit.app';
     const inviterName = await storage.getUserDisplayNameByEmail(connection.inviterEmail);
-
-    const subject = "You're invited to start a meaningful conversation on Deeper";
+    const invitationText = getInvitationText(connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+    const subject = getEmailSubjectWithRoles('Invitation', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
     
     const htmlContent = `
       <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -421,7 +441,7 @@ export class InternalEmailService implements EmailService {
         <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
           <h2 style="color: #1e293b; margin: 0 0 20px 0;">You've been invited to connect!</h2>
           <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
-            <strong>${inviterName}</strong> has invited you to start meaningful ${connection.relationshipType} conversations on Deeper.
+            <strong>${inviterName}</strong> has invited you to start ${invitationText} on Deeper.
           </p>
           
           ${connection.personalMessage ? `
@@ -492,8 +512,10 @@ The Deeper Team
       ? `https://${process.env.REPLIT_DEV_DOMAIN}`
       : 'https://deeper.app';
     const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
-
-    const subject = `${inviteeName} accepted your invitation!`;
+    const subject = getEmailSubjectWithRoles('Connection Accepted', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+    const roleDisplay = connection.inviterRole && connection.inviteeRole 
+      ? `${connection.inviterRole.toLowerCase()}/${connection.inviteeRole.toLowerCase()}`
+      : connection.relationshipType.toLowerCase();
     
     const htmlContent = `
       <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -504,11 +526,11 @@ The Deeper Team
         
         <div style="background: #f0fdf4; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
           <p style="color: #166534; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
-            <strong>${inviteeName}</strong> has accepted your invitation to connect!
+            <strong>${inviteeName}</strong> has accepted your ${roleDisplay} connection invitation!
           </p>
           
           <p style="color: #166534; line-height: 1.6; margin: 0 0 20px 0;">
-            Your private conversation space is now ready. You can start by asking the first question.
+            Your private ${roleDisplay} conversation space is now ready. You can start by asking the first question.
           </p>
           
           <div style="text-align: center; margin: 30px 0;">
