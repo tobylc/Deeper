@@ -216,7 +216,7 @@ export default function OnboardingPopup({
           <div className="text-center pt-4">
             <Button 
               onClick={onClose}
-              className="bg-gradient-to-r from-ocean to-teal text-white hover:from-ocean/90 hover:to-teal/90 px-8 py-3 text-lg"
+              className="bg-gradient-to-r from-[#4FACFE] to-teal text-white hover:from-[#4FACFE]/90 hover:to-teal/90 px-8 py-3 text-lg shadow-lg backdrop-blur-sm"
             >
               <MessageCircle className="w-5 h-5 mr-2" />
               {isQuestioner ? "Ask My First Question" : "Share My First Response"}
