@@ -16,7 +16,9 @@ interface InviteeWelcomePopupProps {
 
 export default function InviteeWelcomePopup({ 
   inviterName, 
-  relationshipType, 
+  relationshipType,
+  inviterRole,
+  inviteeRole,
   onClose 
 }: InviteeWelcomePopupProps) {
   const [isVisible, setIsVisible] = useState(false);
@@ -75,7 +77,12 @@ export default function InviteeWelcomePopup({
             </div>
             <p className="text-sm text-white font-inter leading-relaxed">
               <span className="font-medium text-[#4FACFE]">{inviterName}</span> has invited you to connect as{' '}
-              <span className="font-medium text-[#4FACFE]">{relationshipType}</span>. 
+              <span className="font-medium text-[#4FACFE]">
+                {inviterRole && inviteeRole ? 
+                  getRoleDisplayInfo(relationshipType, inviterRole, inviteeRole).relationshipDisplay 
+                  : relationshipType
+                }
+              </span>. 
               Your account has been created and you're ready to begin meaningful conversations.
             </p>
           </div>

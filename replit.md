@@ -518,6 +518,16 @@ Changelog:
   * Popup explains thoughtful turn-based communication system with relationship-specific messaging
   * One-time educational experience helps users understand the unique conversation flow
   * System automatically tracks completion and prevents popup from showing again
+- June 19, 2025. Complete role-based personalization system implementation:
+  * Systematically updated all user-facing text throughout the application to display specific role combinations (e.g., "Father & Son") instead of generic relationship types (e.g., "Parent-Child")
+  * Enhanced dashboard component to show personalized role displays in all connection sections: pending invitations, sent invitations, ready to start conversations, and active conversations
+  * Updated conversation page header to display specific role combinations using connection data and role display utilities
+  * Modified conversation interface component to use personalized role language in empty states and welcome messages
+  * Enhanced question suggestions component with role-specific waiting states and contextual reflection prompts
+  * Updated invitee welcome popup to support role parameters and display specific role combinations in connection establishment messaging
+  * Applied role-based personalization consistently across email templates (already completed in previous iterations)
+  * Created comprehensive role display utility integration throughout all components for consistent personalized user experience
+  * All relationship displays now show authentic, specific role combinations creating more personal and meaningful connection representations
 ```
 
 ## User Preferences
