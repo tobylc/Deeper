@@ -130,19 +130,9 @@ export default function ConversationPage() {
 
   // Check if user needs to see onboarding popup
   useEffect(() => {
-    console.log('Onboarding check:', {
-      currentUserData: !!currentUserData,
-      hasSeenOnboarding: currentUserData?.hasSeenOnboarding,
-      conversation: !!conversation,
-      messagesLoaded: messages !== undefined,
-      showOnboardingPopup
-    });
-    
     if (currentUserData && !currentUserData.hasSeenOnboarding && conversation && messages !== undefined && !showOnboardingPopup) {
-      console.log('Setting onboarding popup to show');
       // Add a small delay to ensure all data is loaded before showing popup
       setTimeout(() => {
-        console.log('Showing onboarding popup now');
         setShowOnboardingPopup(true);
       }, 300);
     }
