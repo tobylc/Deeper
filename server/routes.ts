@@ -1713,8 +1713,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Store verification code temporarily
       const verificationKey = `${email}:${phoneNumber}`;
-      global.verificationCodes = global.verificationCodes || new Map();
-      global.verificationCodes.set(verificationKey, {
+      (global as any).verificationCodes = (global as any).verificationCodes || new Map();
+      (global as any).verificationCodes.set(verificationKey, {
         code: verificationCode,
         expires: Date.now() + 10 * 60 * 1000 // 10 minutes
       });
@@ -1735,7 +1735,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const verificationKey = `${email}:${phoneNumber}`;
-      const storedVerification = global.verificationCodes?.get(verificationKey);
+      const storedVerification = (global as any).verificationCodes?.get(verificationKey);
 
       if (!storedVerification || Date.now() > storedVerification.expires) {
         return res.status(400).json({ message: "Verification code expired or invalid" });
@@ -1758,7 +1758,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Clean up verification code
-      global.verificationCodes?.delete(verificationKey);
+      (global as any).verificationCodes?.delete(verificationKey);
 
       res.json({ message: "Phone number verified successfully" });
     } catch (error) {
