@@ -26,6 +26,7 @@ export default function ConversationPage() {
   const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
   const [showThreadsView, setShowThreadsView] = useState(false);
   const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
+  const [hasTriggeredOnboarding, setHasTriggeredOnboarding] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -139,13 +140,14 @@ export default function ConversationPage() {
     enabled: !!(selectedConversationId || id) && !!user,
   });
 
-  // Check if user needs to see onboarding popup
+  // Check if user needs to see onboarding popup - only show once per conversation visit
   useEffect(() => {
-    if (currentUserData && !currentUserData.hasSeenOnboarding && conversation && messages !== undefined) {
-      // Show onboarding before first interaction
+    if (currentUserData && !currentUserData.hasSeenOnboarding && conversation && !hasTriggeredOnboarding && !showOnboardingPopup) {
+      // Only show if user hasn't seen onboarding globally and we haven't triggered it in this session
       setShowOnboardingPopup(true);
+      setHasTriggeredOnboarding(true);
     }
-  }, [currentUserData, conversation, messages]);
+  }, [currentUserData?.hasSeenOnboarding, conversation?.id, hasTriggeredOnboarding]);
 
   // Debug logging for conversation state
   useEffect(() => {
@@ -438,9 +440,8 @@ export default function ConversationPage() {
       {showOnboardingPopup && conversation && (
         <OnboardingPopup
           isOpen={showOnboardingPopup}
-          onClose={() => {
-            markOnboardingCompleteMutation.mutate();
-          }}
+          onClose={() => setShowOnboardingPopup(false)}
+          onComplete={() => markOnboardingCompleteMutation.mutate()}
           userRole={conversation.participant1Email === user?.email ? 'questioner' : 'responder'}
           otherParticipant={otherParticipant}
           relationshipType={conversation.relationshipType}

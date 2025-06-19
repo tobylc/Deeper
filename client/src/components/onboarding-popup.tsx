@@ -12,6 +12,7 @@ interface OnboardingPopupProps {
   userRole: 'questioner' | 'responder';
   otherParticipant: string;
   relationshipType: string;
+  onComplete?: () => void;
 }
 
 export default function OnboardingPopup({ 
@@ -19,16 +20,24 @@ export default function OnboardingPopup({
   onClose, 
   userRole, 
   otherParticipant, 
-  relationshipType 
+  relationshipType,
+  onComplete 
 }: OnboardingPopupProps) {
   const isQuestioner = userRole === 'questioner';
+
+  const handleClose = () => {
+    onClose();
+    if (onComplete) {
+      onComplete();
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-gradient-radial from-slate-900 via-slate-800 to-slate-900 border-2 border-[#4FACFE]/30 backdrop-blur-md">
         {/* Close button */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute right-4 top-4 z-10 w-8 h-8 rounded-full bg-[#4FACFE]/20 hover:bg-[#4FACFE]/30 flex items-center justify-center text-white/80 hover:text-white transition-all duration-200"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,7 +224,7 @@ export default function OnboardingPopup({
           {/* Action Button */}
           <div className="text-center pt-4">
             <Button 
-              onClick={onClose}
+              onClick={handleClose}
               className="bg-gradient-to-r from-[#4FACFE] to-teal text-white hover:from-[#4FACFE]/90 hover:to-teal/90 px-8 py-3 text-lg shadow-lg backdrop-blur-sm"
             >
               <MessageCircle className="w-5 h-5 mr-2" />
