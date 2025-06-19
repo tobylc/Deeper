@@ -12,6 +12,7 @@ import ConversationThreads from "@/components/conversation-threads";
 import QuestionSuggestions from "@/components/question-suggestions";
 import ProfileAvatar from "@/components/profile-avatar";
 import OnboardingPopup from "@/components/onboarding-popup";
+import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
@@ -27,6 +28,9 @@ export default function ConversationPage() {
   const [showThreadsView, setShowThreadsView] = useState(false);
   const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
   const [hasTriggeredOnboarding, setHasTriggeredOnboarding] = useState(false);
+  const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
+  const [responseStartTime, setResponseStartTime] = useState<Date | null>(null);
+  const [pendingMessage, setPendingMessage] = useState<string>("");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -148,6 +152,15 @@ export default function ConversationPage() {
       setHasTriggeredOnboarding(true);
     }
   }, [currentUserData?.hasSeenOnboarding, conversation?.id, hasTriggeredOnboarding]);
+
+  // Track when user starts typing for response time measurement
+  useEffect(() => {
+    if (newMessage.length > 0 && !responseStartTime) {
+      setResponseStartTime(new Date());
+    } else if (newMessage.length === 0) {
+      setResponseStartTime(null);
+    }
+  }, [newMessage, responseStartTime]);
 
   // Debug logging for conversation state
   useEffect(() => {
@@ -276,13 +289,61 @@ export default function ConversationPage() {
   const nextMessageType: 'question' | 'response' = 
     !lastMessage || lastMessage.type === 'response' ? 'question' : 'response';
 
+  const checkResponseTime = () => {
+    if (!responseStartTime) return true;
+    
+    const now = new Date();
+    const timeDifference = now.getTime() - responseStartTime.getTime();
+    const tenMinutesInMs = 10 * 60 * 1000; // 10 minutes in milliseconds
+    
+    return timeDifference >= tenMinutesInMs;
+  };
+
+  const getRemainingTime = () => {
+    if (!responseStartTime) return 0;
+    
+    const now = new Date();
+    const timeDifference = now.getTime() - responseStartTime.getTime();
+    const tenMinutesInMs = 10 * 60 * 1000;
+    const remaining = tenMinutesInMs - timeDifference;
+    
+    return Math.max(0, Math.ceil(remaining / 1000)); // Return seconds remaining
+  };
+
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
     
+    // Check if enough time has passed for thoughtful response
+    if (!checkResponseTime()) {
+      setPendingMessage(newMessage);
+      setShowThoughtfulResponsePopup(true);
+      return;
+    }
+    
+    // Proceed with sending the message
+    proceedWithSending(newMessage);
+  };
+
+  const proceedWithSending = (messageContent: string) => {
     sendMessageMutation.mutate({
-      content: newMessage,
+      content: messageContent,
       type: nextMessageType,
     });
+
+    // Reset response tracking
+    setResponseStartTime(null);
+    setPendingMessage("");
+    setNewMessage("");
+  };
+
+  const handleThoughtfulResponseProceed = () => {
+    setShowThoughtfulResponsePopup(false);
+    proceedWithSending(pendingMessage);
+  };
+
+  const handleThoughtfulResponseClose = () => {
+    setShowThoughtfulResponsePopup(false);
+    setPendingMessage("");
   };
 
   const handleQuestionSelect = (question: string) => {
@@ -447,6 +508,14 @@ export default function ConversationPage() {
           relationshipType={conversation.relationshipType}
         />
       )}
+
+      {/* Thoughtful Response Popup */}
+      <ThoughtfulResponsePopup
+        isOpen={showThoughtfulResponsePopup}
+        onClose={handleThoughtfulResponseClose}
+        onProceed={handleThoughtfulResponseProceed}
+        remainingSeconds={getRemainingTime()}
+      />
     </div>
   );
 }
