@@ -59,14 +59,28 @@ export default function ConversationPage() {
     };
   }, []);
 
-  const { data: conversation, isLoading: conversationLoading } = useQuery<Conversation>({
+  const { data: conversation, isLoading: conversationLoading, error: conversationError } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${selectedConversationId || id}`],
     queryFn: async () => {
       const conversationId = selectedConversationId || id;
-      const response = await apiRequest('GET', `/api/conversations/${conversationId}`);
-      return response.json();
+      try {
+        const response = await apiRequest('GET', `/api/conversations/${conversationId}`);
+        return response.json();
+      } catch (error: any) {
+        if (error.status === 401) {
+          // Authentication error - redirect to login
+          setLocation("/auth");
+          throw new Error("Authentication required");
+        }
+        throw error;
+      }
     },
     enabled: !!(selectedConversationId || id) && !!user,
+    retry: (failureCount, error: any) => {
+      // Don't retry on authentication errors
+      if (error?.status === 401) return false;
+      return failureCount < 3;
+    }
   });
 
   // Determine other participant after conversation is loaded
@@ -122,10 +136,22 @@ export default function ConversationPage() {
     queryKey: [`/api/conversations/${selectedConversationId || id}/messages`],
     queryFn: async () => {
       const conversationId = selectedConversationId || id;
-      const response = await apiRequest('GET', `/api/conversations/${conversationId}/messages`);
-      return response.json();
+      try {
+        const response = await apiRequest('GET', `/api/conversations/${conversationId}/messages`);
+        return response.json();
+      } catch (error: any) {
+        if (error.status === 401) {
+          setLocation("/auth");
+          throw new Error("Authentication required");
+        }
+        throw error;
+      }
     },
     enabled: !!(selectedConversationId || id) && !!user,
+    retry: (failureCount, error: any) => {
+      if (error?.status === 401) return false;
+      return failureCount < 3;
+    }
   });
 
   // Check if user needs to see onboarding popup
@@ -209,6 +235,25 @@ export default function ConversationPage() {
             <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </div>
           <p className="text-slate-300">Loading conversation...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (conversationError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+          <h2 className="text-xl font-semibold mb-4">Authentication Required</h2>
+          <p className="text-slate-600 mb-6">Please log in to view this conversation</p>
+          <div className="space-y-3">
+            <Button onClick={() => setLocation("/auth")} className="btn-ocean w-full">
+              Go to Login
+            </Button>
+            <Button onClick={() => setLocation("/dashboard")} variant="outline" className="w-full">
+              Back to Dashboard
+            </Button>
+          </div>
         </div>
       </div>
     );
