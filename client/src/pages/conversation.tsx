@@ -43,18 +43,6 @@ export default function ConversationPage() {
     }
   }, [id, selectedConversationId]);
 
-  // Debug logging for conversation state
-  useEffect(() => {
-    console.log("Conversation page state:", {
-      user: user?.email,
-      id,
-      selectedConversationId,
-      conversationLoading,
-      conversation: conversation?.id,
-      conversationError
-    });
-  }, [user, id, selectedConversationId, conversationLoading, conversation, conversationError]);
-
   // Listen for WebSocket conversation thread creation events
   useEffect(() => {
     const handleConversationThreadCreated = (event: CustomEvent) => {
@@ -158,6 +146,18 @@ export default function ConversationPage() {
       setShowOnboardingPopup(true);
     }
   }, [currentUserData, conversation, messages]);
+
+  // Debug logging for conversation state
+  useEffect(() => {
+    console.log("Conversation page state:", {
+      user: user?.email,
+      id,
+      selectedConversationId,
+      conversationLoading,
+      conversation: conversation?.id,
+      conversationError
+    });
+  }, [user, id, selectedConversationId, conversationLoading, conversation, conversationError]);
 
   // Mutation to mark onboarding as complete
   const markOnboardingCompleteMutation = useMutation({
