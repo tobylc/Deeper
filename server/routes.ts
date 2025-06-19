@@ -1644,7 +1644,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (userRole && otherUserRole) {
         // Use role-specific questions from shared module
         const { getRoleSpecificQuestions } = await import('../shared/role-specific-questions.js');
-        templates = getRoleSpecificQuestions(relationshipType, userRole, otherUserRole);
+        templates = getRoleSpecificQuestions(relationshipType, userRole);
       }
       
       // Fallback to general questions if no role-specific questions available
