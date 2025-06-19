@@ -583,7 +583,26 @@ export default function Dashboard() {
                               <UserDisplayName email={otherParticipant} />
                             </p>
                             <div className="flex items-center space-x-2">
-                              <Badge variant="secondary">{conversation.relationshipType}</Badge>
+                              <Badge variant="secondary">
+                                {(() => {
+                                  // Find the connection for this conversation to get roles
+                                  const connection = acceptedConnections.find(conn => 
+                                    (conn.inviterEmail === conversation.participant1Email && conn.inviteeEmail === conversation.participant2Email) ||
+                                    (conn.inviterEmail === conversation.participant2Email && conn.inviteeEmail === conversation.participant1Email)
+                                  );
+                                  
+                                  if (connection) {
+                                    const roleInfo = getRoleDisplayInfo(
+                                      connection.relationshipType, 
+                                      connection.inviterRole, 
+                                      connection.inviteeRole
+                                    );
+                                    return roleInfo.relationshipDisplay;
+                                  }
+                                  
+                                  return conversation.relationshipType; // fallback
+                                })()}
+                              </Badge>
                               <Badge variant={isMyTurn ? "default" : "outline"}>
                                 {isMyTurn ? "Your turn" : "Their turn"}
                               </Badge>

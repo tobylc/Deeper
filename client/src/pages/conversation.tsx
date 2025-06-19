@@ -15,6 +15,7 @@ import OnboardingPopup from "@/components/onboarding-popup";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
+import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
 import type { Conversation, Message, Connection, User } from "@shared/schema";
 
 export default function ConversationPage() {
@@ -299,7 +300,18 @@ export default function ConversationPage() {
                   {currentUserData?.firstName || user?.firstName || user?.email?.split('@')[0] || 'You'} & <UserDisplayName email={otherParticipant} />
                 </div>
                 <div className="text-xs text-slate-600">
-                  {conversation.relationshipType}
+                  {(() => {
+                    if (connection) {
+                      const roleInfo = getRoleDisplayInfo(
+                        connection.relationshipType, 
+                        connection.inviterRole, 
+                        connection.inviteeRole
+                      );
+                      return roleInfo.relationshipDisplay;
+                    }
+                    
+                    return conversation.relationshipType; // fallback
+                  })()}
                 </div>
               </div>
             </div>

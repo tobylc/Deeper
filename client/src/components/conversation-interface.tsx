@@ -6,8 +6,9 @@ import { formatDistanceToNow } from "date-fns";
 import { MessageCircle, ArrowRight, Sparkles, Clock, Send, Plus, ChevronDown } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
-import type { Message, User } from "@shared/schema";
+import type { Message, User, Connection } from "@shared/schema";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
+import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
 import ProfileAvatar from "@/components/profile-avatar";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -20,6 +21,7 @@ interface ConversationInterfaceProps {
   participant2Email: string;
   isMyTurn: boolean;
   relationshipType: string;
+  connection?: Connection;
   newMessage: string;
   setNewMessage: (message: string) => void;
   onSendMessage: () => void;
@@ -35,6 +37,7 @@ export default function ConversationInterface({
   participant2Email,
   isMyTurn,
   relationshipType,
+  connection,
   newMessage,
   setNewMessage,
   onSendMessage,
