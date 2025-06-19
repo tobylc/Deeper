@@ -25,32 +25,42 @@ export default function OnboardingPopup({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-[600px] bg-gradient-to-br from-slate-50 to-blue-50/30 border-2 border-ocean/20">
-        <DialogHeader className="text-center space-y-4">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#1B2137] to-[#0F1419] border-2 border-[#4FACFE]/30 backdrop-blur-md">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 z-10 w-8 h-8 rounded-full bg-[#4FACFE]/20 hover:bg-[#4FACFE]/30 flex items-center justify-center text-white/80 hover:text-white transition-all duration-200"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <DialogHeader className="text-center space-y-4 pt-2">
           <div className="flex justify-center">
             <DeeperLogo size="lg" />
           </div>
-          <DialogTitle className="text-2xl font-bold text-slate-800 flex items-center justify-center space-x-2">
-            <QuotesIcon size="md" className="text-ocean" />
+          <DialogTitle className="text-2xl font-bold text-white flex items-center justify-center space-x-2">
+            <QuotesIcon size="md" className="text-[#4FACFE]" />
             <span>Welcome to Deeper</span>
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Introduction */}
-          <Card className="bg-white/80 border-ocean/20">
+          <Card className="bg-[#1B2137]/80 border-[#4FACFE]/30 backdrop-blur-sm">
             <CardContent className="p-6">
               <div className="text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#4FACFE] to-teal flex items-center justify-center mx-auto">
                   <MessageCircle className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-800">
+                <h3 className="text-lg font-semibold text-white">
                   {isQuestioner ? "You're about to ask your first question!" : "You're about to share your first response!"}
                 </h3>
-                <p className="text-slate-600 leading-relaxed">
-                  Deeper uses a unique <strong>turn-based conversation system</strong> designed to create 
+                <p className="text-slate-300 leading-relaxed">
+                  Deeper uses a unique <strong className="text-white">turn-based conversation system</strong> designed to create 
                   more thoughtful, meaningful exchanges between you and{" "}
-                  <span className="text-ocean font-medium">
+                  <span className="text-[#4FACFE] font-medium">
                     <UserDisplayName email={otherParticipant} />
                   </span>.
                 </p>
@@ -60,20 +70,20 @@ export default function OnboardingPopup({
 
           {/* How it works */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-slate-800 text-center">How Turn-Based Communication Works</h4>
+            <h4 className="text-lg font-semibold text-white text-center">How Turn-Based Communication Works</h4>
             
             <div className="grid gap-4">
               {isQuestioner ? (
                 <>
                   {/* Step 1 - Ask Question */}
-                  <Card className="bg-gradient-to-r from-ocean/5 to-ocean/10 border-ocean/20">
+                  <Card className="bg-gradient-to-r from-[#4FACFE]/10 to-[#4FACFE]/20 border-[#4FACFE]/30 backdrop-blur-sm">
                     <CardContent className="p-4 flex items-center space-x-4">
-                      <div className="w-8 h-8 rounded-full bg-ocean text-white flex items-center justify-center text-sm font-bold">
+                      <div className="w-8 h-8 rounded-full bg-[#4FACFE] text-white flex items-center justify-center text-sm font-bold">
                         1
                       </div>
                       <div>
-                        <h5 className="font-semibold text-ocean">Ask Your Question</h5>
-                        <p className="text-sm text-slate-600">
+                        <h5 className="font-semibold text-[#4FACFE]">Ask Your Question</h5>
+                        <p className="text-sm text-slate-300">
                           Share your thoughtful question or topic to explore together.
                         </p>
                       </div>
@@ -81,14 +91,14 @@ export default function OnboardingPopup({
                   </Card>
 
                   {/* Step 2 - Wait for Response */}
-                  <Card className="bg-gradient-to-r from-amber/5 to-amber/10 border-amber/20">
+                  <Card className="bg-gradient-to-r from-[#D7A087]/10 to-[#D7A087]/20 border-[#D7A087]/30 backdrop-blur-sm">
                     <CardContent className="p-4 flex items-center space-x-4">
-                      <div className="w-8 h-8 rounded-full bg-amber text-white flex items-center justify-center text-sm font-bold">
+                      <div className="w-8 h-8 rounded-full bg-[#D7A087] text-white flex items-center justify-center text-sm font-bold">
                         2
                       </div>
                       <div>
-                        <h5 className="font-semibold text-amber-700">Their Turn to Respond</h5>
-                        <p className="text-sm text-slate-600">
+                        <h5 className="font-semibold text-[#D7A087]">Their Turn to Respond</h5>
+                        <p className="text-sm text-slate-300">
                           <UserDisplayName email={otherParticipant} /> will receive an email notification and share their thoughtful response.
                         </p>
                       </div>
@@ -96,14 +106,14 @@ export default function OnboardingPopup({
                   </Card>
 
                   {/* Step 3 - Continue Conversation */}
-                  <Card className="bg-gradient-to-r from-teal/5 to-teal/10 border-teal/20">
+                  <Card className="bg-gradient-to-r from-teal/10 to-teal/20 border-teal/30 backdrop-blur-sm">
                     <CardContent className="p-4 flex items-center space-x-4">
                       <div className="w-8 h-8 rounded-full bg-teal text-white flex items-center justify-center text-sm font-bold">
                         3
                       </div>
                       <div>
-                        <h5 className="font-semibold text-teal-700">Continue the Exchange</h5>
-                        <p className="text-sm text-slate-600">
+                        <h5 className="font-semibold text-teal-300">Continue the Exchange</h5>
+                        <p className="text-sm text-slate-300">
                           Once they respond, you can follow up, ask new questions, or start new conversation threads.
                         </p>
                       </div>
@@ -113,14 +123,14 @@ export default function OnboardingPopup({
               ) : (
                 <>
                   {/* Step 1 - Question Asked */}
-                  <Card className="bg-gradient-to-r from-ocean/5 to-ocean/10 border-ocean/20">
+                  <Card className="bg-gradient-to-r from-[#4FACFE]/10 to-[#4FACFE]/20 border-[#4FACFE]/30 backdrop-blur-sm">
                     <CardContent className="p-4 flex items-center space-x-4">
-                      <div className="w-8 h-8 rounded-full bg-ocean text-white flex items-center justify-center text-sm font-bold">
+                      <div className="w-8 h-8 rounded-full bg-[#4FACFE] text-white flex items-center justify-center text-sm font-bold">
                         1
                       </div>
                       <div>
-                        <h5 className="font-semibold text-ocean">Question Asked</h5>
-                        <p className="text-sm text-slate-600">
+                        <h5 className="font-semibold text-[#4FACFE]">Question Asked</h5>
+                        <p className="text-sm text-slate-300">
                           <UserDisplayName email={otherParticipant} /> has shared a thoughtful question for you to explore.
                         </p>
                       </div>
@@ -128,14 +138,14 @@ export default function OnboardingPopup({
                   </Card>
 
                   {/* Step 2 - Your Response */}
-                  <Card className="bg-gradient-to-r from-amber/5 to-amber/10 border-amber/20">
+                  <Card className="bg-gradient-to-r from-[#D7A087]/10 to-[#D7A087]/20 border-[#D7A087]/30 backdrop-blur-sm">
                     <CardContent className="p-4 flex items-center space-x-4">
-                      <div className="w-8 h-8 rounded-full bg-amber text-white flex items-center justify-center text-sm font-bold">
+                      <div className="w-8 h-8 rounded-full bg-[#D7A087] text-white flex items-center justify-center text-sm font-bold">
                         2
                       </div>
                       <div>
-                        <h5 className="font-semibold text-amber-700">Share Your Response</h5>
-                        <p className="text-sm text-slate-600">
+                        <h5 className="font-semibold text-[#D7A087]">Share Your Response</h5>
+                        <p className="text-sm text-slate-300">
                           Take your time to craft a thoughtful, authentic response that deepens your connection.
                         </p>
                       </div>
@@ -143,14 +153,14 @@ export default function OnboardingPopup({
                   </Card>
 
                   {/* Step 3 - Continue Conversation */}
-                  <Card className="bg-gradient-to-r from-teal/5 to-teal/10 border-teal/20">
+                  <Card className="bg-gradient-to-r from-teal/10 to-teal/20 border-teal/30 backdrop-blur-sm">
                     <CardContent className="p-4 flex items-center space-x-4">
                       <div className="w-8 h-8 rounded-full bg-teal text-white flex items-center justify-center text-sm font-bold">
                         3
                       </div>
                       <div>
-                        <h5 className="font-semibold text-teal-700">Turn-Based Exchange</h5>
-                        <p className="text-sm text-slate-600">
+                        <h5 className="font-semibold text-teal-300">Turn-Based Exchange</h5>
+                        <p className="text-sm text-slate-300">
                           After you respond, they can follow up or ask new questions, creating meaningful dialogue.
                         </p>
                       </div>
@@ -162,37 +172,37 @@ export default function OnboardingPopup({
           </div>
 
           {/* Key Benefits */}
-          <Card className="bg-gradient-to-r from-purple/5 to-purple/10 border-purple/20">
+          <Card className="bg-gradient-to-r from-purple-500/10 to-purple-400/20 border-purple-400/30 backdrop-blur-sm">
             <CardContent className="p-4">
-              <h5 className="font-semibold text-purple-700 mb-3 flex items-center">
-                <Heart className="w-4 h-4 mr-2" />
+              <h5 className="font-semibold text-purple-300 mb-3 flex items-center">
+                <QuotesIcon size="sm" className="mr-2" />
                 Why Turn-Based Communication?
               </h5>
-              <ul className="space-y-2 text-sm text-slate-600">
+              <ul className="space-y-2 text-sm text-slate-300">
                 <li className="flex items-start">
-                  <div className="w-1.5 h-1.5 rounded-full bg-purple mt-2 mr-3 flex-shrink-0"></div>
-                  <span><strong>Thoughtful responses:</strong> Time to reflect before sharing</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2 mr-3 flex-shrink-0"></div>
+                  <span><strong className="text-white">Thoughtful responses:</strong> Time to reflect before sharing</span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-1.5 h-1.5 rounded-full bg-purple mt-2 mr-3 flex-shrink-0"></div>
-                  <span><strong>Deeper connection:</strong> Quality over quantity in communication</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2 mr-3 flex-shrink-0"></div>
+                  <span><strong className="text-white">Deeper connection:</strong> Quality over quantity in communication</span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-1.5 h-1.5 rounded-full bg-purple mt-2 mr-3 flex-shrink-0"></div>
-                  <span><strong>Email notifications:</strong> Stay connected without constant checking</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2 mr-3 flex-shrink-0"></div>
+                  <span><strong className="text-white">Email notifications:</strong> Stay connected without constant checking</span>
                 </li>
               </ul>
             </CardContent>
           </Card>
 
           {/* Important Note */}
-          <Card className="bg-gradient-to-r from-slate-100 to-slate-50 border-slate-200">
+          <Card className="bg-gradient-to-r from-slate-700/20 to-slate-600/30 border-slate-500/30 backdrop-blur-sm">
             <CardContent className="p-4">
               <div className="flex items-start space-x-3">
-                <Clock className="w-5 h-5 text-slate-500 mt-0.5 flex-shrink-0" />
+                <Clock className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
                 <div>
-                  <h5 className="font-semibold text-slate-700 mb-1">Important to Remember</h5>
-                  <p className="text-sm text-slate-600 leading-relaxed">
+                  <h5 className="font-semibold text-slate-200 mb-1">Important to Remember</h5>
+                  <p className="text-sm text-slate-300 leading-relaxed">
                     Express your thoughts fully while it's your turn—you won't be able to respond again 
                     until <UserDisplayName email={otherParticipant} /> submits their follow-up. This encourages 
                     more complete, meaningful communication.
