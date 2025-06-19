@@ -1,6 +1,7 @@
 import type { Connection } from "@shared/schema";
 import { storage } from "./storage";
 import sgMail from '@sendgrid/mail';
+import { getInvitationText, getEmailSubjectWithRoles } from "@shared/role-display-utils";
 
 // Email service interface for sending notifications
 export interface EmailService {
@@ -12,6 +13,8 @@ export interface EmailService {
     senderEmail: string;
     conversationId: number;
     relationshipType: string;
+    senderRole?: string;
+    recipientRole?: string;
     messageType: 'question' | 'response';
   }): Promise<void>;
 }
@@ -20,16 +23,18 @@ export interface EmailService {
 export class ConsoleEmailService implements EmailService {
   async sendConnectionInvitation(connection: Connection): Promise<void> {
     const inviterName = await storage.getUserDisplayNameByEmail(connection.inviterEmail);
+    const invitationText = getInvitationText(connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+    const subject = getEmailSubjectWithRoles('Invitation', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
     
     console.log(`
 📧 INVITATION EMAIL
 To: ${connection.inviteeEmail}
 From: ${connection.inviterEmail}
-Subject: You're invited to start a meaningful conversation on Deeper
+Subject: ${subject}
 
 Hi there!
 
-${inviterName} has invited you to connect on Deeper for ${connection.relationshipType} conversations.
+${inviterName} has invited you to connect on Deeper for ${invitationText}.
 
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
 
@@ -47,15 +52,19 @@ The Deeper Team
 
   async sendConnectionAccepted(connection: Connection): Promise<void> {
     const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
+    const subject = getEmailSubjectWithRoles('Connection Accepted', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+    const roleDisplay = connection.inviterRole && connection.inviteeRole 
+      ? `${connection.inviterRole.toLowerCase()}/${connection.inviteeRole.toLowerCase()}`
+      : connection.relationshipType.toLowerCase();
     
     console.log(`
 📧 CONNECTION ACCEPTED EMAIL
 To: ${connection.inviterEmail}
-Subject: ${inviteeName} accepted your invitation!
+Subject: ${subject}
 
 Great news! ${inviteeName} has accepted your invitation to connect.
 
-Your private conversation space is now ready. You can start by asking the first question.
+Your private ${roleDisplay} conversation space is now ready. You can start by asking the first question.
 
 Visit your dashboard to begin: [Dashboard Link]
 
@@ -66,13 +75,17 @@ The Deeper Team
 
   async sendConnectionDeclined(connection: Connection): Promise<void> {
     const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
+    const subject = getEmailSubjectWithRoles('Connection Declined', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+    const roleDisplay = connection.inviterRole && connection.inviteeRole 
+      ? `${connection.inviterRole.toLowerCase()}/${connection.inviteeRole.toLowerCase()}`
+      : connection.relationshipType.toLowerCase();
     
     console.log(`
 📧 CONNECTION DECLINED EMAIL
 To: ${connection.inviterEmail}
-Subject: Connection invitation update
+Subject: ${subject}
 
-${inviteeName} has respectfully declined your invitation to connect.
+${inviteeName} has respectfully declined your ${roleDisplay} connection invitation.
 
 Don't worry - meaningful connections take time. You can always try reaching out through other channels or invite them again in the future.
 
