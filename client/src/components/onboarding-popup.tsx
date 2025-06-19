@@ -22,6 +22,8 @@ export default function OnboardingPopup({
   relationshipType 
 }: OnboardingPopupProps) {
   const isQuestioner = userRole === 'questioner';
+  
+  console.log('OnboardingPopup render:', { isOpen, userRole, otherParticipant, relationshipType });
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
