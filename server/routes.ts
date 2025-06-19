@@ -203,6 +203,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Production Auth endpoints
   app.get('/api/auth/user', async (req: any, res) => {
     try {
+      // Development bypass for testing
+      if (process.env.NODE_ENV === 'development' && req.query.test_user) {
+        const testUser = await storage.getUserByEmail('thetobyclarkshow@gmail.com');
+        if (testUser) {
+          return res.json({
+            id: testUser.id,
+            email: testUser.email,
+            firstName: testUser.firstName,
+            lastName: testUser.lastName,
+            subscriptionTier: testUser.subscriptionTier,
+            subscriptionStatus: testUser.subscriptionStatus,
+            maxConnections: testUser.maxConnections
+          });
+        }
+      }
+
       // Check if user is authenticated
       if (!req.isAuthenticated() || !req.user) {
         return res.status(401).json({ message: "Unauthorized" });
@@ -1622,54 +1638,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate count
       const questionCount = Math.min(Math.max(parseInt(count) || 3, 1), 5);
 
-      // Get role-specific questions when roles are available
-      let templates: string[] = [];
-      
-      if (userRole && otherUserRole) {
-        // Use role-specific questions from shared module
-        const { getRoleSpecificQuestions } = await import('../shared/role-specific-questions.js');
-        templates = getRoleSpecificQuestions(relationshipType, userRole);
-      }
-      
-      // Fallback to general questions if no role-specific questions available
-      if (templates.length === 0) {
-        const fallbackTemplates = {
-          "Parent-Child": [
-            "What's something you've learned about yourself recently?",
-            "What's a challenge you're facing that we could work through together?",
-            "What's something you wish I understood better about your world?",
-            "What's a memory of ours that always makes you smile?",
-            "How do you think we've both grown in the past year?",
-            "What's something you're proud of that I might not know about?"
-          ],
-          "Romantic Partners": [
-            "What's something new you'd like us to experience together?",
-            "When do you feel most connected to me?",
-            "What's a dream you have for our relationship?",
-            "What's something you've learned about love from being with me?",
-            "How do you see us growing together in the next year?",
-            "If you could relive one moment with me, what would it be?"
-          ],
-          "Friends": [
-            "What's something you've learned about yourself through our friendship?",
-            "What's a memory of ours that always makes you laugh?",
-            "How has our friendship changed you for the better?",
-            "What's something you're grateful for in our friendship?",
-            "What's a goal or dream you'd like to share with me?",
-            "What's an adventure you'd like us to go on together?"
-          ],
-          "Siblings": [
-            "What's a childhood memory of ours that you treasure?",
-            "How do you think we've influenced each other growing up?",
-            "What's something you're proud of that I might not know about?",
-            "What's a challenge you're facing that we could talk through?",
-            "How do you see our relationship evolving as we get older?",
-            "What's a tradition or inside joke of ours that makes you smile?"
-          ]
-        };
-        
-        templates = fallbackTemplates[relationshipType as keyof typeof fallbackTemplates] || fallbackTemplates["Friends"];
-      }
+      // Simple fallback questions - in production this would use OpenAI API
+      const fallbackTemplates = {
+        "Parent-Child": [
+          "What's something you've learned about yourself recently?",
+          "What's a challenge you're facing that we could work through together?",
+          "What's something you wish I understood better about your world?",
+          "What's a memory of ours that always makes you smile?",
+          "How do you think we've both grown in the past year?",
+          "What's something you're proud of that I might not know about?"
+        ],
+        "Romantic Partners": [
+          "What's something new you'd like us to experience together?",
+          "When do you feel most connected to me?",
+          "What's a dream you have for our relationship?",
+          "What's something you've learned about love from being with me?",
+          "How do you see us growing together in the next year?",
+          "If you could relive one moment with me, what would it be?"
+        ],
+        "Friends": [
+          "What's something you've learned about yourself through our friendship?",
+          "What's a memory of ours that always makes you laugh?",
+          "How has our friendship changed you for the better?",
+          "What's something you're grateful for in our friendship?",
+          "What's a goal or dream you'd like to share with me?",
+          "What's an adventure you'd like us to go on together?"
+        ],
+        "Siblings": [
+          "What's a childhood memory of ours that you treasure?",
+          "How do you think we've influenced each other growing up?",
+          "What's something you're proud of that I might not know about?",
+          "What's a challenge you're facing that we could talk through?",
+          "How do you see our relationship evolving as we get older?",
+          "What's a tradition or inside joke of ours that makes you smile?"
+        ]
+      };
+
+      const templates = fallbackTemplates[relationshipType as keyof typeof fallbackTemplates] || fallbackTemplates["Friends"];
       
       // Randomly select questions
       const shuffled = [...templates].sort(() => Math.random() - 0.5);
@@ -1713,8 +1718,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Store verification code temporarily
       const verificationKey = `${email}:${phoneNumber}`;
-      (global as any).verificationCodes = (global as any).verificationCodes || new Map();
-      (global as any).verificationCodes.set(verificationKey, {
+      global.verificationCodes = global.verificationCodes || new Map();
+      global.verificationCodes.set(verificationKey, {
         code: verificationCode,
         expires: Date.now() + 10 * 60 * 1000 // 10 minutes
       });
@@ -1735,7 +1740,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const verificationKey = `${email}:${phoneNumber}`;
-      const storedVerification = (global as any).verificationCodes?.get(verificationKey);
+      const storedVerification = global.verificationCodes?.get(verificationKey);
 
       if (!storedVerification || Date.now() > storedVerification.expires) {
         return res.status(400).json({ message: "Verification code expired or invalid" });
@@ -1758,7 +1763,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Clean up verification code
-      (global as any).verificationCodes?.delete(verificationKey);
+      global.verificationCodes?.delete(verificationKey);
 
       res.json({ message: "Phone number verified successfully" });
     } catch (error) {

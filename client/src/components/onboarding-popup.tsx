@@ -24,7 +24,7 @@ export default function OnboardingPopup({
   const isQuestioner = userRole === 'questioner';
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#1B2137] to-[#0F1419] border-2 border-[#4FACFE]/30 backdrop-blur-md">
         {/* Close button */}
         <button

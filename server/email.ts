@@ -478,7 +478,7 @@ export class InternalEmailService implements EmailService {
     const textContent = `
 Hi there!
 
-${inviterName} has invited you to connect on Deeper for ${invitationText}.
+${inviterName} has invited you to connect on Deeper for ${connection.relationshipType} conversations.
 
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
 
