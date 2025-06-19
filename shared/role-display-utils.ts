@@ -14,8 +14,8 @@ export interface RoleDisplayInfo {
  */
 export function getRoleDisplayInfo(
   relationshipType: string, 
-  userRole: string, 
-  otherUserRole: string
+  userRole: string | null | undefined, 
+  otherUserRole: string | null | undefined
 ): RoleDisplayInfo {
   // If we have specific roles, use them for personalized display
   if (userRole && otherUserRole) {
@@ -28,11 +28,12 @@ export function getRoleDisplayInfo(
   }
   
   // Fallback to relationship type if roles aren't available
+  const safeRelationshipType = relationshipType || 'Connection';
   return {
     userRole: '',
     otherUserRole: '',
-    relationshipDisplay: relationshipType,
-    conversationContext: relationshipType.toLowerCase()
+    relationshipDisplay: safeRelationshipType,
+    conversationContext: safeRelationshipType.toLowerCase()
   };
 }
 
@@ -40,30 +41,32 @@ export function getRoleDisplayInfo(
  * Generate invitation text with specific roles
  */
 export function getInvitationText(
-  inviterRole: string,
-  inviteeRole: string,
+  inviterRole: string | null | undefined,
+  inviteeRole: string | null | undefined,
   relationshipType: string
 ): string {
   if (inviterRole && inviteeRole) {
     return `meaningful ${inviterRole.toLowerCase()}/${inviteeRole.toLowerCase()} conversations`;
   }
   
-  return `meaningful ${relationshipType} conversations`;
+  const safeRelationshipType = relationshipType || 'connection';
+  return `meaningful ${safeRelationshipType.toLowerCase()} conversations`;
 }
 
 /**
  * Generate conversation header text
  */
 export function getConversationHeaderText(
-  userRole: string,
-  otherUserRole: string,
+  userRole: string | null | undefined,
+  otherUserRole: string | null | undefined,
   relationshipType: string
 ): string {
   if (userRole && otherUserRole) {
     return `${userRole}/${otherUserRole} Conversation`;
   }
   
-  return `${relationshipType} Conversation`;
+  const safeRelationshipType = relationshipType || 'Connection';
+  return `${safeRelationshipType} Conversation`;
 }
 
 /**
@@ -71,29 +74,31 @@ export function getConversationHeaderText(
  */
 export function getEmailSubjectWithRoles(
   action: string,
-  inviterRole: string,
-  inviteeRole: string,
+  inviterRole: string | null | undefined,
+  inviteeRole: string | null | undefined,
   relationshipType: string
 ): string {
   if (inviterRole && inviteeRole) {
     return `${action} - ${inviterRole}/${inviteeRole} Connection on Deeper`;
   }
   
-  return `${action} - ${relationshipType} Connection on Deeper`;
+  const safeRelationshipType = relationshipType || 'Connection';
+  return `${action} - ${safeRelationshipType} Connection on Deeper`;
 }
 
 /**
  * Generate dashboard section headers
  */
 export function getDashboardSectionTitle(
-  userRole: string,
-  otherUserRole: string,
+  userRole: string | null | undefined,
+  otherUserRole: string | null | undefined,
   relationshipType: string,
   section: 'pending' | 'active' | 'ready'
 ): string {
+  const safeRelationshipType = relationshipType || 'Connection';
   const roleDisplay = userRole && otherUserRole 
     ? `${userRole}/${otherUserRole}` 
-    : relationshipType;
+    : safeRelationshipType;
     
   switch (section) {
     case 'pending':

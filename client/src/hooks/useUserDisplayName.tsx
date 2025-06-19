@@ -5,7 +5,7 @@ export function useUserDisplayName(email: string | null | undefined) {
   return useQuery({
     queryKey: ['/api/users/display-name', email],
     queryFn: async () => {
-      if (!email) return email?.split('@')[0] || 'Unknown User';
+      if (!email) return 'Unknown User';
       
       try {
         const response = await apiRequest('GET', `/api/users/display-name/${encodeURIComponent(email)}`);
@@ -13,7 +13,7 @@ export function useUserDisplayName(email: string | null | undefined) {
         return data.displayName;
       } catch (error) {
         // Fallback to email username if API fails
-        return email.split('@')[0];
+        return email.split('@')[0] || 'Unknown User';
       }
     },
     enabled: !!email,
