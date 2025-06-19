@@ -526,7 +526,11 @@ export default function Dashboard() {
                                 queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user.email}`] });
                                 
                                 if (conversation && conversation.id) {
-                                  setLocation(`/conversation/${conversation.id}`);
+                                  // Add a small delay to ensure the conversation is properly created
+                                  // before redirecting to allow onboarding popup to show
+                                  setTimeout(() => {
+                                    setLocation(`/conversation/${conversation.id}`);
+                                  }, 100);
                                 } else {
                                   toast({
                                     title: "Success!",
