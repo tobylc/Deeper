@@ -203,22 +203,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Production Auth endpoints
   app.get('/api/auth/user', async (req: any, res) => {
     try {
-      // Development bypass for testing
-      if (process.env.NODE_ENV === 'development' && req.query.test_user) {
-        const testUser = await storage.getUserByEmail('thetobyclarkshow@gmail.com');
-        if (testUser) {
-          return res.json({
-            id: testUser.id,
-            email: testUser.email,
-            firstName: testUser.firstName,
-            lastName: testUser.lastName,
-            subscriptionTier: testUser.subscriptionTier,
-            subscriptionStatus: testUser.subscriptionStatus,
-            maxConnections: testUser.maxConnections
-          });
-        }
-      }
-
       // Check if user is authenticated
       if (!req.isAuthenticated() || !req.user) {
         return res.status(401).json({ message: "Unauthorized" });

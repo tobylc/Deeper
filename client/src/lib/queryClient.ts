@@ -12,11 +12,7 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Add development test user parameter for authentication bypass
-  const separator = url.includes('?') ? '&' : '?';
-  const testUrl = `${url}${separator}test_user=true`;
-  
-  const res = await fetch(testUrl, {
+  const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
