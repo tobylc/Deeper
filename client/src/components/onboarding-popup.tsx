@@ -180,11 +180,37 @@ export default function OnboardingPopup({
             </div>
           </div>
 
+          {/* The Heart of Deeper - Highlighted Section */}
+          <Card className="bg-gradient-to-r from-[#4FACFE]/20 to-teal/20 border-2 border-[#4FACFE]/50 backdrop-blur-md shadow-xl">
+            <CardContent className="p-6">
+              <div className="text-center space-y-4">
+                <div className="flex justify-center">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#4FACFE] to-teal flex items-center justify-center shadow-lg">
+                    <QuotesIcon size="lg" className="text-white" />
+                  </div>
+                </div>
+                <h5 className="font-bold text-xl text-white">The Heart of Deeper</h5>
+                <div className="space-y-3 text-slate-100">
+                  <p className="leading-relaxed">
+                    <strong className="text-white">Deeper is designed for long-term, thoughtful conversations</strong> that unfold over 
+                    months, years, or even decades. This isn't quick texting or email replacement—it's a dedicated space for 
+                    meaningful dialogue that might be difficult to have in person.
+                  </p>
+                  <p className="leading-relaxed">
+                    Think of Deeper as your private conversation sanctuary where you can return again and again to explore 
+                    <strong className="text-white"> deeper questions, share authentic thoughts, and strengthen your connection</strong> through 
+                    exchanges that simply don't happen anywhere else.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Key Benefits */}
           <Card className="bg-[#1B2137]/80 border-[#4FACFE]/30 backdrop-blur-md shadow-lg">
             <CardContent className="p-4">
               <h5 className="font-semibold text-white mb-3 flex items-center">
-                <QuotesIcon size="sm" className="mr-2 text-[#4FACFE]" />
+                <MessageCircle className="w-4 h-4 mr-2 text-[#4FACFE]" />
                 Why Turn-Based Communication?
               </h5>
               <ul className="space-y-2 text-sm text-slate-200">
@@ -194,11 +220,11 @@ export default function OnboardingPopup({
                 </li>
                 <li className="flex items-start">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#4FACFE] mt-2 mr-3 flex-shrink-0"></div>
-                  <span><strong className="text-white">Deeper connection:</strong> Quality over quantity in communication</span>
+                  <span><strong className="text-white">Ongoing dialogue:</strong> Conversations that continue over time</span>
                 </li>
                 <li className="flex items-start">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#4FACFE] mt-2 mr-3 flex-shrink-0"></div>
-                  <span><strong className="text-white">Email notifications:</strong> Stay connected without constant checking</span>
+                  <span><strong className="text-white">Deeper connection:</strong> Exchanges that happen nowhere else</span>
                 </li>
               </ul>
             </CardContent>
