@@ -14,8 +14,8 @@ export class HealthService {
   async checkDatabase(): Promise<HealthCheck> {
     const start = Date.now();
     try {
-      // Use stable database connection to handle Neon failures
-      const isHealthy = await stableDb.healthCheck();
+      // Use production-ready database connection with rate limiting
+      const isHealthy = await finalDb.healthCheck();
       return {
         service: 'database',
         status: isHealthy ? 'healthy' : 'unhealthy',
