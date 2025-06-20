@@ -154,14 +154,7 @@ export default function ConversationPage() {
     }
   }, [currentUserData?.hasSeenOnboarding, conversation?.id, hasTriggeredOnboarding]);
 
-  // Track when user starts typing for response time measurement
-  useEffect(() => {
-    if (newMessage.length > 0 && !responseStartTime) {
-      setResponseStartTime(new Date());
-    } else if (newMessage.length === 0) {
-      setResponseStartTime(null);
-    }
-  }, [newMessage, responseStartTime]);
+
 
   // Debug logging for conversation state
   useEffect(() => {
@@ -292,18 +285,27 @@ export default function ConversationPage() {
 
   // Track when user starts typing to begin the 10-minute timer
   useEffect(() => {
-    if (newMessage.trim() && !hasStartedResponse && !responseStartTime) {
-      // Only start timer if this is not the inviter's first question
-      const isInviterFirstQuestion = messages.length === 0 && 
-                                     connection?.inviterEmail === user?.email &&
-                                     nextMessageType === 'question';
-      
-      if (!isInviterFirstQuestion) {
-        setHasStartedResponse(true);
-        setResponseStartTime(new Date());
+    // Only start timer for non-empty messages when not already started
+    if (newMessage.trim()) {
+      if (!hasStartedResponse) {
+        // Check if this is the inviter's first question - skip timer for this case
+        const isInviterFirstQuestion = messages.length === 0 && 
+                                       connection?.inviterEmail === user?.email &&
+                                       nextMessageType === 'question';
+        
+        if (!isInviterFirstQuestion) {
+          setHasStartedResponse(true);
+          setResponseStartTime(new Date());
+        }
+      }
+    } else {
+      // Reset timer when message is cleared
+      if (hasStartedResponse) {
+        setHasStartedResponse(false);
+        setResponseStartTime(null);
       }
     }
-  }, [newMessage, hasStartedResponse, responseStartTime, messages.length, connection?.inviterEmail, user?.email, nextMessageType]);
+  }, [newMessage]);
 
   const checkResponseTime = () => {
     if (!responseStartTime) return true;
