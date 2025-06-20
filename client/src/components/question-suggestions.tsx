@@ -87,6 +87,22 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
     if (!newQuestionText.trim() || !isMyTurn) return;
     createThreadMutation.mutate(newQuestionText.trim());
   };
+
+  // Handle all question selections from right column (curated, AI, custom)
+  const handleQuestionSelect = (question: string) => {
+    if (!canUseRightColumn) {
+      // Show error message if user tries to select when not allowed
+      toast({
+        title: "Response Required",
+        description: "Please respond to the current question before asking a new one.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Create new conversation thread with the selected question
+    createThreadMutation.mutate(question);
+  };
   
   // Initialize available questions and track shown ones
   useEffect(() => {
@@ -387,7 +403,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
             {(showAI ? aiQuestions : currentQuestions).map((question, index) => (
               <div
                 key={index}
-                onClick={() => onQuestionSelect(question)}
+                onClick={() => handleQuestionSelect(question)}
                 className={cn(
                   "group cursor-pointer transition-all duration-200 p-3 rounded-xl border",
                   "hover:shadow-md hover:scale-[1.01]",
@@ -495,7 +511,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
               <div
                 key={`modal-custom-${index}`}
                 onClick={() => {
-                  onQuestionSelect(question);
+                  handleQuestionSelect(question);
                   setShowCustomModal(false);
                   setCustomPrompt("");
                   setCustomAiQuestions([]);
