@@ -47,9 +47,38 @@ export default function ConversationInterface({
   onSendMessage,
   onQuestionSelect,
   isSending,
-  nextMessageType
+  nextMessageType,
+  conversationId
 }: ConversationInterfaceProps) {
   const [showFullHistory, setShowFullHistory] = useState(false);
+  const [messageMode, setMessageMode] = useState<'text' | 'voice'>('text');
+  const queryClient = useQueryClient();
+
+  // Voice message mutation
+  const sendVoiceMessageMutation = useMutation({
+    mutationFn: async ({ audioBlob, duration }: { audioBlob: Blob; duration: number }) => {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'voice-message.webm');
+      formData.append('senderEmail', currentUserEmail);
+      formData.append('type', nextMessageType);
+      formData.append('duration', duration.toString());
+
+      return fetch(`/api/conversations/${conversationId}/voice-messages`, {
+        method: 'POST',
+        body: formData,
+      }).then(async res => {
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.message || 'Failed to send voice message');
+        }
+        return res.json();
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+    },
+  });
 
   // Fetch user data for profile avatars
   const { data: currentUser } = useQuery<User>({
@@ -290,11 +319,18 @@ export default function ConversationInterface({
             </div>
           </div>
 
-          {/* Clean Content */}
+          {/* Content - Handle both text and voice messages */}
           <div className="relative z-10 pl-20 pr-6">
-            <div className="text-gray-900 leading-relaxed text-base whitespace-pre-wrap">
-              {message.content}
-            </div>
+            {message.messageFormat === 'voice' ? (
+              <VoiceMessageDisplay 
+                message={message}
+                isCurrentUser={isFromCurrentUser}
+              />
+            ) : (
+              <div className="text-gray-900 leading-relaxed text-base whitespace-pre-wrap">
+                {message.content}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -622,93 +658,135 @@ export default function ConversationInterface({
               </div>
             </div>
 
-            {/* Writing Surface */}
-            <div className="relative">
-              {/* Paper sheet for writing */}
-              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 border border-ocean/20 shadow-md rounded-sm"
-                   style={{
-                     background: `
-                       linear-gradient(135deg, 
-                         rgba(255,255,255,0.98) 0%, 
-                         rgba(239,246,255,0.96) 30%, 
-                         rgba(79,172,254,0.08) 70%, 
-                         rgba(79,172,254,0.12) 100%
-                       )
-                     `,
-                     filter: 'drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.06))',
-                     backdropFilter: 'blur(0.5px)'
-                   }}>
-                {/* Subtle paper texture */}
-                <div className="absolute inset-0 opacity-15 pointer-events-none">
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
-                </div>
-                
-                {/* Red margin line */}
-                <div className="absolute top-0 bottom-0 w-px bg-red-400/40 left-8" />
-                
-                {/* Very subtle ruled lines */}
-                <div className="absolute inset-0 opacity-25 pointer-events-none" 
-                     style={{
-                       backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(156,163,175,0.12) 23px, rgba(156,163,175,0.12) 24px)',
-                     }} />
+            {/* Message Mode Toggle */}
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <Button
+                onClick={() => setMessageMode('text')}
+                variant={messageMode === 'text' ? 'default' : 'outline'}
+                size="sm"
+                className={cn(
+                  "transition-all duration-200",
+                  messageMode === 'text' 
+                    ? "bg-ocean text-white shadow-ocean/20" 
+                    : "text-slate-600 border-slate-300 hover:bg-slate-50"
+                )}
+              >
+                <Type className="w-4 h-4 mr-2" />
+                Write Text
+              </Button>
+              <Button
+                onClick={() => setMessageMode('voice')}
+                variant={messageMode === 'voice' ? 'default' : 'outline'}
+                size="sm"
+                className={cn(
+                  "transition-all duration-200",
+                  messageMode === 'voice' 
+                    ? "bg-amber-500 text-white shadow-amber/20" 
+                    : "text-slate-600 border-slate-300 hover:bg-slate-50"
+                )}
+              >
+                <Mic className="w-4 h-4 mr-2" />
+                Record Voice
+              </Button>
+            </div>
 
-                <div className="flex space-x-4">
-                  <div className="flex-1 pl-4">
-                    <Textarea
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder={
-                        messages.length >= 2
-                          ? "Continue writing your thoughts here..."
-                          : nextMessageType === 'question' 
-                            ? "Write your question here... or choose from suggestions →" 
-                            : "Write your response here..."
-                      }
-                      className="min-h-[80px] resize-none bg-transparent border-0 focus:ring-0 text-slate-700 font-serif text-base leading-6 placeholder:text-slate-400/70 placeholder:italic"
-                      style={{ backgroundImage: 'none' }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          if (newMessage.trim() && !isSending) {
-                            onSendMessage();
-                          }
-                        }
-                      }}
-                      maxLength={500}
-                    />
-                    
-                    {/* Writing stats */}
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-amber-200/40">
-                      <div className="text-xs text-slate-500 italic">
-                        {newMessage.length} characters written
-                      </div>
-                      <div className="text-xs text-slate-400 italic">
-                        Press Enter to share • Shift+Enter for new line
-                      </div>
-                    </div>
+            {/* Input Surface */}
+            <div className="relative">
+              {messageMode === 'text' ? (
+                /* Text Writing Surface */
+                <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 border border-ocean/20 shadow-md rounded-sm"
+                     style={{
+                       background: `
+                         linear-gradient(135deg, 
+                           rgba(255,255,255,0.98) 0%, 
+                           rgba(239,246,255,0.96) 30%, 
+                           rgba(79,172,254,0.08) 70%, 
+                           rgba(79,172,254,0.12) 100%
+                         )
+                       `,
+                       filter: 'drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.06))',
+                       backdropFilter: 'blur(0.5px)'
+                     }}>
+                  {/* Subtle paper texture */}
+                  <div className="absolute inset-0 opacity-15 pointer-events-none">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
                   </div>
                   
-                  {/* Send button styled as ink well */}
-                  <div className="flex flex-col items-center space-y-2">
-                    <Button
-                      onClick={onSendMessage}
-                      disabled={!newMessage.trim() || isSending}
-                      className={cn(
-                        "w-16 h-16 rounded-full bg-gradient-to-br from-blue-800 to-blue-900 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-blue/25 transition-all duration-200 border-2 border-blue-700",
-                        (!newMessage.trim() || isSending) && "opacity-50 cursor-not-allowed"
-                      )}
-                    >
-                      {isSending ? (
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <Send className="h-5 w-5" />
-                      )}
-                    </Button>
-                    <span className="text-xs text-slate-600 font-handwriting">Share</span>
+                  {/* Red margin line */}
+                  <div className="absolute top-0 bottom-0 w-px bg-red-400/40 left-8" />
+                  
+                  {/* Very subtle ruled lines */}
+                  <div className="absolute inset-0 opacity-25 pointer-events-none" 
+                       style={{
+                         backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(156,163,175,0.12) 23px, rgba(156,163,175,0.12) 24px)',
+                       }} />
+
+                  <div className="flex space-x-4">
+                    <div className="flex-1 pl-4">
+                      <Textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder={
+                          messages.length >= 2
+                            ? "Continue writing your thoughts here..."
+                            : nextMessageType === 'question' 
+                              ? "Write your question here... or choose from suggestions →" 
+                              : "Write your response here..."
+                        }
+                        className="min-h-[80px] resize-none bg-transparent border-0 focus:ring-0 text-slate-700 font-serif text-base leading-6 placeholder:text-slate-400/70 placeholder:italic"
+                        style={{ backgroundImage: 'none' }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            if (newMessage.trim() && !isSending) {
+                              onSendMessage();
+                            }
+                          }
+                        }}
+                        maxLength={500}
+                      />
+                      
+                      {/* Writing stats */}
+                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-ocean/20">
+                        <div className="text-xs text-slate-500 italic">
+                          {newMessage.length} characters written
+                        </div>
+                        <div className="text-xs text-slate-400 italic">
+                          Press Enter to share • Shift+Enter for new line
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Send button styled as ink well */}
+                    <div className="flex flex-col items-center space-y-2">
+                      <Button
+                        onClick={onSendMessage}
+                        disabled={!newMessage.trim() || isSending}
+                        className={cn(
+                          "w-16 h-16 rounded-full bg-gradient-to-br from-blue-800 to-blue-900 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-blue/25 transition-all duration-200 border-2 border-blue-700",
+                          (!newMessage.trim() || isSending) && "opacity-50 cursor-not-allowed"
+                        )}
+                      >
+                        {isSending ? (
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <Send className="h-5 w-5" />
+                        )}
+                      </Button>
+                      <span className="text-xs text-slate-600 font-handwriting">Share</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                /* Voice Recording Surface */
+                <VoiceRecorder
+                  onSendVoiceMessage={(audioBlob, duration) => {
+                    sendVoiceMessageMutation.mutate({ audioBlob, duration });
+                  }}
+                  disabled={isSending || sendVoiceMessageMutation.isPending}
+                />
+              )}
             </div>
           </div>
         </div>

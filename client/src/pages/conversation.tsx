@@ -478,6 +478,7 @@ export default function ConversationPage() {
               onQuestionSelect={handleQuestionSelect}
               isSending={sendMessageMutation.isPending}
               nextMessageType={nextMessageType}
+              conversationId={selectedConversationId || 0}
             />
           </div>
 
