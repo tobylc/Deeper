@@ -27,7 +27,7 @@ export default function ConversationPage() {
   const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
   const [showThreadsView, setShowThreadsView] = useState(false);
   const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
-  const [hasTriggeredOnboarding, setHasTriggeredOnboarding] = useState(false);
+
   const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
   const [responseStartTime, setResponseStartTime] = useState<Date | null>(null);
   const [pendingMessage, setPendingMessage] = useState<string>("");
@@ -145,14 +145,13 @@ export default function ConversationPage() {
     enabled: !!(selectedConversationId || id) && !!user,
   });
 
-  // Check if user needs to see onboarding popup - only show once per conversation visit
+  // Check if user needs to see onboarding popup - only show once globally per user
   useEffect(() => {
-    if (currentUserData && !currentUserData.hasSeenOnboarding && conversation && !hasTriggeredOnboarding && !showOnboardingPopup) {
-      // Only show if user hasn't seen onboarding globally and we haven't triggered it in this session
+    if (currentUserData && currentUserData.hasSeenOnboarding === false && conversation && !showOnboardingPopup) {
+      // Only show if user has never seen onboarding globally
       setShowOnboardingPopup(true);
-      setHasTriggeredOnboarding(true);
     }
-  }, [currentUserData?.hasSeenOnboarding, conversation?.id, hasTriggeredOnboarding]);
+  }, [currentUserData?.hasSeenOnboarding, conversation?.id]);
 
 
 

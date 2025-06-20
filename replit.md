@@ -567,6 +567,12 @@ Changelog:
   * Updated title and key text to use ocean blue coloring for improved readability and brand consistency
   * Enhanced icon presentation with ring effects and improved visual prominence
   * Maintained clean white background while adding engaging blue visual interest throughout the popup
+- June 20, 2025. React infinite loop resolution and onboarding popup optimization:
+  * Fixed critical React error #310 causing white page crashes by eliminating problematic useEffect dependency arrays
+  * Moved thoughtful response timer logic from useEffect to input handlers to prevent circular dependencies
+  * Optimized onboarding popup to display only once per user globally based on hasSeenOnboarding database field
+  * Enhanced thoughtful response popup timer text to use consistent black color matching application design
+  * Maintained voice recording integration with timer functionality while resolving stability issues
 ```
 
 ## User Preferences
