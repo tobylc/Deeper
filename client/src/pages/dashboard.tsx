@@ -662,9 +662,9 @@ export default function Dashboard() {
         </div>
 
         {/* Notification Preferences Section */}
-        {userData && (
+        {user && (
           <div className="mb-8">
-            <NotificationPreferences user={userData} />
+            <NotificationPreferences user={user} />
           </div>
         )}
       </div>

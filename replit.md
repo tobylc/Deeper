@@ -616,6 +616,17 @@ Changelog:
   * Voice recorder send button now disabled until thoughtful response time requirement is satisfied
   * Added comprehensive error handling and TypeScript type safety for timer validation
   * Both text and voice messaging now enforce identical 10-minute thoughtful response requirements for production use
+- June 20, 2025. Comprehensive notification preference system implementation:
+  * Created NotificationPreferencePopup component with email, SMS, and both notification options
+  * Popup appears after users send their first question or response in any conversation
+  * Added conversation-specific notification tracking with "never show again" and "remind me later" options
+  * Enhanced user schema with conversationNotificationPrefs field for per-conversation preference tracking
+  * Implemented phone verification system with 6-digit SMS codes and 10-minute expiration
+  * Added API endpoints for setting conversation preferences, dismissing popups, and phone verification
+  * Created NotificationPreferences component for dashboard profile section with global preference management
+  * Users can easily switch between email, SMS, or both notifications with streamlined phone setup
+  * Complete notification system supporting both per-conversation and global default preferences
+  * Production-ready SMS integration alongside existing email notification system
 ```
 
 ## User Preferences
