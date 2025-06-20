@@ -9,9 +9,22 @@ interface VoiceRecorderProps {
   onRecordingStart?: () => void;
   disabled?: boolean;
   className?: string;
+  canSendMessage?: boolean;
+  hasStartedResponse?: boolean;
+  responseStartTime?: Date | null;
+  onTimerStart?: () => void;
 }
 
-export default function VoiceRecorder({ onSendVoiceMessage, onRecordingStart, disabled, className }: VoiceRecorderProps) {
+export default function VoiceRecorder({ 
+  onSendVoiceMessage, 
+  onRecordingStart, 
+  disabled, 
+  className,
+  canSendMessage = true,
+  hasStartedResponse = false,
+  responseStartTime = null,
+  onTimerStart
+}: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
@@ -139,6 +152,11 @@ export default function VoiceRecorder({ onSendVoiceMessage, onRecordingStart, di
         onRecordingStart();
       }
       
+      // Start thoughtful response timer if not already started
+      if (!hasStartedResponse && onTimerStart) {
+        onTimerStart();
+      }
+      
       // Start timer
       timerRef.current = setInterval(() => {
         setDuration(prev => {
@@ -263,6 +281,15 @@ export default function VoiceRecorder({ onSendVoiceMessage, onRecordingStart, di
 
   const sendVoiceMessage = () => {
     if (audioBlob) {
+      // Check if thoughtful response time requirement is met
+      if (hasStartedResponse && responseStartTime) {
+        const timeElapsed = (new Date().getTime() - responseStartTime.getTime()) / 1000 / 60; // minutes
+        if (timeElapsed < 10) {
+          // Timer requirement not met - this will be handled by parent component's ThoughtfulResponsePopup
+          return;
+        }
+      }
+      
       onSendVoiceMessage(audioBlob, duration);
       clearRecording();
     }

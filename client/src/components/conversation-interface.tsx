@@ -33,6 +33,9 @@ interface ConversationInterfaceProps {
   isSending: boolean;
   nextMessageType: 'question' | 'response';
   conversationId: number;
+  hasStartedResponse?: boolean;
+  responseStartTime?: Date | null;
+  onTimerStart?: () => void;
 }
 
 export default function ConversationInterface({ 
@@ -50,7 +53,10 @@ export default function ConversationInterface({
   onRecordingStart,
   isSending,
   nextMessageType,
-  conversationId
+  conversationId,
+  hasStartedResponse = false,
+  responseStartTime = null,
+  onTimerStart
 }: ConversationInterfaceProps) {
   const [showFullHistory, setShowFullHistory] = useState(false);
   const [messageMode, setMessageMode] = useState<'text' | 'voice'>('text');
