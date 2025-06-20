@@ -39,6 +39,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   const [customPrompt, setCustomPrompt] = useState("");
   const [customAiQuestions, setCustomAiQuestions] = useState<string[]>([]);
   const [isGeneratingCustomAI, setIsGeneratingCustomAI] = useState(false);
+  const [showCustomModal, setShowCustomModal] = useState(false);
   
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -207,6 +208,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
       if (response.ok) {
         const data = await response.json();
         setCustomAiQuestions(data.questions || []);
+        setShowCustomModal(true);
       }
     } catch (error) {
       console.error('Failed to generate custom AI questions:', error);
@@ -415,42 +417,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
             ))}
           </div>
 
-          {/* Custom AI Questions */}
-          {showAI && customAiQuestions.length > 0 && (
-            <>
-              <div className="pt-3 mt-3 border-t border-amber/20">
-                <div className="text-xs font-medium text-amber-700 mb-2">Custom suggestions based on your topic:</div>
-                <div className="space-y-2">
-                  {customAiQuestions.map((question, index) => (
-                    <div
-                      key={`custom-${index}`}
-                      onClick={() => onQuestionSelect(question)}
-                      className="group cursor-pointer transition-all duration-200 p-3 rounded-xl border bg-gradient-to-br from-amber/10 to-amber/15 border-amber/30 hover:border-amber/50 hover:bg-amber/20 hover:shadow-md hover:scale-[1.01]"
-                    >
-                      <div className="flex items-start space-x-2">
-                        <div className="flex-shrink-0 mt-0.5">
-                          <MessageCircle className="w-3 h-3 text-amber-600" />
-                        </div>
-                        
-                        <div className="flex-1">
-                          <div className="text-sm leading-relaxed text-slate-700 group-hover:text-slate-900">
-                            "{question}"
-                          </div>
-                          
-                          <div className="flex items-center mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <span className="text-xs font-medium mr-1 text-amber-600">
-                              Click to use
-                            </span>
-                            <ArrowRight className="w-2 h-2 text-amber-600" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
+
 
           {/* More Button */}
           <div className="text-center pt-3">
@@ -471,7 +438,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
 
           {/* Custom AI Prompt */}
           {showAI && (
-            <div className="mt-4 pt-4 border-t border-amber/20">
+            <div className="mt-3 pt-3 border-t border-amber/20">
               <div className="text-xs font-medium text-amber-700 mb-2">Ask AI about a specific topic or situation:</div>
               <div className="space-y-2">
                 <textarea
@@ -479,12 +446,12 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
                   onChange={(e) => setCustomPrompt(e.target.value)}
                   placeholder="Describe what you want to talk about or explore with your partner..."
                   className="w-full text-xs p-2 rounded-lg border border-amber/30 bg-amber/5 resize-none focus:outline-none focus:ring-2 focus:ring-amber/50 focus:border-amber/50"
-                  rows={3}
+                  rows={2}
                 />
                 <button
                   onClick={generateCustomAIQuestions}
                   disabled={!customPrompt.trim() || isGeneratingCustomAI}
-                  className="w-full text-xs font-medium px-3 py-2 rounded-lg border bg-amber/10 border-amber/30 text-amber-700 hover:bg-amber/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="w-full text-xs font-medium px-3 py-1.5 rounded-lg border bg-amber/10 border-amber/30 text-amber-700 hover:bg-amber/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   {isGeneratingCustomAI ? "Generating..." : "Generate Custom Questions"}
                 </button>
@@ -504,6 +471,50 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
           </div>
         </>
       )}
+
+      {/* Custom AI Questions Modal */}
+      <Dialog open={showCustomModal} onOpenChange={setShowCustomModal}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-medium text-amber-700">
+              Custom Question Suggestions
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto space-y-2">
+            {customAiQuestions.map((question, index) => (
+              <div
+                key={`modal-custom-${index}`}
+                onClick={() => {
+                  onQuestionSelect(question);
+                  setShowCustomModal(false);
+                  setCustomPrompt("");
+                  setCustomAiQuestions([]);
+                }}
+                className="group cursor-pointer transition-all duration-200 p-3 rounded-xl border bg-gradient-to-br from-amber/10 to-amber/15 border-amber/30 hover:border-amber/50 hover:bg-amber/20 hover:shadow-md hover:scale-[1.01]"
+              >
+                <div className="flex items-start space-x-2">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <MessageCircle className="w-3 h-3 text-amber-600" />
+                  </div>
+                  
+                  <div className="flex-1">
+                    <div className="text-sm leading-relaxed text-slate-700 group-hover:text-slate-900">
+                      "{question}"
+                    </div>
+                    
+                    <div className="flex items-center mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <span className="text-xs font-medium mr-1 text-amber-600">
+                        Click to use
+                      </span>
+                      <ArrowRight className="w-2 h-2 text-amber-600" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

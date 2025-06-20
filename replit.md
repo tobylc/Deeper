@@ -600,6 +600,13 @@ Changelog:
   * Rate limiting implemented: 10 AI generations per hour for infinite suggestions, 10 custom prompts per hour
   * Enhanced OpenAI integration with exclusion context to prevent duplicate suggestions
   * Complete infinite question system ensures fresh, relevant conversation starters for sustained long-term dialogue
+- June 20, 2025. Custom AI prompt feature refinements and layout optimization:
+  * Enhanced AI prompt system to generate specific, actionable conversation starter questions based on user's topic input
+  * Improved AI system prompts to focus on practical questions users can directly ask their partner about the specified topic
+  * Implemented modal overlay approach for custom AI question display to prevent page scrolling and maintain balanced layout
+  * Updated fallback question generation to incorporate user's specific topic keywords for more relevant suggestions
+  * Fixed conversation page layout balance ensuring all content remains visible without vertical scrolling
+  * Custom AI questions now appear in focused modal dialog for better user experience and page organization
 ```
 
 ## User Preferences

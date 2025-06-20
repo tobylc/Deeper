@@ -2067,17 +2067,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const OpenAI = await import('openai');
           const openai = new OpenAI.default({ apiKey: process.env.OPENAI_API_KEY });
           
-          // Create custom prompt based on user input and relationship context
-          const customPromptText = `Generate ${questionCount} deeply vulnerable conversation questions for a ${userRole} in a ${relationshipType} relationship based on this specific topic or situation: "${customPrompt.trim()}"
+          // Create custom prompt focused on generating specific questions
+          const customPromptText = `The user wants to discuss this topic with their ${relationshipType.toLowerCase().replace('-', ' ')} partner: "${customPrompt.trim()}"
 
-Focus on creating questions that:
-- Address the specific topic/situation the user mentioned
-- Are emotionally vulnerable and difficult to bring up in person
-- Foster authentic connection through honest dialogue
-- Reflect the perspective of a ${userRole} in this relationship
-- Create space for meaningful, thoughtful conversation
+Generate ${questionCount} specific, direct questions that a ${userRole} could ask to start a conversation about this topic. Each question should:
+- Be a clear, direct question they can ask their partner
+- Help them open up dialogue about the specific topic they mentioned
+- Be vulnerable and authentic, but approachable
+- Allow for deep exploration of the subject
+- Be phrased as something they would actually say to start the conversation
 
-The questions should help explore the fears, emotions, challenges, or deeper aspects of the topic they want to discuss.`;
+Format each as a complete question they can use to begin this important conversation.`;
 
           // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
           const response = await openai.chat.completions.create({
@@ -2085,7 +2085,7 @@ The questions should help explore the fears, emotions, challenges, or deeper asp
             messages: [
               {
                 role: "system",
-                content: "You are an expert at creating deeply vulnerable conversation questions for adult relationships based on specific topics or situations. Generate questions that address the user's specific concerns while maintaining emotional vulnerability and authenticity. Focus on questions that are difficult to bring up in person but necessary for deeper connection. Return only the questions as a JSON object with a 'questions' array."
+                content: "You are an expert at creating specific conversation starter questions for adult relationships. When given a topic or situation, generate direct questions that someone could ask their partner to begin discussing that exact topic. Each question should be a complete, clear question they can use to start the conversation. Focus on practical, actionable questions that open dialogue about the specific subject mentioned. Return only the questions as a JSON object with a 'questions' array."
               },
               {
                 role: "user",
@@ -2111,13 +2111,14 @@ The questions should help explore the fears, emotions, challenges, or deeper asp
         console.error("OpenAI API error for custom questions:", error);
       }
 
-      // Fallback templates based on relationship type if OpenAI fails
+      // Generate specific fallback questions based on the user's custom prompt
+      const topicKeywords = customPrompt.trim().toLowerCase();
       const fallbackQuestions = [
-        `How do I feel about this situation in the context of our ${relationshipType.toLowerCase()} relationship?`,
-        `What fears or concerns do I have about this topic that I haven't shared?`,
-        `What would help me feel more supported or understood regarding this situation?`,
-        `What impact is this having on our relationship that we should discuss?`,
-        `What do I need from you to work through this together?`
+        `How do you think I should approach talking about ${topicKeywords} with you?`,
+        `What would help you understand my feelings about ${topicKeywords}?`,
+        `Can I share something with you about ${topicKeywords} that's been on my mind?`,
+        `What questions do you have about ${topicKeywords} that might help us discuss it?`,
+        `How can we create a safe space to talk through ${topicKeywords} together?`
       ];
       
       res.json({ 
