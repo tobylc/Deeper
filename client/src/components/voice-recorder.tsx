@@ -134,32 +134,32 @@ export default function VoiceRecorder({ onSendVoiceMessage, disabled, className 
   };
 
   return (
-    <Card className={cn("p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200", className)}>
+    <Card className={cn("p-6 bg-gradient-to-r from-slate-50 to-blue-50 border-[#4FACFE]/20", className)}>
       <div className="space-y-4">
         {/* Recording Controls */}
-        <div className="flex items-center justify-center space-x-4">
+        <div className="flex flex-col items-center justify-center space-y-4">
           <Button
             onClick={toggleRecording}
             disabled={disabled || hasRecording}
             className={cn(
-              "w-16 h-16 rounded-full transition-all duration-200",
+              "w-20 h-20 rounded-full transition-all duration-300 shadow-lg",
               isRecording 
-                ? "bg-red-500 hover:bg-red-600 animate-pulse" 
-                : "bg-amber-500 hover:bg-amber-600"
+                ? "bg-red-500 hover:bg-red-600 animate-pulse text-white" 
+                : "bg-gradient-to-r from-[#4FACFE] to-[#3B82F6] hover:from-[#4FACFE]/90 hover:to-[#3B82F6]/90 text-white"
             )}
           >
             {isRecording ? (
-              <MicOff className="w-6 h-6 text-white" />
+              <MicOff className="w-8 h-8" />
             ) : (
-              <Mic className="w-6 h-6 text-white" />
+              <Mic className="w-8 h-8" />
             )}
           </Button>
           
           <div className="text-center">
-            <div className="text-2xl font-mono text-slate-700">
+            <div className="text-3xl font-mono text-slate-800 font-semibold">
               {formatDuration(duration)}
             </div>
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-slate-600 mt-1">
               {isRecording ? "Recording..." : hasRecording ? "Ready to send" : "Tap to record"}
             </div>
           </div>
@@ -180,9 +180,8 @@ export default function VoiceRecorder({ onSendVoiceMessage, disabled, className 
             <div className="flex justify-center space-x-3">
               <Button
                 onClick={clearRecording}
-                variant="outline"
                 size="sm"
-                className="text-slate-600 border-slate-300"
+                className="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800 hover:from-slate-200 hover:to-slate-300 border border-slate-300 shadow-sm"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete
@@ -191,7 +190,7 @@ export default function VoiceRecorder({ onSendVoiceMessage, disabled, className 
               <Button
                 onClick={sendVoiceMessage}
                 disabled={disabled}
-                className="btn-ocean"
+                className="bg-gradient-to-r from-[#4FACFE] to-[#3B82F6] text-white hover:from-[#4FACFE]/90 hover:to-[#3B82F6]/90 shadow-lg"
               >
                 <Send className="w-4 h-4 mr-2" />
                 Send Voice Message
