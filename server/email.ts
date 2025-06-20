@@ -195,7 +195,7 @@ export class ProductionEmailService implements EmailService {
       text: `
 Hi there!
 
-${inviterName} has invited you to connect on Deeper for ${connection.relationshipType} conversations.
+${inviterName} has invited you to connect on Deeper for ${invitationText}.
 
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
 
@@ -478,7 +478,7 @@ export class InternalEmailService implements EmailService {
     const textContent = `
 Hi there!
 
-${inviterName} has invited you to connect on Deeper for ${connection.relationshipType} conversations.
+${inviterName} has invited you to connect on Deeper for ${invitationText}.
 
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
 

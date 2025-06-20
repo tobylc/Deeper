@@ -236,7 +236,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
                 className="w-fit bg-amber/10 text-amber-800 border-amber/30 text-xs"
               >
                 <QuotesIcon size="xs" className="mr-1" />
-                {relationshipType}
+                {userRole && otherUserRole ? `${userRole}/${otherUserRole}` : relationshipType}
               </Badge>
             </CardHeader>
           </Card>
