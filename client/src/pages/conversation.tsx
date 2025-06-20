@@ -156,17 +156,7 @@ export default function ConversationPage() {
 
 
 
-  // Debug logging for conversation state
-  useEffect(() => {
-    console.log("Conversation page state:", {
-      user: user?.email,
-      id,
-      selectedConversationId,
-      conversationLoading,
-      conversation: conversation?.id,
-      conversationError
-    });
-  }, [user, id, selectedConversationId, conversationLoading, conversation, conversationError]);
+
 
   // Mutation to mark onboarding as complete
   const markOnboardingCompleteMutation = useMutation({
@@ -283,29 +273,7 @@ export default function ConversationPage() {
   const nextMessageType: 'question' | 'response' = 
     !lastMessage || lastMessage.type === 'response' ? 'question' : 'response';
 
-  // Track when user starts typing to begin the 10-minute timer
-  useEffect(() => {
-    // Only start timer for non-empty messages when not already started
-    if (newMessage.trim()) {
-      if (!hasStartedResponse) {
-        // Check if this is the inviter's first question - skip timer for this case
-        const isInviterFirstQuestion = messages.length === 0 && 
-                                       connection?.inviterEmail === user?.email &&
-                                       nextMessageType === 'question';
-        
-        if (!isInviterFirstQuestion) {
-          setHasStartedResponse(true);
-          setResponseStartTime(new Date());
-        }
-      }
-    } else {
-      // Reset timer when message is cleared
-      if (hasStartedResponse) {
-        setHasStartedResponse(false);
-        setResponseStartTime(null);
-      }
-    }
-  }, [newMessage]);
+
 
   const checkResponseTime = () => {
     if (!responseStartTime) return true;
@@ -509,7 +477,23 @@ export default function ConversationPage() {
               relationshipType={conversation.relationshipType}
               connection={connection}
               newMessage={newMessage}
-              setNewMessage={setNewMessage}
+              setNewMessage={(message: string) => {
+                setNewMessage(message);
+                // Start timer when user begins typing (but not for inviter's first question)
+                if (message.trim() && !hasStartedResponse) {
+                  const isInviterFirstQuestion = messages.length === 0 && 
+                                                 connection?.inviterEmail === user?.email &&
+                                                 nextMessageType === 'question';
+                  
+                  if (!isInviterFirstQuestion) {
+                    setHasStartedResponse(true);
+                    setResponseStartTime(new Date());
+                  }
+                } else if (!message.trim() && hasStartedResponse) {
+                  setHasStartedResponse(false);
+                  setResponseStartTime(null);
+                }
+              }}
               onSendMessage={handleSendMessage}
               onQuestionSelect={handleQuestionSelect}
               onRecordingStart={handleRecordingStart}
