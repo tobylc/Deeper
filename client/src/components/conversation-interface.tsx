@@ -29,6 +29,7 @@ interface ConversationInterfaceProps {
   setNewMessage: (message: string) => void;
   onSendMessage: () => void;
   onQuestionSelect: (question: string) => void;
+  onRecordingStart?: () => void;
   isSending: boolean;
   nextMessageType: 'question' | 'response';
   conversationId: number;
@@ -46,6 +47,7 @@ export default function ConversationInterface({
   setNewMessage,
   onSendMessage,
   onQuestionSelect,
+  onRecordingStart,
   isSending,
   nextMessageType,
   conversationId
@@ -787,6 +789,7 @@ export default function ConversationInterface({
                   onSendVoiceMessage={(audioBlob, duration) => {
                     sendVoiceMessageMutation.mutate({ audioBlob, duration });
                   }}
+                  onRecordingStart={onRecordingStart}
                   disabled={isSending || sendVoiceMessageMutation.isPending}
                 />
               )}

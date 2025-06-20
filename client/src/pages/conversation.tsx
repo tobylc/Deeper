@@ -367,6 +367,17 @@ export default function ConversationPage() {
     setPendingMessage("");
   };
 
+  const handleRecordingStart = () => {
+    // Only start timer if this is not the inviter's first question
+    const isInviterFirstQuestion = messages.length === 0 && 
+                                   connection?.inviterEmail === user?.email;
+    
+    if (!isInviterFirstQuestion && !hasStartedResponse && !responseStartTime) {
+      setHasStartedResponse(true);
+      setResponseStartTime(new Date());
+    }
+  };
+
   const handleQuestionSelect = (question: string) => {
     setNewMessage(question);
   };
@@ -497,6 +508,7 @@ export default function ConversationPage() {
               setNewMessage={setNewMessage}
               onSendMessage={handleSendMessage}
               onQuestionSelect={handleQuestionSelect}
+              onRecordingStart={handleRecordingStart}
               isSending={sendMessageMutation.isPending}
               nextMessageType={nextMessageType}
               conversationId={selectedConversationId || 0}

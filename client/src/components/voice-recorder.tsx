@@ -11,7 +11,7 @@ interface VoiceRecorderProps {
   className?: string;
 }
 
-export default function VoiceRecorder({ onSendVoiceMessage, disabled, className }: VoiceRecorderProps) {
+export default function VoiceRecorder({ onSendVoiceMessage, onRecordingStart, disabled, className }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -72,6 +72,11 @@ export default function VoiceRecorder({ onSendVoiceMessage, disabled, className 
       mediaRecorder.start();
       setIsRecording(true);
       setDuration(0);
+      
+      // Notify parent that recording started (for response timer)
+      if (onRecordingStart) {
+        onRecordingStart();
+      }
       
       // Start timer
       timerRef.current = setInterval(() => {
