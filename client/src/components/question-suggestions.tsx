@@ -34,6 +34,11 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   const [showAI, setShowAI] = useState(false);
   const [showNewQuestionDialog, setShowNewQuestionDialog] = useState(false);
   const [newQuestionText, setNewQuestionText] = useState("");
+  const [shownQuestions, setShownQuestions] = useState<Set<string>>(new Set());
+  const [availableQuestions, setAvailableQuestions] = useState<string[]>([]);
+  const [customPrompt, setCustomPrompt] = useState("");
+  const [customAiQuestions, setCustomAiQuestions] = useState<string[]>([]);
+  const [isGeneratingCustomAI, setIsGeneratingCustomAI] = useState(false);
   
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -91,16 +96,68 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
     createThreadMutation.mutate(newQuestionText.trim());
   };
   
-  // Get role-specific questions for the current user
-  const roleSpecificQuestions = getRoleSpecificQuestions(relationshipType, userRole);
-  const fallbackQuestions = getGeneralRelationshipQuestions(relationshipType);
-  const questions = roleSpecificQuestions.length > 0 ? roleSpecificQuestions : fallbackQuestions;
+  // Initialize available questions and track shown ones
+  useEffect(() => {
+    const roleSpecificQuestions = getRoleSpecificQuestions(relationshipType, userRole);
+    const fallbackQuestions = getGeneralRelationshipQuestions(relationshipType);
+    const allQuestions = roleSpecificQuestions.length > 0 ? roleSpecificQuestions : fallbackQuestions;
+    
+    // Shuffle questions for randomness
+    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+    setAvailableQuestions(shuffled);
+  }, [relationshipType, userRole]);
+
+  // Get next set of questions that haven't been shown
+  const getNextQuestions = (count: number = 5): string[] => {
+    const unshownQuestions = availableQuestions.filter(q => !shownQuestions.has(q));
+    
+    // If we're running low on unshown questions, generate more via AI
+    if (unshownQuestions.length < count * 2) {
+      generateMoreCuratedQuestions();
+    }
+    
+    const nextQuestions = unshownQuestions.slice(0, count);
+    setShownQuestions(prev => new Set([...Array.from(prev), ...nextQuestions]));
+    return nextQuestions;
+  };
+
+  const [currentQuestions, setCurrentQuestions] = useState<string[]>([]);
   
-  const questionsPerSet = 3;
-  const currentQuestions = questions.slice(currentSet * questionsPerSet, (currentSet + 1) * questionsPerSet);
+  // Load initial questions
+  useEffect(() => {
+    if (availableQuestions.length > 0 && currentQuestions.length === 0) {
+      setCurrentQuestions(getNextQuestions(5));
+    }
+  }, [availableQuestions]);
   
   const shuffleQuestions = () => {
-    setCurrentSet((prev) => (prev + 1) % Math.ceil(questions.length / questionsPerSet));
+    const newQuestions = getNextQuestions(5);
+    setCurrentQuestions(newQuestions);
+  };
+
+  // Generate more curated questions via AI when running low
+  const generateMoreCuratedQuestions = async () => {
+    try {
+      const response = await fetch('/api/ai/generate-questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          relationshipType, 
+          userRole,
+          otherUserRole,
+          count: 10,
+          excludeQuestions: Array.from(shownQuestions)
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const newQuestions = data.questions || [];
+        setAvailableQuestions(prev => [...prev, ...newQuestions]);
+      }
+    } catch (error) {
+      console.error('Failed to generate more questions:', error);
+    }
   };
 
   const generateAIQuestions = async () => {
@@ -113,7 +170,8 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
           relationshipType, 
           userRole,
           otherUserRole,
-          count: 3 
+          count: 5,
+          excludeQuestions: Array.from(shownQuestions)
         })
       });
       
@@ -126,6 +184,34 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
       console.error('Failed to generate AI questions:', error);
     } finally {
       setIsGeneratingAI(false);
+    }
+  };
+
+  const generateCustomAIQuestions = async () => {
+    if (!customPrompt.trim()) return;
+    
+    setIsGeneratingCustomAI(true);
+    try {
+      const response = await fetch('/api/ai/generate-custom-questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          relationshipType, 
+          userRole,
+          otherUserRole,
+          customPrompt: customPrompt.trim(),
+          count: 5
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCustomAiQuestions(data.questions || []);
+      }
+    } catch (error) {
+      console.error('Failed to generate custom AI questions:', error);
+    } finally {
+      setIsGeneratingCustomAI(false);
     }
   };
 
@@ -335,7 +421,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
               {showAI ? (
                 aiQuestions.length > 0 ? `${aiQuestions.length} AI-generated questions` : 'Generate personalized questions'
               ) : (
-                `${questions.length} curated questions • Set ${currentSet + 1} of ${Math.ceil(questions.length / questionsPerSet)}`
+                `${currentQuestions.length} curated questions available`
               )}
             </div>
           </div>
