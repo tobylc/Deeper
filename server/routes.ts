@@ -26,6 +26,12 @@ import { healthService } from "./health";
 import { jobQueue } from "./jobs";
 import { setupAuth, isAuthenticated } from "./oauthAuth";
 import { generateRelationshipSpecificTitle } from "./thread-naming";
+import OpenAI from "openai";
+
+// Initialize OpenAI client
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY 
+});
 
 // Configure multer for file uploads
 const storage_config = multer.memoryStorage();
@@ -40,6 +46,22 @@ const upload = multer({
       cb(null, true);
     } else {
       cb(new Error('Only image files (JPEG, PNG, GIF, WebP) are allowed'));
+    }
+  },
+});
+
+// Configure multer for audio uploads
+const audioUpload = multer({
+  storage: storage_config,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit for audio (30 minutes max)
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['audio/webm', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/mpeg'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only audio files (WebM, MP4, WAV, OGG, MP3) are allowed'));
     }
   },
 });
