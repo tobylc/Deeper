@@ -1,6 +1,6 @@
 import { storage } from "./storage";
 import { db } from "./db";
-import { directDb } from "./neon-direct";
+import { resilientDb } from "./db-resilient";
 
 export interface HealthCheck {
   service: string;
@@ -14,8 +14,8 @@ export class HealthService {
   async checkDatabase(): Promise<HealthCheck> {
     const start = Date.now();
     try {
-      // Use direct database connection to avoid pool rate limits
-      const isHealthy = await directDb.healthCheck();
+      // Use resilient database connection to handle Neon failures
+      const isHealthy = await resilientDb.healthCheck();
       return {
         service: 'database',
         status: isHealthy ? 'healthy' : 'unhealthy',

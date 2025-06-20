@@ -1,40 +1,13 @@
 import { neon } from '@neondatabase/serverless';
-import * as schema from "@shared/schema";
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL must be set");
 }
 
-// Global connection instance with connection limiting
-let connectionInstance: any = null;
-let connectionPromise: Promise<any> | null = null;
-let lastConnectionTime = 0;
-const CONNECTION_COOLDOWN = 5000; // 5 second cooldown between connections
+// Single shared connection instance
+const sql = neon(process.env.DATABASE_URL);
 
-function getConnection() {
-  const now = Date.now();
-  
-  // If we have a recent connection, reuse it
-  if (connectionInstance && (now - lastConnectionTime) < CONNECTION_COOLDOWN) {
-    return connectionInstance;
-  }
-  
-  // Create new connection with cooldown
-  if (!connectionPromise) {
-    connectionPromise = new Promise((resolve) => {
-      setTimeout(() => {
-        connectionInstance = neon(process.env.DATABASE_URL!);
-        lastConnectionTime = Date.now();
-        connectionPromise = null;
-        resolve(connectionInstance);
-      }, Math.max(0, CONNECTION_COOLDOWN - (now - lastConnectionTime)));
-    });
-  }
-  
-  return connectionPromise;
-}
-
-// Query wrapper with connection rate limiting
+// Simple query wrapper with timeout
 export async function executeQuery<T>(
   queryFn: (sql: any) => Promise<T>,
   timeoutMs: number = 3000
@@ -45,7 +18,6 @@ export async function executeQuery<T>(
     }, timeoutMs);
 
     try {
-      const sql = await getConnection();
       const result = await queryFn(sql);
       clearTimeout(timeout);
       resolve(result);

@@ -8,7 +8,7 @@ import multer from "multer";
 import sharp from "sharp";
 import fs from "fs/promises";
 import { storage } from "./storage";
-import { directDb } from "./neon-direct";
+import { resilientDb } from "./db-resilient";
 import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "@shared/schema";
 import { getRolesForRelationship, isValidRolePair } from "@shared/relationship-roles";
 import { z } from "zod";
@@ -259,12 +259,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid session" });
       }
 
-      // Use direct database connection to avoid pool rate limits
+      // Use resilient database connection to handle Neon failures
       let user;
       if (req.user.email) {
-        user = await directDb.getUserByEmail(req.user.email);
+        user = await resilientDb.getUserByEmail(req.user.email);
       } else {
-        user = await directDb.getUserById(userId);
+        user = await resilientDb.getUserById(userId);
       }
       
       if (!user) {
