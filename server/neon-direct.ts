@@ -5,37 +5,33 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL must be set");
 }
 
-// Direct Neon connection for bypassing connection pool issues
-const sql = neon(process.env.DATABASE_URL);
+// Direct Neon connection with optimized configuration
+const sql = neon(process.env.DATABASE_URL, {
+  fetchConnectionCache: true,
+  arrayMode: false,
+  fullResults: false
+});
 
-// Simple query wrapper with automatic retry
+// Query wrapper with timeout and retry logic
 export async function executeQuery<T>(
   queryFn: (sql: any) => Promise<T>,
-  maxRetries: number = 2
+  timeoutMs: number = 5000
 ): Promise<T> {
-  let lastError;
-  
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+  return new Promise(async (resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Database query timeout'));
+    }, timeoutMs);
+
     try {
       const result = await queryFn(sql);
-      return result;
+      clearTimeout(timeout);
+      resolve(result);
     } catch (error: any) {
-      lastError = error;
-      
-      if (error.message?.includes('Too many database connection attempts')) {
-        console.log(`[NEON] Attempt ${attempt}/${maxRetries} failed, retrying in ${attempt * 500}ms`);
-        if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, attempt * 500));
-          continue;
-        }
-      }
-      
-      // Don't retry non-connection errors
-      break;
+      clearTimeout(timeout);
+      console.error('[NEON] Query failed:', error.message);
+      reject(error);
     }
-  }
-  
-  throw lastError;
+  });
 }
 
 // Direct database operations for critical queries

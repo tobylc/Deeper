@@ -260,7 +260,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Use direct database connection to avoid pool rate limits
-      const user = await directDb.getUserByEmail(req.user.email || userId);
+      let user;
+      if (req.user.email) {
+        user = await directDb.getUserByEmail(req.user.email);
+      } else {
+        user = await directDb.getUserById(userId);
+      }
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });

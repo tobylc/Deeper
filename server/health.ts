@@ -1,5 +1,6 @@
 import { storage } from "./storage";
 import { db } from "./db";
+import { directDb } from "./neon-direct";
 
 export interface HealthCheck {
   service: string;
@@ -13,12 +14,13 @@ export class HealthService {
   async checkDatabase(): Promise<HealthCheck> {
     const start = Date.now();
     try {
-      // Simple query to test database connectivity
-      await db.execute(`SELECT 1 as health_check`);
+      // Use direct database connection to avoid pool rate limits
+      const isHealthy = await directDb.healthCheck();
       return {
         service: 'database',
-        status: 'healthy',
-        responseTime: Date.now() - start
+        status: isHealthy ? 'healthy' : 'unhealthy',
+        responseTime: Date.now() - start,
+        details: { connectionType: 'direct_neon' }
       };
     } catch (error) {
       return {
