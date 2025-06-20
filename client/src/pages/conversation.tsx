@@ -460,8 +460,8 @@ export default function ConversationPage() {
         </div>
       </div>
 
-      <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-4 min-h-0">
-        <div className="grid lg:grid-cols-4 gap-4 h-full">
+      <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-2 min-h-0">
+        <div className="grid lg:grid-cols-4 gap-3 h-full">
           {/* Conversation Threads Sidebar */}
           <div className={`lg:col-span-1 ${showThreadsView ? 'block' : 'hidden lg:block'} h-full`}>
             {conversation && connection && (
