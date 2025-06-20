@@ -280,18 +280,26 @@ export default function VoiceRecorder({
   };
 
   const sendVoiceMessage = () => {
-    if (audioBlob) {
-      // Check if thoughtful response time requirement is met
-      if (hasStartedResponse && responseStartTime) {
-        const timeElapsed = (new Date().getTime() - responseStartTime.getTime()) / 1000 / 60; // minutes
-        if (timeElapsed < 10) {
-          // Timer requirement not met - this will be handled by parent component's ThoughtfulResponsePopup
-          return;
-        }
+    if (!audioBlob) {
+      console.error('No audio blob available for sending');
+      return;
+    }
+
+    // Production-ready timer validation
+    if (hasStartedResponse && responseStartTime !== null) {
+      const timeElapsed = (new Date().getTime() - responseStartTime.getTime()) / 1000 / 60; // minutes
+      if (timeElapsed < 10) {
+        // Timer requirement not met - prevent sending and let parent component handle popup
+        console.log('Thoughtful response timer not yet met, preventing voice message send');
+        return;
       }
-      
+    }
+    
+    try {
       onSendVoiceMessage(audioBlob, duration);
       clearRecording();
+    } catch (error) {
+      console.error('Error sending voice message:', error);
     }
   };
 
@@ -408,8 +416,9 @@ export default function VoiceRecorder({
               
               <Button
                 onClick={sendVoiceMessage}
-                disabled={disabled}
-                className="bg-gradient-to-r from-[#4FACFE] to-[#3B82F6] text-white hover:from-[#4FACFE]/90 hover:to-[#3B82F6]/90 shadow-lg text-xs px-3 py-1"
+                disabled={disabled || (hasStartedResponse && responseStartTime !== null && 
+                  (new Date().getTime() - responseStartTime.getTime()) / 1000 / 60 < 10)}
+                className="bg-gradient-to-r from-[#4FACFE] to-[#3B82F6] text-white hover:from-[#4FACFE]/90 hover:to-[#3B82F6]/90 shadow-lg text-xs px-3 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-3 h-3 mr-1" />
                 Send Voice Message

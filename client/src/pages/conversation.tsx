@@ -511,6 +511,12 @@ export default function ConversationPage() {
               isSending={sendMessageMutation.isPending}
               nextMessageType={nextMessageType}
               conversationId={selectedConversationId || 0}
+              hasStartedResponse={hasStartedResponse}
+              responseStartTime={responseStartTime}
+              onTimerStart={() => {
+                setHasStartedResponse(true);
+                setResponseStartTime(new Date());
+              }}
             />
           </div>
 

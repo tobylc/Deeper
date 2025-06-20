@@ -797,6 +797,10 @@ export default function ConversationInterface({
                   }}
                   onRecordingStart={onRecordingStart}
                   disabled={isSending || sendVoiceMessageMutation.isPending}
+                  canSendMessage={true}
+                  hasStartedResponse={hasStartedResponse}
+                  responseStartTime={responseStartTime}
+                  onTimerStart={onTimerStart}
                 />
               )}
             </div>
