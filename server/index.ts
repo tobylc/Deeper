@@ -53,7 +53,7 @@ app.use((req, res, next) => {
     // Setup graceful shutdown with database cleanup
     setupGracefulShutdown(server);
 
-  // importantly only setup vite in development and after
+    // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
@@ -86,4 +86,8 @@ app.use((req, res, next) => {
 
   // Setup graceful shutdown
   setupGracefulShutdown(server);
+  } catch (error) {
+    console.error('[SERVER] Startup error:', error);
+    process.exit(1);
+  }
 })();

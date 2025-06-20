@@ -1,6 +1,6 @@
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
-import connectPg from "connect-pg-simple";
+import MemoryStore from "memorystore";
 import { storage } from "./storage";
 
 if (!process.env.REPLIT_DOMAINS) {
@@ -12,56 +12,30 @@ console.log(`[AUTH] Production authentication system active`);
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   
-  // Production-ready session configuration with fallback to memory store
-  try {
-    const pgStore = connectPg(session);
-    const sessionStore = new pgStore({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true,
-      ttl: sessionTtl,
-      tableName: "sessions",
-      errorLog: (error: any) => {
-        console.error('[SESSION] Store error (non-fatal):', error);
-      },
-      schemaName: 'public',
-      pruneSessionInterval: 60 * 15,
-    });
+  // Use production-ready memory store for immediate stability
+  const MemoryStoreSession = MemoryStore(session);
+  const sessionStore = new MemoryStoreSession({
+    checkPeriod: 86400000, // prune expired entries every 24h
+    ttl: sessionTtl,
+    max: 10000, // Maximum number of sessions
+  });
 
-    // Graceful error handling for store
-    sessionStore.on('error', (error: any) => {
-      console.error('[SESSION] Store connection error (will use memory fallback):', error);
-    });
+  console.log('[SESSION] Using optimized memory store for production stability');
 
-    return session({
-      secret: process.env.SESSION_SECRET!,
-      store: sessionStore,
-      resave: false,
-      saveUninitialized: false,
-      rolling: true,
-      cookie: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: sessionTtl,
-        sameSite: 'lax',
-      },
-    });
-  } catch (error) {
-    console.warn('[SESSION] PostgreSQL session store failed, using memory store as fallback:', error);
-    
-    // Fallback to memory store for immediate stability
-    return session({
-      secret: process.env.SESSION_SECRET!,
-      resave: false,
-      saveUninitialized: false,
-      rolling: true,
-      cookie: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: sessionTtl,
-        sameSite: 'lax',
-      },
-    });
-  }
+  return session({
+    secret: process.env.SESSION_SECRET!,
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
+    name: 'deeper.session',
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: sessionTtl,
+      sameSite: 'lax',
+    },
+  });
 }
 
 export async function setupAuth(app: Express) {
