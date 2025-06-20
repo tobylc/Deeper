@@ -384,11 +384,11 @@ export default function ConversationPage() {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex flex-col">
+    <div className="h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-100 flex-shrink-0">
         <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
+          <div className="flex items-center justify-between h-12">
             <Button 
               variant="ghost" 
               onClick={() => setLocation("/dashboard")}
