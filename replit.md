@@ -580,6 +580,14 @@ Changelog:
   * Modified email invitation text templates to use personalized role descriptions throughout
   * Systematically replaced remaining generic relationship descriptions with authentic user-selected role combinations
   * All user-facing text now consistently shows specific roles (e.g., "Father/Son") rather than generic categories (e.g., "Parent-Child")
+- June 20, 2025. Role-specific question curation system for adult relationships:
+  * Enhanced curated question system to provide distinct questions for each specific role in adult relationships (20+ years old assumption)
+  * Updated Parent-Child questions: Fathers receive questions about sharing life wisdom and understanding adult children; Sons receive questions about seeking guidance and family responsibility
+  * Mothers get questions about maternal wisdom and navigating adult independence; Daughters get questions about life guidance and family traditions
+  * Implemented OpenAI-powered AI question generation with role-specific prompts for adult conversations
+  * Created comprehensive fallback question templates organized by specific user roles rather than generic relationship types
+  * Each user now receives question suggestions tailored exclusively to their role perspective in adult relationships
+  * AI question generation uses sophisticated role-based prompts focusing on adult life experiences, family dynamics, and mature relationship navigation
 ```
 
 ## User Preferences
