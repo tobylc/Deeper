@@ -554,6 +554,19 @@ Changelog:
   * Integrated voice messages into existing conversation flow with proper turn management and notifications
   * Both audio playback and AI-generated text transcription displayed for optimal user experience
   * Production-ready voice messaging system enhancing meaningful communication through multiple modalities
+- June 20, 2025. Thoughtful response timer system enhancement:
+  * Implemented timer logic that only appears after inviter's first question to allow smooth conversation initiation
+  * Added 10-minute countdown timer that starts when users begin typing or recording voice messages
+  * Enhanced voice recorder with callback system to trigger response timer when recording begins
+  * Updated conversation interface to properly handle timer events for both text and voice message modes
+  * Timer automatically skips for inviter's first question while enforcing thoughtful response time for all subsequent messages
+  * System encourages meaningful dialogue while maintaining natural conversation flow and startup experience
+- June 20, 2025. Onboarding popup visual enhancement:
+  * Enhanced "The Heart of Deeper" section with ocean blue contrast elements against white background
+  * Added ocean blue gradient background, accent stripe, and corner visual elements for better hierarchy
+  * Updated title and key text to use ocean blue coloring for improved readability and brand consistency
+  * Enhanced icon presentation with ring effects and improved visual prominence
+  * Maintained clean white background while adding engaging blue visual interest throughout the popup
 ```
 
 ## User Preferences

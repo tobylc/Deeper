@@ -181,29 +181,36 @@ export default function OnboardingPopup({
           </div>
 
           {/* The Heart of Deeper - Highlighted Section */}
-          <Card className="bg-gradient-to-r from-slate-100 to-white border-2 border-[#4FACFE]/50 backdrop-blur-md shadow-xl">
+          <Card className="bg-gradient-to-br from-[#4FACFE]/10 via-white to-[#4FACFE]/5 border-2 border-[#4FACFE] backdrop-blur-md shadow-xl relative overflow-hidden">
+            {/* Ocean blue accent stripe */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#4FACFE] to-teal"></div>
+            
             <CardContent className="p-6">
               <div className="text-center space-y-4">
                 <div className="flex justify-center">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#4FACFE] to-teal flex items-center justify-center shadow-lg">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#4FACFE] to-teal flex items-center justify-center shadow-lg ring-2 ring-[#4FACFE]/20 ring-offset-2">
                     <QuotesIcon size="lg" className="text-white" />
                   </div>
                 </div>
-                <h5 className="font-bold text-xl text-slate-900">The Heart of Deeper</h5>
+                <h5 className="font-bold text-xl text-[#4FACFE] mb-2">The Heart of Deeper</h5>
                 <div className="space-y-3 text-slate-700">
                   <p className="leading-relaxed">
-                    <strong className="text-slate-900">Deeper is designed for long-term, thoughtful conversations</strong> that unfold over 
+                    <strong className="text-[#4FACFE]">Deeper is designed for long-term, thoughtful conversations</strong> that unfold over 
                     months, years, or even decades. This isn't quick texting or email replacement—it's a dedicated space for 
                     meaningful dialogue that might be difficult to have in person.
                   </p>
                   <p className="leading-relaxed">
                     Think of Deeper as your private conversation sanctuary where you can return again and again to explore 
-                    <strong className="text-slate-900"> deeper questions, share authentic thoughts, and strengthen your connection</strong> through 
+                    <strong className="text-[#4FACFE]"> deeper questions, share authentic thoughts, and strengthen your connection</strong> through 
                     exchanges that simply don't happen anywhere else.
                   </p>
                 </div>
               </div>
             </CardContent>
+            
+            {/* Ocean blue corner accents */}
+            <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-[#4FACFE]/10 to-transparent rounded-tl-full"></div>
+            <div className="absolute top-0 left-0 w-12 h-12 bg-gradient-to-br from-[#4FACFE]/10 to-transparent rounded-br-full"></div>
           </Card>
 
           {/* Key Benefits */}
