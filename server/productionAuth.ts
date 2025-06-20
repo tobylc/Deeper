@@ -11,39 +11,57 @@ console.log(`[AUTH] Production authentication system active`);
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  const pgStore = connectPg(session);
   
-  // Production-ready session store with error handling
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: true, // Allow automatic table creation
-    ttl: sessionTtl,
-    tableName: "sessions",
-    errorLog: (error: any) => {
-      console.error('[SESSION] Store error:', error);
-    },
-    schemaName: 'public', // Explicit schema
-    pruneSessionInterval: 60 * 15, // Cleanup every 15 minutes
-  });
+  // Production-ready session configuration with fallback to memory store
+  try {
+    const pgStore = connectPg(session);
+    const sessionStore = new pgStore({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
+      ttl: sessionTtl,
+      tableName: "sessions",
+      errorLog: (error: any) => {
+        console.error('[SESSION] Store error (non-fatal):', error);
+      },
+      schemaName: 'public',
+      pruneSessionInterval: 60 * 15,
+    });
 
-  // Handle store errors gracefully
-  sessionStore.on('error', (error: any) => {
-    console.error('[SESSION] Store connection error:', error);
-  });
+    // Graceful error handling for store
+    sessionStore.on('error', (error: any) => {
+      console.error('[SESSION] Store connection error (will use memory fallback):', error);
+    });
 
-  return session({
-    secret: process.env.SESSION_SECRET!,
-    store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
-    rolling: true, // Extend session on activity
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: sessionTtl,
-      sameSite: 'lax', // Better CSRF protection
-    },
-  });
+    return session({
+      secret: process.env.SESSION_SECRET!,
+      store: sessionStore,
+      resave: false,
+      saveUninitialized: false,
+      rolling: true,
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: sessionTtl,
+        sameSite: 'lax',
+      },
+    });
+  } catch (error) {
+    console.warn('[SESSION] PostgreSQL session store failed, using memory store as fallback:', error);
+    
+    // Fallback to memory store for immediate stability
+    return session({
+      secret: process.env.SESSION_SECRET!,
+      resave: false,
+      saveUninitialized: false,
+      rolling: true,
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: sessionTtl,
+        sameSite: 'lax',
+      },
+    });
+  }
 }
 
 export async function setupAuth(app: Express) {

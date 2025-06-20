@@ -347,6 +347,45 @@ export class DatabaseStorage implements IStorage {
     
     return email.split('@')[0];
   }
+
+  // Verification Codes
+  async createVerificationCode(codeData: InsertVerificationCode): Promise<VerificationCode> {
+    const [verificationCode] = await db
+      .insert(verificationCodes)
+      .values(codeData)
+      .returning();
+    return verificationCode;
+  }
+
+  async getVerificationCode(email: string, phoneNumber: string): Promise<VerificationCode | undefined> {
+    const [code] = await db
+      .select()
+      .from(verificationCodes)
+      .where(
+        and(
+          eq(verificationCodes.email, email),
+          eq(verificationCodes.phoneNumber, phoneNumber),
+          eq(verificationCodes.verified, false),
+          sql`${verificationCodes.expiresAt} > NOW()`
+        )
+      )
+      .orderBy(desc(verificationCodes.createdAt))
+      .limit(1);
+    return code;
+  }
+
+  async markVerificationCodeUsed(id: number): Promise<void> {
+    await db
+      .update(verificationCodes)
+      .set({ verified: true })
+      .where(eq(verificationCodes.id, id));
+  }
+
+  async cleanupExpiredVerificationCodes(): Promise<void> {
+    await db
+      .delete(verificationCodes)
+      .where(sql`${verificationCodes.expiresAt} < NOW()`);
+  }
 }
 
 export const storage = new DatabaseStorage();

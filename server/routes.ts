@@ -2158,14 +2158,14 @@ Format each as a complete question they can use to begin this important conversa
       // Generate and send verification code
       const verificationCode = await notificationService.sendPhoneVerification(phoneNumber);
 
-      // Store verification code temporarily with proper typing
-      const verificationKey = `${email}:${phoneNumber}`;
-      if (!(global as any).verificationCodes) {
-        (global as any).verificationCodes = new Map();
-      }
-      (global as any).verificationCodes.set(verificationKey, {
+      // Store verification code in database
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+      await storage.createVerificationCode({
+        email,
+        phoneNumber,
         code: verificationCode,
-        expires: Date.now() + 10 * 60 * 1000 // 10 minutes
+        expiresAt,
+        verified: false,
       });
 
       res.json({ message: "Verification code sent successfully" });
@@ -2183,10 +2183,10 @@ Format each as a complete question they can use to begin this important conversa
         return res.status(400).json({ message: "Phone number, email, and verification code are required" });
       }
 
-      const verificationKey = `${email}:${phoneNumber}`;
-      const storedVerification = global.verificationCodes?.get(verificationKey);
+      // Get verification code from database
+      const storedVerification = await storage.getVerificationCode(email, phoneNumber);
 
-      if (!storedVerification || Date.now() > storedVerification.expires) {
+      if (!storedVerification) {
         return res.status(400).json({ message: "Verification code expired or invalid" });
       }
 
@@ -2206,8 +2206,8 @@ Format each as a complete question they can use to begin this important conversa
         maxConnections: user.maxConnections || 1
       });
 
-      // Clean up verification code
-      global.verificationCodes?.delete(verificationKey);
+      // Mark verification code as used
+      await storage.markVerificationCodeUsed(storedVerification.id);
 
       res.json({ message: "Phone number verified successfully" });
     } catch (error) {

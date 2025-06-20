@@ -43,11 +43,15 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  try {
+    const server = await registerRoutes(app);
 
-  // Initialize WebSocket server for real-time updates
-  const wsManager = initializeWebSocket(server);
-  log('[WebSocket] Real-time dashboard updates enabled');
+    // Initialize WebSocket server for real-time updates
+    const wsManager = initializeWebSocket(server);
+    log('[WebSocket] Real-time dashboard updates enabled');
+
+    // Setup graceful shutdown with database cleanup
+    setupGracefulShutdown(server);
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
