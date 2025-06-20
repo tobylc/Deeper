@@ -12,6 +12,8 @@ interface OnboardingPopupProps {
   userRole: 'questioner' | 'responder';
   otherParticipant: string;
   relationshipType: string;
+  inviterRole?: string;
+  inviteeRole?: string;
   onComplete?: () => void;
 }
 
@@ -21,9 +23,16 @@ export default function OnboardingPopup({
   userRole, 
   otherParticipant, 
   relationshipType,
+  inviterRole,
+  inviteeRole,
   onComplete 
 }: OnboardingPopupProps) {
   const isQuestioner = userRole === 'questioner';
+  
+  // Display specific role combination if available, otherwise fall back to relationship type
+  const relationshipDisplay = inviterRole && inviteeRole 
+    ? `${inviterRole}/${inviteeRole}` 
+    : relationshipType;
 
   const handleClose = () => {
     onClose();

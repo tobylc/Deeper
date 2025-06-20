@@ -573,6 +573,13 @@ Changelog:
   * Optimized onboarding popup to display only once per user globally based on hasSeenOnboarding database field
   * Enhanced thoughtful response popup timer text to use consistent black color matching application design
   * Maintained voice recording integration with timer functionality while resolving stability issues
+- June 20, 2025. Complete role-based display system implementation:
+  * Fixed email templates in all services (Console, Production, Internal) to use specific role combinations instead of generic relationship types
+  * Updated QuestionSuggestions component badge to display "Father/Son" instead of "Parent-Child" 
+  * Enhanced OnboardingPopup component to accept and display specific role combinations
+  * Modified email invitation text templates to use personalized role descriptions throughout
+  * Systematically replaced remaining generic relationship descriptions with authentic user-selected role combinations
+  * All user-facing text now consistently shows specific roles (e.g., "Father/Son") rather than generic categories (e.g., "Parent-Child")
 ```
 
 ## User Preferences

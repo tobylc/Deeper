@@ -527,6 +527,8 @@ export default function ConversationPage() {
           userRole={conversation.participant1Email === user?.email ? 'questioner' : 'responder'}
           otherParticipant={otherParticipant}
           relationshipType={conversation.relationshipType}
+          inviterRole={connection?.inviterRole}
+          inviteeRole={connection?.inviteeRole}
         />
       )}
 
