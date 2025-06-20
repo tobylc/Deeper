@@ -1802,20 +1802,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Question Generation endpoint
+  // Enhanced AI Question Generation endpoint with infinite suggestions
   app.post("/api/ai/generate-questions", 
-    rateLimit(5, 60 * 60 * 1000), // 5 generations per hour
+    rateLimit(10, 60 * 60 * 1000), // 10 generations per hour for infinite suggestions
     isAuthenticated, 
     async (req: any, res) => {
     try {
-      const { relationshipType, userRole, otherUserRole, count = 3 } = req.body;
+      const { relationshipType, userRole, otherUserRole, count = 5, excludeQuestions = [] } = req.body;
       
       if (!relationshipType) {
         return res.status(400).json({ message: "Relationship type is required" });
       }
       
       // Validate count
-      const questionCount = Math.min(Math.max(parseInt(count) || 3, 1), 5);
+      const questionCount = Math.min(Math.max(parseInt(count) || 5, 1), 10);
+      
+      // Filter to exclude already shown questions
+      const exclusionList = Array.isArray(excludeQuestions) ? excludeQuestions : [];
 
       // Try OpenAI API first, fall back to role-specific templates
       try {
@@ -1823,19 +1826,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const OpenAI = await import('openai');
           const openai = new OpenAI.default({ apiKey: process.env.OPENAI_API_KEY });
           
+          // Create exclusion context for AI
+          const exclusionContext = exclusionList.length > 0 
+            ? `\n\nIMPORTANT: Do NOT generate any questions similar to these already shown questions: ${exclusionList.slice(0, 10).join('; ')}`
+            : '';
+
           // Create role-specific prompts for vulnerable, difficult-to-ask questions
           const rolePrompts = {
             "Parent-Child": {
-              "Father": `Generate ${questionCount} deeply vulnerable conversation questions that an adult father might ask his grown child - questions that address fears, regrets, difficult emotions, or conversations that are hard to bring up in person. Focus on: parenting mistakes/regrets, fears about the relationship, personal struggles, mortality/aging concerns, difficult family dynamics. These should be emotionally vulnerable questions that create authentic connection through difficult topics.`,
-              "Mother": `Generate ${questionCount} deeply vulnerable conversation questions that an adult mother might ask her grown child - questions about fears, sacrifices, maternal struggles, or topics too difficult to discuss face-to-face. Focus on: motherhood fears/regrets, family sacrifices, relationship impacts on children, generational patterns, difficult emotional truths. These should be emotionally raw questions that foster genuine intimacy.`,
-              "Son": `Generate ${questionCount} deeply vulnerable conversation questions that an adult son might ask his father - questions about struggles, fears, disappointments, or topics too difficult to bring up in person. Focus on: masculine identity struggles, feeling inadequate, relationship/career fears, family pressure, personal failures. These should be emotionally honest questions that address difficult father-son dynamics.`,
-              "Daughter": `Generate ${questionCount} deeply vulnerable conversation questions that an adult daughter might ask her mother - questions about insecurities, fears, family patterns, or topics too sensitive to discuss face-to-face. Focus on: feminine identity struggles, family expectations, relationship fears, generational patterns, personal inadequacies. These should be emotionally vulnerable questions that address difficult mother-daughter dynamics.`
+              "Father": `Generate ${questionCount} deeply vulnerable conversation questions that an adult father might ask his grown child - questions that address fears, regrets, difficult emotions, or conversations that are hard to bring up in person. Focus on: parenting mistakes/regrets, fears about the relationship, personal struggles, mortality/aging concerns, difficult family dynamics. These should be emotionally vulnerable questions that create authentic connection through difficult topics.${exclusionContext}`,
+              "Mother": `Generate ${questionCount} deeply vulnerable conversation questions that an adult mother might ask her grown child - questions about fears, sacrifices, maternal struggles, or topics too difficult to discuss face-to-face. Focus on: motherhood fears/regrets, family sacrifices, relationship impacts on children, generational patterns, difficult emotional truths. These should be emotionally raw questions that foster genuine intimacy.${exclusionContext}`,
+              "Son": `Generate ${questionCount} deeply vulnerable conversation questions that an adult son might ask his father - questions about struggles, fears, disappointments, or topics too difficult to bring up in person. Focus on: masculine identity struggles, feeling inadequate, relationship/career fears, family pressure, personal failures. These should be emotionally honest questions that address difficult father-son dynamics.${exclusionContext}`,
+              "Daughter": `Generate ${questionCount} deeply vulnerable conversation questions that an adult daughter might ask her mother - questions about insecurities, fears, family patterns, or topics too sensitive to discuss face-to-face. Focus on: feminine identity struggles, family expectations, relationship fears, generational patterns, personal inadequacies. These should be emotionally vulnerable questions that address difficult mother-daughter dynamics.${exclusionContext}`
             },
             "Romantic Partners": {
-              "Boyfriend": `Generate ${questionCount} deeply vulnerable questions for an adult boyfriend to ask his girlfriend - questions about relationship fears, insecurities, difficult emotions, or topics too scary to bring up in person. Focus on: relationship anxieties, intimacy struggles, commitment fears, past trauma effects, emotional needs.`,
-              "Girlfriend": `Generate ${questionCount} deeply vulnerable questions for an adult girlfriend to ask her boyfriend - questions about relationship insecurities, fears, difficult emotions, or topics too vulnerable to discuss face-to-face. Focus on: relationship fears, intimacy struggles, emotional needs, commitment anxieties, past relationship impacts.`,
-              "Husband": `Generate ${questionCount} deeply vulnerable questions for an adult husband to ask his wife - questions about marriage struggles, fears, difficult emotions, or topics too hard to bring up in person. Focus on: marriage difficulties, intimacy challenges, identity loss, unmet needs, relationship regrets.`,
-              "Wife": `Generate ${questionCount} deeply vulnerable questions for an adult wife to ask her husband - questions about marriage fears, unmet needs, difficult emotions, or topics too vulnerable to discuss face-to-face. Focus on: marriage struggles, feeling disconnected, unvoiced needs, intimacy challenges, identity concerns.`
+              "Boyfriend": `Generate ${questionCount} deeply vulnerable questions for an adult boyfriend to ask his girlfriend - questions about relationship fears, insecurities, difficult emotions, or topics too scary to bring up in person. Focus on: relationship anxieties, intimacy struggles, commitment fears, past trauma effects, emotional needs.${exclusionContext}`,
+              "Girlfriend": `Generate ${questionCount} deeply vulnerable questions for an adult girlfriend to ask her boyfriend - questions about relationship insecurities, fears, difficult emotions, or topics too vulnerable to discuss face-to-face. Focus on: relationship fears, intimacy struggles, emotional needs, commitment anxieties, past relationship impacts.${exclusionContext}`,
+              "Husband": `Generate ${questionCount} deeply vulnerable questions for an adult husband to ask his wife - questions about marriage struggles, fears, difficult emotions, or topics too hard to bring up in person. Focus on: marriage difficulties, intimacy challenges, identity loss, unmet needs, relationship regrets.${exclusionContext}`,
+              "Wife": `Generate ${questionCount} deeply vulnerable questions for an adult wife to ask her husband - questions about marriage fears, unmet needs, difficult emotions, or topics too vulnerable to discuss face-to-face. Focus on: marriage struggles, feeling disconnected, unvoiced needs, intimacy challenges, identity concerns.${exclusionContext}`
+            },
+            "Friends": {
+              "Best Friend": `Generate ${questionCount} deeply vulnerable questions for an adult best friend - questions about friendship fears, hidden vulnerabilities, difficult emotions, or topics too sensitive to bring up in person. Focus on: friendship insecurities, jealousy, fear of growing apart, unspoken tensions, authentic connection struggles.${exclusionContext}`,
+              "Close Friend": `Generate ${questionCount} deeply vulnerable questions for an adult close friend - questions about friendship boundaries, insecurities, fears, or topics difficult to discuss face-to-face. Focus on: friendship expectations, feeling left out, authenticity struggles, boundary navigation, connection fears.${exclusionContext}`,
+              "Friend": `Generate ${questionCount} deeply vulnerable questions for an adult friend - questions about friendship difficulties, vulnerabilities, fears, or topics too risky to bring up in person. Focus on: friendship authenticity, fear of judgment, connection struggles, hidden insecurities, relationship patterns.${exclusionContext}`
             }
           };
 
@@ -2030,6 +2043,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("AI question generation error:", error);
       res.status(500).json({ message: "Failed to generate questions" });
+    }
+  });
+
+  // Custom AI Question Generation endpoint
+  app.post("/api/ai/generate-custom-questions", 
+    rateLimit(10, 60 * 60 * 1000), // 10 custom generations per hour
+    isAuthenticated, 
+    async (req: any, res) => {
+    try {
+      const { relationshipType, userRole, otherUserRole, customPrompt, count = 5 } = req.body;
+      
+      if (!relationshipType || !customPrompt?.trim()) {
+        return res.status(400).json({ message: "Relationship type and custom prompt are required" });
+      }
+      
+      // Validate count
+      const questionCount = Math.min(Math.max(parseInt(count) || 5, 1), 5);
+
+      // Try OpenAI API for custom question generation
+      try {
+        if (process.env.OPENAI_API_KEY && userRole) {
+          const OpenAI = await import('openai');
+          const openai = new OpenAI.default({ apiKey: process.env.OPENAI_API_KEY });
+          
+          // Create custom prompt based on user input and relationship context
+          const customPromptText = `Generate ${questionCount} deeply vulnerable conversation questions for a ${userRole} in a ${relationshipType} relationship based on this specific topic or situation: "${customPrompt.trim()}"
+
+Focus on creating questions that:
+- Address the specific topic/situation the user mentioned
+- Are emotionally vulnerable and difficult to bring up in person
+- Foster authentic connection through honest dialogue
+- Reflect the perspective of a ${userRole} in this relationship
+- Create space for meaningful, thoughtful conversation
+
+The questions should help explore the fears, emotions, challenges, or deeper aspects of the topic they want to discuss.`;
+
+          // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+          const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+              {
+                role: "system",
+                content: "You are an expert at creating deeply vulnerable conversation questions for adult relationships based on specific topics or situations. Generate questions that address the user's specific concerns while maintaining emotional vulnerability and authenticity. Focus on questions that are difficult to bring up in person but necessary for deeper connection. Return only the questions as a JSON object with a 'questions' array."
+              },
+              {
+                role: "user",
+                content: customPromptText
+              }
+            ],
+            response_format: { type: "json_object" },
+            max_tokens: 400
+          });
+
+          const result = JSON.parse(response.choices[0].message.content || '{}');
+          if (result.questions && Array.isArray(result.questions)) {
+            return res.json({ 
+              questions: result.questions.slice(0, questionCount),
+              relationshipType,
+              userRole: userRole || '',
+              customPrompt: customPrompt.trim(),
+              count: result.questions.slice(0, questionCount).length
+            });
+          }
+        }
+      } catch (error) {
+        console.error("OpenAI API error for custom questions:", error);
+      }
+
+      // Fallback templates based on relationship type if OpenAI fails
+      const fallbackQuestions = [
+        `How do I feel about this situation in the context of our ${relationshipType.toLowerCase()} relationship?`,
+        `What fears or concerns do I have about this topic that I haven't shared?`,
+        `What would help me feel more supported or understood regarding this situation?`,
+        `What impact is this having on our relationship that we should discuss?`,
+        `What do I need from you to work through this together?`
+      ];
+      
+      res.json({ 
+        questions: fallbackQuestions.slice(0, questionCount),
+        relationshipType,
+        userRole: userRole || '',
+        customPrompt: customPrompt.trim(),
+        count: fallbackQuestions.slice(0, questionCount).length,
+        fallback: true
+      });
+    } catch (error) {
+      console.error("Custom AI question generation error:", error);
+      res.status(500).json({ message: "Failed to generate custom questions" });
     }
   });
 

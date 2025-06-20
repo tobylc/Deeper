@@ -590,6 +590,16 @@ Changelog:
   * Friend questions explore friendship fears, hidden vulnerabilities, jealousy, and the difficulty of authentic connection
   * AI question generation enhanced with vulnerable conversation prompts focusing on emotional authenticity and difficult topics
   * All questions designed to create the thoughtful, private space needed for conversations that are difficult in person
+- June 20, 2025. Infinite question suggestion system with custom AI prompts:
+  * Implemented robust tracking system ensuring no question is shown to a user more than once
+  * Enhanced question curation with "More" button functionality providing continuous new suggestions
+  * Created custom AI prompt feature allowing users to input specific topics or situations for personalized question generation
+  * Added backend API endpoints for infinite question generation with exclusion filtering
+  * AI generates 3-5 custom questions based on user's specific relationship context and desired conversation topic
+  * Custom questions populate directly into conversation input for editing before sending
+  * Rate limiting implemented: 10 AI generations per hour for infinite suggestions, 10 custom prompts per hour
+  * Enhanced OpenAI integration with exclusion context to prevent duplicate suggestions
+  * Complete infinite question system ensures fresh, relevant conversation starters for sustained long-term dialogue
 ```
 
 ## User Preferences
