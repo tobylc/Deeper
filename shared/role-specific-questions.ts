@@ -7,46 +7,44 @@ export interface RoleSpecificQuestions {
 export const roleSpecificQuestions: RoleSpecificQuestions = {
   "Parent-Child": {
     "Father": [
-      "What's one thing you learned from your own father that you want to pass on?",
-      "What moment made you feel most proud to be a dad?",
-      "How has being a father changed your perspective on life?",
-      "What's something you wish your own father had told you?",
-      "What's the most important lesson you want to teach your child?"
+      "What life lesson do you wish you had learned earlier that you want to share with your adult son/daughter?",
+      "How has watching your child become an adult changed your perspective on your own choices?",
+      "What aspect of modern adult life do you find most challenging to understand from your child's perspective?",
+      "What family responsibility or tradition would you like your adult child to eventually take on?",
+      "What's something you're proud of about how your child has handled adult challenges?",
+      "What wisdom from your father do you find yourself wanting to pass down now that your child is grown?",
+      "How do you balance giving advice versus letting your adult child make their own decisions?",
+      "What aspect of your adult child's life would you like to understand better?"
     ],
     "Mother": [
-      "What's one thing you learned from your own mother that you want to pass on?",
-      "What moment made you feel most proud to be a mom?",
-      "How has being a mother changed your perspective on life?",
-      "What's something you wish your own mother had told you?",
-      "What's the most important lesson you want to teach your child?"
-    ],
-    "Parent": [
-      "What's your favorite memory from when your child was little?",
-      "How do you hope your child will remember their childhood?",
-      "What's something new you've learned about yourself as a parent?",
-      "What family tradition do you hope to continue?",
-      "What's the biggest challenge you've faced as a parent?"
+      "What motherly wisdom do you want to share now that your child is navigating adult relationships?",
+      "How has your relationship with your own mother influenced how you connect with your adult child?",
+      "What life skill do you wish you had taught your child before they became an adult?",
+      "What aspect of your adult child's independence makes you most proud?",
+      "What family tradition or value do you hope your child will carry into their own adult relationships?",
+      "How do you navigate the shift from protector to advisor now that your child is grown?",
+      "What's something about adult life you wish someone had prepared you for that you want to discuss?",
+      "What question about your own adult life would you like your child to understand better?"
     ],
     "Son": [
-      "What's something you admire most about your parent?",
-      "What's a family story you'd like to know more about?",
-      "How do you think you're similar to your parent?",
-      "What's something your parent taught you that you use every day?",
-      "What's a question you've always wanted to ask your parent?"
+      "What aspect of being an adult man do you wish you could get your father's perspective on?",
+      "What family responsibility are you ready to take on now that you're grown?",
+      "How has becoming an adult changed what you appreciate about your father?",
+      "What life decision are you facing that you'd value your dad's experience with?",
+      "What question about relationships or career would you like your father's honest opinion on?",
+      "What family story or tradition do you want to understand better now that you're an adult?",
+      "How do you see yourself carrying forward what your father taught you?",
+      "What aspect of your father's adult life do you find yourself curious about now?"
     ],
     "Daughter": [
-      "What's something you admire most about your parent?",
-      "What's a family story you'd like to know more about?",
-      "How do you think you're similar to your parent?",
-      "What's something your parent taught you that you use every day?",
-      "What's a question you've always wanted to ask your parent?"
-    ],
-    "Child": [
-      "What's your favorite thing to do together as a family?",
-      "What makes you feel most loved by your parent?",
-      "What's something you hope never changes about your family?",
-      "What's a memory that always makes you smile?",
-      "What do you want to be like when you're older?"
+      "What aspect of being an adult woman would you like your mother's guidance on?",
+      "How has your perspective on your mother changed since you became an adult yourself?",
+      "What life challenge are you facing that you think your mom might have insight about?",
+      "What family tradition or value do you want to continue in your own adult life?",
+      "What question about adult relationships would you value your mother's perspective on?",
+      "How do you want to honor what your parents taught you while creating your own adult path?",
+      "What aspect of your mother's life experience do you find yourself more curious about now?",
+      "What family responsibility or role are you ready to take on as an adult?"
     ]
   },
   "Romantic Partners": {

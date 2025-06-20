@@ -1817,43 +1817,204 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate count
       const questionCount = Math.min(Math.max(parseInt(count) || 3, 1), 5);
 
-      // Simple fallback questions - in production this would use OpenAI API
-      const fallbackTemplates = {
-        "Parent-Child": [
-          "What's something you've learned about yourself recently?",
-          "What's a challenge you're facing that we could work through together?",
-          "What's something you wish I understood better about your world?",
-          "What's a memory of ours that always makes you smile?",
-          "How do you think we've both grown in the past year?",
-          "What's something you're proud of that I might not know about?"
-        ],
-        "Romantic Partners": [
-          "What's something new you'd like us to experience together?",
-          "When do you feel most connected to me?",
-          "What's a dream you have for our relationship?",
-          "What's something you've learned about love from being with me?",
-          "How do you see us growing together in the next year?",
-          "If you could relive one moment with me, what would it be?"
-        ],
-        "Friends": [
-          "What's something you've learned about yourself through our friendship?",
-          "What's a memory of ours that always makes you laugh?",
-          "How has our friendship changed you for the better?",
-          "What's something you're grateful for in our friendship?",
-          "What's a goal or dream you'd like to share with me?",
-          "What's an adventure you'd like us to go on together?"
-        ],
-        "Siblings": [
-          "What's a childhood memory of ours that you treasure?",
-          "How do you think we've influenced each other growing up?",
-          "What's something you're proud of that I might not know about?",
-          "What's a challenge you're facing that we could talk through?",
-          "How do you see our relationship evolving as we get older?",
-          "What's a tradition or inside joke of ours that makes you smile?"
-        ]
+      // Try OpenAI API first, fall back to role-specific templates
+      try {
+        if (process.env.OPENAI_API_KEY && userRole) {
+          const OpenAI = await import('openai');
+          const openai = new OpenAI.default({ apiKey: process.env.OPENAI_API_KEY });
+          
+          // Create role-specific prompts for adult relationships
+          const rolePrompts = {
+            "Parent-Child": {
+              "Father": `Generate ${questionCount} thoughtful conversation questions that an adult father (45-70 years old) might ask his grown adult child (20+ years old). Focus on: sharing life wisdom, understanding their adult perspective, discussing family legacy, navigating the parent-adult child relationship dynamic. Make questions deep and meaningful for adults.`,
+              "Mother": `Generate ${questionCount} thoughtful conversation questions that an adult mother (45-70 years old) might ask her grown adult child (20+ years old). Focus on: sharing maternal wisdom, understanding their adult independence, discussing life transitions, family bonds in adulthood. Make questions deep and meaningful for adults.`,
+              "Son": `Generate ${questionCount} thoughtful conversation questions that an adult son (20+ years old) might ask his father. Focus on: seeking life guidance, understanding his father's experiences, career/relationship advice, family history and stories. Make questions respectful and mature for adult conversations.`,
+              "Daughter": `Generate ${questionCount} thoughtful conversation questions that an adult daughter (20+ years old) might ask her mother. Focus on: seeking life wisdom, understanding her mother's journey, relationship guidance, family traditions and values. Make questions respectful and mature for adult conversations.`
+            },
+            "Romantic Partners": {
+              "Boyfriend": `Generate ${questionCount} thoughtful questions for an adult boyfriend to ask his girlfriend to deepen their relationship.`,
+              "Girlfriend": `Generate ${questionCount} thoughtful questions for an adult girlfriend to ask her boyfriend to deepen their relationship.`,
+              "Husband": `Generate ${questionCount} thoughtful questions for an adult husband to ask his wife to strengthen their marriage.`,
+              "Wife": `Generate ${questionCount} thoughtful questions for an adult wife to ask her husband to strengthen their marriage.`
+            }
+          };
+
+          let prompt: string | undefined;
+          if (relationshipType === "Parent-Child") {
+            const parentChildPrompts = rolePrompts["Parent-Child"];
+            prompt = (parentChildPrompts as any)[userRole];
+          } else if (relationshipType === "Romantic Partners") {
+            const romanticPrompts = rolePrompts["Romantic Partners"];
+            prompt = (romanticPrompts as any)[userRole];
+          }
+          
+          if (prompt) {
+            // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+            const response = await openai.chat.completions.create({
+              model: "gpt-4o",
+              messages: [
+                {
+                  role: "system",
+                  content: "You are an expert at creating meaningful conversation questions for adult relationships. Generate thoughtful, deep questions that encourage vulnerable and authentic sharing. Focus on adult perspectives and experiences. Return only the questions as a JSON array."
+                },
+                {
+                  role: "user",
+                  content: prompt
+                }
+              ],
+              response_format: { type: "json_object" },
+              max_tokens: 500
+            });
+
+            const result = JSON.parse(response.choices[0].message.content || '{}');
+            if (result.questions && Array.isArray(result.questions)) {
+              return res.json({ 
+                questions: result.questions.slice(0, questionCount),
+                relationshipType,
+                userRole: userRole || '',
+                otherUserRole: otherUserRole || '',
+                count: result.questions.slice(0, questionCount).length
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("OpenAI API error:", error);
+        // Continue to fallback templates
+      }
+
+      // Role-specific fallback templates for adult relationships
+      const roleSpecificTemplates = {
+        "Parent-Child": {
+          "Father": [
+            "What life lesson do you wish you had learned earlier that you want to share?",
+            "How has watching you become an adult changed my perspective on my own choices?",
+            "What aspect of modern adult life do you find most challenging that I might not understand?",
+            "What family responsibility or tradition would you like to eventually take on?",
+            "What's something you're proud of about how you've handled adult challenges?",
+            "What wisdom from my father do I find myself wanting to pass down to you?"
+          ],
+          "Mother": [
+            "What motherly wisdom do I want to share now that you're navigating adult relationships?",
+            "How has my relationship with my own mother influenced how I want to connect with you?",
+            "What life skill do I wish I had taught you before you became an adult?",
+            "What aspect of your independence makes me most proud as your mother?",
+            "What family tradition or value do I hope you'll carry into your own adult relationships?",
+            "How do I navigate the shift from protector to advisor now that you're grown?"
+          ],
+          "Son": [
+            "What aspect of being an adult man do I wish I could get your perspective on?",
+            "What family responsibility am I ready to take on now that I'm grown?",
+            "How has becoming an adult changed what I appreciate about you as my father?",
+            "What life decision am I facing that I'd value your experience with?",
+            "What question about relationships or career would I like your honest opinion on?",
+            "What family story or tradition do I want to understand better now that I'm an adult?"
+          ],
+          "Daughter": [
+            "What aspect of being an adult woman would I like your guidance on?",
+            "How has my perspective on you changed since I became an adult myself?",
+            "What life challenge am I facing that I think you might have insight about?",
+            "What family tradition or value do I want to continue in my own adult life?",
+            "What question about adult relationships would I value your perspective on?",
+            "How do I want to honor what you taught me while creating my own adult path?"
+          ]
+        },
+        "Romantic Partners": {
+          "Boyfriend": [
+            "What's something new I'd like us to experience together?",
+            "When do I feel most connected to you?",
+            "What's a dream I have for our relationship?",
+            "What's something I've learned about love from being with you?",
+            "How do I see us growing together in the next year?",
+            "If I could relive one moment with you, what would it be?"
+          ],
+          "Girlfriend": [
+            "What's something new I'd like us to experience together?",
+            "When do I feel most connected to you?",
+            "What's a dream I have for our relationship?",
+            "What's something I've learned about love from being with you?",
+            "How do I see us growing together in the next year?",
+            "If I could relive one moment with you, what would it be?"
+          ],
+          "Husband": [
+            "What's your favorite memory from our relationship so far?",
+            "How have we grown together since we got married?",
+            "What's something I'm grateful for about our partnership?",
+            "What dream do I have for our future?",
+            "What makes me feel most appreciated in our marriage?",
+            "How can we strengthen our connection as spouses?"
+          ],
+          "Wife": [
+            "What's your favorite memory from our relationship so far?",
+            "How have we grown together since we got married?",
+            "What's something I'm grateful for about our partnership?",
+            "What dream do I have for our future?",
+            "What makes me feel most appreciated in our marriage?",
+            "How can we strengthen our connection as spouses?"
+          ]
+        },
+        "Friends": {
+          "Best Friend": [
+            "What's my favorite memory of our friendship?",
+            "How have we supported each other through tough times?",
+            "What's something I admire about how you handle challenges?",
+            "What adventure would I most like us to go on?",
+            "What makes our friendship special to me?"
+          ],
+          "Close Friend": [
+            "What's something we have in common that always surprises people?",
+            "How has our friendship changed over the years?",
+            "What's a goal I'd like support with?",
+            "What's my favorite thing we do together?",
+            "What's something I've learned from our friendship?"
+          ]
+        },
+        "Siblings": {
+          "Brother": [
+            "What's my favorite childhood memory of us?",
+            "How do I think we've influenced each other?",
+            "What's something I admire about my sister?",
+            "What family trait do I see in both of us?",
+            "What's a tradition I hope we continue as adults?"
+          ],
+          "Sister": [
+            "What's my favorite childhood memory of us?",
+            "How do I think we've influenced each other?",
+            "What's something I admire about my brother?",
+            "What family trait do I see in both of us?",
+            "What's a tradition I hope we continue as adults?"
+          ]
+        }
       };
 
-      const templates = fallbackTemplates[relationshipType as keyof typeof fallbackTemplates] || fallbackTemplates["Friends"];
+      // Get role-specific templates or fall back to general relationship templates
+      const relationshipTemplates = roleSpecificTemplates[relationshipType as keyof typeof roleSpecificTemplates];
+      let templates: string[] = [];
+      
+      if (relationshipTemplates && typeof relationshipTemplates === 'object' && userRole) {
+        if (relationshipType === "Parent-Child") {
+          const parentChildTemplates = roleSpecificTemplates["Parent-Child"];
+          templates = (parentChildTemplates as any)[userRole] || [];
+        } else if (relationshipType === "Romantic Partners") {
+          const romanticTemplates = roleSpecificTemplates["Romantic Partners"];
+          templates = (romanticTemplates as any)[userRole] || [];
+        } else if (relationshipType === "Friends") {
+          const friendTemplates = roleSpecificTemplates["Friends"];
+          templates = (friendTemplates as any)[userRole] || [];
+        } else if (relationshipType === "Siblings") {
+          const siblingTemplates = roleSpecificTemplates["Siblings"];
+          templates = (siblingTemplates as any)[userRole] || [];
+        }
+      }
+      
+      // If still no templates, use generic fallback
+      if (templates.length === 0) {
+        templates = [
+          "What's something you've learned about yourself recently?",
+          "What's a challenge you're facing that we could work through together?",
+          "What's something you wish I understood better about your world?"
+        ];
+      }
       
       // Randomly select questions
       const shuffled = [...templates].sort(() => Math.random() - 0.5);
