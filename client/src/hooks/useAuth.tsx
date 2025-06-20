@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
 
 export function useAuth() {
-  const { data: user, isLoading } = useQuery<User | null>({
+  const { data: user, isLoading, error } = useQuery<User | null>({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
       const controller = new AbortController();
@@ -24,9 +24,14 @@ export function useAuth() {
           return null; // Treat any error as not authenticated
         }
         
-        return response.json();
+        const data = await response.json();
+        return data;
       } catch (error) {
         clearTimeout(timeoutId);
+        // Log errors for debugging but don't throw
+        if (error?.name !== 'AbortError') {
+          console.warn('Auth check failed:', error);
+        }
         return null; // Treat any error as not authenticated
       }
     },
@@ -35,6 +40,7 @@ export function useAuth() {
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     refetchInterval: false,
+    throwOnError: false, // Prevent unhandled errors
   });
 
   return {

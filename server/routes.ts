@@ -271,19 +271,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Return sanitized user data (fields match direct DB response)
+      // Return sanitized user data with safe property access
       res.json({
-        id: user.id,
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        profileImageUrl: user.profile_image_url,
-        subscriptionTier: user.subscription_tier,
-        subscriptionStatus: user.subscription_status,
-        maxConnections: user.max_connections,
-        hasSeenOnboarding: user.has_seen_onboarding,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at
+        id: user.id || '',
+        email: user.email || '',
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        profileImageUrl: user.profile_image_url || null,
+        subscriptionTier: user.subscription_tier || 'free',
+        subscriptionStatus: user.subscription_status || 'active',
+        maxConnections: user.max_connections || 1,
+        hasSeenOnboarding: user.has_seen_onboarding || false,
+        createdAt: user.created_at || null,
+        updatedAt: user.updated_at || null
       });
     } catch (error) {
       console.error("Error fetching user:", error);
