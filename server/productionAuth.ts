@@ -12,21 +12,36 @@ console.log(`[AUTH] Production authentication system active`);
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   const pgStore = connectPg(session);
+  
+  // Production-ready session store with error handling
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
+    createTableIfMissing: true, // Allow automatic table creation
     ttl: sessionTtl,
     tableName: "sessions",
+    errorLog: (error: any) => {
+      console.error('[SESSION] Store error:', error);
+    },
+    schemaName: 'public', // Explicit schema
+    pruneSessionInterval: 60 * 15, // Cleanup every 15 minutes
   });
+
+  // Handle store errors gracefully
+  sessionStore.on('error', (error: any) => {
+    console.error('[SESSION] Store connection error:', error);
+  });
+
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    rolling: true, // Extend session on activity
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: sessionTtl,
+      sameSite: 'lax', // Better CSRF protection
     },
   });
 }

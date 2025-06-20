@@ -166,6 +166,29 @@ export const insertEmailSchema = createInsertSchema(emails).pick({
   connectionId: true,
 });
 
+// Verification codes table for production-ready phone verification
+export const verificationCodes = pgTable(
+  "verification_codes",
+  {
+    id: serial("id").primaryKey(),
+    email: varchar("email", { length: 255 }).notNull(),
+    phoneNumber: varchar("phone_number", { length: 20 }).notNull(),
+    code: varchar("code", { length: 10 }).notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    verified: boolean("verified").default(false).notNull(),
+  },
+  (table) => [
+    index("verification_codes_email_phone_idx").on(table.email, table.phoneNumber),
+    index("verification_codes_expires_idx").on(table.expiresAt),
+  ]
+);
+
+export const insertVerificationCodeSchema = createInsertSchema(verificationCodes).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -177,3 +200,5 @@ export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Email = typeof emails.$inferSelect;
 export type InsertEmail = z.infer<typeof insertEmailSchema>;
+export type VerificationCode = typeof verificationCodes.$inferSelect;
+export type InsertVerificationCode = z.infer<typeof insertVerificationCodeSchema>;

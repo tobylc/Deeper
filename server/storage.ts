@@ -1,10 +1,11 @@
 import { 
-  users, connections, conversations, messages, emails,
+  users, connections, conversations, messages, emails, verificationCodes,
   type User, type InsertUser,
   type Connection, type InsertConnection,
   type Conversation, type InsertConversation,
   type Message, type InsertMessage,
-  type Email, type InsertEmail
+  type Email, type InsertEmail,
+  type VerificationCode, type InsertVerificationCode
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, or, and, sql, desc } from "drizzle-orm";
@@ -55,6 +56,12 @@ export interface IStorage {
 
   // Helper methods for user display names
   getUserDisplayNameByEmail(email: string): Promise<string>;
+
+  // Verification Codes
+  createVerificationCode(code: InsertVerificationCode): Promise<VerificationCode>;
+  getVerificationCode(email: string, phoneNumber: string): Promise<VerificationCode | undefined>;
+  markVerificationCodeUsed(id: number): Promise<void>;
+  cleanupExpiredVerificationCodes(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {

@@ -2158,10 +2158,12 @@ Format each as a complete question they can use to begin this important conversa
       // Generate and send verification code
       const verificationCode = await notificationService.sendPhoneVerification(phoneNumber);
 
-      // Store verification code temporarily
+      // Store verification code temporarily with proper typing
       const verificationKey = `${email}:${phoneNumber}`;
-      global.verificationCodes = global.verificationCodes || new Map();
-      global.verificationCodes.set(verificationKey, {
+      if (!(global as any).verificationCodes) {
+        (global as any).verificationCodes = new Map();
+      }
+      (global as any).verificationCodes.set(verificationKey, {
         code: verificationCode,
         expires: Date.now() + 10 * 60 * 1000 // 10 minutes
       });
