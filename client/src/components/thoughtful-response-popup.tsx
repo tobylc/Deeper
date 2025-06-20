@@ -87,17 +87,17 @@ export default function ThoughtfulResponsePopup({
 
           {/* Countdown Timer */}
           {!canProceed && (
-            <Card className="bg-gradient-to-r from-[#D7A087]/20 to-amber-400/20 border-[#D7A087]/40 backdrop-blur-md shadow-lg">
+            <Card className="bg-gradient-to-r from-slate-50 to-white border-[#4FACFE]/30 backdrop-blur-md shadow-lg">
               <CardContent className="p-4">
                 <div className="text-center space-y-3">
                   <div className="flex items-center justify-center space-x-2">
-                    <Clock className="w-5 h-5 text-[#D7A087]" />
-                    <span className="text-white font-medium">Minimum reflection time remaining:</span>
+                    <Clock className="w-5 h-5 text-[#4FACFE]" />
+                    <span className="text-[#4FACFE] font-medium">Minimum reflection time remaining:</span>
                   </div>
-                  <div className="text-3xl font-bold text-[#D7A087] tabular-nums">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-[#D7A087] to-amber-400 bg-clip-text text-transparent drop-shadow-sm tabular-nums" style={{filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.5))'}}>
                     {formatTime(timeLeft)}
                   </div>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-[#4FACFE]">
                     This ensures you have adequate time to craft a thoughtful response
                   </p>
                 </div>
