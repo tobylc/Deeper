@@ -1823,19 +1823,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const OpenAI = await import('openai');
           const openai = new OpenAI.default({ apiKey: process.env.OPENAI_API_KEY });
           
-          // Create role-specific prompts for adult relationships
+          // Create role-specific prompts for vulnerable, difficult-to-ask questions
           const rolePrompts = {
             "Parent-Child": {
-              "Father": `Generate ${questionCount} thoughtful conversation questions that an adult father (45-70 years old) might ask his grown adult child (20+ years old). Focus on: sharing life wisdom, understanding their adult perspective, discussing family legacy, navigating the parent-adult child relationship dynamic. Make questions deep and meaningful for adults.`,
-              "Mother": `Generate ${questionCount} thoughtful conversation questions that an adult mother (45-70 years old) might ask her grown adult child (20+ years old). Focus on: sharing maternal wisdom, understanding their adult independence, discussing life transitions, family bonds in adulthood. Make questions deep and meaningful for adults.`,
-              "Son": `Generate ${questionCount} thoughtful conversation questions that an adult son (20+ years old) might ask his father. Focus on: seeking life guidance, understanding his father's experiences, career/relationship advice, family history and stories. Make questions respectful and mature for adult conversations.`,
-              "Daughter": `Generate ${questionCount} thoughtful conversation questions that an adult daughter (20+ years old) might ask her mother. Focus on: seeking life wisdom, understanding her mother's journey, relationship guidance, family traditions and values. Make questions respectful and mature for adult conversations.`
+              "Father": `Generate ${questionCount} deeply vulnerable conversation questions that an adult father might ask his grown child - questions that address fears, regrets, difficult emotions, or conversations that are hard to bring up in person. Focus on: parenting mistakes/regrets, fears about the relationship, personal struggles, mortality/aging concerns, difficult family dynamics. These should be emotionally vulnerable questions that create authentic connection through difficult topics.`,
+              "Mother": `Generate ${questionCount} deeply vulnerable conversation questions that an adult mother might ask her grown child - questions about fears, sacrifices, maternal struggles, or topics too difficult to discuss face-to-face. Focus on: motherhood fears/regrets, family sacrifices, relationship impacts on children, generational patterns, difficult emotional truths. These should be emotionally raw questions that foster genuine intimacy.`,
+              "Son": `Generate ${questionCount} deeply vulnerable conversation questions that an adult son might ask his father - questions about struggles, fears, disappointments, or topics too difficult to bring up in person. Focus on: masculine identity struggles, feeling inadequate, relationship/career fears, family pressure, personal failures. These should be emotionally honest questions that address difficult father-son dynamics.`,
+              "Daughter": `Generate ${questionCount} deeply vulnerable conversation questions that an adult daughter might ask her mother - questions about insecurities, fears, family patterns, or topics too sensitive to discuss face-to-face. Focus on: feminine identity struggles, family expectations, relationship fears, generational patterns, personal inadequacies. These should be emotionally vulnerable questions that address difficult mother-daughter dynamics.`
             },
             "Romantic Partners": {
-              "Boyfriend": `Generate ${questionCount} thoughtful questions for an adult boyfriend to ask his girlfriend to deepen their relationship.`,
-              "Girlfriend": `Generate ${questionCount} thoughtful questions for an adult girlfriend to ask her boyfriend to deepen their relationship.`,
-              "Husband": `Generate ${questionCount} thoughtful questions for an adult husband to ask his wife to strengthen their marriage.`,
-              "Wife": `Generate ${questionCount} thoughtful questions for an adult wife to ask her husband to strengthen their marriage.`
+              "Boyfriend": `Generate ${questionCount} deeply vulnerable questions for an adult boyfriend to ask his girlfriend - questions about relationship fears, insecurities, difficult emotions, or topics too scary to bring up in person. Focus on: relationship anxieties, intimacy struggles, commitment fears, past trauma effects, emotional needs.`,
+              "Girlfriend": `Generate ${questionCount} deeply vulnerable questions for an adult girlfriend to ask her boyfriend - questions about relationship insecurities, fears, difficult emotions, or topics too vulnerable to discuss face-to-face. Focus on: relationship fears, intimacy struggles, emotional needs, commitment anxieties, past relationship impacts.`,
+              "Husband": `Generate ${questionCount} deeply vulnerable questions for an adult husband to ask his wife - questions about marriage struggles, fears, difficult emotions, or topics too hard to bring up in person. Focus on: marriage difficulties, intimacy challenges, identity loss, unmet needs, relationship regrets.`,
+              "Wife": `Generate ${questionCount} deeply vulnerable questions for an adult wife to ask her husband - questions about marriage fears, unmet needs, difficult emotions, or topics too vulnerable to discuss face-to-face. Focus on: marriage struggles, feeling disconnected, unvoiced needs, intimacy challenges, identity concerns.`
             }
           };
 
@@ -1855,7 +1855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               messages: [
                 {
                   role: "system",
-                  content: "You are an expert at creating meaningful conversation questions for adult relationships. Generate thoughtful, deep questions that encourage vulnerable and authentic sharing. Focus on adult perspectives and experiences. Return only the questions as a JSON array."
+                  content: "You are an expert at creating deeply vulnerable conversation questions for adult relationships. Generate questions that address fears, regrets, difficult emotions, unspoken truths, and topics that are genuinely hard to bring up in person. These questions should foster authentic connection through emotional vulnerability and honest self-reflection. Focus on the difficult conversations that people need to have but struggle to initiate. Return only the questions as a JSON object with a 'questions' array."
                 },
                 {
                   role: "user",

@@ -7,74 +7,102 @@ export interface RoleSpecificQuestions {
 export const roleSpecificQuestions: RoleSpecificQuestions = {
   "Parent-Child": {
     "Father": [
-      "What life lesson do you wish you had learned earlier that you want to share with your adult son/daughter?",
-      "How has watching your child become an adult changed your perspective on your own choices?",
-      "What aspect of modern adult life do you find most challenging to understand from your child's perspective?",
-      "What family responsibility or tradition would you like your adult child to eventually take on?",
-      "What's something you're proud of about how your child has handled adult challenges?",
-      "What wisdom from your father do you find yourself wanting to pass down now that your child is grown?",
-      "How do you balance giving advice versus letting your adult child make their own decisions?",
-      "What aspect of your adult child's life would you like to understand better?"
+      "What mistake did I make as a father that I wish I could apologize for or explain?",
+      "What fear do I have about our relationship that I've never voiced?",
+      "How did my own father's parenting affect me in ways I might have passed on to you?",
+      "What aspect of your adult life makes me worry about you most, and why?",
+      "What's something I'm struggling with personally that I think you should know about?",
+      "When have I felt most proud of you in a way I never properly expressed?",
+      "What conversation have I been avoiding having with you because it feels too difficult?",
+      "How has watching you become an adult forced me to confront my own mortality or aging?",
+      "What do I wish I had done differently during your childhood that still weighs on me?",
+      "What aspect of my own character or past do I hope you understand rather than judge?"
     ],
     "Mother": [
-      "What motherly wisdom do you want to share now that your child is navigating adult relationships?",
-      "How has your relationship with your own mother influenced how you connect with your adult child?",
-      "What life skill do you wish you had taught your child before they became an adult?",
-      "What aspect of your adult child's independence makes you most proud?",
-      "What family tradition or value do you hope your child will carry into their own adult relationships?",
-      "How do you navigate the shift from protector to advisor now that your child is grown?",
-      "What's something about adult life you wish someone had prepared you for that you want to discuss?",
-      "What question about your own adult life would you like your child to understand better?"
+      "What fear about motherhood or my parenting do I carry that I've never shared with you?",
+      "What sacrifice I made for our family do I sometimes resent, and how has that affected me?",
+      "When did I feel most lost or overwhelmed as your mother, and what did I learn from that?",
+      "What part of my own mother's parenting do I see reflected in myself that worries me?",
+      "What aspect of your adult life triggers my deepest maternal anxieties?",
+      "What moment of your childhood do I wish I could have handled completely differently?",
+      "What's something about my own struggles with womanhood that I think you should understand?",
+      "How has my relationship with your father affected you in ways I'm afraid to acknowledge?",
+      "What conversation about family, relationships, or life have I been too scared to start with you?",
+      "What do I need from our adult relationship that I don't know how to ask for?"
     ],
     "Son": [
-      "What aspect of being an adult man do you wish you could get your father's perspective on?",
-      "What family responsibility are you ready to take on now that you're grown?",
-      "How has becoming an adult changed what you appreciate about your father?",
-      "What life decision are you facing that you'd value your dad's experience with?",
-      "What question about relationships or career would you like your father's honest opinion on?",
-      "What family story or tradition do you want to understand better now that you're an adult?",
-      "How do you see yourself carrying forward what your father taught you?",
-      "What aspect of your father's adult life do you find yourself curious about now?"
+      "What do I struggle with as a man that I'm afraid to admit to you?",
+      "How did your parenting affect my confidence or self-worth in ways you might not realize?",
+      "What aspect of my adult life do I feel like I'm failing at that I need your perspective on?",
+      "What fear do I have about becoming like you, or not living up to your expectations?",
+      "What's something about my relationships or choices that I've been afraid to tell you?",
+      "How do I deal with pressure to be 'successful' when I'm not sure what that means anymore?",
+      "What part of your past or your struggles do I need to understand to know you better as a person?",
+      "What conversation between us feels overdue but too difficult to start?",
+      "How do I handle feeling like I've disappointed you, even when you haven't said so?",
+      "What do I need to know about your own failures or regrets to feel less alone in mine?"
     ],
     "Daughter": [
-      "What aspect of being an adult woman would you like your mother's guidance on?",
-      "How has your perspective on your mother changed since you became an adult yourself?",
-      "What life challenge are you facing that you think your mom might have insight about?",
-      "What family tradition or value do you want to continue in your own adult life?",
-      "What question about adult relationships would you value your mother's perspective on?",
-      "How do you want to honor what your parents taught you while creating your own adult path?",
-      "What aspect of your mother's life experience do you find yourself more curious about now?",
-      "What family responsibility or role are you ready to take on as an adult?"
+      "What do I struggle with as a woman that I'm embarrassed to ask you about?",
+      "How did growing up in our family affect my self-image or confidence in ways you might not see?",
+      "What pattern from your life am I repeating that I don't want to continue?",
+      "What fear do I have about my relationships or future that I need your honest insight on?",
+      "What aspect of your marriage or relationship choices do I need to understand better?",
+      "How do I handle the pressure of being a 'good daughter' while living my own life?",
+      "What sacrifice or struggle of yours do I take for granted that I should acknowledge?",
+      "What conversation about womanhood, family, or expectations feels too vulnerable to have?",
+      "How do I deal with feeling like I can't live up to your strength or what you've accomplished?",
+      "What do I need to know about your mistakes or regrets to feel less afraid of making my own?"
     ]
   },
   "Romantic Partners": {
     "Boyfriend": [
-      "What made you realize you were falling for her?",
-      "What's your favorite thing about our relationship?",
-      "How do you envision our future together?",
-      "What's something new you'd like us to try together?",
-      "What makes you feel most connected to me?"
+      "What fear do I have about our relationship that I haven't shared with you?",
+      "What part of my past still affects how I love you that you should know about?",
+      "What do I need from you emotionally that I'm afraid to ask for?",
+      "What insecurity do I have about myself in our relationship?",
+      "What conversation about our future scares me but feels necessary?",
+      "How do I handle my feelings when I think you might be losing interest?",
+      "What aspect of physical or emotional intimacy do I struggle with but haven't discussed?",
+      "What do I compare our relationship to that might be unfair or harmful?",
+      "What sacrifice would I be willing to make for you that you don't know about?",
+      "What doubt about us do I have that I wish you could help me resolve?"
     ],
     "Girlfriend": [
-      "What made you realize you were falling for him?",
-      "What's your favorite thing about our relationship?",
-      "How do you envision our future together?",
-      "What's something new you'd like us to try together?",
-      "What makes you feel most connected to me?"
+      "What vulnerability about myself am I afraid to show you?",
+      "What part of love or relationships confuses or scares me that I need your patience with?",
+      "What do I need to feel secure with you that I haven't been able to express?",
+      "What fear do I have about losing myself in this relationship?",
+      "What conversation about commitment or our future feels too scary to start?",
+      "How do I handle feeling jealous or insecure in ways that might hurt us?",
+      "What expectation do I have of you that might be unfair but feels important to me?",
+      "What part of my emotional needs feels too needy or demanding to share?",
+      "What do I struggle with physically or emotionally that affects our intimacy?",
+      "What doubt or fear about love do I carry from my past that impacts how I love you?"
     ],
     "Husband": [
-      "What's your favorite memory from our relationship so far?",
-      "How have we grown together since we got married?",
-      "What's something you're grateful for about our partnership?",
-      "What dream do you have for our future?",
-      "What makes you feel most appreciated in our marriage?"
+      "What part of marriage do I struggle with that I haven't admitted to you?",
+      "What fear do I have about our future together that keeps me awake at night?",
+      "What sacrifice or compromise in our marriage do I sometimes resent?",
+      "What aspect of our physical or emotional intimacy needs honest discussion?",
+      "What expectation of marriage or partnership am I failing to meet?",
+      "What conversation about money, family, or life goals have I been avoiding?",
+      "How do I handle feeling disconnected from you when life gets overwhelming?",
+      "What part of my identity or dreams do I feel like I've lost in our marriage?",
+      "What do I need from you as my wife that I don't know how to ask for?",
+      "What regret or mistake in our relationship do I need to acknowledge and address?"
     ],
     "Wife": [
-      "What's your favorite memory from our relationship so far?",
-      "How have we grown together since we got married?",
-      "What's something you're grateful for about our partnership?",
-      "What dream do you have for our future?",
-      "What makes you feel most appreciated in our marriage?"
+      "What need do I have in our marriage that I've been afraid to voice?",
+      "What fear about our relationship or future do I carry alone?",
+      "What part of being a wife feels overwhelming or unclear to me?",
+      "What conversation about intimacy, expectations, or boundaries feels overdue?",
+      "What sacrifice I've made for our marriage do I need you to understand?",
+      "How do I handle feeling unappreciated or misunderstood in our relationship?",
+      "What aspect of our partnership makes me feel lonely even when we're together?",
+      "What do I struggle with about balancing my individual identity with being your wife?",
+      "What expectation or dream about marriage has been harder than I expected?",
+      "What conversation about our emotional or physical connection feels too vulnerable to start?"
     ],
     "Partner": [
       "What's something you love about how we communicate?",
@@ -100,25 +128,40 @@ export const roleSpecificQuestions: RoleSpecificQuestions = {
   },
   "Friends": {
     "Best Friend": [
-      "What's your favorite memory of our friendship?",
-      "How have we supported each other through tough times?",
-      "What's something you admire about how I handle challenges?",
-      "What adventure would you most like us to go on?",
-      "What makes our friendship special to you?"
+      "What fear do I have about our friendship that I've never admitted?",
+      "What part of my life or personality do I hide from you because I'm afraid you'll judge me?",
+      "What moment in our friendship did I handle badly that I still feel guilty about?",
+      "What do I need from you as my friend that I'm too afraid to ask for?",
+      "What jealousy or resentment have I felt toward you that I've kept secret?",
+      "What conversation between us feels overdue but too scary to start?",
+      "How has our friendship changed me in ways that I haven't acknowledged?",
+      "What vulnerability about myself do I wish I could share with you but feel too exposed to?",
+      "What assumption about our friendship might be wrong that we should talk about?",
+      "What support do I need during difficult times that I don't know how to ask for?"
     ],
     "Close Friend": [
-      "What's something we have in common that always surprises people?",
-      "How has our friendship changed over the years?",
-      "What's a goal you'd like support with?",
-      "What's your favorite thing we do together?",
-      "What's something you've learned from our friendship?"
+      "What insecurity do I have that affects our friendship that you might not see?",
+      "What part of my life do I struggle with that I wish I could get your perspective on?",
+      "What fear do I have about growing apart as we change and evolve?",
+      "What boundary in our friendship feels unclear or difficult to navigate?",
+      "What conversation about our different life paths or choices feels too sensitive?",
+      "How do I handle feeling left out or jealous in our friendship?",
+      "What expectation do I have of our friendship that might be unfair?",
+      "What part of my personality or behavior do I worry might push you away?",
+      "What difficult truth about myself do I wish I could share with you?",
+      "What do I appreciate about you that I've never properly expressed?"
     ],
     "Friend": [
-      "What's been the highlight of our friendship so far?",
-      "What's something you'd like to know more about regarding my life?",
-      "How do you think we balance each other out?",
-      "What's a fun activity you think we should try together?",
-      "What's something you appreciate about our friendship?"
+      "What do I struggle with in friendships that makes me afraid of getting too close?",
+      "What part of my life feels too messy or complicated to share with friends?",
+      "What fear do I have about being truly known by the people in my life?",
+      "What conversation about boundaries or expectations in our friendship feels overdue?",
+      "What insecurity do I have about whether people actually enjoy my company?",
+      "How do I handle feeling like I give more to friendships than I receive?",
+      "What part of my past or current struggles do I keep hidden from friends?",
+      "What do I need from friendships that I don't know how to communicate?",
+      "What pattern in my relationships do I repeat that might be harmful?",
+      "What vulnerability about friendship or connection do I carry that affects how I relate to others?"
     ],
     "Childhood Friend": [
       "What's your favorite childhood memory of us?",
