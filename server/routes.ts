@@ -8,6 +8,7 @@ import multer from "multer";
 import sharp from "sharp";
 import fs from "fs/promises";
 import { storage } from "./storage";
+import { directDb } from "./neon-direct";
 import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "@shared/schema";
 import { getRolesForRelationship, isValidRolePair } from "@shared/relationship-roles";
 import { z } from "zod";
@@ -258,24 +259,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid session" });
       }
 
-      const user = await storage.getUser(userId);
+      // Use direct database connection to avoid pool rate limits
+      const user = await directDb.getUserByEmail(req.user.email || userId);
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Return sanitized user data
+      // Return sanitized user data (fields match direct DB response)
       res.json({
         id: user.id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl,
-        subscriptionTier: user.subscriptionTier,
-        subscriptionStatus: user.subscriptionStatus,
-        maxConnections: user.maxConnections,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        firstName: user.first_name,
+        lastName: user.last_name,
+        profileImageUrl: user.profile_image_url,
+        subscriptionTier: user.subscription_tier,
+        subscriptionStatus: user.subscription_status,
+        maxConnections: user.max_connections,
+        hasSeenOnboarding: user.has_seen_onboarding,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at
       });
     } catch (error) {
       console.error("Error fetching user:", error);

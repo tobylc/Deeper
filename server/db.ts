@@ -11,13 +11,13 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Production-ready connection pool with aggressive connection limiting for Neon
+// Ultra-conservative connection pool for Neon's strict limits
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  max: 3, // Very conservative for Neon's strict limits
-  min: 1, // Maintain minimum connections
-  idleTimeoutMillis: 5000, // Quick idle timeout
-  connectionTimeoutMillis: 2000, // Short connection timeout
+  max: 1, // Single connection only to prevent rate limiting
+  min: 0, // No minimum connections
+  idleTimeoutMillis: 2000, // Very quick idle timeout
+  connectionTimeoutMillis: 1000, // Minimal connection timeout
 });
 
 // Minimal connection error handling optimized for Neon
@@ -31,43 +31,52 @@ pool.on('error', (err) => {
 // Database instance with enhanced error handling
 export const db = drizzle({ client: pool, schema });
 
-// Connection wrapper with retry logic for Neon rate limits
-export async function withDatabaseConnection<T>(
-  operation: (client: any) => Promise<T>,
-  maxRetries: number = 3
-): Promise<T> {
-  let lastError;
-  
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const client = await pool.connect();
-      try {
-        const result = await operation(client);
-        return result;
-      } finally {
-        client.release();
-      }
-    } catch (error: any) {
-      lastError = error;
-      
-      if (error.message?.includes('Too many database connection attempts')) {
-        const backoffTime = Math.min(1000 * Math.pow(2, attempt), 5000);
-        console.log(`[DB] Connection attempt ${attempt}/${maxRetries} failed, backing off ${backoffTime}ms`);
-        
-        if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, backoffTime));
-          continue;
+// Simple connection queue to serialize database access
+class ConnectionQueue {
+  private queue: Array<() => void> = [];
+  private isProcessing = false;
+
+  async execute<T>(operation: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.queue.push(async () => {
+        try {
+          const result = await operation();
+          resolve(result);
+        } catch (error) {
+          reject(error);
         }
-      }
-      
-      // For non-connection errors, don't retry
-      if (!error.message?.includes('connection') && !error.message?.includes('database')) {
-        throw error;
+      });
+      this.processQueue();
+    });
+  }
+
+  private async processQueue() {
+    if (this.isProcessing || this.queue.length === 0) return;
+    
+    this.isProcessing = true;
+    
+    while (this.queue.length > 0) {
+      const operation = this.queue.shift()!;
+      try {
+        await operation();
+        // Small delay between operations to prevent overwhelming Neon
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (error) {
+        console.error('[DB] Queue operation failed:', error);
       }
     }
+    
+    this.isProcessing = false;
   }
-  
-  throw lastError;
+}
+
+const connectionQueue = new ConnectionQueue();
+
+// Queued database operations to prevent connection flooding
+export async function withDatabaseConnection<T>(
+  operation: () => Promise<T>
+): Promise<T> {
+  return connectionQueue.execute(operation);
 }
 
 // Health check function for production monitoring
