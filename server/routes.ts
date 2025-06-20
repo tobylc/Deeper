@@ -2156,6 +2156,131 @@ Format each as a complete question they can use to begin this important conversa
     }
   });
 
+  // Endpoint for creating new conversation threads with questions (right column actions)
+  app.post("/api/connections/:connectionId/conversations/with-question", 
+    isAuthenticated, 
+    rateLimit(50, 60 * 60 * 1000), // 50 new thread creations per hour
+    async (req: any, res) => {
+    try {
+      const connectionId = parseInt(req.params.connectionId);
+      const { question, participant1Email, participant2Email, relationshipType } = req.body;
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      if (!question || !question.trim()) {
+        return res.status(400).json({ message: "Question content is required" });
+      }
+      
+      // Verify user is part of this connection
+      const connection = await storage.getConnection(connectionId);
+      if (!connection || 
+          (connection.inviterEmail !== currentUser.email && 
+           connection.inviteeEmail !== currentUser.email)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // Validate conversation flow: ensure user has provided at least one response
+      // First get all conversations for this connection
+      const existingConversations = await storage.getConversationsByConnection(connectionId);
+      let hasProvidedResponse = false;
+      
+      for (const conv of existingConversations) {
+        const messages = await storage.getMessagesByConversationId(conv.id);
+        const userResponses = messages.filter(msg => 
+          msg.type === 'response' && msg.senderEmail === currentUser.email
+        );
+        if (userResponses.length > 0) {
+          hasProvidedResponse = true;
+          break;
+        }
+      }
+      
+      // Only allow new questions if user has provided at least one response OR if this is their very first conversation
+      if (!hasProvidedResponse && existingConversations.length > 0) {
+        return res.status(400).json({ 
+          message: "You must provide at least one response before asking a new question" 
+        });
+      }
+      
+      // Generate thread title from question
+      const threadTitle = generateRelationshipSpecificTitle(question, relationshipType);
+      
+      // Create new conversation thread
+      const conversationData = {
+        connectionId,
+        participant1Email,
+        participant2Email,
+        relationshipType,
+        currentTurn: currentUser.email, // Creator starts the conversation
+        status: 'active',
+        title: threadTitle,
+        topic: question,
+        isMainThread: false
+      };
+      
+      const conversation = await storage.createConversation(conversationData);
+      
+      // Immediately create the first message (question)
+      const messageData = {
+        conversationId: conversation.id,
+        senderEmail: currentUser.email,
+        content: question.trim(),
+        type: 'question' as const
+      };
+      
+      const message = await storage.createMessage(messageData);
+      
+      // Update conversation turn to other participant
+      const otherParticipant = currentUser.email === participant1Email ? participant2Email : participant1Email;
+      await storage.updateConversationTurn(conversation.id, otherParticipant);
+      
+      // Send turn notification to other participant
+      try {
+        await notificationService.sendTurnNotification(otherParticipant);
+      } catch (notificationError) {
+        console.error('Failed to send turn notification:', notificationError);
+      }
+      
+      // Send real-time WebSocket notifications
+      try {
+        const { getWebSocketManager } = await import('./websocket');
+        const wsManager = getWebSocketManager();
+        if (wsManager) {
+          wsManager.notifyConversationUpdate(participant1Email, {
+            conversationId: conversation.id,
+            connectionId: connectionId,
+            action: 'conversation_created',
+            relationshipType
+          });
+          
+          if (participant1Email !== participant2Email) {
+            wsManager.notifyConversationUpdate(participant2Email, {
+              conversationId: conversation.id,
+              connectionId: connectionId,
+              action: 'conversation_created',
+              relationshipType
+            });
+          }
+        }
+      } catch (error) {
+        console.error('[WEBSOCKET] Failed to send conversation creation notification:', error);
+      }
+      
+      res.json({ 
+        conversation, 
+        message,
+        threadTitle
+      });
+    } catch (error) {
+      console.error("Create conversation with question error:", error);
+      res.status(500).json({ message: "Failed to create conversation with question" });
+    }
+  });
+
   // Phone verification endpoints for SMS notifications
   app.post("/api/users/send-verification", rateLimit(5, 15 * 60 * 1000), async (req, res) => {
     try {

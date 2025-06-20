@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuestionSuggestionsProps {
   relationshipType: string;
@@ -45,52 +46,40 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { toast } = useToast();
   
-  // Thread creation mutation
+  // Thread creation mutation using specialized endpoint with flow validation
   const createThreadMutation = useMutation({
     mutationFn: async (question: string) => {
-      // First create the conversation thread
-      const conversationResponse = await fetch(`/api/connections/${connectionId}/conversations`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          topic: question,
-          participant1Email: user?.email || '',
-          participant2Email: otherParticipant,
-          relationshipType: relationshipType,
-          isMainThread: false
-        })
-      });
-      
-      if (!conversationResponse.ok) {
-        throw new Error('Failed to create conversation thread');
+      if (!user?.email) {
+        throw new Error("User not authenticated");
       }
       
-      const conversation = await conversationResponse.json();
-      
-      // Then send the first message (the question) automatically
-      const messageResponse = await fetch(`/api/conversations/${conversation.id}/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: question,
-          senderEmail: user?.email || '',
-          type: 'question'
-        })
+      // Use the specialized endpoint that creates conversation thread with question and enforces flow restrictions
+      const response = await apiRequest("POST", `/api/connections/${connectionId}/conversations/with-question`, {
+        question: question.trim(),
+        participant1Email: user.email,
+        participant2Email: otherParticipant,
+        relationshipType: relationshipType
       });
       
-      if (!messageResponse.ok) {
-        throw new Error('Failed to send initial message');
-      }
-      
-      return conversation;
+      return response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [`/api/connections/${connectionId}/conversations`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.id}/messages`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversation.id}/messages`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
       setShowNewQuestionDialog(false);
       setNewQuestionText("");
-      onNewThreadCreated(data.id);
+      onNewThreadCreated(data.conversation.id);
+    },
+    onError: (error: any) => {
+      console.error("Create thread error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create new question thread",
+        variant: "destructive",
+      });
     }
   });
 
