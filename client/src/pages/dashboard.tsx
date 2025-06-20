@@ -10,6 +10,7 @@ import InvitationForm from "@/components/invitation-form";
 import AccountLinking from "@/components/account-linking";
 import ProfileImageUpload from "@/components/profile-image-upload";
 import InviteeWelcomePopup from "@/components/invitee-welcome-popup";
+import NotificationPreferences from "@/components/notification-preferences";
 import type { Connection, Conversation } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -659,6 +660,13 @@ export default function Dashboard() {
           {/* Account Security */}
           <AccountLinking />
         </div>
+
+        {/* Notification Preferences Section */}
+        {userData && (
+          <div className="mb-8">
+            <NotificationPreferences user={userData} />
+          </div>
+        )}
       </div>
 
       {/* Invitation Form Modal */}

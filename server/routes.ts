@@ -2308,7 +2308,7 @@ Format each as a complete question they can use to begin this important conversa
       // Store verification code in database
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
       await storage.createVerificationCode({
-        email,
+        email: user.email || '',
         phoneNumber,
         code: verificationCode,
         expiresAt,
@@ -2322,16 +2322,22 @@ Format each as a complete question they can use to begin this important conversa
     }
   });
 
-  app.post("/api/users/verify-phone", rateLimit(10, 15 * 60 * 1000), async (req, res) => {
+  app.post("/api/users/verify-phone", rateLimit(10, 15 * 60 * 1000), isAuthenticated, async (req: any, res) => {
     try {
-      const { phoneNumber, email, code } = req.body;
+      const { phoneNumber, code } = req.body;
+      const userId = req.user.claims?.sub || req.user.id;
 
-      if (!phoneNumber || !email || !code) {
-        return res.status(400).json({ message: "Phone number, email, and verification code are required" });
+      if (!phoneNumber || !code) {
+        return res.status(400).json({ message: "Phone number and verification code are required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
 
       // Get verification code from database
-      const storedVerification = await storage.getVerificationCode(email, phoneNumber);
+      const storedVerification = await storage.getVerificationCode(user.email || '', phoneNumber);
 
       if (!storedVerification) {
         return res.status(400).json({ message: "Verification code expired or invalid" });
@@ -2339,12 +2345,6 @@ Format each as a complete question they can use to begin this important conversa
 
       if (storedVerification.code !== code) {
         return res.status(400).json({ message: "Invalid verification code" });
-      }
-
-      // Update user with verified phone number
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
       }
 
       await storage.updateUserSubscription(user.id, {
