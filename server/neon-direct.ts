@@ -5,17 +5,39 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL must be set");
 }
 
-// Direct Neon connection with optimized configuration
-const sql = neon(process.env.DATABASE_URL, {
-  fetchConnectionCache: true,
-  arrayMode: false,
-  fullResults: false
-});
+// Global connection instance with connection limiting
+let connectionInstance: any = null;
+let connectionPromise: Promise<any> | null = null;
+let lastConnectionTime = 0;
+const CONNECTION_COOLDOWN = 5000; // 5 second cooldown between connections
 
-// Query wrapper with timeout and retry logic
+function getConnection() {
+  const now = Date.now();
+  
+  // If we have a recent connection, reuse it
+  if (connectionInstance && (now - lastConnectionTime) < CONNECTION_COOLDOWN) {
+    return connectionInstance;
+  }
+  
+  // Create new connection with cooldown
+  if (!connectionPromise) {
+    connectionPromise = new Promise((resolve) => {
+      setTimeout(() => {
+        connectionInstance = neon(process.env.DATABASE_URL!);
+        lastConnectionTime = Date.now();
+        connectionPromise = null;
+        resolve(connectionInstance);
+      }, Math.max(0, CONNECTION_COOLDOWN - (now - lastConnectionTime)));
+    });
+  }
+  
+  return connectionPromise;
+}
+
+// Query wrapper with connection rate limiting
 export async function executeQuery<T>(
   queryFn: (sql: any) => Promise<T>,
-  timeoutMs: number = 5000
+  timeoutMs: number = 3000
 ): Promise<T> {
   return new Promise(async (resolve, reject) => {
     const timeout = setTimeout(() => {
@@ -23,6 +45,7 @@ export async function executeQuery<T>(
     }, timeoutMs);
 
     try {
+      const sql = await getConnection();
       const result = await queryFn(sql);
       clearTimeout(timeout);
       resolve(result);
@@ -132,12 +155,12 @@ export const directDb = {
     });
   },
 
-  // Health check
+  // Health check with short timeout
   async healthCheck() {
     return executeQuery(async (sql) => {
       const result = await sql`SELECT 1 as alive`;
       return result[0]?.alive === 1;
-    });
+    }, 2000);
   }
 };
 
