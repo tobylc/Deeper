@@ -43,6 +43,7 @@ export const users = pgTable("users", {
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   subscriptionExpiresAt: timestamp("subscription_expires_at"),
   hasSeenOnboarding: boolean("has_seen_onboarding").default(false), // One-time onboarding popup tracking
+  conversationNotificationPrefs: json("conversation_notification_prefs").default('{}'), // Track notification preferences per conversation
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -123,6 +124,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   stripeSubscriptionId: true,
   subscriptionExpiresAt: true,
   hasSeenOnboarding: true,
+  conversationNotificationPrefs: true,
 });
 
 export const insertConnectionSchema = createInsertSchema(connections).pick({

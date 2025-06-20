@@ -2393,6 +2393,112 @@ Format each as a complete question they can use to begin this important conversa
     }
   });
 
+  // Set conversation-specific notification preference
+  app.post("/api/users/notification-preference", isAuthenticated, async (req: any, res) => {
+    try {
+      const { conversationId, preference } = req.body;
+      const userId = req.user.claims?.sub || req.user.id;
+      
+      if (!conversationId || !preference) {
+        return res.status(400).json({ message: "Conversation ID and preference are required" });
+      }
+
+      if (!["email", "sms", "both"].includes(preference)) {
+        return res.status(400).json({ message: "Invalid preference. Must be 'email', 'sms', or 'both'" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Update conversation-specific notification preference
+      const currentPrefs = user.conversationNotificationPrefs || {};
+      currentPrefs[conversationId] = {
+        preference,
+        setAt: new Date().toISOString(),
+        neverShow: false
+      };
+
+      await storage.updateUser(userId, {
+        conversationNotificationPrefs: currentPrefs,
+        notificationPreference: preference // Also update global preference
+      });
+
+      res.json({ message: "Notification preference saved successfully" });
+    } catch (error) {
+      console.error("Set notification preference error:", error);
+      res.status(500).json({ message: "Failed to set notification preference" });
+    }
+  });
+
+  // Dismiss notification preference popup
+  app.post("/api/users/dismiss-notification-popup", isAuthenticated, async (req: any, res) => {
+    try {
+      const { conversationId, dismissType } = req.body;
+      const userId = req.user.claims?.sub || req.user.id;
+      
+      if (!conversationId || !dismissType) {
+        return res.status(400).json({ message: "Conversation ID and dismiss type are required" });
+      }
+
+      if (!["never", "later"].includes(dismissType)) {
+        return res.status(400).json({ message: "Invalid dismiss type. Must be 'never' or 'later'" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const currentPrefs = user.conversationNotificationPrefs || {};
+      
+      if (dismissType === "never") {
+        currentPrefs[conversationId] = {
+          preference: "email", // Keep email as default
+          setAt: new Date().toISOString(),
+          neverShow: true
+        };
+
+        await storage.updateUser(userId, {
+          conversationNotificationPrefs: currentPrefs
+        });
+      }
+      // For "later", we don't store anything so popup shows again
+
+      res.json({ message: "Popup dismissed successfully" });
+    } catch (error) {
+      console.error("Dismiss notification popup error:", error);
+      res.status(500).json({ message: "Failed to dismiss popup" });
+    }
+  });
+
+  // Get conversation notification preference status
+  app.get("/api/users/notification-preference/:conversationId", isAuthenticated, async (req: any, res) => {
+    try {
+      const conversationId = req.params.conversationId;
+      const userId = req.user.claims?.sub || req.user.id;
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const currentPrefs = user.conversationNotificationPrefs || {};
+      const conversationPref = currentPrefs[conversationId];
+
+      res.json({
+        hasPreference: !!conversationPref,
+        preference: conversationPref?.preference || user.notificationPreference || "email",
+        neverShow: conversationPref?.neverShow || false,
+        globalPreference: user.notificationPreference || "email"
+      });
+    } catch (error) {
+      console.error("Get notification preference error:", error);
+      res.status(500).json({ message: "Failed to get notification preference" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

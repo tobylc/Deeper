@@ -13,6 +13,7 @@ import QuestionSuggestions from "@/components/question-suggestions";
 import ProfileAvatar from "@/components/profile-avatar";
 import OnboardingPopup from "@/components/onboarding-popup";
 import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
+import NotificationPreferencePopup from "@/components/notification-preference-popup";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
@@ -27,6 +28,7 @@ export default function ConversationPage() {
   const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
   const [showThreadsView, setShowThreadsView] = useState(false);
   const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
+  const [showNotificationPopup, setShowNotificationPopup] = useState(false);
 
   const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
   const [responseStartTime, setResponseStartTime] = useState<Date | null>(null);
