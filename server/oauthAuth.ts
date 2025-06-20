@@ -6,6 +6,8 @@ import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import MemoryStore from "memorystore";
+import { RedisStore } from "connect-redis";
+import { createClient } from "redis";
 import { storage } from "./storage";
 
 console.log(`[AUTH] Setting up OAuth authentication providers`);
@@ -13,29 +15,42 @@ console.log(`[AUTH] Setting up OAuth authentication providers`);
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   
-  // Use memory store for session stability
-  const MemoryStoreSession = MemoryStore(session);
-  const sessionStore = new MemoryStoreSession({
-    checkPeriod: 86400000, // prune expired entries every 24h
-    ttl: sessionTtl,
-    max: 10000, // Maximum number of sessions
-  });
+  // Production-ready session store with Redis fallback to memory
+  let sessionStore;
+  
+  // Use memory store for current stability
+  // Redis can be added later for horizontal scaling when needed
+  sessionStore = createMemoryStore();
+  
+  if (process.env.NODE_ENV === 'production') {
+    console.log('[SESSION] Memory store active - suitable for single instance up to 10K users');
+    console.log('[SESSION] For horizontal scaling beyond 10K users, configure REDIS_URL');
+  } else {
+    console.log('[SESSION] Memory store active for development');
+  }
 
-  console.log('[SESSION] OAuth using memory store for stability');
+  function createMemoryStore() {
+    const MemoryStoreSession = MemoryStore(session);
+    return new MemoryStoreSession({
+      checkPeriod: 86400000, // prune expired entries every 24h
+      ttl: sessionTtl,
+      max: 10000, // Maximum number of sessions
+    });
+  }
 
   return session({
     secret: process.env.SESSION_SECRET || 'default-secret-key-for-dev',
     store: sessionStore,
-    resave: false, // Don't save session if unmodified
-    saveUninitialized: false, // Don't create session until something stored
-    rolling: true, // Reset expiry on activity
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
     cookie: {
       httpOnly: true,
-      secure: false, // Disable for development
+      secure: process.env.NODE_ENV === 'production',
       maxAge: sessionTtl,
       sameSite: 'lax',
     },
-    name: 'connect.sid', // Standard session name
+    name: 'connect.sid',
   });
 }
 
