@@ -8,7 +8,7 @@ import multer from "multer";
 import sharp from "sharp";
 import fs from "fs/promises";
 import { storage } from "./storage";
-import { dbRecovery } from "./db-recovery";
+import { stableDb } from "./db-stable";
 import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "@shared/schema";
 import { getRolesForRelationship, isValidRolePair } from "@shared/relationship-roles";
 import { z } from "zod";
@@ -259,12 +259,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid session" });
       }
 
-      // Use emergency database recovery system for Neon failures
+      // Use stable database connection to handle Neon failures
       let user;
       if (req.user.email) {
-        user = await dbRecovery.getUserByEmail(req.user.email);
+        user = await stableDb.getUserByEmail(req.user.email);
       } else {
-        user = await dbRecovery.getUserById(userId);
+        user = await stableDb.getUserById(userId);
       }
       
       if (!user) {

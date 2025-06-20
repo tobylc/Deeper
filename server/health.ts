@@ -1,6 +1,6 @@
 import { storage } from "./storage";
 import { db } from "./db";
-import { dbRecovery } from "./db-recovery";
+import { stableDb } from "./db-stable";
 
 export interface HealthCheck {
   service: string;
@@ -14,8 +14,8 @@ export class HealthService {
   async checkDatabase(): Promise<HealthCheck> {
     const start = Date.now();
     try {
-      // Use emergency database recovery system for Neon failures
-      const isHealthy = await dbRecovery.healthCheck();
+      // Use stable database connection to handle Neon failures
+      const isHealthy = await stableDb.healthCheck();
       return {
         service: 'database',
         status: isHealthy ? 'healthy' : 'unhealthy',
