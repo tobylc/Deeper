@@ -25,9 +25,11 @@ interface QuestionSuggestionsProps {
   otherParticipant: string;
   connectionId: number;
   onNewThreadCreated: (conversationId: number) => void;
+  canUseRightColumn: boolean;
+  nextMessageType: 'question' | 'response';
 }
 
-export default function QuestionSuggestions({ relationshipType, userRole, otherUserRole, onQuestionSelect, isMyTurn, otherParticipant, connectionId, onNewThreadCreated }: QuestionSuggestionsProps) {
+export default function QuestionSuggestions({ relationshipType, userRole, otherUserRole, onQuestionSelect, isMyTurn, otherParticipant, connectionId, onNewThreadCreated, canUseRightColumn, nextMessageType }: QuestionSuggestionsProps) {
   const [currentSet, setCurrentSet] = useState(0);
   const [aiQuestions, setAiQuestions] = useState<string[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -243,9 +245,28 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
             </div>
           </CardContent>
         </Card>
+      ) : !canUseRightColumn ? (
+        // Show message when user needs to provide a response first
+        <Card className="card-elevated border-ocean/30 bg-ocean/5 h-fit">
+          <CardContent className="p-4">
+            <div className="text-center space-y-3">
+              <div className="w-10 h-10 rounded-full bg-ocean/20 flex items-center justify-center mx-auto">
+                <MessageCircle className="w-5 h-5 text-ocean" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground font-inter mb-2 text-sm">
+                  Response Required
+                </h3>
+                <p className="text-xs text-slate-700 font-inter leading-relaxed">
+                  Please respond to the current question using the middle column before asking a new question.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
         <>
-          {/* New Question Button */}
+          {/* New Question Button - Only available when canUseRightColumn is true */}
           <Dialog open={showNewQuestionDialog} onOpenChange={setShowNewQuestionDialog}>
             <DialogTrigger asChild>
               <Button 

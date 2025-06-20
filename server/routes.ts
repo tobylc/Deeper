@@ -1508,6 +1508,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (messageData.type !== expectedType) {
           return res.status(400).json({ message: `Expected ${expectedType}, got ${messageData.type}` });
         }
+
+        // Additional validation: For new questions (not first), ensure user has provided at least one response
+        if (messageData.type === 'question' && existingMessages.length > 0) {
+          const userResponses = existingMessages.filter(msg => 
+            msg.type === 'response' && msg.senderEmail === messageData.senderEmail
+          );
+          
+          if (userResponses.length === 0) {
+            return res.status(400).json({ 
+              message: "You must provide at least one response before asking a new question" 
+            });
+          }
+        }
       }
 
       const message = await storage.createMessage(messageData);

@@ -272,6 +272,18 @@ export default function ConversationPage() {
   const nextMessageType: 'question' | 'response' = 
     !lastMessage || lastMessage.type === 'response' ? 'question' : 'response';
 
+  // Check if user has provided at least one response to allow new questions
+  const hasProvidedResponse = messages.some(msg => 
+    msg.type === 'response' && msg.senderEmail === user?.email
+  );
+
+  // Allow right column actions only if:
+  // 1. It's user's turn AND
+  // 2. Next message type is 'question' AND 
+  // 3. User has already provided at least one response (OR this is the very first message)
+  const canUseRightColumn = isMyTurn && nextMessageType === 'question' && 
+    (hasProvidedResponse || messages.length === 0);
+
 
 
   const checkResponseTime = () => {
@@ -513,6 +525,8 @@ export default function ConversationPage() {
               otherParticipant={otherParticipant}
               connectionId={conversation.connectionId}
               onNewThreadCreated={handleNewThreadCreated}
+              canUseRightColumn={canUseRightColumn}
+              nextMessageType={nextMessageType}
             />
           </div>
         </div>
