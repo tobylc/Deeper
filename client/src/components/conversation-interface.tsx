@@ -684,8 +684,8 @@ export default function ConversationInterface({
                 className={cn(
                   "transition-all duration-200",
                   messageMode === 'voice' 
-                    ? "bg-amber-500 text-white shadow-amber/20" 
-                    : "text-slate-700 border-slate-300 hover:bg-slate-50 hover:text-slate-800"
+                    ? "bg-white text-[#4FACFE] border-2 border-[#4FACFE] shadow-lg hover:bg-slate-50" 
+                    : "text-[#4FACFE] border-slate-300 hover:bg-slate-50 hover:border-[#4FACFE]/50"
                 )}
               >
                 <Mic className="w-4 h-4 mr-2" />
