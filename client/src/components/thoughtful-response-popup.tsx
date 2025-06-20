@@ -92,7 +92,7 @@ export default function ThoughtfulResponsePopup({
                 <div className="text-center space-y-3">
                   <div className="flex items-center justify-center space-x-2">
                     <Clock className="w-5 h-5 text-[#4FACFE]" />
-                    <span className="text-[#4FACFE] font-medium">Minimum reflection time remaining:</span>
+                    <span className="text-black font-medium">Minimum reflection time remaining:</span>
                   </div>
                   <div className="text-3xl font-bold bg-gradient-to-r from-[#D7A087] to-amber-400 bg-clip-text text-transparent drop-shadow-sm tabular-nums" style={{filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.5))'}}>
                     {formatTime(timeLeft)}
