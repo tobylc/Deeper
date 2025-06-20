@@ -31,6 +31,7 @@ export default function ConversationPage() {
   const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
   const [responseStartTime, setResponseStartTime] = useState<Date | null>(null);
   const [pendingMessage, setPendingMessage] = useState<string>("");
+  const [hasStartedResponse, setHasStartedResponse] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -174,6 +175,20 @@ export default function ConversationPage() {
     });
   }, [user, id, selectedConversationId, conversationLoading, conversation, conversationError]);
 
+  // Track when user starts typing to begin the 10-minute timer
+  useEffect(() => {
+    if (newMessage.trim() && !hasStartedResponse && !responseStartTime) {
+      // Only start timer if this is not the inviter's first question
+      const isInviterFirstQuestion = messages.length === 0 && 
+                                     connection?.inviterEmail === user?.email;
+      
+      if (!isInviterFirstQuestion) {
+        setHasStartedResponse(true);
+        setResponseStartTime(new Date());
+      }
+    }
+  }, [newMessage, hasStartedResponse, responseStartTime, messages.length, connection?.inviterEmail, user?.email]);
+
   // Mutation to mark onboarding as complete
   const markOnboardingCompleteMutation = useMutation({
     mutationFn: async () => {
@@ -313,8 +328,13 @@ export default function ConversationPage() {
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
     
-    // Check if enough time has passed for thoughtful response
-    if (!checkResponseTime()) {
+    // Check if this is the inviter's first question - skip timer for this case
+    const isInviterFirstQuestion = messages.length === 0 && 
+                                   connection?.inviterEmail === user?.email &&
+                                   nextMessageType === 'question';
+    
+    // Check if enough time has passed for thoughtful response (skip for inviter's first question)
+    if (!isInviterFirstQuestion && hasStartedResponse && !checkResponseTime()) {
       setPendingMessage(newMessage);
       setShowThoughtfulResponsePopup(true);
       return;
@@ -332,6 +352,7 @@ export default function ConversationPage() {
 
     // Reset response tracking
     setResponseStartTime(null);
+    setHasStartedResponse(false);
     setPendingMessage("");
     setNewMessage("");
   };

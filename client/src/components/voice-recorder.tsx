@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 
 interface VoiceRecorderProps {
   onSendVoiceMessage: (audioBlob: Blob, duration: number) => void;
+  onRecordingStart?: () => void;
   disabled?: boolean;
   className?: string;
 }
