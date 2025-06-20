@@ -17,10 +17,16 @@ async function enforceRateLimit() {
   lastQueryTime = Date.now();
 }
 
-async function safeQuery<T>(queryFn: () => Promise<T>): Promise<T | null> {
+async function safeQuery<T>(queryFn: () => Promise<T>, timeout: number = 3000): Promise<T | null> {
   try {
     await enforceRateLimit();
-    return await queryFn();
+    
+    // Add timeout wrapper
+    const timeoutPromise = new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error('Query timeout')), timeout)
+    );
+    
+    return await Promise.race([queryFn(), timeoutPromise]);
   } catch (error: any) {
     console.error('[DB-STABLE] Query failed:', error.message);
     return null;
