@@ -54,10 +54,33 @@ export function getSession() {
   });
 }
 
-async function upsertUser(profile: any, provider: string) {
+async function upsertUser(profile: any, provider: string, req?: any) {
   const email = profile.emails?.[0]?.value;
   
   if (provider === 'google' && email) {
+    // Check if this is an account linking request (user already logged in)
+    const isLinking = req && (req.session as any)?.isLinking && req.user;
+    
+    if (isLinking) {
+      // Link Google account to currently logged-in user
+      const currentUser = req.user;
+      console.log(`[AUTH] Linking Google account to existing user: ${currentUser.email}`);
+      
+      const linkedUser = await storage.linkGoogleAccount(currentUser.id, profile.id);
+      if (linkedUser) {
+        // Update profile information from Google if available, keeping existing data
+        return await storage.upsertUser({
+          id: currentUser.id,
+          email: currentUser.email, // Keep existing email
+          firstName: currentUser.firstName || profile.name?.givenName,
+          lastName: currentUser.lastName || profile.name?.familyName,
+          profileImageUrl: currentUser.profileImageUrl || profile.photos?.[0]?.value,
+          googleId: profile.id,
+        });
+      }
+      return currentUser;
+    }
+    
     // Check if user with this email already exists (email-based account)
     const existingUser = await storage.getUserByEmail(email);
     
@@ -106,10 +129,11 @@ export async function setupAuth(app: Express) {
     passport.use(new GoogleStrategy({
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${baseUrl}/api/auth/google/callback`
-    }, async (accessToken, refreshToken, profile, done) => {
+      callbackURL: `${baseUrl}/api/auth/google/callback`,
+      passReqToCallback: true
+    }, async (req, accessToken, refreshToken, profile, done) => {
       try {
-        const user = await upsertUser(profile, 'google');
+        const user = await upsertUser(profile, 'google', req);
         return done(null, user);
       } catch (error) {
         return done(error);
@@ -138,6 +162,7 @@ export async function setupAuth(app: Express) {
           delete (req.session as any).isLinking; // Clean up session
           
           if (isLinking) {
+            console.log(`[AUTH] Account linking completed successfully for user: ${req.user?.email}`);
             res.redirect("/dashboard?linked=google");
           } else {
             res.redirect("/dashboard");

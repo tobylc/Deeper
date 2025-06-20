@@ -26,8 +26,8 @@ export default function AccountLinking() {
   const handleLinkGoogle = async () => {
     try {
       setIsLinking(true);
-      // Redirect to Google OAuth linking endpoint
-      window.location.href = '/api/auth/link/google';
+      // Redirect to Google OAuth endpoint with linking parameter
+      window.location.href = '/api/auth/google?linking=true';
     } catch (error) {
       toast({
         title: "Linking Failed",
