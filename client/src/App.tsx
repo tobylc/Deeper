@@ -13,7 +13,7 @@ import Auth from "@/pages/auth";
 import InvitationLanding from "@/pages/invitation";
 import InvitationSignup from "@/pages/invitation-signup";
 import NotFound from "@/pages/not-found";
-import { Component, ReactNode } from "react";
+import { Component, ReactNode, useEffect } from "react";
 
 class ErrorBoundary extends Component<
   { children: ReactNode },
@@ -99,9 +99,34 @@ function Router() {
   );
 }
 
+function GlobalErrorHandler() {
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.warn('Unhandled promise rejection:', event.reason);
+      event.preventDefault(); // Prevent the default browser behavior
+    };
+
+    const handleError = (event: ErrorEvent) => {
+      console.warn('Global error:', event.error);
+      event.preventDefault();
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', handleError);
+
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('error', handleError);
+    };
+  }, []);
+
+  return null;
+}
+
 function App() {
   return (
     <ErrorBoundary>
+      <GlobalErrorHandler />
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />

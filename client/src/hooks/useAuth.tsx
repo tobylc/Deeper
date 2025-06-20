@@ -29,7 +29,7 @@ export function useAuth() {
       } catch (error) {
         clearTimeout(timeoutId);
         // Log errors for debugging but don't throw
-        if (error?.name !== 'AbortError') {
+        if (error instanceof Error && error.name !== 'AbortError') {
           console.warn('Auth check failed:', error);
         }
         return null; // Treat any error as not authenticated
