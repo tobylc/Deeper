@@ -147,6 +147,17 @@ export default function ConversationPage() {
     enabled: !!(selectedConversationId || id) && !!user,
   });
 
+  // Check notification preference status for this conversation
+  const { data: notificationPref } = useQuery({
+    queryKey: [`/api/users/notification-preference/${selectedConversationId || id}`],
+    queryFn: async () => {
+      const conversationId = selectedConversationId || id;
+      const response = await apiRequest('GET', `/api/users/notification-preference/${conversationId}`);
+      return response.json();
+    },
+    enabled: !!(selectedConversationId || id) && !!user,
+  });
+
   // Check if user needs to see onboarding popup - only show once globally per user
   useEffect(() => {
     if (currentUserData && currentUserData.hasSeenOnboarding === false && conversation && !showOnboardingPopup) {
@@ -170,6 +181,28 @@ export default function ConversationPage() {
     },
   });
 
+  // Mutation to set notification preference
+  const setNotificationPreferenceMutation = useMutation({
+    mutationFn: async (data: { conversationId: number; preference: "email" | "sms" | "both" }) => {
+      return apiRequest('POST', '/api/users/notification-preference', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/users/notification-preference/${selectedConversationId || id}`] });
+      setShowNotificationPopup(false);
+    },
+  });
+
+  // Mutation to dismiss notification popup
+  const dismissNotificationPopupMutation = useMutation({
+    mutationFn: async (data: { conversationId: number; dismissType: "never" | "later" }) => {
+      return apiRequest('POST', '/api/users/dismiss-notification-popup', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/users/notification-preference/${selectedConversationId || id}`] });
+      setShowNotificationPopup(false);
+    },
+  });
+
   const sendMessageMutation = useMutation({
     mutationFn: async (data: { content: string; type: 'question' | 'response' }) => {
       if (!user?.email) {
@@ -190,6 +223,12 @@ export default function ConversationPage() {
       queryClient.invalidateQueries({ queryKey: [`/api/conversations/${id}/messages`] });
       queryClient.invalidateQueries({ queryKey: [`/api/conversations/${id}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+      
+      // Check if this is user's first message in this conversation and they haven't set notification preferences
+      if (messages.length === 0 && notificationPref && !notificationPref.hasPreference && !notificationPref.neverShow) {
+        setShowNotificationPopup(true);
+      }
+      
       setNewMessage("");
       toast({
         title: "Message sent!",
@@ -385,6 +424,22 @@ export default function ConversationPage() {
     setLocation(`/conversation/${conversationId}`);
   };
 
+  const handleNotificationPreferenceSet = (preference: "email" | "sms" | "both") => {
+    const conversationId = selectedConversationId || parseInt(id || '0');
+    setNotificationPreferenceMutation.mutate({
+      conversationId,
+      preference
+    });
+  };
+
+  const handleNotificationPopupDismiss = (type: "never" | "later") => {
+    const conversationId = selectedConversationId || parseInt(id || '0');
+    dismissNotificationPopupMutation.mutate({
+      conversationId,
+      dismissType: type
+    });
+  };
+
   return (
     <div className="h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex flex-col overflow-hidden">
       {/* Header */}
@@ -551,6 +606,16 @@ export default function ConversationPage() {
           relationshipType={conversation.relationshipType}
           inviterRole={connection?.inviterRole}
           inviteeRole={connection?.inviteeRole}
+        />
+      )}
+
+      {/* Notification Preference Popup */}
+      {showNotificationPopup && notificationPref && conversation && (
+        <NotificationPreferencePopup
+          conversationId={selectedConversationId || parseInt(id || '0')}
+          currentPreference={notificationPref.globalPreference || "email"}
+          onPreferenceSet={handleNotificationPreferenceSet}
+          onDismiss={handleNotificationPopupDismiss}
         />
       )}
 
