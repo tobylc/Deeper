@@ -1,6 +1,6 @@
 import { storage } from "./storage";
 import { db } from "./db";
-import { stableDb } from "./db-stable";
+import { finalDb } from "./db-final";
 
 export interface HealthCheck {
   service: string;
