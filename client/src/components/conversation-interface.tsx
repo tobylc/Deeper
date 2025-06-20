@@ -634,20 +634,23 @@ export default function ConversationInterface({
           <div className="space-y-4 relative z-10">
             {/* Writing prompt */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-4">
                 <div className={cn(
-                  "px-3 py-2 text-sm font-handwriting transform -rotate-1 relative shadow-sm",
+                  "px-4 py-2.5 text-sm font-medium transform -rotate-1 relative shadow-lg",
+                  "bg-gradient-to-r border-2 rounded-xl transition-all duration-200",
                   messages.length >= 2
-                    ? "text-slate-600 bg-slate-100/80 border border-slate-200"
+                    ? "from-slate-50 to-slate-100 text-slate-700 border-slate-200"
                     : nextMessageType === 'question' 
-                      ? "text-ocean bg-ocean/10 border border-ocean/30" 
-                      : "text-amber-700 bg-amber/20 border border-amber/40",
-                  "rounded-lg"
+                      ? "from-[#4FACFE]/10 to-blue-50 text-[#1B2137] border-[#4FACFE]/30" 
+                      : "from-amber-50 to-orange-50 text-amber-800 border-amber-300",
+                  "hover:shadow-xl hover:scale-105"
                 )}>
-                  {messages.length >= 2 ? "Continue writing..." : nextMessageType === 'question' ? "Ask a question..." : "Share your thoughts..."}
+                  <span className="relative z-10">
+                    {messages.length >= 2 ? "Continue writing..." : nextMessageType === 'question' ? "Ask a question..." : "Share your thoughts..."}
+                  </span>
                 </div>
                 
-                <div className="text-xs text-slate-600 italic font-serif">
+                <div className="text-sm text-slate-700 font-serif leading-relaxed">
                   {messages.length >= 2
                     ? "Let your thoughts flow naturally onto the page"
                     : nextMessageType === 'question' 
@@ -682,7 +685,7 @@ export default function ConversationInterface({
                   "transition-all duration-200",
                   messageMode === 'voice' 
                     ? "bg-amber-500 text-white shadow-amber/20" 
-                    : "text-slate-600 border-slate-300 hover:bg-slate-50"
+                    : "text-slate-700 border-slate-300 hover:bg-slate-50 hover:text-slate-800"
                 )}
               >
                 <Mic className="w-4 h-4 mr-2" />
