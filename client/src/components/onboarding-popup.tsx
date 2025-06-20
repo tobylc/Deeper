@@ -117,7 +117,7 @@ export default function OnboardingPopup({
                   {/* Step 3 - Continue Conversation */}
                   <Card className="bg-[#1B2137]/80 border-teal/30 backdrop-blur-md shadow-lg">
                     <CardContent className="p-4 flex items-center space-x-4">
-                      <div className="w-8 h-8 rounded-full bg-teal text-white flex items-center justify-center text-sm font-bold shadow-lg">
+                      <div className="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center text-sm font-bold shadow-lg">
                         3
                       </div>
                       <div>
@@ -164,7 +164,7 @@ export default function OnboardingPopup({
                   {/* Step 3 - Continue Conversation */}
                   <Card className="bg-[#1B2137]/80 border-teal/30 backdrop-blur-md shadow-lg">
                     <CardContent className="p-4 flex items-center space-x-4">
-                      <div className="w-8 h-8 rounded-full bg-teal text-white flex items-center justify-center text-sm font-bold shadow-lg">
+                      <div className="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center text-sm font-bold shadow-lg">
                         3
                       </div>
                       <div>
@@ -181,7 +181,7 @@ export default function OnboardingPopup({
           </div>
 
           {/* The Heart of Deeper - Highlighted Section */}
-          <Card className="bg-gradient-to-r from-[#4FACFE]/20 to-teal/20 border-2 border-[#4FACFE]/50 backdrop-blur-md shadow-xl">
+          <Card className="bg-gradient-to-r from-slate-100 to-white border-2 border-[#4FACFE]/50 backdrop-blur-md shadow-xl">
             <CardContent className="p-6">
               <div className="text-center space-y-4">
                 <div className="flex justify-center">
@@ -189,16 +189,16 @@ export default function OnboardingPopup({
                     <QuotesIcon size="lg" className="text-white" />
                   </div>
                 </div>
-                <h5 className="font-bold text-xl text-white">The Heart of Deeper</h5>
-                <div className="space-y-3 text-slate-100">
+                <h5 className="font-bold text-xl text-slate-900">The Heart of Deeper</h5>
+                <div className="space-y-3 text-slate-700">
                   <p className="leading-relaxed">
-                    <strong className="text-white">Deeper is designed for long-term, thoughtful conversations</strong> that unfold over 
+                    <strong className="text-slate-900">Deeper is designed for long-term, thoughtful conversations</strong> that unfold over 
                     months, years, or even decades. This isn't quick texting or email replacement—it's a dedicated space for 
                     meaningful dialogue that might be difficult to have in person.
                   </p>
                   <p className="leading-relaxed">
                     Think of Deeper as your private conversation sanctuary where you can return again and again to explore 
-                    <strong className="text-white"> deeper questions, share authentic thoughts, and strengthen your connection</strong> through 
+                    <strong className="text-slate-900"> deeper questions, share authentic thoughts, and strengthen your connection</strong> through 
                     exchanges that simply don't happen anywhere else.
                   </p>
                 </div>
