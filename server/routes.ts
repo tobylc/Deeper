@@ -1579,6 +1579,163 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Voice message endpoint
+  app.post("/api/conversations/:id/voice-messages", 
+    audioUpload.single('audio'),
+    rateLimit(50, 60 * 60 * 1000), // 50 voice messages per hour
+    validateEmail,
+    async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const { senderEmail, type, duration } = req.body;
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "Audio file is required" });
+      }
+
+      // Validate conversation exists and user is authorized
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      // Check if sender is a participant
+      if (senderEmail !== conversation.participant1Email && 
+          senderEmail !== conversation.participant2Email) {
+        return res.status(403).json({ message: "Not authorized to send messages in this conversation" });
+      }
+
+      // Check if it's the sender's turn
+      if (senderEmail !== conversation.currentTurn) {
+        return res.status(400).json({ message: "It's not your turn to send a message" });
+      }
+
+      // Save audio file
+      const fileName = `voice_${Date.now()}_${Math.random().toString(36).substring(7)}.webm`;
+      const audioPath = path.join(uploadsDir, fileName);
+      await fs.writeFile(audioPath, req.file.buffer);
+      const audioFileUrl = `/uploads/${fileName}`;
+
+      // Transcribe audio using OpenAI Whisper
+      // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      let transcription = '';
+      try {
+        const fs_node = await import('fs');
+        const transcriptionResponse = await openai.audio.transcriptions.create({
+          file: fs_node.createReadStream(audioPath),
+          model: "whisper-1",
+          response_format: "text"
+        });
+        
+        transcription = transcriptionResponse;
+      } catch (error) {
+        console.error('Transcription error:', error);
+        // Continue without transcription if it fails
+        transcription = '[Transcription failed - audio only]';
+      }
+
+      // Get existing messages to validate message type
+      const existingMessages = await storage.getMessagesByConversationId(conversationId);
+      const lastMessage = existingMessages[existingMessages.length - 1];
+
+      // Validate message type based on conversation flow
+      if (existingMessages.length === 0) {
+        if (type !== 'question') {
+          return res.status(400).json({ message: "First message must be a question" });
+        }
+      } else {
+        const expectedType = lastMessage.type === 'question' ? 'response' : 'question';
+        if (type !== expectedType) {
+          return res.status(400).json({ message: `Expected ${expectedType}, got ${type}` });
+        }
+      }
+
+      // Create voice message with transcription
+      const messageData = {
+        conversationId,
+        senderEmail,
+        content: transcription, // Store transcription as content
+        type,
+        messageFormat: 'voice' as const,
+        audioFileUrl,
+        transcription,
+        audioDuration: parseInt(duration) || 0
+      };
+
+      const message = await storage.createMessage(messageData);
+
+      // Generate thread title if this is the first question
+      if (existingMessages.length === 0 && type === 'question') {
+        const threadTitle = generateRelationshipSpecificTitle(
+          transcription, 
+          conversation.relationshipType
+        );
+        await storage.updateConversationTitle(conversationId, threadTitle);
+      }
+
+      // Update conversation turn to the other participant
+      const nextTurn = conversation.currentTurn === conversation.participant1Email 
+        ? conversation.participant2Email 
+        : conversation.participant1Email;
+      await storage.updateConversationTurn(conversationId, nextTurn);
+
+      // Send turn notification
+      try {
+        await notificationService.sendTurnNotification({
+          recipientEmail: nextTurn,
+          senderEmail,
+          conversationId,
+          relationshipType: conversation.relationshipType,
+          messageType: type
+        });
+      } catch (error) {
+        console.error('[NOTIFICATION] Failed to send turn notification:', error);
+      }
+
+      // Send real-time WebSocket notifications
+      try {
+        const { getWebSocketManager } = await import('./websocket');
+        const wsManager = getWebSocketManager();
+        if (wsManager) {
+          const senderName = await storage.getUserDisplayNameByEmail(senderEmail);
+          
+          wsManager.notifyNewMessage(nextTurn, {
+            conversationId,
+            senderEmail,
+            senderName,
+            messageType: type,
+            relationshipType: conversation.relationshipType
+          });
+          
+          wsManager.notifyConversationUpdate(senderEmail, {
+            conversationId,
+            action: 'message_sent',
+            relationshipType: conversation.relationshipType
+          });
+        }
+      } catch (error) {
+        console.error('[WEBSOCKET] Failed to send real-time notification:', error);
+      }
+
+      // Track voice message sending
+      analytics.track({
+        type: 'message_sent',
+        email: senderEmail,
+        metadata: { 
+          conversationId,
+          messageType: type,
+          messageFormat: 'voice',
+          relationshipType: conversation.relationshipType
+        }
+      });
+
+      res.json(message);
+    } catch (error) {
+      console.error("Create voice message error:", error);
+      res.status(400).json({ message: "Failed to create voice message" });
+    }
+  });
+
   // User data endpoints
   app.get("/api/users/by-email/:email", async (req, res) => {
     try {

@@ -3,16 +3,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, ArrowRight, Sparkles, Clock, Send, Plus, ChevronDown } from "lucide-react";
+import { MessageCircle, ArrowRight, Sparkles, Clock, Send, Plus, ChevronDown, Mic, Type } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
+import VoiceRecorder from "@/components/voice-recorder";
+import VoiceMessageDisplay from "@/components/voice-message-display";
 import type { Message, User, Connection } from "@shared/schema";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
 import ProfileAvatar from "@/components/profile-avatar";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { apiRequest } from "@/lib/queryClient";
 
 interface ConversationInterfaceProps {
   messages: Message[];
@@ -28,6 +31,7 @@ interface ConversationInterfaceProps {
   onQuestionSelect: (question: string) => void;
   isSending: boolean;
   nextMessageType: 'question' | 'response';
+  conversationId: number;
 }
 
 export default function ConversationInterface({ 
