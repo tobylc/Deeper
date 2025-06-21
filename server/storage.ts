@@ -27,10 +27,17 @@ export interface IStorage {
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
     subscriptionExpiresAt?: Date;
+    trialStartedAt?: Date;
+    trialExpiresAt?: Date;
     phoneNumber?: string;
     phoneVerified?: boolean;
     notificationPreference?: string;
   }): Promise<User | undefined>;
+  
+  // Trial management
+  initializeTrial(userId: string): Promise<User | undefined>;
+  checkTrialStatus(userId: string): Promise<{ isExpired: boolean; daysRemaining: number; user: User | undefined }>;
+  expireTrialUser(userId: string): Promise<User | undefined>;
 
   // Connections
   getConnection(id: number): Promise<Connection | undefined>;

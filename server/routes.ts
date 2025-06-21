@@ -67,7 +67,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     subscriptionTier: subscription.metadata?.tier || user.subscriptionTier || 'free',
     subscriptionStatus: status,
     maxConnections: user.maxConnections || 1,
-    subscriptionExpiresAt: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined
+    subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
   });
 }
 
@@ -1103,7 +1103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
-        subscriptionExpiresAt: new Date(subscription.current_period_end * 1000)
+        subscriptionExpiresAt: new Date((subscription as any).current_period_end * 1000)
       });
 
       res.json({ 
@@ -1186,7 +1186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: subscription.status,
         tier: user.subscriptionTier,
         maxConnections: user.maxConnections,
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
         trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null
       });
@@ -1212,7 +1212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         success: true,
         message: 'Subscription will be canceled at the end of the current period',
-        cancelAt: new Date(subscription.current_period_end * 1000)
+        cancelAt: new Date((subscription as any).current_period_end * 1000)
       });
     } catch (error) {
       console.error('Subscription cancellation error:', error);

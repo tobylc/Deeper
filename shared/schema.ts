@@ -36,12 +36,14 @@ export const users = pgTable("users", {
   phoneNumber: varchar("phone_number"), // For SMS notifications
   phoneVerified: boolean("phone_verified").default(false), // Phone number verification status
   notificationPreference: varchar("notification_preference").default("email"), // email, sms, both
-  subscriptionTier: varchar("subscription_tier").default("free"), // free, starter, pro, unlimited
-  subscriptionStatus: varchar("subscription_status").default("active"), // active, cancelled, expired
+  subscriptionTier: varchar("subscription_tier").default("trial"), // trial, basic, advanced, unlimited
+  subscriptionStatus: varchar("subscription_status").default("active"), // active, cancelled, expired, trial_expired
   maxConnections: integer("max_connections").default(1), // connections user can initiate
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   subscriptionExpiresAt: timestamp("subscription_expires_at"),
+  trialStartedAt: timestamp("trial_started_at").defaultNow(), // When 7-day trial began
+  trialExpiresAt: timestamp("trial_expires_at"), // When 7-day trial ends
   hasSeenOnboarding: boolean("has_seen_onboarding").default(false), // One-time onboarding popup tracking
   conversationNotificationPrefs: json("conversation_notification_prefs").default('{}'), // Track notification preferences per conversation
   createdAt: timestamp("created_at").defaultNow(),
