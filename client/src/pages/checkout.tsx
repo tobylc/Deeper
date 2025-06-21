@@ -40,7 +40,7 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
     setIsProcessing(true);
 
     try {
-      const { error } = await stripe.confirmPayment({
+      const { error } = await stripe.confirmSetup({
         elements,
         confirmParams: {
           return_url: `${window.location.origin}/dashboard`,
@@ -49,9 +49,8 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
 
       if (error) {
         toast({
-          title: "Payment Failed",
-          description: error.message,
-          variant: "destructive",
+          title: "Unable to process payment",
+          description: "Please check your payment details and try again",
         });
       } else {
         toast({
@@ -62,9 +61,8 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
       }
     } catch (error: any) {
       toast({
-        title: "Payment Error",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive",
+        title: "Payment issue",
+        description: "Please try again in a moment or contact support if this continues",
       });
     } finally {
       setIsProcessing(false);
