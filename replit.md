@@ -663,6 +663,15 @@ Changelog:
   * Fixed question suggestions component to use neutral toast styling instead of jarring red destructive variants
   * All error messages now user-friendly ("Unable to send message" vs technical "Error" labels)
   * Complete visual consistency with elegant error handling guiding users toward solutions rather than showing technical errors
+- June 21, 2025. 50% discount trial expiration offer system implementation:
+  * Enhanced TrialExpirationPopup with exclusive 50% discount offer for Advanced plan ($4.50/month instead of $9.95)
+  * Added "Learn More" button redirecting to pricing page and "Subscribe Now" button for direct checkout with discount
+  * Implemented discount parameter support in checkout page (/checkout/advanced?discount=50) with prominent discount display
+  * Enhanced backend subscription upgrade endpoint to handle discountPercent parameter and create Stripe coupons
+  * Added automatic 50% off coupon creation for Advanced plan trial expiration offers
+  * Updated checkout UI to show crossed-out original price and discount messaging for discounted subscriptions
+  * Included coffee comparison tagline: "Cheaper and more effective than having coffee once a month with your Deeper partner!"
+  * Complete 50% discount flow from trial expiration popup through Stripe checkout with permanent discount application
 - June 21, 2025. Voice recording interface cleanup:
   * Removed microphone level readout bar from voice recording interface for cleaner, less distracting experience
   * Recording area now shows only essential information: timer, recording status, and control buttons
