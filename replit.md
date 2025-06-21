@@ -639,6 +639,12 @@ Changelog:
   * Enhanced text input to trigger thoughtful response timer when user starts typing, consistent with voice recording behavior
   * Added timer validation preventing message sending until 10-minute requirement is met for both text and voice messages
   * Complete timer synchronization ensures identical thoughtful response enforcement across all communication modes
+- June 21, 2025. Thoughtful response popup consistency and microphone level detection fixes:
+  * Fixed microphone level measurement during voice recording by adding initialization delay for audio context setup
+  * Integrated ThoughtfulResponsePopup into text messaging to match voice recorder behavior exactly
+  * Text messages now show the same 10-minute countdown popup when users attempt to send before timer completes
+  * Both Share button clicks and Enter key presses trigger the thoughtful response popup for premature sending attempts
+  * Complete consistency between text and voice messaging thoughtful response enforcement with identical user experience
 ```
 
 ## User Preferences

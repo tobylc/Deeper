@@ -985,8 +985,11 @@ export default function ConversationInterface({
         <ThoughtfulResponsePopup
           isOpen={showThoughtfulResponsePopup}
           onClose={() => setShowThoughtfulResponsePopup(false)}
-          hasStartedResponse={hasStartedResponse}
-          responseStartTime={responseStartTime}
+          onProceed={() => {
+            setShowThoughtfulResponsePopup(false);
+            onSendMessage();
+          }}
+          remainingSeconds={getRemainingTime()}
         />
       )}
     </div>
