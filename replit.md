@@ -681,6 +681,15 @@ Changelog:
   * Added detailed logging and error handling for account linking operations
   * Database cleanup utility safely migrates all connections, conversations, and messages from duplicate accounts
   * Complete resolution for Google OAuth duplicate account creation issue
+- June 21, 2025. Invitee user dashboard improvements and subscription messaging refinements:
+  * Enhanced trial status component to properly identify invitee users who were invited by others
+  * Removed "Trial expired" message for invitee users, showing only "FREE" status instead
+  * Created InviteeUpgradeBanner component with invitation-specific upgrade messaging
+  * Added targeted messaging: "To begin sending invites to other people you desire to go Deeper with"
+  * Upgrade banner appears prominently for invitee users while maintaining their inherited subscription benefits
+  * Invitee users maintain access to conversations through their inviter's subscription benefits
+  * Clear distinction between users who created accounts independently vs those invited by others
+  * Enhanced user experience for invitees with appropriate upgrade paths and messaging
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications

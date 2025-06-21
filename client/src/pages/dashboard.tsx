@@ -22,6 +22,7 @@ import { getRoleDisplayInfo, getDashboardSectionTitle } from "@shared/role-displ
 import { TrialStatus } from "@/components/trial-status";
 import { SubscriptionEnforcement } from "@/components/subscription-enforcement";
 import AdminCleanup from "@/components/admin-cleanup";
+import { InviteeUpgradeBanner } from "@/components/invitee-upgrade-banner";
 
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -204,6 +205,9 @@ export default function Dashboard() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Invitee Upgrade Banner */}
+        <InviteeUpgradeBanner />
+
         {/* Trial Status */}
         <TrialStatus />
 

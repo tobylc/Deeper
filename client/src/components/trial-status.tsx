@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import TrialExpirationPopup from "./trial-expiration-popup";
 import { useState } from "react";
+import type { Connection } from "@shared/schema";
 
 interface TrialStatusData {
   isExpired: boolean;
@@ -27,6 +28,14 @@ export function TrialStatus() {
       errorMessage: "Failed to load trial status"
     }
   });
+
+  // Check if user was invited by someone else (is an invitee)
+  const { data: connections = [] } = useQuery<Connection[]>({
+    queryKey: [`/api/connections/${user?.email}`],
+    enabled: !!user?.email,
+  });
+
+  const isInviteeUser = connections.some(c => c.inviteeEmail === user?.email);
 
   // Fallback to user data when API fails but user is authenticated
   if (isLoading && !error) {
@@ -78,6 +87,38 @@ export function TrialStatus() {
   }
 
   if (isExpiredTrial || effectiveTrialStatus.isExpired) {
+    // For invitee users, show free status without "trial expired" message
+    if (isInviteeUser) {
+      return (
+        <>
+          <div className="mt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-slate-600">Current Plan</span>
+              </div>
+              <Badge variant="secondary" className="bg-slate-200 text-slate-700">
+                free
+              </Badge>
+            </div>
+            <Button 
+              size="sm" 
+              className="mt-3 w-full bg-gradient-to-r from-ocean to-teal text-white hover:from-ocean/90 hover:to-teal/90"
+              onClick={() => setShowTrialExpiredPopup(true)}
+            >
+              <Crown className="w-3 h-3 mr-1" />
+              Upgrade Now
+            </Button>
+          </div>
+          
+          <TrialExpirationPopup 
+            isOpen={showTrialExpiredPopup} 
+            onClose={() => setShowTrialExpiredPopup(false)} 
+          />
+        </>
+      );
+    }
+
+    // For regular users, show trial expired
     return (
       <>
         <div className="mt-4">
