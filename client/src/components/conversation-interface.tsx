@@ -9,6 +9,7 @@ import QuotesIcon from "@/components/quotes-icon";
 import VoiceRecorder from "@/components/voice-recorder";
 import VoiceMessageDisplay from "@/components/voice-message-display";
 import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
+import TranscriptionProgress from "@/components/transcription-progress";
 import type { Message, User, Connection } from "@shared/schema";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
@@ -63,6 +64,7 @@ export default function ConversationInterface({
   const [messageMode, setMessageMode] = useState<'text' | 'voice'>('text');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
+  const [showTranscriptionProgress, setShowTranscriptionProgress] = useState(false);
   const queryClient = useQueryClient();
 
   // Real-time countdown timer synchronization for text input
@@ -94,7 +96,7 @@ export default function ConversationInterface({
     return getRemainingTime() <= 0;
   };
 
-  // Voice message mutation with enhanced debugging
+  // Voice message mutation with transcription progress
   const sendVoiceMessageMutation = useMutation({
     mutationFn: async ({ audioBlob, duration }: { audioBlob: Blob; duration: number }) => {
       console.log('Sending voice message:', {
@@ -103,6 +105,9 @@ export default function ConversationInterface({
         duration,
         conversationId
       });
+
+      // Show transcription progress indicator
+      setShowTranscriptionProgress(true);
 
       const formData = new FormData();
       formData.append('audio', audioBlob, 'voice-message.webm');

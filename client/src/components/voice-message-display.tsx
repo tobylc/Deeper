@@ -143,24 +143,24 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           : "bg-gradient-to-br from-amber-100 to-amber-200 text-slate-800"
       )}>
         <div className="flex items-center space-x-3">
-          {/* Play/Pause Button */}
+          {/* Play/Pause Button - Ocean Blue for Visibility */}
           <Button
             onClick={togglePlayback}
             disabled={isLoading}
             size="sm"
             className={cn(
-              "w-10 h-10 rounded-full transition-colors",
-              isCurrentUser
-                ? "bg-white/20 hover:bg-white/30 text-white disabled:bg-white/10"
-                : "bg-amber-500 hover:bg-amber-600 text-white disabled:bg-amber-300"
+              "w-12 h-12 rounded-full transition-all duration-200 shadow-lg border-2",
+              "bg-gradient-to-br from-[#4FACFE] to-[#3B82F6] hover:from-[#4FACFE]/90 hover:to-[#3B82F6]/90",
+              "text-white border-blue-400 hover:shadow-blue-500/25 hover:scale-105",
+              "disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             )}
           >
             {isLoading ? (
-              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
             ) : isPlaying ? (
-              <Pause className="w-4 h-4" />
+              <Pause className="w-5 h-5" />
             ) : (
-              <Play className="w-4 h-4 ml-0.5" />
+              <Play className="w-5 h-5 ml-0.5" />
             )}
           </Button>
 
