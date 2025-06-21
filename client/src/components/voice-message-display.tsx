@@ -172,7 +172,7 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           </div>
         </div>
 
-        {/* Hidden Audio Element */}
+        {/* Audio Element with Enhanced Debugging */}
         <audio
           ref={audioRef}
           src={message.audioFileUrl || ''}
@@ -183,7 +183,19 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           onCanPlay={handleCanPlay}
           preload="metadata"
           crossOrigin="anonymous"
+          onLoadedMetadata={() => console.log('Audio metadata loaded')}
+          onLoadedData={() => console.log('Audio data loaded')}
         />
+        
+        {/* Debug Info in Development */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
+            <div>Audio URL: {message.audioFileUrl}</div>
+            <div>Duration: {message.audioDuration}s</div>
+            <div>Error: {error || 'None'}</div>
+            <div>Loading: {isLoading ? 'Yes' : 'No'}</div>
+          </div>
+        )}
       </Card>
 
       {/* Transcription */}

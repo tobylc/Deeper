@@ -93,12 +93,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from public directory
   app.use(express.static(path.join(process.cwd(), 'public')));
   
-  // Serve uploaded files
+  // Serve uploaded files with proper headers for audio playback
   app.use('/uploads', (req, res, next) => {
     const filePath = path.join(process.cwd(), 'public', 'uploads', req.path);
+    
+    // Set appropriate headers for audio files with proper MIME type detection
+    const audioExtensions = {
+      '.webm': 'audio/webm',
+      '.mp3': 'audio/mpeg',
+      '.wav': 'audio/wav',
+      '.mp4': 'audio/mp4',
+      '.ogg': 'audio/ogg',
+      '.m4a': 'audio/mp4',
+      '.aac': 'audio/aac'
+    };
+    
+    const fileExt = path.extname(req.path).toLowerCase();
+    if (audioExtensions[fileExt as keyof typeof audioExtensions]) {
+      res.setHeader('Content-Type', audioExtensions[fileExt as keyof typeof audioExtensions]);
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+    
     res.sendFile(filePath, (err) => {
       if (err) {
-        res.status(404).send('File not found');
+        console.error('File serving error:', err);
+        res.status(404).json({ message: 'Audio file not found' });
       }
     });
   });
@@ -1686,15 +1707,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileName = `voice_${timestamp}_${randomString}.${fileExtension}`;
       audioPath = path.join(uploadsDir, fileName);
       
-      // Save audio file securely
+      // Save audio file securely with enhanced logging
       try {
+        console.log('Saving audio file to:', audioPath);
+        console.log('Audio file size:', req.file.size);
+        console.log('Audio file type:', req.file.mimetype);
+        
         await fs.writeFile(audioPath, req.file.buffer);
+        
+        // Verify file was written
+        const stats = await fs.stat(audioPath);
+        console.log('Audio file saved successfully. Size:', stats.size);
       } catch (fileError) {
         console.error("File save error:", fileError);
         return res.status(500).json({ message: "Failed to save audio file" });
       }
       
       const audioFileUrl = `/uploads/${fileName}`;
+      console.log('Generated audio file URL:', audioFileUrl);
 
       // Transcribe audio using OpenAI Whisper with production-ready error handling
       let transcription = '';
@@ -1793,7 +1823,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         audioDuration: parseInt(duration) || 0
       };
 
+      console.log('Creating voice message with data:', {
+        ...messageData,
+        content: transcription.substring(0, 100) + '...' // Truncate for logging
+      });
+
       const message = await storage.createMessage(messageData);
+      console.log('Voice message created successfully with ID:', message.id);
 
       // Generate thread title if this is the first question
       if (existingMessages.length === 0 && type === 'question') {
