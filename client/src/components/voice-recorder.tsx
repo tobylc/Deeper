@@ -479,37 +479,7 @@ export default function VoiceRecorder({
             ) : hasRecording ? "Ready to send" : "Tap to record"}
           </div>
           
-          {/* Microphone Level Indicator */}
-          {isRecording && !isPaused && (
-            <div className="flex items-center justify-center space-x-2">
-              <span className="text-xs text-slate-500">Level:</span>
-              <div className="w-24 h-3 bg-slate-200 rounded-full overflow-hidden relative">
-                {/* Background gradient showing green, yellow, red zones */}
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400 via-yellow-400 to-red-500 opacity-20 rounded-full" />
-                
-                {/* Active volume indicator */}
-                <div 
-                  className="h-full transition-all duration-150 rounded-full relative"
-                  style={{
-                    width: `${Math.max(2, volumeLevel)}%`,
-                    backgroundColor: getVolumeColor(volumeLevel),
-                    boxShadow: volumeLevel > 10 ? `0 0 6px ${getVolumeColor(volumeLevel)}40` : 'none'
-                  }}
-                >
-                  {/* Animated pulse effect for high volume */}
-                  {volumeLevel > 70 && (
-                    <div 
-                      className="absolute inset-0 rounded-full animate-pulse"
-                      style={{ backgroundColor: getVolumeColor(volumeLevel) }}
-                    />
-                  )}
-                </div>
-              </div>
-              <span className="text-xs font-mono text-slate-600 min-w-[2rem]">
-                {Math.round(volumeLevel)}%
-              </span>
-            </div>
-          )}
+
         </div>
 
         {/* Preview Playback Interface */}

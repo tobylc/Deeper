@@ -645,6 +645,10 @@ Changelog:
   * Text messages now show the same 10-minute countdown popup when users attempt to send before timer completes
   * Both Share button clicks and Enter key presses trigger the thoughtful response popup for premature sending attempts
   * Complete consistency between text and voice messaging thoughtful response enforcement with identical user experience
+- June 21, 2025. Voice recording interface cleanup:
+  * Removed microphone level readout bar from voice recording interface for cleaner, less distracting experience
+  * Recording area now shows only essential information: timer, recording status, and control buttons
+  * Simplified voice recording UI focuses user attention on the recording process without technical volume indicators
 ```
 
 ## User Preferences
