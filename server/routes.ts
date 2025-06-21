@@ -1293,7 +1293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Update user subscription in database
       await storage.updateUserSubscription(userId, {
-        subscriptionTier: tier,
+        subscriptionTier: actualTier,
         subscriptionStatus: shouldChargeImmediately ? 'active' : 'trialing',
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
@@ -1303,7 +1303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ 
         success: true, 
-        tier, 
+        tier: actualTier, 
         maxConnections: benefits.maxConnections,
         subscriptionId: subscription.id,
         clientSecret: setupIntent.client_secret,
@@ -1311,9 +1311,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         discountApplied: discountPercent ? `${discountPercent}%` : null,
         immediateCharge: shouldChargeImmediately,
         message: shouldChargeImmediately ? 
-          "Subscription upgraded successfully! You'll be charged $4.95 immediately with 50% discount." :
-          discountPercent && tier === 'advanced' ? 
-            "Subscription created successfully with 7-day trial and 50% discount!" : 
+          "Advanced subscription upgraded successfully! You'll be charged $4.95 immediately with 50% discount." :
+          discountPercent && actualTier === 'advanced' ? 
+            "Advanced subscription created successfully with 7-day trial and 50% discount!" : 
             "Subscription created successfully with 7-day trial" 
       });
     } catch (error) {

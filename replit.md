@@ -708,6 +708,13 @@ Changelog:
   * Enhanced payment confirmation flow with appropriate success messages for immediate vs trial scenarios
   * 50% discount users now charged $4.95 immediately upon checkout completion instead of waiting 7 days
   * Complete production-ready billing system ensuring proper revenue collection for discount conversions
+- June 21, 2025. Fixed subscription tier assignment for 50% discount users:
+  * Corrected critical bug where 50% discount users received "basic" subscription instead of "advanced"
+  * Added actualTier logic to force 'advanced' tier when 50% discount is applied regardless of frontend input
+  * Updated all Stripe metadata and database operations to use correct tier for discount users
+  * 50% discount users now properly receive Advanced subscription with 3 connections instead of Basic with 1 connection
+  * Enhanced success messaging to clearly indicate "Advanced subscription" for discount conversions
+  * Complete tier assignment fix ensuring discount users receive proper subscription benefits
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications
