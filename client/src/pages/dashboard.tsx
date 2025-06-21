@@ -290,7 +290,18 @@ export default function Dashboard() {
           <Card className="bg-accent/5 border-accent/20">
             <CardContent className="p-6">
               <Button 
-                onClick={() => setShowInviteForm(true)}
+                onClick={() => {
+                  // Check subscription status before allowing invitation
+                  if ((user as any)?.subscriptionTier === 'free' || 
+                      ((user as any)?.subscriptionStatus === 'trialing' && 
+                       (user as any)?.subscriptionExpiresAt && 
+                       new Date((user as any).subscriptionExpiresAt) < new Date())) {
+                    setEnforcementAction("invite");
+                    setShowSubscriptionEnforcement(true);
+                  } else {
+                    setShowInviteForm(true);
+                  }
+                }}
                 className="w-full h-full min-h-[80px] btn-ocean"
               >
                 <Plus className="w-6 h-6 mr-2" />

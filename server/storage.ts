@@ -79,9 +79,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(userData: InsertUser): Promise<User> {
+    // Initialize trial for new users
+    const trialStartsAt = new Date();
+    const trialExpiresAt = new Date(trialStartsAt.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
+    
     const [user] = await db
       .insert(users)
-      .values(userData)
+      .values({
+        ...userData,
+        subscriptionTier: 'trial',
+        subscriptionStatus: 'trialing',
+        maxConnections: 1,
+        trialStartedAt: trialStartsAt,
+        trialExpiresAt: trialExpiresAt,
+        subscriptionExpiresAt: trialExpiresAt
+      })
       .returning();
     return user;
   }

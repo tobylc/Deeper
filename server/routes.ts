@@ -1476,6 +1476,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/trial-status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const now = new Date();
+      const subscriptionTier = currentUser.subscriptionTier || 'free';
+      const subscriptionStatus = currentUser.subscriptionStatus || 'inactive';
+      const subscriptionExpiresAt = currentUser.subscriptionExpiresAt;
+
+      let isExpired = false;
+      let daysRemaining = 7;
+
+      if (subscriptionTier === 'free' || subscriptionStatus === 'trialing') {
+        if (subscriptionExpiresAt) {
+          const timeRemaining = subscriptionExpiresAt.getTime() - now.getTime();
+          daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+          isExpired = timeRemaining <= 0;
+        } else {
+          // New user without trial started yet
+          daysRemaining = 7;
+          isExpired = false;
+        }
+      }
+
+      res.json({
+        isExpired,
+        daysRemaining: Math.max(0, daysRemaining),
+        subscriptionTier,
+        subscriptionStatus
+      });
+    } catch (error) {
+      console.error("Trial status error:", error);
+      res.status(500).json({ message: "Failed to get trial status" });
+    }
+  });
+
   app.get("/api/subscription/status", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims?.sub || req.user.id;
@@ -1624,6 +1665,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!currentUser) {
         return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Check subscription status and trial expiration for conversation creation
+      const now = new Date();
+      const subscriptionTier = currentUser.subscriptionTier || 'free';
+      const subscriptionStatus = currentUser.subscriptionStatus || 'inactive';
+      const subscriptionExpiresAt = currentUser.subscriptionExpiresAt;
+
+      // Enforce trial expiration for conversation creation
+      if (subscriptionTier === 'free' || (subscriptionStatus === 'trialing' && subscriptionExpiresAt && subscriptionExpiresAt < now)) {
+        return res.status(403).json({ 
+          type: 'TRIAL_EXPIRED',
+          message: "Your free trial has expired. Please upgrade to continue using Deeper.",
+          subscriptionTier,
+          subscriptionStatus
+        });
       }
       
       // Verify user is part of this connection
