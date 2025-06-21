@@ -27,7 +27,7 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md p-0 bg-transparent border-0 shadow-none">
+      <DialogContent className="max-w-md p-0 bg-transparent border-0 shadow-none [&>button]:hidden">
         {/* Beautiful parchment-style popup */}
         <div 
           className="relative bg-gradient-to-br from-white via-amber-50/40 to-amber-100/30 p-8 border border-amber-200/60 shadow-2xl"
@@ -117,7 +117,7 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
             </Card>
 
             {/* Action buttons */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               <Link href="/checkout/advanced?discount=50">
                 <Button
                   className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-blue/25 transition-all duration-200 font-medium"
@@ -136,7 +136,7 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
                 </Button>
               </Link>
               
-              <div className="pt-2">
+              <div className="pt-4">
                 <Button
                   onClick={onClose}
                   variant="outline"
