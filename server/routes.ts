@@ -1066,17 +1066,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Subscription management endpoints
-  app.post("/api/subscription/upgrade", isAuthenticated, async (req: any, res) => {
+  app.post("/api/subscription/upgrade", async (req: any, res) => {
     try {
-      const { tier, discountPercent } = req.body;
-      const userId = req.user.claims?.sub || req.user.id;
+      // Check session-based authentication first
+      let userId;
+      let user;
+
+      if (req.session?.user) {
+        userId = req.session.user.id;
+        user = await storage.getUser(userId);
+      } else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+        userId = req.user.claims?.sub || req.user.id;
+        user = await storage.getUser(userId);
+      } else {
+        return res.status(401).json({ 
+          message: "Authentication required. Please log in again.",
+          code: "AUTH_REQUIRED"
+        });
+      }
       
-      if (!userId) {
+      if (!userId || !user) {
         return res.status(401).json({ message: "User not authenticated" });
       }
 
-      const currentUser = await storage.getUser(userId);
-      if (!currentUser) {
+      const { tier, discountPercent } = req.body;
+
+      if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
