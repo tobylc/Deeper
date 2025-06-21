@@ -88,14 +88,16 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
             Processing...
           </>
         ) : (
-          hasDiscount && tier === 'advanced' ? 'Upgrade to Advanced - 50% Off' : `Upgrade to ${currentPlan.name}`
+          hasDiscount && tier === 'advanced' ? 'Upgrade to Advanced' : `Upgrade to ${currentPlan.name}`
         )}
       </Button>
       
-      <p className="text-xs text-center text-white/70">
-        Your trial starts immediately. You won't be charged until day 8.
-        Cancel anytime during your trial period.
-      </p>
+      {!hasDiscount && (
+        <p className="text-xs text-center text-black">
+          Your trial starts immediately. You won't be charged until day 8.
+          Cancel anytime during your trial period.
+        </p>
+      )}
     </form>
   );
 };
@@ -284,7 +286,7 @@ export default function Checkout() {
           <div className="text-center mb-8">
             {hasDiscount && tier === 'advanced' ? (
               <>
-                <div className="inline-flex items-center px-4 py-2 bg-amber-500 text-amber-900 text-sm font-bold rounded-full mb-4">
+                <div className="inline-flex items-center px-4 py-2 bg-amber-500 text-white text-sm font-bold rounded-full mb-4">
                   🎉 EXCLUSIVE 50% OFF OFFER
                 </div>
                 <h1 className="text-3xl font-bold text-white mb-4">
@@ -293,7 +295,7 @@ export default function Checkout() {
                 <p className="text-white/80">
                   Start your 7-day free trial at 50% off - just $4.50/month after trial
                 </p>
-                <p className="text-amber-300 text-sm mt-2 italic">
+                <p className="text-amber-200 text-sm mt-2 italic font-medium">
                   Cheaper and more effective than having coffee once a month with your Deeper partner!
                 </p>
               </>
