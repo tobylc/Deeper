@@ -60,7 +60,7 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors z-10 border-2 border-ocean"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors z-10"
           >
             ×
           </button>
@@ -117,7 +117,7 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
             </Card>
 
             {/* Action buttons */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <Link href="/checkout/advanced?discount=50">
                 <Button
                   className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-blue/25 transition-all duration-200 font-medium"
@@ -136,7 +136,7 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
                 </Button>
               </Link>
               
-              <div className="pt-4">
+              <div className="pt-2">
                 <Button
                   onClick={onClose}
                   variant="outline"
