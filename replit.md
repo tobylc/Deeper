@@ -643,6 +643,15 @@ Changelog:
   * Implemented TrialStatus component with countdown timer and upgrade prompts for dashboard
   * Added subscription validation for all major user actions with appropriate error messages
   * Complete production-ready subscription billing system with Stripe integration and trial management
+- June 21, 2025. 50% discount trial expiration conversion system implementation:
+  * Enhanced subscription upgrade endpoint with discountPercent parameter and Stripe coupon creation
+  * Implemented automatic 50% off coupon generation for Advanced plan trial expiration offers
+  * Updated TrialStatus component with countdown timer underneath subscription status section
+  * Added "Upgrade Now" button for expired trial users with seamless trial expiration popup integration
+  * Enhanced TrialExpirationPopup with exclusive 50% discount offer ($4.50/month instead of $9.95)
+  * Created production-ready discount flow from trial expiration through Stripe checkout
+  * Subscription system successfully tested: Advanced plan with 50% discount and 7-day trial
+  * Complete user-friendly trial-to-paid conversion system for maximum subscription conversion rates
 - June 21, 2025. Real-time countdown timer synchronization across text and voice messaging:
   * Added real-time countdown timer next to "Share" button in text input area matching voice recorder functionality
   * Implemented synchronized timer display showing MM:SS format countdown (10:00, 9:59) across all message input methods

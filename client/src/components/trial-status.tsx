@@ -38,7 +38,7 @@ export function TrialStatus() {
   // Calculate days remaining for trialing users
   const isDuringTrial = user.subscriptionStatus === 'trialing';
   const isExpiredTrial = user.subscriptionTier === 'free' && !isDuringTrial;
-  const isPaidSubscription = ['basic', 'advanced', 'unlimited'].includes(user.subscriptionTier || '');
+  const isPaidSubscription = user.subscriptionTier && ['basic', 'advanced', 'unlimited'].includes(user.subscriptionTier);
 
   if (isPaidSubscription) {
     return (
