@@ -126,16 +126,33 @@ export default function NotificationPreferencePopup({
         });
       } else {
         const error = await response.json();
-        toast({
-          title: "Error",
-          description: error.message || "Failed to save notification preference.",
-          variant: "destructive"
-        });
+        const errorMessage = error.message || "Failed to save notification preference.";
+        
+        // Production-ready error handling
+        if (response.status === 429) {
+          toast({
+            title: "Too many requests",
+            description: "Please wait a moment before trying again.",
+            variant: "destructive"
+          });
+        } else if (response.status >= 500) {
+          toast({
+            title: "Service unavailable",
+            description: "Notification service temporarily unavailable. Please try again later.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: errorMessage,
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to save notification preference. Please try again.",
+        title: "Network error",
+        description: "Unable to connect to server. Please check your connection and try again.",
         variant: "destructive"
       });
     } finally {

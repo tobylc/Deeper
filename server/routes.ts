@@ -1867,7 +1867,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Create voice message error:", error);
       
       // Clean up audio file if it was created but message creation failed
-      if (audioPath) {
+      if (req.file && audioPath) {
         try {
           await fs.unlink(audioPath);
         } catch (cleanupError) {

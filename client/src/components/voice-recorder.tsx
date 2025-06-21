@@ -311,8 +311,19 @@ export default function VoiceRecorder({
     try {
       onSendVoiceMessage(audioBlob, duration);
       clearRecording();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending voice message:', error);
+      
+      // Production-ready error handling with specific feedback
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        console.error('Network connection failed');
+      } else if (error.status === 413) {
+        console.error('Audio file too large for upload');
+      } else if (error.status === 507) {
+        console.error('Server storage full');
+      } else if (error.status >= 500) {
+        console.error('Voice message service temporarily unavailable');
+      }
     }
   };
 
