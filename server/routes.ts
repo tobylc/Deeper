@@ -465,7 +465,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const trialStatus = await storage.checkTrialStatus(userId);
-      const connectionCount = await storage.getInitiatedConnectionsCount(currentUser.email);
+      const connectionCount = currentUser.email ? await storage.getInitiatedConnectionsCount(currentUser.email) : 0;
 
       res.json({
         isExpired: trialStatus.isExpired,

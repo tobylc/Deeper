@@ -19,6 +19,8 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
 import { getRoleDisplayInfo, getDashboardSectionTitle } from "@shared/role-display-utils";
+import { TrialStatus } from "@/components/trial-status";
+import { SubscriptionEnforcement } from "@/components/subscription-enforcement";
 
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -26,6 +28,8 @@ export default function Dashboard() {
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const [welcomeData, setWelcomeData] = useState<{inviterName: string, relationshipType: string} | null>(null);
+  const [showSubscriptionEnforcement, setShowSubscriptionEnforcement] = useState(false);
+  const [enforcementAction, setEnforcementAction] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -199,6 +203,9 @@ export default function Dashboard() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Trial Status */}
+        <TrialStatus />
+
         {/* Subscription Status */}
         <Card className="mb-8 card-elevated border-amber/30">
           <CardHeader>
@@ -212,7 +219,7 @@ export default function Dashboard() {
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-1">Current Plan</p>
                 <Badge variant="secondary" className="text-lg px-4 py-2">
-                  {(user as any)?.subscriptionTier || 'Free'}
+                  {(user as any)?.subscriptionTier || 'Trial'}
                 </Badge>
               </div>
               <div className="text-center">
@@ -232,7 +239,7 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground">
                 Paid members can invite others without charge. Invitees inherit your subscription benefits.
               </p>
-              {((user as any)?.subscriptionTier === 'free' || !(user as any)?.subscriptionTier) && (
+              {((user as any)?.subscriptionTier === 'trial' || !(user as any)?.subscriptionTier) && (
                 <Button 
                   onClick={() => setLocation('/pricing')}
                   className="btn-amber px-6 py-2"
@@ -505,9 +512,17 @@ export default function Dashboard() {
                                 });
                                 
                                 if (!response.ok) {
-                                  const errorText = await response.text();
-                                  console.error("API Error Response:", response.status, errorText);
-                                  throw new Error(`API Error: ${response.status} - ${errorText}`);
+                                  const errorData = await response.json();
+                                  
+                                  // Handle subscription enforcement errors
+                                  if (errorData.type === "TRIAL_EXPIRED" || errorData.type === "SUBSCRIPTION_LIMIT") {
+                                    setEnforcementAction("create_conversation");
+                                    setShowSubscriptionEnforcement(true);
+                                    return;
+                                  }
+                                  
+                                  console.error("API Error Response:", response.status, errorData);
+                                  throw new Error(errorData.message || `API Error: ${response.status}`);
                                 }
                                 
                                 const conversation = await response.json();
@@ -688,6 +703,13 @@ export default function Dashboard() {
           onClose={() => setShowWelcomePopup(false)}
         />
       )}
+
+      {/* Subscription Enforcement Modal */}
+      <SubscriptionEnforcement
+        isOpen={showSubscriptionEnforcement}
+        onClose={() => setShowSubscriptionEnforcement(false)}
+        action={enforcementAction}
+      />
     </div>
   );
 }
