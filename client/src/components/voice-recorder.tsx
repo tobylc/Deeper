@@ -201,8 +201,10 @@ export default function VoiceRecorder({
       setDuration(0);
       setVolumeLevel(0);
       
-      // Start volume monitoring
-      monitorVolume();
+      // Start volume monitoring with delay to ensure audio context is ready
+      setTimeout(() => {
+        monitorVolume();
+      }, 100);
       
       // Notify parent that recording started (for response timer)
       if (onRecordingStart) {

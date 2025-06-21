@@ -8,6 +8,7 @@ import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
 import VoiceRecorder from "@/components/voice-recorder";
 import VoiceMessageDisplay from "@/components/voice-message-display";
+import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
 import type { Message, User, Connection } from "@shared/schema";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
@@ -61,6 +62,7 @@ export default function ConversationInterface({
   const [showFullHistory, setShowFullHistory] = useState(false);
   const [messageMode, setMessageMode] = useState<'text' | 'voice'>('text');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
   const queryClient = useQueryClient();
 
   // Real-time countdown timer synchronization for text input
@@ -800,8 +802,12 @@ export default function ConversationInterface({
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
-                            if (newMessage.trim() && !isSending && canSendNow()) {
-                              onSendMessage();
+                            if (newMessage.trim() && !isSending) {
+                              if (hasStartedResponse && !canSendNow()) {
+                                setShowThoughtfulResponsePopup(true);
+                              } else {
+                                onSendMessage();
+                              }
                             }
                           }
                         }}
@@ -822,11 +828,17 @@ export default function ConversationInterface({
                     {/* Send button styled as ink well */}
                     <div className="flex flex-col items-center space-y-2">
                       <Button
-                        onClick={onSendMessage}
-                        disabled={!newMessage.trim() || isSending || (hasStartedResponse && !canSendNow())}
+                        onClick={() => {
+                          if (hasStartedResponse && !canSendNow()) {
+                            setShowThoughtfulResponsePopup(true);
+                          } else {
+                            onSendMessage();
+                          }
+                        }}
+                        disabled={!newMessage.trim() || isSending}
                         className={cn(
                           "w-16 h-16 rounded-full bg-gradient-to-br from-blue-800 to-blue-900 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-blue/25 transition-all duration-200 border-2 border-blue-700",
-                          (!newMessage.trim() || isSending || (hasStartedResponse && !canSendNow())) && "opacity-50 cursor-not-allowed"
+                          (!newMessage.trim() || isSending) && "opacity-50 cursor-not-allowed"
                         )}
                       >
                         {isSending ? (
@@ -966,6 +978,16 @@ export default function ConversationInterface({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Thoughtful Response Popup for Text Messages */}
+      {showThoughtfulResponsePopup && (
+        <ThoughtfulResponsePopup
+          isOpen={showThoughtfulResponsePopup}
+          onClose={() => setShowThoughtfulResponsePopup(false)}
+          hasStartedResponse={hasStartedResponse}
+          responseStartTime={responseStartTime}
+        />
       )}
     </div>
   );
