@@ -93,11 +93,20 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
 
   const handleCreateNewThread = () => {
     if (!newQuestionText.trim() || !isMyTurn) return;
+    
+    // Check if we can create new threads
+    if (!canCreateNewThread) {
+      setShowExchangeRequiredPopup(true);
+      return;
+    }
+    
     createThreadMutation.mutate(newQuestionText.trim());
   };
 
   // Handle all question selections from right column (curated, AI, custom)
   const handleQuestionSelect = (question: string) => {
+    // Always allow question suggestions if it's the user's turn and next message is a question
+    // The backend will handle validation for new thread creation requirements
     if (!canUseRightColumn) {
       // Show beautiful popup instead of ugly toast
       setShowExchangeRequiredPopup(true);
@@ -297,11 +306,12 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         </Card>
       ) : (
         <>
-          {/* New Question Button - Only available when canUseRightColumn is true */}
+          {/* New Question Button - Only available when canCreateNewThread is true */}
           <Dialog open={showNewQuestionDialog} onOpenChange={setShowNewQuestionDialog}>
             <DialogTrigger asChild>
               <Button 
                 className="w-full bg-gradient-to-r from-ocean to-teal text-white hover:from-ocean/90 hover:to-teal/90 transition-all duration-200 shadow-lg hover:shadow-xl mb-4"
+                disabled={!canCreateNewThread}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 New Question
