@@ -280,8 +280,22 @@ export default function VoiceRecorder({
   };
 
   const sendVoiceMessage = () => {
+    // Comprehensive validation for production
     if (!audioBlob) {
       console.error('No audio blob available for sending');
+      return;
+    }
+
+    // Validate audio blob size (max 50MB)
+    const maxSize = 50 * 1024 * 1024;
+    if (audioBlob.size > maxSize) {
+      console.error('Audio file too large:', audioBlob.size);
+      return;
+    }
+
+    // Validate duration (1 second to 30 minutes)
+    if (duration < 1 || duration > 1800) {
+      console.error('Invalid audio duration:', duration);
       return;
     }
 
@@ -289,7 +303,6 @@ export default function VoiceRecorder({
     if (hasStartedResponse && responseStartTime !== null) {
       const timeElapsed = (new Date().getTime() - responseStartTime.getTime()) / 1000 / 60; // minutes
       if (timeElapsed < 10) {
-        // Timer requirement not met - prevent sending and let parent component handle popup
         console.log('Thoughtful response timer not yet met, preventing voice message send');
         return;
       }

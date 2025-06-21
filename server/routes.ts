@@ -1859,10 +1859,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      res.json(message);
-    } catch (error) {
+      res.json({
+        ...message,
+        message: "Voice message sent successfully"
+      });
+    } catch (error: any) {
       console.error("Create voice message error:", error);
-      res.status(400).json({ message: "Failed to create voice message" });
+      
+      // Clean up audio file if it was created but message creation failed
+      if (audioPath) {
+        try {
+          await fs.unlink(audioPath);
+        } catch (cleanupError) {
+          console.error("Failed to clean up audio file:", cleanupError);
+        }
+      }
+      
+      // Enhanced error handling for production
+      if (error.name === 'ValidationError') {
+        return res.status(400).json({ message: error.message });
+      } else if (error.code === 'ENOSPC') {
+        return res.status(507).json({ message: "Insufficient storage space" });
+      } else if (error.code === 'EMFILE' || error.code === 'ENFILE') {
+        return res.status(503).json({ message: "Server temporarily overloaded" });
+      }
+      
+      res.status(500).json({ 
+        message: process.env.NODE_ENV === 'production' 
+          ? "Voice message service temporarily unavailable"
+          : "Failed to create voice message" 
+      });
     }
   });
 
@@ -2433,8 +2459,9 @@ Format each as a complete question they can use to begin this important conversa
       }
 
       // Send SMS via notification service with proper error handling
+      let verificationCode: string;
       try {
-        const verificationCode = await notificationService.sendPhoneVerification(sanitizedPhone);
+        verificationCode = await notificationService.sendPhoneVerification(sanitizedPhone);
       } catch (smsError: any) {
         console.error("SMS sending failed:", smsError);
         
@@ -2449,6 +2476,13 @@ Format each as a complete question they can use to begin this important conversa
         
         return res.status(503).json({ 
           message: "SMS service temporarily unavailable. Please try again later." 
+        });
+      }
+
+      // Validate verification code was generated
+      if (!verificationCode) {
+        return res.status(500).json({ 
+          message: "Failed to generate verification code. Please try again." 
         });
       }
 
