@@ -16,6 +16,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import ExchangeRequiredPopup from "@/components/exchange-required-popup";
 
 interface QuestionSuggestionsProps {
   relationshipType: string;
@@ -43,6 +44,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   const [customAiQuestions, setCustomAiQuestions] = useState<string[]>([]);
   const [isGeneratingCustomAI, setIsGeneratingCustomAI] = useState(false);
   const [showCustomModal, setShowCustomModal] = useState(false);
+  const [showExchangeRequiredPopup, setShowExchangeRequiredPopup] = useState(false);
   
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -75,11 +77,16 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
     },
     onError: (error: any) => {
       console.error("Create thread error:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create new question thread",
-        variant: "destructive",
-      });
+      // Check if it's an exchange requirement error
+      if (error.message && error.message.includes("provide at least one response")) {
+        setShowExchangeRequiredPopup(true);
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create new question thread",
+          variant: "destructive",
+        });
+      }
     }
   });
 
@@ -91,12 +98,8 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   // Handle all question selections from right column (curated, AI, custom)
   const handleQuestionSelect = (question: string) => {
     if (!canUseRightColumn) {
-      // Show error message if user tries to select when not allowed
-      toast({
-        title: "Response Required",
-        description: "Please respond to the current question before asking a new one.",
-        variant: "destructive",
-      });
+      // Show beautiful popup instead of ugly toast
+      setShowExchangeRequiredPopup(true);
       return;
     }
     
@@ -563,6 +566,14 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Beautiful Exchange Required Popup */}
+      <ExchangeRequiredPopup
+        isOpen={showExchangeRequiredPopup}
+        onClose={() => setShowExchangeRequiredPopup(false)}
+        nextMessageType={nextMessageType}
+        relationshipType={relationshipType}
+      />
     </div>
   );
 }
