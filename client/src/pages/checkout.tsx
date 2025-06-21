@@ -159,6 +159,12 @@ export default function Checkout() {
           requestBody.discountPercent = discountPercent;
         }
         const response = await apiRequest("POST", "/api/subscription/upgrade", requestBody);
+        
+        // Check for authentication errors
+        if (response.status === 401) {
+          throw new Error('Authentication required. Please log in again.');
+        }
+        
         const data = await response.json();
         
         if (data.success && data.clientSecret) {
@@ -168,12 +174,21 @@ export default function Checkout() {
         }
       } catch (error: any) {
         console.error('Subscription creation error:', error);
-        toast({
-          title: "Setup Error",
-          description: error.message || "Failed to set up subscription",
-          variant: "destructive",
-        });
-        setLocation('/pricing');
+        
+        // Handle authentication errors specifically
+        if (error.message && (error.message.includes('Authentication') || error.message.includes('401'))) {
+          toast({
+            title: "Please log in to continue",
+            description: "You'll need to sign in to set up your subscription",
+          });
+          setLocation('/auth?redirect=/checkout/' + tier + (hasDiscount ? '?discount=' + discountPercent : ''));
+        } else {
+          toast({
+            title: "Unable to set up subscription",
+            description: "Please try again in a moment or contact support if the issue persists",
+          });
+          setLocation('/pricing');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -195,9 +210,19 @@ export default function Checkout() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin text-white mx-auto" />
-          <p className="text-white">Setting up your subscription...</p>
+        <div className="text-center space-y-6 p-8">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-ocean/20 to-ocean/30 flex items-center justify-center mx-auto shadow-lg">
+            <Loader2 className="w-8 h-8 animate-spin text-ocean" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-white">Setting up your subscription...</h2>
+            <p className="text-white/80">
+              {hasDiscount && tier === 'advanced' ? 
+                'Preparing your 50% discount offer' : 
+                'Almost ready to start your 7-day trial'
+              }
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -206,11 +231,29 @@ export default function Checkout() {
   if (!clientSecret) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <p className="text-white">Unable to set up payment. Please try again.</p>
-          <Button onClick={() => setLocation('/pricing')} variant="outline">
-            Back to Pricing
-          </Button>
+        <div className="text-center space-y-6 p-8">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber/20 to-amber/30 flex items-center justify-center mx-auto shadow-lg">
+            <Crown className="w-8 h-8 text-amber-400" />
+          </div>
+          <div className="space-y-3">
+            <h2 className="text-2xl font-bold text-white">Setup Issue</h2>
+            <p className="text-white/80">We couldn't set up your payment. Let's try again.</p>
+          </div>
+          <div className="space-y-3">
+            <Button 
+              onClick={() => setLocation('/pricing')} 
+              className="bg-gradient-to-r from-ocean to-teal text-white hover:from-ocean/90 hover:to-teal/90"
+            >
+              Back to Pricing
+            </Button>
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="outline"
+              className="border-white/30 text-white hover:bg-white/10"
+            >
+              Try Again
+            </Button>
+          </div>
         </div>
       </div>
     );
