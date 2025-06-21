@@ -1138,13 +1138,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
+      // Force tier to 'advanced' when 50% discount is applied, regardless of what frontend sends
+      const actualTier = (discountPercent === 50 && tier === 'advanced') ? 'advanced' : tier;
+
       const tierBenefits: Record<string, { maxConnections: number, price: number }> = {
         'basic': { maxConnections: 1, price: 4.95 },
         'advanced': { maxConnections: 3, price: 9.95 },
         'unlimited': { maxConnections: 999, price: 19.95 }
       };
 
-      const benefits = tierBenefits[tier];
+      const benefits = tierBenefits[actualTier];
       if (!benefits) {
         return res.status(400).json({ message: "Invalid subscription tier" });
       }
@@ -1182,10 +1185,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Handle discount for Advanced plan
-      let finalPrice = STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES];
+      let finalPrice = STRIPE_PRICES[actualTier as keyof typeof STRIPE_PRICES];
       let couponId = null;
       
-      if (discountPercent && tier === 'advanced' && discountPercent === 50) {
+      if (discountPercent && actualTier === 'advanced' && discountPercent === 50) {
         try {
           // Create 50% off coupon for Advanced plan
           const coupon = await stripe.coupons.create({
@@ -1221,7 +1224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           setup_future_usage: 'off_session',
           metadata: {
             userId: user.id,
-            tier: tier,
+            tier: actualTier,
             platform: 'deeper',
             discount_applied: discountPercent.toString(),
             immediate_charge: 'true'
@@ -1236,7 +1239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }],
           metadata: {
             userId: user.id,
-            tier: tier,
+            tier: actualTier,
             platform: 'deeper',
             discount_applied: discountPercent.toString(),
             immediate_charge: 'true'
@@ -1259,7 +1262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           payment_method_types: ['card'],
           metadata: {
             userId: user.id,
-            tier: tier,
+            tier: actualTier,
             platform: 'deeper',
             discount_applied: discountPercent ? discountPercent.toString() : 'none'
           }
@@ -1274,7 +1277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           trial_period_days: 7,
           metadata: {
             userId: user.id,
-            tier: tier,
+            tier: actualTier,
             platform: 'deeper',
             discount_applied: discountPercent ? discountPercent.toString() : 'none'
           }
