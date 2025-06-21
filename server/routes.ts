@@ -27,6 +27,7 @@ import { analytics } from "./analytics";
 import { healthService } from "./health";
 import { jobQueue } from "./jobs";
 import { setupAuth, isAuthenticated } from "./oauthAuth";
+import { runUserCleanup } from "./cleanup-duplicate-users";
 
 import { generateRelationshipSpecificTitle } from "./thread-naming";
 import OpenAI from "openai";

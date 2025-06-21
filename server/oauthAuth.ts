@@ -86,33 +86,52 @@ async function upsertUser(profile: any, provider: string, req?: any) {
     
     if (existingUser && !existingUser.googleId) {
       // Link Google account to existing email-based account
+      console.log(`[AUTH] Linking Google account to existing email user: ${email}`);
       const linkedUser = await storage.linkGoogleAccount(existingUser.id, profile.id);
       if (linkedUser) {
         // Update profile information from Google if available
-        return await storage.upsertUser({
-          id: existingUser.id,
-          email: email,
+        return await storage.updateUser(existingUser.id, {
           firstName: profile.name?.givenName || existingUser.firstName,
           lastName: profile.name?.familyName || existingUser.lastName,
           profileImageUrl: profile.photos?.[0]?.value || existingUser.profileImageUrl,
           googleId: profile.id,
         });
       }
+      return existingUser;
     } else if (existingUser && existingUser.googleId === profile.id) {
       // User already linked, just return existing user
       return existingUser;
     }
+    
+    // Check if user with this Google ID already exists but different email
+    const existingGoogleUser = await storage.getUserByGoogleId(profile.id);
+    if (existingGoogleUser) {
+      return existingGoogleUser;
+    }
   }
   
-  // Standard OAuth user creation/update
-  return await storage.upsertUser({
-    id: `${provider}_${profile.id}`,
-    email: email || `${provider}_${profile.id}@${provider}.com`,
-    firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || 'User',
-    lastName: profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || '',
-    profileImageUrl: profile.photos?.[0]?.value || null,
-    googleId: provider === 'google' ? profile.id : undefined,
-  });
+  // Only create new user if no existing user found with this email
+  if (email) {
+    console.log(`[AUTH] Creating new Google user with email: ${email}`);
+    return await storage.createUser({
+      id: `${provider}_${profile.id}`,
+      email: email,
+      firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || 'User',
+      lastName: profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || '',
+      profileImageUrl: profile.photos?.[0]?.value || null,
+      googleId: provider === 'google' ? profile.id : undefined,
+    });
+  } else {
+    // Fallback for users without email
+    return await storage.createUser({
+      id: `${provider}_${profile.id}`,
+      email: `${provider}_${profile.id}@${provider}.com`,
+      firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || 'User',
+      lastName: profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || '',
+      profileImageUrl: profile.photos?.[0]?.value || null,
+      googleId: provider === 'google' ? profile.id : undefined,
+    });
+  }
 }
 
 export async function setupAuth(app: Express) {
@@ -162,7 +181,7 @@ export async function setupAuth(app: Express) {
           delete (req.session as any).isLinking; // Clean up session
           
           if (isLinking) {
-            console.log(`[AUTH] Account linking completed successfully for user: ${req.user?.email}`);
+            console.log(`[AUTH] Account linking completed successfully for user: ${(req.user as any)?.email}`);
             res.redirect("/dashboard?linked=google");
           } else {
             res.redirect("/dashboard");
