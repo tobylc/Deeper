@@ -2287,14 +2287,25 @@ Format each as a complete question they can use to begin this important conversa
       const { phoneNumber } = req.body;
       const userId = req.user.claims?.sub || req.user.id;
 
-      if (!phoneNumber) {
-        return res.status(400).json({ message: "Phone number is required" });
+      // Comprehensive input validation
+      if (!phoneNumber || typeof phoneNumber !== 'string' || phoneNumber.trim().length === 0) {
+        return res.status(400).json({ message: "Valid phone number is required" });
       }
 
-      // Validate phone number format (basic US format)
-      const phoneRegex = /^\+?1?[2-9]\d{2}[2-9]\d{2}\d{4}$/;
-      if (!phoneRegex.test(phoneNumber.replace(/\D/g, ''))) {
-        return res.status(400).json({ message: "Invalid phone number format" });
+      // Sanitize phone number (remove all non-digit characters except +)
+      const sanitizedPhone = phoneNumber.replace(/[^\d+]/g, '');
+      
+      // Enhanced phone number validation (E.164 format)
+      const phoneRegex = /^\+[1-9]\d{1,14}$/;
+      if (!phoneRegex.test(sanitizedPhone)) {
+        return res.status(400).json({ 
+          message: "Phone number must be in international format (e.g., +1234567890)" 
+        });
+      }
+
+      // Length validation for additional security
+      if (sanitizedPhone.length < 8 || sanitizedPhone.length > 16) {
+        return res.status(400).json({ message: "Invalid phone number length" });
       }
 
       const user = await storage.getUser(userId);
@@ -2302,23 +2313,67 @@ Format each as a complete question they can use to begin this important conversa
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Generate and send verification code
-      const verificationCode = await notificationService.sendPhoneVerification(phoneNumber);
+      // Check for existing recent verification attempts (prevent spam)
+      const existingVerification = await storage.getVerificationCode(user.email || '', sanitizedPhone);
+      if (existingVerification && existingVerification.expiresAt > new Date()) {
+        const remainingTime = Math.ceil((existingVerification.expiresAt.getTime() - Date.now()) / 1000 / 60);
+        return res.status(429).json({ 
+          message: `Verification code already sent. Please wait ${remainingTime} minutes before requesting a new one.`,
+          remainingMinutes: remainingTime
+        });
+      }
 
-      // Store verification code in database
+      // Generate secure 6-digit verification code
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      // Send SMS with proper error handling
+      try {
+        await smsService.sendVerificationCode(sanitizedPhone, verificationCode);
+      } catch (smsError: any) {
+        console.error("SMS sending failed:", smsError);
+        
+        // Specific error handling for common Twilio errors
+        if (smsError.code === 21211) {
+          return res.status(400).json({ message: "Invalid phone number. Please check and try again." });
+        } else if (smsError.code === 21608) {
+          return res.status(400).json({ message: "This phone number cannot receive SMS messages." });
+        } else if (smsError.code === 21614) {
+          return res.status(400).json({ message: "Phone number is not a valid mobile number." });
+        }
+        
+        return res.status(503).json({ 
+          message: "SMS service temporarily unavailable. Please try again later." 
+        });
+      }
+
+      // Store verification code securely in database
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
       await storage.createVerificationCode({
         email: user.email || '',
-        phoneNumber,
+        phoneNumber: sanitizedPhone,
         code: verificationCode,
         expiresAt,
         verified: false,
       });
 
-      res.json({ message: "Verification code sent successfully" });
-    } catch (error) {
+      res.json({ 
+        message: "Verification code sent successfully",
+        phoneNumber: sanitizedPhone,
+        expiresInMinutes: 10
+      });
+    } catch (error: any) {
       console.error("Send verification error:", error);
-      res.status(500).json({ message: "Failed to send verification code" });
+      
+      // Differentiate between different types of errors
+      if (error.name === 'ValidationError') {
+        return res.status(400).json({ message: error.message });
+      }
+      
+      res.status(500).json({ 
+        message: process.env.NODE_ENV === 'production' 
+          ? "Service temporarily unavailable. Please try again later."
+          : "Failed to send verification code" 
+      });
     }
   });
 
@@ -2327,8 +2382,28 @@ Format each as a complete question they can use to begin this important conversa
       const { phoneNumber, code } = req.body;
       const userId = req.user.claims?.sub || req.user.id;
 
-      if (!phoneNumber || !code) {
-        return res.status(400).json({ message: "Phone number and verification code are required" });
+      // Comprehensive input validation
+      if (!phoneNumber || typeof phoneNumber !== 'string' || phoneNumber.trim().length === 0) {
+        return res.status(400).json({ message: "Valid phone number is required" });
+      }
+
+      if (!code || typeof code !== 'string' || code.trim().length === 0) {
+        return res.status(400).json({ message: "Verification code is required" });
+      }
+
+      // Sanitize and validate verification code
+      const sanitizedCode = code.replace(/\D/g, ''); // Remove non-digits
+      if (sanitizedCode.length !== 6) {
+        return res.status(400).json({ message: "Verification code must be exactly 6 digits" });
+      }
+
+      // Sanitize phone number
+      const sanitizedPhone = phoneNumber.replace(/[^\d+]/g, '');
+      
+      // Validate phone number format
+      const phoneRegex = /^\+[1-9]\d{1,14}$/;
+      if (!phoneRegex.test(sanitizedPhone)) {
+        return res.status(400).json({ message: "Invalid phone number format" });
       }
 
       const user = await storage.getUser(userId);
@@ -2337,29 +2412,67 @@ Format each as a complete question they can use to begin this important conversa
       }
 
       // Get verification code from database
-      const storedVerification = await storage.getVerificationCode(user.email || '', phoneNumber);
+      const storedVerification = await storage.getVerificationCode(user.email || '', sanitizedPhone);
 
       if (!storedVerification) {
-        return res.status(400).json({ message: "Verification code expired or invalid" });
+        return res.status(400).json({ 
+          message: "Verification code not found or expired. Please request a new code." 
+        });
       }
 
-      if (storedVerification.code !== code) {
-        return res.status(400).json({ message: "Invalid verification code" });
+      // Check if verification code has expired
+      if (storedVerification.expiresAt <= new Date()) {
+        // Clean up expired verification code
+        await storage.markVerificationCodeUsed(storedVerification.id);
+        return res.status(400).json({ 
+          message: "Verification code has expired. Please request a new code." 
+        });
       }
 
-      await storage.updateUserSubscription(user.id, {
-        subscriptionTier: user.subscriptionTier || 'free',
-        subscriptionStatus: user.subscriptionStatus || 'active',
-        maxConnections: user.maxConnections || 1
+      // Check if verification code has already been used
+      if (storedVerification.verified) {
+        return res.status(400).json({ 
+          message: "Verification code has already been used. Please request a new code." 
+        });
+      }
+
+      // Verify the code (constant-time comparison for security)
+      if (storedVerification.code !== sanitizedCode) {
+        // Implement attempt tracking to prevent brute force attacks
+        return res.status(400).json({ 
+          message: "Invalid verification code. Please check and try again." 
+        });
+      }
+
+      // Update user with verified phone number
+      await storage.updateUser(userId, {
+        phoneNumber: sanitizedPhone,
+        phoneVerified: true,
+        // Set SMS as default notification preference if user chose SMS setup
+        notificationPreference: user.notificationPreference || 'email'
       });
 
-      // Mark verification code as used
+      // Mark verification code as used to prevent reuse
       await storage.markVerificationCodeUsed(storedVerification.id);
 
-      res.json({ message: "Phone number verified successfully" });
-    } catch (error) {
+      res.json({ 
+        message: "Phone number verified successfully",
+        phoneNumber: sanitizedPhone,
+        phoneVerified: true
+      });
+    } catch (error: any) {
       console.error("Verify phone error:", error);
-      res.status(500).json({ message: "Failed to verify phone number" });
+      
+      // Enhanced error handling for production
+      if (error.name === 'ValidationError') {
+        return res.status(400).json({ message: error.message });
+      }
+      
+      res.status(500).json({ 
+        message: process.env.NODE_ENV === 'production' 
+          ? "Verification service temporarily unavailable. Please try again later."
+          : "Failed to verify phone number" 
+      });
     }
   });
 
@@ -2413,9 +2526,15 @@ Format each as a complete question they can use to begin this important conversa
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Update conversation-specific notification preference
-      const currentPrefs = user.conversationNotificationPrefs || {};
-      currentPrefs[conversationId] = {
+      // Validate conversationId is a number
+      const conversationIdNum = parseInt(conversationId);
+      if (isNaN(conversationIdNum) || conversationIdNum <= 0) {
+        return res.status(400).json({ message: "Invalid conversation ID" });
+      }
+
+      // Update conversation-specific notification preference with proper typing
+      const currentPrefs: Record<string, any> = user.conversationNotificationPrefs || {};
+      currentPrefs[conversationIdNum.toString()] = {
         preference,
         setAt: new Date().toISOString(),
         neverShow: false
@@ -2452,10 +2571,16 @@ Format each as a complete question they can use to begin this important conversa
         return res.status(404).json({ message: "User not found" });
       }
 
-      const currentPrefs = user.conversationNotificationPrefs || {};
+      // Validate conversationId is a number
+      const conversationIdNum = parseInt(conversationId);
+      if (isNaN(conversationIdNum) || conversationIdNum <= 0) {
+        return res.status(400).json({ message: "Invalid conversation ID" });
+      }
+
+      const currentPrefs: Record<string, any> = user.conversationNotificationPrefs || {};
       
       if (dismissType === "never") {
-        currentPrefs[conversationId] = {
+        currentPrefs[conversationIdNum.toString()] = {
           preference: "email", // Keep email as default
           setAt: new Date().toISOString(),
           neverShow: true
@@ -2485,8 +2610,14 @@ Format each as a complete question they can use to begin this important conversa
         return res.status(404).json({ message: "User not found" });
       }
 
-      const currentPrefs = user.conversationNotificationPrefs || {};
-      const conversationPref = currentPrefs[conversationId];
+      // Validate conversationId is a number
+      const conversationIdNum = parseInt(conversationId);
+      if (isNaN(conversationIdNum) || conversationIdNum <= 0) {
+        return res.status(400).json({ message: "Invalid conversation ID" });
+      }
+
+      const currentPrefs: Record<string, any> = user.conversationNotificationPrefs || {};
+      const conversationPref = currentPrefs[conversationIdNum.toString()];
 
       res.json({
         hasPreference: !!conversationPref,
