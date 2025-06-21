@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Mic, MicOff, Send, Trash2, Square, Pause, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
 
 interface VoiceRecorderProps {
   onSendVoiceMessage: (audioBlob: Blob, duration: number) => void;
@@ -95,18 +96,19 @@ export default function VoiceRecorder({
     const bufferLength = analyserRef.current.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
     
-    // Use frequency data for better volume detection
-    analyserRef.current.getByteFrequencyData(dataArray);
+    // Use time domain data for accurate volume detection
+    analyserRef.current.getByteTimeDomainData(dataArray);
     
-    // Calculate average frequency amplitude
-    let sum = 0;
+    // Calculate RMS (Root Mean Square) for accurate volume
+    let sumSquares = 0;
     for (let i = 0; i < bufferLength; i++) {
-      sum += dataArray[i];
+      const amplitude = (dataArray[i] - 128) / 128; // Normalize to -1 to 1
+      sumSquares += amplitude * amplitude;
     }
-    const average = sum / bufferLength;
     
-    // Convert to percentage with better sensitivity
-    const volume = Math.min(100, (average / 255) * 200); // Amplify for visibility
+    const rms = Math.sqrt(sumSquares / bufferLength);
+    // Scale and amplify for better visual feedback
+    const volume = Math.min(100, Math.max(0, rms * 500));
     
     setVolumeLevel(volume);
     
@@ -132,9 +134,17 @@ export default function VoiceRecorder({
       const analyser = audioContext.createAnalyser();
       const microphone = audioContext.createMediaStreamSource(stream);
       
-      analyser.fftSize = 2048; // Higher resolution for better volume detection
-      analyser.smoothingTimeConstant = 0.8; // Smooth out volume fluctuations
-      microphone.connect(analyser);
+      // Create a gain node for better control
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 1.0;
+      
+      analyser.fftSize = 512; // Balanced resolution for real-time performance
+      analyser.smoothingTimeConstant = 0.3; // Less smoothing for more responsive feedback
+      analyser.minDecibels = -90;
+      analyser.maxDecibels = -10;
+      
+      microphone.connect(gainNode);
+      gainNode.connect(analyser);
       
       audioContextRef.current = audioContext;
       analyserRef.current = analyser;
@@ -345,6 +355,14 @@ export default function VoiceRecorder({
     }
   };
 
+  const handleThoughtfulResponseProceed = () => {
+    if (audioBlob && canSendMessage && canSendNow()) {
+      onSendVoiceMessage(audioBlob, duration);
+      clearRecording();
+    }
+    setShowThoughtfulResponseTimer(false);
+  };
+
   // Get volume color based on level
   const getVolumeColor = (volume: number) => {
     if (volume < 30) return '#10B981'; // green
@@ -549,31 +567,12 @@ export default function VoiceRecorder({
         )}
 
         {/* Thoughtful Response Timer Popup */}
-        {showThoughtfulResponseTimer && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto">
-                  <div className="text-2xl">⏰</div>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900">Take Your Time</h3>
-                <p className="text-sm text-gray-600">
-                  Please take at least 10 minutes to thoughtfully consider your response. 
-                  Quality conversations deserve time and reflection.
-                </p>
-                <div className="text-lg font-mono text-amber-600 bg-amber-50 px-3 py-2 rounded">
-                  {formatTime(getRemainingTime())} remaining
-                </div>
-                <Button
-                  onClick={() => setShowThoughtfulResponseTimer(false)}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700"
-                >
-                  I understand
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+        <ThoughtfulResponsePopup
+          isOpen={showThoughtfulResponseTimer}
+          onClose={() => setShowThoughtfulResponseTimer(false)}
+          onProceed={handleThoughtfulResponseProceed}
+          remainingSeconds={getRemainingTime()}
+        />
       </div>
     </Card>
   );
