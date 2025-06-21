@@ -30,6 +30,12 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
       return;
     }
 
+    if (!message.audioFileUrl) {
+      console.error('No audio URL available');
+      setError('Audio file not available');
+      return;
+    }
+
     try {
       setError(null);
       setIsLoading(true);
@@ -38,17 +44,30 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
+        // Force reload audio source if needed
+        if (audioRef.current.src !== message.audioFileUrl) {
+          audioRef.current.src = message.audioFileUrl;
+        }
+
         // Check if audio is loaded
         if (audioRef.current.readyState < 2) {
-          console.log('Audio not ready, loading...');
+          console.log('Audio not ready, loading from:', message.audioFileUrl);
           await new Promise((resolve, reject) => {
             const audio = audioRef.current!;
+            const timeoutId = setTimeout(() => {
+              audio.removeEventListener('canplay', onCanPlay);
+              audio.removeEventListener('error', onError);
+              reject(new Error('Audio load timeout'));
+            }, 10000); // 10 second timeout
+
             const onCanPlay = () => {
+              clearTimeout(timeoutId);
               audio.removeEventListener('canplay', onCanPlay);
               audio.removeEventListener('error', onError);
               resolve(void 0);
             };
             const onError = () => {
+              clearTimeout(timeoutId);
               audio.removeEventListener('canplay', onCanPlay);
               audio.removeEventListener('error', onError);
               reject(new Error('Failed to load audio'));
@@ -61,10 +80,11 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
 
         await audioRef.current.play();
         setIsPlaying(true);
+        console.log('Audio playback started successfully');
       }
     } catch (err: any) {
       console.error('Audio playback error:', err);
-      setError('Unable to play audio');
+      setError(`Playback failed: ${err.message}`);
       setIsPlaying(false);
     } finally {
       setIsLoading(false);

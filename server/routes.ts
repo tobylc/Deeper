@@ -1896,9 +1896,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
+      // Verify audio file exists before responding
+      try {
+        await fs.access(audioPath);
+        console.log('Audio file confirmed accessible at:', audioPath);
+      } catch (accessError) {
+        console.error('Audio file not accessible after creation:', accessError);
+        return res.status(500).json({ message: "Audio file creation failed" });
+      }
+
       res.json({
         ...message,
-        message: "Voice message sent successfully"
+        message: "Voice message sent successfully",
+        audioFileUrl: audioFileUrl,
+        debug: process.env.NODE_ENV === 'development' ? {
+          audioPath,
+          audioFileUrl,
+          fileSize: req.file.size
+        } : undefined
       });
     } catch (error: any) {
       console.error("Create voice message error:", error);

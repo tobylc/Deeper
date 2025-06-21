@@ -62,9 +62,16 @@ export default function ConversationInterface({
   const [messageMode, setMessageMode] = useState<'text' | 'voice'>('text');
   const queryClient = useQueryClient();
 
-  // Voice message mutation
+  // Voice message mutation with enhanced debugging
   const sendVoiceMessageMutation = useMutation({
     mutationFn: async ({ audioBlob, duration }: { audioBlob: Blob; duration: number }) => {
+      console.log('Sending voice message:', {
+        blobSize: audioBlob.size,
+        blobType: audioBlob.type,
+        duration,
+        conversationId
+      });
+
       const formData = new FormData();
       formData.append('audio', audioBlob, 'voice-message.webm');
       formData.append('senderEmail', currentUserEmail);
@@ -77,15 +84,22 @@ export default function ConversationInterface({
       }).then(async res => {
         if (!res.ok) {
           const error = await res.json();
+          console.error('Voice message send failed:', error);
           throw new Error(error.message || 'Failed to send voice message');
         }
-        return res.json();
+        const response = await res.json();
+        console.log('Voice message sent successfully:', response);
+        return response;
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Voice message mutation successful:', data);
       queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
     },
+    onError: (error) => {
+      console.error('Voice message mutation error:', error);
+    }
   });
 
   // Fetch user data for profile avatars
