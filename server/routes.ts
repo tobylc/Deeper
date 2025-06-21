@@ -27,6 +27,7 @@ import { analytics } from "./analytics";
 import { healthService } from "./health";
 import { jobQueue } from "./jobs";
 import { setupAuth, isAuthenticated } from "./oauthAuth";
+import { enhancedAuth } from "./auth-fallback";
 import { generateRelationshipSpecificTitle } from "./thread-naming";
 import OpenAI from "openai";
 import Stripe from "stripe";
@@ -1535,19 +1536,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/trial-status", isAuthenticated, async (req: any, res) => {
+  app.get("/api/trial-status", enhancedAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims?.sub || req.user.id;
-      const currentUser = await storage.getUser(userId);
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
       
-      if (!currentUser) {
+      if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
       const now = new Date();
-      const subscriptionTier = currentUser.subscriptionTier || 'free';
-      const subscriptionStatus = currentUser.subscriptionStatus || 'inactive';
-      const subscriptionExpiresAt = currentUser.subscriptionExpiresAt;
+      const subscriptionTier = user.subscriptionTier || 'free';
+      const subscriptionStatus = user.subscriptionStatus || 'inactive';
+      const subscriptionExpiresAt = user.subscriptionExpiresAt;
 
       let isExpired = false;
       let daysRemaining = 7;
