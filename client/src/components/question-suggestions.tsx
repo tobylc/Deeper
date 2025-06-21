@@ -106,15 +106,21 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   // Handle all question selections from right column (curated, AI, custom)
   const handleQuestionSelect = (question: string) => {
     // Always allow question suggestions if it's the user's turn and next message is a question
-    // The backend will handle validation for new thread creation requirements
     if (!canUseRightColumn) {
       // Show beautiful popup instead of ugly toast
       setShowExchangeRequiredPopup(true);
       return;
     }
     
-    // Create new conversation thread with the selected question
-    createThreadMutation.mutate(question);
+    // If we can create new threads (i.e., there's been a complete exchange), create a new thread
+    // Otherwise, just populate the question into the current conversation
+    if (canCreateNewThread) {
+      // Create new conversation thread with the selected question
+      createThreadMutation.mutate(question);
+    } else {
+      // For the first question in a conversation, just populate it into the input
+      onQuestionSelect(question);
+    }
   };
   
   // Initialize available questions and track shown ones
