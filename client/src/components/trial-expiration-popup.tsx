@@ -60,7 +60,7 @@ export default function TrialExpirationPopup({ isOpen, onClose, action = "contin
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors z-10"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors z-10 border-2 border-ocean"
           >
             ×
           </button>
@@ -117,7 +117,7 @@ export default function TrialExpirationPopup({ isOpen, onClose, action = "contin
             </Card>
 
             {/* Action buttons */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <Link href="/checkout/advanced?discount=50">
                 <Button
                   className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-amber/25 transition-all duration-200 font-medium"
@@ -136,13 +136,15 @@ export default function TrialExpirationPopup({ isOpen, onClose, action = "contin
                 </Button>
               </Link>
               
-              <Button
-                onClick={onClose}
-                variant="ghost"
-                className="w-full text-slate-600 hover:text-slate-800 hover:bg-slate-100/50 text-sm"
-              >
-                Maybe Later
-              </Button>
+              <div className="pt-2">
+                <Button
+                  onClick={onClose}
+                  variant="ghost"
+                  className="w-full text-amber-600 hover:text-amber-700 hover:bg-amber-50 text-sm font-medium"
+                >
+                  Maybe Later
+                </Button>
+              </div>
             </div>
           </div>
         </div>
