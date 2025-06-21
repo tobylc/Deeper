@@ -1172,18 +1172,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Create new subscription with 7-day trial and payment setup
+      // First create a setup intent for payment method collection during trial
+      const setupIntent = await stripe.setupIntents.create({
+        customer: customer.id,
+        usage: 'off_session',
+        payment_method_types: ['card'],
+        metadata: {
+          userId: user.id,
+          tier: tier,
+          platform: 'deeper',
+          discount_applied: discountPercent ? discountPercent.toString() : 'none'
+        }
+      });
+
+      // Create subscription with trial period
       const subscriptionConfig: any = {
         customer: customer.id,
         items: [{
           price: finalPrice,
         }],
         trial_period_days: 7,
-        payment_behavior: 'default_incomplete',
-        payment_settings: {
-          save_default_payment_method: 'on_subscription',
-        },
-        expand: ['latest_invoice.payment_intent'],
         metadata: {
           userId: user.id,
           tier: tier,
@@ -1209,23 +1217,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
       });
 
-      // Extract client secret from the payment intent
-      const clientSecret = (subscription.latest_invoice as any)?.payment_intent?.client_secret;
-      
-      if (!clientSecret) {
-        console.error('No client secret found in subscription:', subscription.id);
-        return res.status(500).json({ 
-          message: "Payment setup failed. Please try again.",
-          error: "MISSING_CLIENT_SECRET"
-        });
-      }
-
       res.json({ 
         success: true, 
         tier, 
         maxConnections: benefits.maxConnections,
         subscriptionId: subscription.id,
-        clientSecret: clientSecret,
+        clientSecret: setupIntent.client_secret,
         trialEnd: new Date(subscription.trial_end! * 1000),
         discountApplied: discountPercent ? `${discountPercent}%` : null,
         message: discountPercent && tier === 'advanced' ? 
