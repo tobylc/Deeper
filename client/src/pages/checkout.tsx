@@ -22,9 +22,10 @@ interface CheckoutFormProps {
   onSuccess: () => void;
   hasDiscount: boolean;
   currentPlan: any;
+  isImmediateCharge: boolean;
 }
 
-const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFormProps) => {
+const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan, isImmediateCharge }: CheckoutFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -40,14 +41,27 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
     setIsProcessing(true);
 
     try {
-      const { error } = await stripe.confirmSetup({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/dashboard`,
-        },
-      });
+      let result;
+      
+      if (isImmediateCharge) {
+        // For immediate charge (50% discount users), use confirmPayment
+        result = await stripe.confirmPayment({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/dashboard`,
+          },
+        });
+      } else {
+        // For trial setup, use confirmSetup
+        result = await stripe.confirmSetup({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/dashboard`,
+          },
+        });
+      }
 
-      if (error) {
+      if (result.error) {
         toast({
           title: "Unable to process payment",
           description: "Please check your payment details and try again",
@@ -55,7 +69,9 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
       } else {
         toast({
           title: "Subscription Activated",
-          description: "Welcome to your new plan! Redirecting to dashboard...",
+          description: isImmediateCharge ? 
+            "Payment successful! You've been charged $4.95 with 50% discount. Redirecting to dashboard..." :
+            "Welcome to your new plan! Redirecting to dashboard...",
         });
         onSuccess();
       }
@@ -107,6 +123,7 @@ export default function Checkout() {
   const { toast } = useToast();
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isImmediateCharge, setIsImmediateCharge] = useState(false);
 
   const tier = params?.tier;
   
@@ -172,6 +189,7 @@ export default function Checkout() {
         
         if (data.success && data.clientSecret) {
           setClientSecret(data.clientSecret);
+          setIsImmediateCharge(data.immediateCharge || false);
         } else {
           throw new Error(data.message || 'Failed to create subscription');
         }

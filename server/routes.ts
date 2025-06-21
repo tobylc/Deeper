@@ -1200,45 +1200,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // First create a setup intent for payment method collection during trial
-      const setupIntent = await stripe.setupIntents.create({
-        customer: customer.id,
-        usage: 'off_session',
-        payment_method_types: ['card'],
-        metadata: {
-          userId: user.id,
-          tier: tier,
-          platform: 'deeper',
-          discount_applied: discountPercent ? discountPercent.toString() : 'none'
-        }
-      });
+      // Check if user has already had a trial (expired trial users should be charged immediately)
+      const now = new Date();
+      const isExpiredTrial = user.subscriptionStatus === 'trialing' && 
+                            user.subscriptionExpiresAt && 
+                            user.subscriptionExpiresAt < now;
+      
+      // For 50% discount users (expired trial), charge immediately instead of creating another trial
+      const shouldChargeImmediately = discountPercent && discountPercent === 50;
 
-      // Create subscription with trial period
-      const subscriptionConfig: any = {
-        customer: customer.id,
-        items: [{
-          price: finalPrice,
-        }],
-        trial_period_days: 7,
-        metadata: {
-          userId: user.id,
-          tier: tier,
-          platform: 'deeper',
-          discount_applied: discountPercent ? discountPercent.toString() : 'none'
-        }
-      };
+      let setupIntent;
+      let subscription;
+      
+      if (shouldChargeImmediately) {
+        // Create payment intent for immediate charge with discount
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: Math.round(495), // $4.95 for 50% off Advanced plan
+          currency: 'usd',
+          customer: customer.id,
+          setup_future_usage: 'off_session',
+          metadata: {
+            userId: user.id,
+            tier: tier,
+            platform: 'deeper',
+            discount_applied: discountPercent.toString(),
+            immediate_charge: 'true'
+          }
+        });
 
-      // Apply discount if coupon was created successfully
-      if (couponId) {
-        subscriptionConfig.discounts = [{ coupon: couponId }];
+        // Create subscription without trial period
+        const subscriptionConfig: any = {
+          customer: customer.id,
+          items: [{
+            price: finalPrice,
+          }],
+          metadata: {
+            userId: user.id,
+            tier: tier,
+            platform: 'deeper',
+            discount_applied: discountPercent.toString(),
+            immediate_charge: 'true'
+          }
+        };
+
+        // Apply discount if coupon was created successfully
+        if (couponId) {
+          subscriptionConfig.discounts = [{ coupon: couponId }];
+        }
+
+        subscription = await stripe.subscriptions.create(subscriptionConfig);
+        setupIntent = { client_secret: paymentIntent.client_secret };
+      } else {
+        // Regular trial flow for new users
+        // First create a setup intent for payment method collection during trial
+        setupIntent = await stripe.setupIntents.create({
+          customer: customer.id,
+          usage: 'off_session',
+          payment_method_types: ['card'],
+          metadata: {
+            userId: user.id,
+            tier: tier,
+            platform: 'deeper',
+            discount_applied: discountPercent ? discountPercent.toString() : 'none'
+          }
+        });
+
+        // Create subscription with trial period
+        const subscriptionConfig: any = {
+          customer: customer.id,
+          items: [{
+            price: finalPrice,
+          }],
+          trial_period_days: 7,
+          metadata: {
+            userId: user.id,
+            tier: tier,
+            platform: 'deeper',
+            discount_applied: discountPercent ? discountPercent.toString() : 'none'
+          }
+        };
+
+        // Apply discount if coupon was created successfully
+        if (couponId) {
+          subscriptionConfig.discounts = [{ coupon: couponId }];
+        }
+
+        subscription = await stripe.subscriptions.create(subscriptionConfig);
       }
-
-      const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
       // Update user subscription in database
       await storage.updateUserSubscription(userId, {
         subscriptionTier: tier,
-        subscriptionStatus: 'trialing',
+        subscriptionStatus: shouldChargeImmediately ? 'active' : 'trialing',
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
@@ -1251,11 +1304,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxConnections: benefits.maxConnections,
         subscriptionId: subscription.id,
         clientSecret: setupIntent.client_secret,
-        trialEnd: new Date(subscription.trial_end! * 1000),
+        trialEnd: shouldChargeImmediately ? null : new Date(subscription.trial_end! * 1000),
         discountApplied: discountPercent ? `${discountPercent}%` : null,
-        message: discountPercent && tier === 'advanced' ? 
-          "Subscription created successfully with 7-day trial and 50% discount!" : 
-          "Subscription created successfully with 7-day trial" 
+        immediateCharge: shouldChargeImmediately,
+        message: shouldChargeImmediately ? 
+          "Subscription upgraded successfully! You'll be charged $4.95 immediately with 50% discount." :
+          discountPercent && tier === 'advanced' ? 
+            "Subscription created successfully with 7-day trial and 50% discount!" : 
+            "Subscription created successfully with 7-day trial" 
       });
     } catch (error) {
       console.error("Subscription upgrade error:", error);
