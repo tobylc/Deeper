@@ -308,43 +308,27 @@ export default function ConversationPage() {
   // Correct turn logic: inviter (participant1) always starts the conversation
   const isMyTurn = conversation.currentTurn === user.email;
   
-  // Check if there has been at least one complete question-response exchange
-  const hasCompleteExchange = messages.length >= 2 && 
-    messages.some(msg => msg.type === 'question') && 
-    messages.some(msg => msg.type === 'response');
-  
   // Determine if the next message should be a question or response
   const lastMessage = messages[messages.length - 1];
-  const nextMessageType: 'question' | 'response' = (() => {
-    // If no messages yet, first message is always a question
-    if (!lastMessage) return 'question';
-    
-    // If last message was a question and current user didn't send it, they must respond
-    if (lastMessage.type === 'question' && lastMessage.senderEmail !== user?.email) {
-      return 'response';
-    }
-    
-    // After a complete question-response exchange, either user can ask new questions
-    const hasExchange = messages.length >= 2 && 
-      messages.some(msg => msg.type === 'question') && 
-      messages.some(msg => msg.type === 'response');
-    if (hasExchange) return 'question';
-    
-    // Default: if last was response, next is question; if last was question, next is response
-    return lastMessage.type === 'response' ? 'question' : 'response';
-  })();
+  const nextMessageType: 'question' | 'response' = 
+    !lastMessage || lastMessage.type === 'response' ? 'question' : 'response';
 
   // Check if user has provided at least one response to allow new questions
   const hasProvidedResponse = messages.some(msg => 
     msg.type === 'response' && msg.senderEmail === user?.email
   );
 
-  // Allow right column actions (new questions) if:
+  // Check if there has been at least one complete question-response exchange in this thread
+  const hasCompleteExchange = messages.length >= 2 && 
+    messages.some(msg => msg.type === 'question') && 
+    messages.some(msg => msg.type === 'response');
+
+  // Allow right column actions only if:
   // 1. It's user's turn AND
-  // 2. Either: 
-  //    a) This is the very first message (no messages yet), OR
-  //    b) There has been at least one complete question-response exchange
-  const canUseRightColumn = isMyTurn && (messages.length === 0 || hasCompleteExchange);
+  // 2. Next message type is 'question' AND 
+  // 3. Either this is the very first message OR there has been a complete exchange
+  const canUseRightColumn = isMyTurn && nextMessageType === 'question' && 
+    (messages.length === 0 || hasCompleteExchange);
 
 
 

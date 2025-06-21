@@ -242,7 +242,12 @@ export default function ConversationThreads({
               key={conversation.id}
               conversation={conversation}
               isSelected={false} // Never selected since active conversation is hidden
-              onClick={() => onThreadSelect(conversation.id)}
+              onClick={() => {
+                // Only allow thread selection when it's user's turn
+                if (isMyTurn) {
+                  onThreadSelect(conversation.id);
+                }
+              }}
               currentUserEmail={currentUserEmail}
               isMyTurn={isMyTurn}
             />

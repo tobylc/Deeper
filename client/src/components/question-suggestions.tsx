@@ -250,8 +250,27 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
             </div>
           </CardContent>
         </Card>
+      ) : !isMyTurn ? (
+        // Show waiting state when it's not user's turn
+        <Card className="card-elevated border-ocean/30 bg-ocean/5 h-fit">
+          <CardContent className="p-4">
+            <div className="text-center space-y-3">
+              <div className="w-10 h-10 rounded-full bg-ocean/20 flex items-center justify-center mx-auto">
+                <Clock className="w-5 h-5 text-ocean" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground font-inter mb-2 text-sm">
+                  Their turn to write
+                </h3>
+                <p className="text-xs text-slate-700 font-inter leading-relaxed">
+                  While you wait, take a moment to reflect on the conversation so far. What insights are emerging?
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       ) : !canUseRightColumn ? (
-        // Show message when user needs to complete initial exchange before asking new questions
+        // Show message when user needs to complete requirements before asking new questions
         <Card className="card-elevated border-ocean/30 bg-ocean/5 h-fit">
           <CardContent className="p-4">
             <div className="text-center space-y-3">

@@ -656,13 +656,14 @@ Changelog:
   * Increased play button size to 48px with hover animations and scale effects for improved accessibility
   * Integrated transcription progress into conversation interface showing realistic AI processing simulation
   * Progress indicator automatically appears when voice messages are sent and disappears upon completion
-- June 21, 2025. Flexible question flow system implementation:
-  * Implemented dynamic conversation flow where either user can ask new questions after initial question-response exchange
-  * Updated conversation logic to allow new question threads once at least one complete question-response pair exists
-  * Enhanced question suggestions component to show appropriate messaging based on conversation state
-  * Either user can now ask follow-up questions after responding to initial questions, creating natural dialogue flow
-  * Removed rigid turn-based restrictions allowing more organic conversation development between participants
-  * Question suggestions right column now available to both users after completing initial exchange requirements
+- June 21, 2025. Turn-based conversation system with flexible question creation:
+  * Maintained strict turn-based conversation logic ensuring users can only interact during their designated turns
+  * Enhanced question creation system to allow either user to ask new questions during their turn after initial question-response exchange
+  * Updated conversation logic to enable new question threads once at least one complete question-response pair exists
+  * Enhanced question suggestions component with proper turn-based validation and appropriate waiting states
+  * Conversation thread selection restricted to user's turn with visual indicators for disabled states
+  * Question suggestions right column shows waiting states when not user's turn, new question options when conditions are met
+  * Complete turn-based system preserved while allowing organic question development within proper turn constraints
 ```
 
 ## User Preferences
