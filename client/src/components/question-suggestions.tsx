@@ -28,10 +28,11 @@ interface QuestionSuggestionsProps {
   connectionId: number;
   onNewThreadCreated: (conversationId: number) => void;
   canUseRightColumn: boolean;
+  canCreateNewThread: boolean;
   nextMessageType: 'question' | 'response';
 }
 
-export default function QuestionSuggestions({ relationshipType, userRole, otherUserRole, onQuestionSelect, isMyTurn, otherParticipant, connectionId, onNewThreadCreated, canUseRightColumn, nextMessageType }: QuestionSuggestionsProps) {
+export default function QuestionSuggestions({ relationshipType, userRole, otherUserRole, onQuestionSelect, isMyTurn, otherParticipant, connectionId, onNewThreadCreated, canUseRightColumn, canCreateNewThread, nextMessageType }: QuestionSuggestionsProps) {
   const [currentSet, setCurrentSet] = useState(0);
   const [aiQuestions, setAiQuestions] = useState<string[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);

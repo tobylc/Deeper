@@ -323,12 +323,15 @@ export default function ConversationPage() {
     messages.some(msg => msg.type === 'question') && 
     messages.some(msg => msg.type === 'response');
 
-  // Allow right column actions only if:
+  // Allow right column actions (including first question) if:
   // 1. It's user's turn AND
-  // 2. Next message type is 'question' AND 
-  // 3. Either this is the very first message OR there has been a complete exchange
-  const canUseRightColumn = isMyTurn && nextMessageType === 'question' && 
-    (messages.length === 0 || hasCompleteExchange);
+  // 2. Next message type is 'question'
+  // The exchange requirement popup will be handled by the backend API for new thread creation only
+  const canUseRightColumn = isMyTurn && nextMessageType === 'question';
+  
+  // Separate flag for determining if new conversation threads are allowed
+  // This is only used for the "New Question" dialog, not for the first question
+  const canCreateNewThread = hasCompleteExchange;
 
 
 
@@ -594,6 +597,7 @@ export default function ConversationPage() {
               connectionId={conversation.connectionId}
               onNewThreadCreated={handleNewThreadCreated}
               canUseRightColumn={canUseRightColumn}
+              canCreateNewThread={canCreateNewThread}
               nextMessageType={nextMessageType}
             />
           </div>
