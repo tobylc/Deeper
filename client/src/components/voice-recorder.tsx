@@ -36,6 +36,7 @@ export default function VoiceRecorder({
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [previewCurrentTime, setPreviewCurrentTime] = useState(0);
   const [showThoughtfulResponseTimer, setShowThoughtfulResponseTimer] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -71,16 +72,27 @@ export default function VoiceRecorder({
     };
   }, [audioUrl]);
 
-  // Calculate remaining time for thoughtful response timer
+  // Real-time countdown timer synchronization
+  useEffect(() => {
+    if (hasStartedResponse && responseStartTime) {
+      const interval = setInterval(() => {
+        setCurrentTime(new Date());
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [hasStartedResponse, responseStartTime]);
+
+  // Calculate remaining time for thoughtful response timer using currentTime for real-time sync
   const getRemainingTime = () => {
     if (!hasStartedResponse || !responseStartTime) return 600; // 10 minutes in seconds
-    const elapsed = (new Date().getTime() - responseStartTime.getTime()) / 1000;
+    const elapsed = (currentTime.getTime() - responseStartTime.getTime()) / 1000;
     return Math.max(0, 600 - elapsed);
   };
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
+    const totalSeconds = Math.max(0, Math.floor(seconds));
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
