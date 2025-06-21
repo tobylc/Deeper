@@ -200,7 +200,7 @@ export default function Checkout() {
         
         console.log('Creating subscription with:', requestBody);
         
-        const response = await apiRequest("POST", "/api/subscription/upgrade?test_user=true", requestBody);
+        const response = await apiRequest("POST", "/api/subscription/upgrade", requestBody);
         
         if (!response.ok) {
           const errorData = await response.json();

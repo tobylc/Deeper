@@ -1128,21 +1128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let userId;
       let user;
 
-      // Development bypass for testing
-      if (process.env.NODE_ENV === 'development' && req.query.test_user) {
-        user = await storage.getUserByEmail('thetobyclarkshow@gmail.com');
-        if (user) {
-          userId = user.id;
-          // Establish session for test user
-          req.session.user = {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName
-          };
-          console.log("[SUBSCRIPTION] Test user auth successful:", userId);
-        }
-      } else if (req.session?.user?.id) {
+      if (req.session?.user?.id) {
         userId = req.session.user.id;
         user = await storage.getUser(userId);
         console.log("[SUBSCRIPTION] Session auth successful for user:", userId);

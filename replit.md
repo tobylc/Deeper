@@ -715,6 +715,14 @@ Changelog:
   * 50% discount users now properly receive Advanced subscription with 3 connections instead of Basic with 1 connection
   * Enhanced success messaging to clearly indicate "Advanced subscription" for discount conversions
   * Complete tier assignment fix ensuring discount users receive proper subscription benefits
+- June 21, 2025. Authentication system fixes for 50% discount checkout completion:
+  * Resolved critical authentication failures preventing 50% discount users from completing subscription upgrades
+  * Enhanced subscription upgrade endpoint with robust session recovery and multi-method authentication validation
+  * Fixed "Failed to execute 'fetch' on 'Window': Request with GET/HEAD method cannot have body" error in checkout flow
+  * Implemented comprehensive authentication logging and error handling for subscription endpoint debugging
+  * Added session restoration logic for OAuth users accessing subscription upgrade functionality
+  * 50% discount checkout now successfully processes authentication and proceeds to Stripe payment confirmation
+  * Complete resolution of 401 authentication errors that were blocking discount subscription conversions
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications
