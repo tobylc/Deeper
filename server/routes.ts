@@ -1103,7 +1103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
 
-      const { tier } = req.body;
+      const { tier, discountPercent } = req.body;
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -1152,19 +1152,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Handle discount for Advanced plan
+      let finalPrice = STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES];
+      let couponId = null;
+      
+      if (discountPercent && tier === 'advanced' && discountPercent === 50) {
+        try {
+          // Create 50% off coupon for Advanced plan
+          const coupon = await stripe.coupons.create({
+            percent_off: 50,
+            duration: 'forever',
+            name: 'Advanced Plan 50% Off Trial Offer'
+          });
+          couponId = coupon.id;
+        } catch (error: any) {
+          console.error('Coupon creation error:', error);
+          // Continue without discount if coupon creation fails
+        }
+      }
+
       // Create new subscription with 7-day trial
-      const subscription = await stripe.subscriptions.create({
+      const subscriptionConfig: any = {
         customer: customer.id,
         items: [{
-          price: STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES],
+          price: finalPrice,
         }],
         trial_period_days: 7,
         metadata: {
           userId: user.id,
           tier: tier,
-          platform: 'deeper'
+          platform: 'deeper',
+          discount_applied: discountPercent ? discountPercent.toString() : 'none'
         }
-      });
+      };
+
+      // Apply discount if coupon was created successfully
+      if (couponId) {
+        subscriptionConfig.discounts = [{ coupon: couponId }];
+      }
+
+      const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
       // Update user subscription in database
       await storage.updateUserSubscription(userId, {
@@ -1183,7 +1210,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionId: subscription.id,
         clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret,
         trialEnd: new Date(subscription.trial_end! * 1000),
-        message: "Subscription created successfully with 7-day trial" 
+        discountApplied: discountPercent ? `${discountPercent}%` : null,
+        message: discountPercent && tier === 'advanced' ? 
+          "Subscription created successfully with 7-day trial and 50% discount!" : 
+          "Subscription created successfully with 7-day trial" 
       });
     } catch (error) {
       console.error("Subscription upgrade error:", error);

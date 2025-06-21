@@ -11,7 +11,7 @@ interface TrialExpirationPopupProps {
   action?: string;
 }
 
-export default function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: TrialExpirationPopupProps) {
+export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: TrialExpirationPopupProps) {
   const getActionMessage = () => {
     switch (action) {
       case "messaging":
@@ -152,3 +152,5 @@ export default function TrialExpirationPopup({ isOpen, onClose, action = "contin
     </Dialog>
   );
 }
+
+export default TrialExpirationPopup;
