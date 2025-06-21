@@ -356,70 +356,10 @@ export default function VoiceRecorder({
     return `text-white animate-pulse`;
   };
 
-  const sendVoiceMessage = () => {
-    // Comprehensive validation for production
-    if (!audioBlob) {
-      console.error('No audio blob available for sending');
-      return;
-    }
-
-    // Validate audio blob size (max 50MB)
-    const maxSize = 50 * 1024 * 1024;
-    if (audioBlob.size > maxSize) {
-      console.error('Audio file too large:', audioBlob.size);
-      return;
-    }
-
-    // Validate duration (1 second to 30 minutes)
-    if (duration < 1 || duration > 1800) {
-      console.error('Invalid audio duration:', duration);
-      return;
-    }
-
-    // Production-ready timer validation
-    if (hasStartedResponse && responseStartTime !== null) {
-      const timeElapsed = (new Date().getTime() - responseStartTime.getTime()) / 1000 / 60; // minutes
-      if (timeElapsed < 10) {
-        console.log('Thoughtful response timer not yet met, preventing voice message send');
-        return;
-      }
-    }
-    
-    try {
-      onSendVoiceMessage(audioBlob, duration);
-      clearRecording();
-    } catch (error: any) {
-      console.error('Error sending voice message:', error);
-      
-      // Production-ready error handling with specific feedback
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        console.error('Network connection failed');
-      } else if (error.status === 413) {
-        console.error('Audio file too large for upload');
-      } else if (error.status === 507) {
-        console.error('Server storage full');
-      } else if (error.status >= 500) {
-        console.error('Voice message service temporarily unavailable');
-      }
-    }
-  };
-
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const toggleRecording = () => {
-    if (isRecording) {
-      if (isPaused) {
-        resumeRecording();
-      } else {
-        pauseRecording();
-      }
-    } else {
-      startRecording();
-    }
   };
 
   return (
@@ -588,31 +528,6 @@ export default function VoiceRecorder({
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
               <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto">
-                  <div className="text-2xl">⏰</div>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900">Take Your Time</h3>
-                <p className="text-sm text-gray-600">
-                  Please take at least 10 minutes to thoughtfully consider your response. 
-                  Quality conversations deserve time and reflection.
-                </p>
-                <div className="text-lg font-mono text-amber-600 bg-amber-50 px-3 py-2 rounded">
-                  {formatTime(getRemainingTime())} remaining
-                </div>
-                <Button
-                  onClick={() => setShowThoughtfulResponseTimer(false)}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700"
-                >
-                  I understand
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </Card>
-  );
-}
                 <div className="w-16 h-16 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto">
                   <div className="text-2xl">⏰</div>
                 </div>
