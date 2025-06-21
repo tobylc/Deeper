@@ -44,9 +44,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Stripe price configuration for subscription tiers
 const STRIPE_PRICES = {
-  basic: 'price_1QcxByKKf4E3Y8q3h8oRfH2y', // $4.95/month - Update with your actual price ID
-  advanced: 'price_1QcxByKKf4E3Y8q3z9pSgJ3z', // $9.95/month - Update with your actual price ID  
-  unlimited: 'price_1QcxByKKf4E3Y8q3a1qThK4a', // $19.95/month - Update with your actual price ID
+  basic: process.env.STRIPE_PRICE_ID_BASIC || '',
+  advanced: process.env.STRIPE_PRICE_ID_ADVANCED || '',
+  unlimited: process.env.STRIPE_PRICE_ID_UNLIMITED || '',
 };
 
 // Webhook handler functions
@@ -1801,6 +1801,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (messageData.senderEmail !== conversation.participant1Email && 
           messageData.senderEmail !== conversation.participant2Email) {
         return res.status(403).json({ message: "Not authorized to send messages in this conversation" });
+      }
+
+      // Check subscription status and trial expiration for messaging
+      const senderUser = await storage.getUserByEmail(messageData.senderEmail);
+      if (!senderUser) {
+        return res.status(403).json({ message: "User not found" });
+      }
+
+      const now = new Date();
+      const subscriptionTier = senderUser.subscriptionTier || 'free';
+      const subscriptionStatus = senderUser.subscriptionStatus || 'inactive';
+      const subscriptionExpiresAt = senderUser.subscriptionExpiresAt;
+
+      // Enforce trial expiration for messaging
+      if (subscriptionTier === 'free' || (subscriptionStatus === 'trialing' && subscriptionExpiresAt && subscriptionExpiresAt < now)) {
+        return res.status(403).json({ 
+          type: 'TRIAL_EXPIRED',
+          message: "Your free trial has expired. Please upgrade to continue conversations.",
+          subscriptionTier,
+          subscriptionStatus
+        });
       }
 
       // Check if it's the sender's turn

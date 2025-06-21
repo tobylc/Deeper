@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, CheckCircle } from "lucide-react";
+import { Mail, CheckCircle, AlertTriangle } from "lucide-react";
 import { relationshipRoles, getRolesForRelationship, getValidRolePairs } from "@shared/relationship-roles";
 
 interface InvitationFormProps {
@@ -115,12 +115,28 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
         });
       } else if (error.status === 403 || error.response?.status === 403) {
         const errorData = error.response?.data || error;
-        if (errorData.type === 'SUBSCRIPTION_LIMIT') {
+        if (errorData.type === 'TRIAL_EXPIRED') {
+          toast({
+            title: "Free Trial Expired",
+            description: "Your 7-day trial has ended. Choose a subscription plan to continue using Deeper.",
+            variant: "destructive",
+          });
+          // Close form and redirect to pricing
+          onClose();
+          setTimeout(() => {
+            window.location.href = '/pricing';
+          }, 1000);
+        } else if (errorData.type === 'SUBSCRIPTION_LIMIT') {
           toast({
             title: "Connection Limit Reached",
             description: `You've reached your limit of ${errorData.maxAllowed} connections. Upgrade your plan to invite more people.`,
             variant: "destructive",
           });
+          // Close form and redirect to pricing
+          onClose();
+          setTimeout(() => {
+            window.location.href = '/pricing';
+          }, 1000);
         } else {
           toast({
             title: "Access Denied",
