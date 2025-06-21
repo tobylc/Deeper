@@ -1155,7 +1155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const coupon = await stripe.coupons.create({
             percent_off: 50,
             duration: 'forever',
-            name: 'Advanced Plan 50% Off - Trial Expiration Offer',
+            name: 'Advanced 50% Off Trial Offer',
             metadata: {
               tier: 'advanced',
               offer_type: 'trial_expiration'
@@ -1176,7 +1176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }],
         trial_period_days: 7,
         metadata: {
-          userId: currentUser.id,
+          userId: user.id,
           tier: tier,
           platform: 'deeper',
           discount_applied: discountPercent ? discountPercent.toString() : 'none'
