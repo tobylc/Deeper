@@ -5,7 +5,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { CheckCircle, ArrowLeft, Loader2, Crown } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
@@ -147,24 +147,25 @@ export default function Checkout() {
     }
 
     if (!user) {
-      setLocation('/auth');
+      setLocation('/auth?redirect=/checkout/' + tier + (hasDiscount ? '?discount=' + discountPercent : ''));
       return;
     }
 
     // Create subscription
     const createSubscription = async () => {
       try {
+        // Double-check authentication before making request
+        const authCheck = await fetch('/api/auth/user', { credentials: 'include' });
+        if (!authCheck.ok) {
+          throw new Error('Authentication required. Please log in again.');
+        }
+
         const requestBody: { tier: string; discountPercent?: number } = { tier };
         if (hasDiscount) {
           requestBody.discountPercent = discountPercent;
         }
+        
         const response = await apiRequest("POST", "/api/subscription/upgrade", requestBody);
-        
-        // Check for authentication errors
-        if (response.status === 401) {
-          throw new Error('Authentication required. Please log in again.');
-        }
-        
         const data = await response.json();
         
         if (data.success && data.clientSecret) {
@@ -233,7 +234,7 @@ export default function Checkout() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
         <div className="text-center space-y-6 p-8">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber/20 to-amber/30 flex items-center justify-center mx-auto shadow-lg">
-            <Crown className="w-8 h-8 text-amber-400" />
+            <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
           </div>
           <div className="space-y-3">
             <h2 className="text-2xl font-bold text-white">Setup Issue</h2>
