@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, CheckCircle, AlertTriangle } from "lucide-react";
+import TrialExpirationPopup from "@/components/trial-expiration-popup";
 import { relationshipRoles, getRolesForRelationship, getValidRolePairs } from "@shared/relationship-roles";
 
 interface InvitationFormProps {
@@ -20,6 +21,7 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
   const { user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showTrialExpirationPopup, setShowTrialExpirationPopup] = useState(false);
   const [formData, setFormData] = useState({
     inviteeEmail: "",
     relationshipType: "",
@@ -116,21 +118,11 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
       } else if (error.status === 403 || error.response?.status === 403) {
         const errorData = error.response?.data || error;
         if (errorData.type === 'TRIAL_EXPIRED') {
-          toast({
-            title: "Free Trial Expired",
-            description: "Your 7-day trial has ended. Choose a subscription plan to continue using Deeper.",
-            variant: "destructive",
-          });
-          // Close form and redirect to pricing
-          onClose();
-          setTimeout(() => {
-            window.location.href = '/pricing';
-          }, 1000);
+          setShowTrialExpirationPopup(true);
         } else if (errorData.type === 'SUBSCRIPTION_LIMIT') {
           toast({
             title: "Connection Limit Reached",
             description: `You've reached your limit of ${errorData.maxAllowed} connections. Upgrade your plan to invite more people.`,
-            variant: "destructive",
           });
           // Close form and redirect to pricing
           onClose();
@@ -139,16 +131,14 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
           }, 1000);
         } else {
           toast({
-            title: "Access Denied",
-            description: errorData.message || "You don't have permission to perform this action",
-            variant: "destructive",
+            title: "Unable to send invitation",
+            description: errorData.message || "Please try again in a moment",
           });
         }
       } else {
         toast({
-          title: "Error",
-          description: error.message || "Failed to send invitation",
-          variant: "destructive",
+          title: "Unable to send invitation",
+          description: error.message || "Please try again in a moment",
         });
       }
     } finally {
@@ -289,6 +279,13 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
           </div>
         </form>
       </DialogContent>
+
+      {/* Trial Expiration Popup */}
+      <TrialExpirationPopup
+        isOpen={showTrialExpirationPopup}
+        onClose={() => setShowTrialExpirationPopup(false)}
+        action="invite"
+      />
     </Dialog>
   );
 }

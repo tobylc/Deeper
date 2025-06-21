@@ -655,6 +655,14 @@ Changelog:
   * Text messages now show the same 10-minute countdown popup when users attempt to send before timer completes
   * Both Share button clicks and Enter key presses trigger the thoughtful response popup for premature sending attempts
   * Complete consistency between text and voice messaging thoughtful response enforcement with identical user experience
+- June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
+  * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
+  * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications
+  * Enhanced conversation page sendMessage mutation to show trial expiration popup instead of red error toasts
+  * Updated invitation form error handling to use elegant trial expiration popup and friendly blue notifications
+  * Fixed question suggestions component to use neutral toast styling instead of jarring red destructive variants
+  * All error messages now user-friendly ("Unable to send message" vs technical "Error" labels)
+  * Complete visual consistency with elegant error handling guiding users toward solutions rather than showing technical errors
 - June 21, 2025. Voice recording interface cleanup:
   * Removed microphone level readout bar from voice recording interface for cleaner, less distracting experience
   * Recording area now shows only essential information: timer, recording status, and control buttons

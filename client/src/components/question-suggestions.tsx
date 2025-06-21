@@ -83,9 +83,8 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         setShowExchangeRequiredPopup(true);
       } else {
         toast({
-          title: "Error",
-          description: error.message || "Failed to create new question thread",
-          variant: "destructive",
+          title: "Unable to create thread",
+          description: error.message || "Please try again in a moment",
         });
       }
     }
