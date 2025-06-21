@@ -22,6 +22,7 @@ import {
 } from "./middleware";
 import { emailService } from "./email";
 import { notificationService } from "./notifications";
+import { smsService } from "./sms";
 import { analytics } from "./analytics";
 import { healthService } from "./health";
 import { jobQueue } from "./jobs";
@@ -1600,18 +1601,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Voice message endpoint
+  // Voice message endpoint - Production ready with comprehensive security
   app.post("/api/conversations/:id/voice-messages", 
     audioUpload.single('audio'),
     rateLimit(50, 60 * 60 * 1000), // 50 voice messages per hour
     validateEmail,
-    async (req, res) => {
+    isAuthenticated,
+    async (req: any, res) => {
     try {
       const conversationId = parseInt(req.params.id);
       const { senderEmail, type, duration } = req.body;
+      const userId = req.user.claims?.sub || req.user.id;
       
+      // Comprehensive input validation
       if (!req.file) {
         return res.status(400).json({ message: "Audio file is required" });
+      }
+
+      // Validate conversation ID
+      if (isNaN(conversationId) || conversationId <= 0) {
+        return res.status(400).json({ message: "Invalid conversation ID" });
+      }
+
+      // Validate required fields
+      if (!senderEmail || typeof senderEmail !== 'string' || !senderEmail.trim()) {
+        return res.status(400).json({ message: "Valid sender email is required" });
+      }
+
+      if (!type || !['question', 'response'].includes(type)) {
+        return res.status(400).json({ message: "Invalid message type. Must be 'question' or 'response'" });
+      }
+
+      // Validate and sanitize duration
+      const parsedDuration = parseInt(duration);
+      if (isNaN(parsedDuration) || parsedDuration <= 0 || parsedDuration > 1800) { // Max 30 minutes
+        return res.status(400).json({ message: "Invalid audio duration. Must be between 1 second and 30 minutes" });
+      }
+
+      // Validate audio file properties
+      const maxFileSize = 50 * 1024 * 1024; // 50MB
+      if (req.file.size > maxFileSize) {
+        return res.status(413).json({ message: "Audio file too large. Maximum size is 50MB" });
+      }
+
+      // Validate MIME type for security
+      const allowedMimeTypes = [
+        'audio/webm', 'audio/mp4', 'audio/mpeg', 'audio/wav', 
+        'audio/ogg', 'audio/m4a', 'audio/aac'
+      ];
+      if (!allowedMimeTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ 
+          message: "Invalid audio format. Supported formats: WebM, MP4, MP3, WAV, OGG, M4A, AAC" 
+        });
+      }
+
+      // Verify user authentication and authorization
+      const user = await storage.getUser(userId);
+      if (!user || user.email !== senderEmail) {
+        return res.status(403).json({ message: "Not authorized to send messages as this user" });
       }
 
       // Validate conversation exists and user is authorized
@@ -1631,28 +1678,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "It's not your turn to send a message" });
       }
 
-      // Save audio file
-      const fileName = `voice_${Date.now()}_${Math.random().toString(36).substring(7)}.webm`;
+      // Generate secure filename with timestamp and random string
+      const timestamp = Date.now();
+      const randomString = Math.random().toString(36).substring(2, 15);
+      const fileExtension = req.file.mimetype.split('/')[1] || 'webm';
+      const fileName = `voice_${timestamp}_${randomString}.${fileExtension}`;
       const audioPath = path.join(uploadsDir, fileName);
-      await fs.writeFile(audioPath, req.file.buffer);
+      
+      // Save audio file securely
+      try {
+        await fs.writeFile(audioPath, req.file.buffer);
+      } catch (fileError) {
+        console.error("File save error:", fileError);
+        return res.status(500).json({ message: "Failed to save audio file" });
+      }
+      
       const audioFileUrl = `/uploads/${fileName}`;
 
-      // Transcribe audio using OpenAI Whisper
-      // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      // Transcribe audio using OpenAI Whisper with production-ready error handling
       let transcription = '';
       try {
-        const fs_node = await import('fs');
-        const transcriptionResponse = await openai.audio.transcriptions.create({
-          file: fs_node.createReadStream(audioPath),
-          model: "whisper-1",
-          response_format: "text"
-        });
+        // Validate OpenAI API key is configured
+        if (!process.env.OPENAI_API_KEY) {
+          console.warn('OpenAI API key not configured, skipping transcription');
+          transcription = '[Transcription unavailable - audio only]';
+        } else {
+          const fs_node = await import('fs');
+          
+          // Check if audio file exists and is readable
+          try {
+            await fs_node.promises.access(audioPath, fs_node.constants.R_OK);
+          } catch (accessError) {
+            console.error('Audio file not accessible for transcription:', accessError);
+            transcription = '[Transcription failed - file access error]';
+          }
+          
+          if (!transcription) {
+            // Create read stream with error handling
+            const audioStream = fs_node.createReadStream(audioPath);
+            
+            // Add timeout and error handling for transcription
+            const transcriptionResponse = await Promise.race([
+              openai.audio.transcriptions.create({
+                file: audioStream,
+                model: "whisper-1",
+                response_format: "text",
+                language: "en" // Optimize for English
+              }),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Transcription timeout')), 30000) // 30 second timeout
+              )
+            ]);
+            
+            transcription = typeof transcriptionResponse === 'string' 
+              ? transcriptionResponse.trim() 
+              : '[Transcription failed - invalid response]';
+              
+            // Validate transcription length for security
+            if (transcription.length > 5000) {
+              transcription = transcription.substring(0, 5000) + '... [truncated]';
+            }
+            
+            // Clean up transcription text
+            transcription = transcription.replace(/[^\w\s\.,\?!'";\-:()]/g, '').trim();
+            
+            if (!transcription || transcription.length < 3) {
+              transcription = '[Audio detected but transcription unclear]';
+            }
+          }
+        }
+      } catch (error: any) {
+        console.error('OpenAI transcription error:', error);
         
-        transcription = transcriptionResponse;
-      } catch (error) {
-        console.error('Transcription error:', error);
-        // Continue without transcription if it fails
-        transcription = '[Transcription failed - audio only]';
+        // Specific error handling for OpenAI API issues
+        if (error.code === 'insufficient_quota') {
+          transcription = '[Transcription unavailable - quota exceeded]';
+        } else if (error.code === 'invalid_api_key') {
+          transcription = '[Transcription unavailable - authentication error]';
+        } else if (error.message?.includes('timeout')) {
+          transcription = '[Transcription failed - timeout]';
+        } else if (error.code === 'model_not_found') {
+          transcription = '[Transcription unavailable - service error]';
+        } else {
+          transcription = '[Transcription failed - audio only]';
+        }
       }
 
       // Get existing messages to validate message type
@@ -2323,12 +2432,9 @@ Format each as a complete question they can use to begin this important conversa
         });
       }
 
-      // Generate secure 6-digit verification code
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-      // Send SMS with proper error handling
+      // Send SMS via notification service with proper error handling
       try {
-        await smsService.sendVerificationCode(sanitizedPhone, verificationCode);
+        const verificationCode = await notificationService.sendPhoneVerification(sanitizedPhone);
       } catch (smsError: any) {
         console.error("SMS sending failed:", smsError);
         
