@@ -14,6 +14,8 @@ interface VoiceMessageDisplayProps {
 export default function VoiceMessageDisplay({ message, isCurrentUser, className }: VoiceMessageDisplayProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const formatDuration = (seconds: number) => {
@@ -22,15 +24,50 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const togglePlayback = () => {
-    if (!audioRef.current) return;
+  const togglePlayback = async () => {
+    if (!audioRef.current) {
+      console.error('Audio ref not available');
+      return;
+    }
 
-    if (isPlaying) {
-      audioRef.current.pause();
+    try {
+      setError(null);
+      setIsLoading(true);
+
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        // Check if audio is loaded
+        if (audioRef.current.readyState < 2) {
+          console.log('Audio not ready, loading...');
+          await new Promise((resolve, reject) => {
+            const audio = audioRef.current!;
+            const onCanPlay = () => {
+              audio.removeEventListener('canplay', onCanPlay);
+              audio.removeEventListener('error', onError);
+              resolve(void 0);
+            };
+            const onError = () => {
+              audio.removeEventListener('canplay', onCanPlay);
+              audio.removeEventListener('error', onError);
+              reject(new Error('Failed to load audio'));
+            };
+            audio.addEventListener('canplay', onCanPlay);
+            audio.addEventListener('error', onError);
+            audio.load();
+          });
+        }
+
+        await audioRef.current.play();
+        setIsPlaying(true);
+      }
+    } catch (err: any) {
+      console.error('Audio playback error:', err);
+      setError('Unable to play audio');
       setIsPlaying(false);
-    } else {
-      audioRef.current.play();
-      setIsPlaying(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -43,6 +80,23 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
   const handleEnded = () => {
     setIsPlaying(false);
     setCurrentTime(0);
+  };
+
+  const handleLoadError = (e: React.SyntheticEvent<HTMLAudioElement, Event>) => {
+    console.error('Audio load error:', e);
+    setError('Unable to load audio file');
+    setIsLoading(false);
+  };
+
+  const handleLoadStart = () => {
+    console.log('Audio loading started for:', message.audioFileUrl);
+    setIsLoading(true);
+  };
+
+  const handleCanPlay = () => {
+    console.log('Audio can play');
+    setIsLoading(false);
+    setError(null);
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -72,15 +126,18 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           {/* Play/Pause Button */}
           <Button
             onClick={togglePlayback}
+            disabled={isLoading}
             size="sm"
             className={cn(
               "w-10 h-10 rounded-full transition-colors",
               isCurrentUser
-                ? "bg-white/20 hover:bg-white/30 text-white"
-                : "bg-amber-500 hover:bg-amber-600 text-white"
+                ? "bg-white/20 hover:bg-white/30 text-white disabled:bg-white/10"
+                : "bg-amber-500 hover:bg-amber-600 text-white disabled:bg-amber-300"
             )}
           >
-            {isPlaying ? (
+            {isLoading ? (
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : isPlaying ? (
               <Pause className="w-4 h-4" />
             ) : (
               <Play className="w-4 h-4 ml-0.5" />
@@ -91,7 +148,7 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           <div className="flex-1 space-y-2">
             <div className="flex items-center space-x-2 text-xs">
               <Volume2 className="w-3 h-3" />
-              <span>Voice Message</span>
+              <span>{error ? "Audio Error" : "Voice Message"}</span>
             </div>
             
             {/* Progress Bar */}
@@ -121,7 +178,11 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           src={message.audioFileUrl || ''}
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleEnded}
+          onError={handleLoadError}
+          onLoadStart={handleLoadStart}
+          onCanPlay={handleCanPlay}
           preload="metadata"
+          crossOrigin="anonymous"
         />
       </Card>
 
