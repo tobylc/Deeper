@@ -14,7 +14,7 @@ import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-disp
 import ProfileAvatar from "@/components/profile-avatar";
 import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ConversationInterfaceProps {
@@ -60,7 +60,37 @@ export default function ConversationInterface({
 }: ConversationInterfaceProps) {
   const [showFullHistory, setShowFullHistory] = useState(false);
   const [messageMode, setMessageMode] = useState<'text' | 'voice'>('text');
+  const [currentTime, setCurrentTime] = useState(new Date());
   const queryClient = useQueryClient();
+
+  // Real-time countdown timer synchronization for text input
+  useEffect(() => {
+    if (hasStartedResponse && responseStartTime) {
+      const interval = setInterval(() => {
+        setCurrentTime(new Date());
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [hasStartedResponse, responseStartTime]);
+
+  // Calculate remaining time for thoughtful response timer
+  const getRemainingTime = () => {
+    if (!hasStartedResponse || !responseStartTime) return 600; // 10 minutes in seconds
+    const elapsed = (currentTime.getTime() - responseStartTime.getTime()) / 1000;
+    return Math.max(0, 600 - elapsed);
+  };
+
+  const formatTime = (seconds: number) => {
+    const totalSeconds = Math.max(0, Math.floor(seconds));
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const canSendNow = () => {
+    if (!hasStartedResponse) return true;
+    return getRemainingTime() <= 0;
+  };
 
   // Voice message mutation with enhanced debugging
   const sendVoiceMessageMutation = useMutation({
@@ -751,7 +781,13 @@ export default function ConversationInterface({
                     <div className="flex-1 pl-4">
                       <Textarea
                         value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
+                        onChange={(e) => {
+                          setNewMessage(e.target.value);
+                          // Start timer on first text input (similar to voice recorder)
+                          if (!hasStartedResponse && e.target.value.trim() && onTimerStart) {
+                            onTimerStart();
+                          }
+                        }}
                         placeholder={
                           messages.length >= 2
                             ? "Continue writing your thoughts here..."
@@ -764,7 +800,7 @@ export default function ConversationInterface({
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
-                            if (newMessage.trim() && !isSending) {
+                            if (newMessage.trim() && !isSending && canSendNow()) {
                               onSendMessage();
                             }
                           }
@@ -787,10 +823,10 @@ export default function ConversationInterface({
                     <div className="flex flex-col items-center space-y-2">
                       <Button
                         onClick={onSendMessage}
-                        disabled={!newMessage.trim() || isSending}
+                        disabled={!newMessage.trim() || isSending || (hasStartedResponse && !canSendNow())}
                         className={cn(
                           "w-16 h-16 rounded-full bg-gradient-to-br from-blue-800 to-blue-900 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-blue/25 transition-all duration-200 border-2 border-blue-700",
-                          (!newMessage.trim() || isSending) && "opacity-50 cursor-not-allowed"
+                          (!newMessage.trim() || isSending || (hasStartedResponse && !canSendNow())) && "opacity-50 cursor-not-allowed"
                         )}
                       >
                         {isSending ? (
@@ -799,7 +835,14 @@ export default function ConversationInterface({
                           <Send className="h-5 w-5" />
                         )}
                       </Button>
-                      <span className="text-xs text-slate-600 font-handwriting">Share</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-slate-600 font-handwriting">Share</span>
+                        {hasStartedResponse && !canSendNow() && (
+                          <span className="text-xs text-slate-500 font-mono">
+                            {formatTime(getRemainingTime())}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
