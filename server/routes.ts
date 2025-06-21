@@ -1197,7 +1197,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
-        subscriptionExpiresAt: new Date((subscription as any).current_period_end * 1000)
+        subscriptionExpiresAt: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : null
       });
 
       res.json({ 
