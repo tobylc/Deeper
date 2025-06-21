@@ -133,9 +133,13 @@ export default function ConversationInterface({
       console.log('Voice message mutation successful:', data);
       queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+      // Hide transcription progress after success
+      setTimeout(() => setShowTranscriptionProgress(false), 500);
     },
     onError: (error) => {
       console.error('Voice message mutation error:', error);
+      // Hide transcription progress on error
+      setShowTranscriptionProgress(false);
     }
   });
 
@@ -669,6 +673,16 @@ export default function ConversationInterface({
               }
             })()}
             
+            {/* Transcription Progress Indicator */}
+            {showTranscriptionProgress && (
+              <div className="flex justify-center">
+                <TranscriptionProgress 
+                  isVisible={showTranscriptionProgress}
+                  onComplete={() => setShowTranscriptionProgress(false)}
+                />
+              </div>
+            )}
+
             {/* Typing Indicator */}
             {messages.length > 0 && messages[messages.length - 1]?.type === 'question' && 
              messages[messages.length - 1]?.senderEmail !== currentUserEmail && !isMyTurn && (

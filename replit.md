@@ -649,6 +649,13 @@ Changelog:
   * Removed microphone level readout bar from voice recording interface for cleaner, less distracting experience
   * Recording area now shows only essential information: timer, recording status, and control buttons
   * Simplified voice recording UI focuses user attention on the recording process without technical volume indicators
+- June 21, 2025. AI transcription progress indicator and enhanced voice message playback:
+  * Created TranscriptionProgress component with real-time percentage updates during voice message processing
+  * Added AI transcription stages: processing audio, AI transcribing speech, transcription complete
+  * Enhanced voice message play button with prominent ocean blue gradient design for better visibility
+  * Increased play button size to 48px with hover animations and scale effects for improved accessibility
+  * Integrated transcription progress into conversation interface showing realistic AI processing simulation
+  * Progress indicator automatically appears when voice messages are sent and disappears upon completion
 ```
 
 ## User Preferences
