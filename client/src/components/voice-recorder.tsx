@@ -92,14 +92,23 @@ export default function VoiceRecorder({
   const monitorVolume = () => {
     if (!analyserRef.current) return;
     
-    const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+    const bufferLength = analyserRef.current.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    
+    // Use frequency data for better volume detection
     analyserRef.current.getByteFrequencyData(dataArray);
     
-    // Calculate average volume
-    const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
-    const normalizedVolume = Math.min(100, (average / 255) * 100);
+    // Calculate average frequency amplitude
+    let sum = 0;
+    for (let i = 0; i < bufferLength; i++) {
+      sum += dataArray[i];
+    }
+    const average = sum / bufferLength;
     
-    setVolumeLevel(normalizedVolume);
+    // Convert to percentage with better sensitivity
+    const volume = Math.min(100, (average / 255) * 200); // Amplify for visibility
+    
+    setVolumeLevel(volume);
     
     if (isRecording && !isPaused) {
       animationFrameRef.current = requestAnimationFrame(monitorVolume);
@@ -123,7 +132,8 @@ export default function VoiceRecorder({
       const analyser = audioContext.createAnalyser();
       const microphone = audioContext.createMediaStreamSource(stream);
       
-      analyser.fftSize = 256;
+      analyser.fftSize = 2048; // Higher resolution for better volume detection
+      analyser.smoothingTimeConstant = 0.8; // Smooth out volume fluctuations
       microphone.connect(analyser);
       
       audioContextRef.current = audioContext;
@@ -441,16 +451,31 @@ export default function VoiceRecorder({
           {isRecording && !isPaused && (
             <div className="flex items-center justify-center space-x-2">
               <span className="text-xs text-slate-500">Level:</span>
-              <div className="w-20 h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div className="w-24 h-3 bg-slate-200 rounded-full overflow-hidden relative">
+                {/* Background gradient showing green, yellow, red zones */}
+                <div className="absolute inset-0 bg-gradient-to-r from-green-400 via-yellow-400 to-red-500 opacity-20 rounded-full" />
+                
+                {/* Active volume indicator */}
                 <div 
-                  className="h-full transition-all duration-100 rounded-full"
+                  className="h-full transition-all duration-150 rounded-full relative"
                   style={{
-                    width: `${volumeLevel}%`,
-                    backgroundColor: getVolumeColor(volumeLevel)
+                    width: `${Math.max(2, volumeLevel)}%`,
+                    backgroundColor: getVolumeColor(volumeLevel),
+                    boxShadow: volumeLevel > 10 ? `0 0 6px ${getVolumeColor(volumeLevel)}40` : 'none'
                   }}
-                />
+                >
+                  {/* Animated pulse effect for high volume */}
+                  {volumeLevel > 70 && (
+                    <div 
+                      className="absolute inset-0 rounded-full animate-pulse"
+                      style={{ backgroundColor: getVolumeColor(volumeLevel) }}
+                    />
+                  )}
+                </div>
               </div>
-              <span className="text-xs text-slate-500">{Math.round(volumeLevel)}%</span>
+              <span className="text-xs font-mono text-slate-600 min-w-[2rem]">
+                {Math.round(volumeLevel)}%
+              </span>
             </div>
           )}
         </div>
@@ -505,12 +530,12 @@ export default function VoiceRecorder({
                 
                 <Button
                   onClick={handleSendAttempt}
-                  disabled={!canSendMessage || !canSendNow()}
+                  disabled={!canSendMessage}
                   className={cn(
                     "px-3 py-1 transition-all duration-200",
                     canSendNow() 
                       ? "bg-gradient-to-r from-[#4FACFE] to-[#3B82F6] text-white hover:from-[#4FACFE]/90 hover:to-[#3B82F6]/90 shadow-lg" 
-                      : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                      : "bg-slate-300 text-slate-500 cursor-pointer hover:bg-slate-400"
                   )}
                 >
                   <Send className="w-3 h-3 mr-1" />
