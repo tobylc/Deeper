@@ -441,7 +441,7 @@ export default function ConversationPage() {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex flex-col">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-100 flex-shrink-0">
         <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -517,10 +517,10 @@ export default function ConversationPage() {
         </div>
       </div>
 
-      <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-2 min-h-0">
-        <div className="grid lg:grid-cols-4 gap-3 h-full">
+      <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-2">
+        <div className="grid lg:grid-cols-4 gap-3 min-h-full">
           {/* Conversation Threads Sidebar */}
-          <div className={`lg:col-span-1 ${showThreadsView ? 'block' : 'hidden lg:block'} h-full`}>
+          <div className={`lg:col-span-1 ${showThreadsView ? 'block' : 'hidden lg:block'}`}>
             {conversation && connection && (
               <ConversationThreads
                 connectionId={conversation.connectionId}
@@ -535,7 +535,7 @@ export default function ConversationPage() {
           </div>
 
           {/* Main Conversation */}
-          <div className={`lg:col-span-2 ${showThreadsView ? 'hidden lg:block' : 'block'} h-full`}>
+          <div className={`lg:col-span-2 ${showThreadsView ? 'hidden lg:block' : 'block'}`}>
             <ConversationInterface 
               messages={messages}
               currentUserEmail={user.email || ''}
@@ -578,7 +578,7 @@ export default function ConversationPage() {
           </div>
 
           {/* Question Suggestions Sidebar - Always visible */}
-          <div className={`lg:col-span-1 ${showThreadsView ? 'hidden lg:block' : 'block'} h-full`}>
+          <div className={`lg:col-span-1 ${showThreadsView ? 'hidden lg:block' : 'block'}`}>
             <QuestionSuggestions 
               relationshipType={conversation.relationshipType}
               userRole={currentUserRole || ''}
