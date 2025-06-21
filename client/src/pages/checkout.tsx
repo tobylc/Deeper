@@ -154,18 +154,18 @@ export default function Checkout() {
     // Create subscription
     const createSubscription = async () => {
       try {
-        // Double-check authentication before making request
-        const authCheck = await fetch('/api/auth/user', { credentials: 'include' });
-        if (!authCheck.ok) {
-          throw new Error('Authentication required. Please log in again.');
-        }
-
         const requestBody: { tier: string; discountPercent?: number } = { tier };
         if (hasDiscount) {
           requestBody.discountPercent = discountPercent;
         }
         
         const response = await apiRequest("POST", "/api/subscription/upgrade", requestBody);
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to create subscription');
+        }
+        
         const data = await response.json();
         
         if (data.success && data.clientSecret) {
