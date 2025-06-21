@@ -80,27 +80,37 @@ export default function TrialExpirationPopup({ isOpen, onClose, action = "contin
               </div>
             </div>
 
-            {/* Explanation text */}
+            {/* Special offer text */}
             <div className="space-y-3">
               <p className="text-base text-slate-700 font-serif leading-relaxed">
-                Your 7-day free trial has ended. Choose a subscription plan to {getActionMessage().toLowerCase()}.
+                Your 7-day free trial has ended, but here's an exclusive offer just for you!
               </p>
               
               <p className="text-sm text-slate-600 font-serif leading-relaxed italic">
-                All your conversations and connections are safely preserved. Simply upgrade to continue where you left off.
+                All your conversations and connections are safely preserved. Join Deeper now and continue where you left off.
               </p>
             </div>
 
-            {/* Pricing preview */}
-            <Card className="bg-gradient-to-br from-ocean/5 to-ocean/10 border-ocean/20">
+            {/* Special discount offer */}
+            <Card className="bg-gradient-to-br from-amber/10 to-amber/20 border-amber/30 shadow-lg">
               <CardContent className="p-4">
-                <div className="text-center space-y-2">
-                  <div className="flex items-center justify-center space-x-2">
-                    <Crown className="w-4 h-4 text-ocean" />
-                    <span className="text-sm font-semibold text-ocean">Starting at just $4.95/month</span>
+                <div className="text-center space-y-3">
+                  <div className="inline-flex items-center px-3 py-1 bg-amber-200 text-amber-800 text-xs font-semibold rounded-full">
+                    50% OFF LIMITED TIME
                   </div>
-                  <p className="text-xs text-slate-600">
-                    Cheaper than a coffee with your Deeper partner
+                  <div>
+                    <div className="flex items-center justify-center space-x-2 mb-1">
+                      <Crown className="w-5 h-5 text-amber-600" />
+                      <span className="text-lg font-bold text-slate-800">Advanced Plan</span>
+                    </div>
+                    <div className="text-2xl font-bold text-slate-800">
+                      <span className="line-through text-slate-500 text-lg">$9.95</span>
+                      <span className="ml-2 text-amber-600">$4.50</span>
+                      <span className="text-sm font-normal text-slate-600">/month</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-600 italic">
+                    Cheaper and more effective than having coffee once a month with your Deeper partner!
                   </p>
                 </div>
               </CardContent>
@@ -108,21 +118,30 @@ export default function TrialExpirationPopup({ isOpen, onClose, action = "contin
 
             {/* Action buttons */}
             <div className="space-y-3">
-              <Link href="/pricing">
+              <Link href="/checkout/advanced?discount=50">
                 <Button
-                  className="w-full bg-gradient-to-r from-ocean to-ocean/90 hover:from-ocean/90 hover:to-ocean text-white shadow-lg hover:shadow-ocean/25 transition-all duration-200 font-medium"
+                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-amber/25 transition-all duration-200 font-medium"
                 >
                   <Crown className="w-4 h-4 mr-2" />
-                  View Subscription Plans
+                  Subscribe Now - 50% Off
+                </Button>
+              </Link>
+              
+              <Link href="/pricing">
+                <Button
+                  variant="outline"
+                  className="w-full border-ocean/30 text-ocean hover:bg-ocean/5 hover:border-ocean/50"
+                >
+                  Learn More
                 </Button>
               </Link>
               
               <Button
                 onClick={onClose}
                 variant="ghost"
-                className="w-full text-slate-600 hover:text-slate-800 hover:bg-slate-100/50"
+                className="w-full text-slate-600 hover:text-slate-800 hover:bg-slate-100/50 text-sm"
               >
-                Close
+                Maybe Later
               </Button>
             </div>
           </div>

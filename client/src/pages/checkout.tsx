@@ -107,24 +107,32 @@ export default function Checkout() {
   const [isLoading, setIsLoading] = useState(true);
 
   const tier = params?.tier;
+  
+  // Check for discount parameter in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const discountPercent = parseInt(urlParams.get('discount') || '0');
+  const hasDiscount = discountPercent > 0;
 
   // Plan details
   const planDetails = {
     basic: {
       name: 'Basic',
       price: '$4.95',
+      originalPrice: '$4.95',
       connections: 1,
       description: 'Perfect for exploring deeper conversations'
     },
     advanced: {
       name: 'Advanced',
-      price: '$9.95',
+      price: hasDiscount && discountPercent === 50 ? '$4.50' : '$9.95',
+      originalPrice: '$9.95',
       connections: 3,
       description: 'For meaningful relationships'
     },
     unlimited: {
       name: 'Unlimited',
       price: '$19.95',
+      originalPrice: '$19.95',
       connections: 'Unlimited',
       description: 'For extensive connection networks'
     }
@@ -146,7 +154,11 @@ export default function Checkout() {
     // Create subscription
     const createSubscription = async () => {
       try {
-        const response = await apiRequest("POST", "/api/subscription/upgrade", { tier });
+        const requestBody: { tier: string; discountPercent?: number } = { tier };
+        if (hasDiscount) {
+          requestBody.discountPercent = discountPercent;
+        }
+        const response = await apiRequest("POST", "/api/subscription/upgrade", requestBody);
         const data = await response.json();
         
         if (data.success && data.clientSecret) {
@@ -224,12 +236,31 @@ export default function Checkout() {
       <div className="px-6 pb-12">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-4">
-              Complete Your Subscription
-            </h1>
-            <p className="text-white/80">
-              Start your 7-day free trial and begin deeper conversations today
-            </p>
+            {hasDiscount && tier === 'advanced' ? (
+              <>
+                <div className="inline-flex items-center px-4 py-2 bg-amber-500 text-amber-900 text-sm font-bold rounded-full mb-4">
+                  🎉 EXCLUSIVE 50% OFF OFFER
+                </div>
+                <h1 className="text-3xl font-bold text-white mb-4">
+                  Complete Your Discounted Subscription
+                </h1>
+                <p className="text-white/80">
+                  Start your 7-day free trial at 50% off - just $4.50/month after trial
+                </p>
+                <p className="text-amber-300 text-sm mt-2 italic">
+                  Cheaper and more effective than having coffee once a month with your Deeper partner!
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-3xl font-bold text-white mb-4">
+                  Complete Your Subscription
+                </h1>
+                <p className="text-white/80">
+                  Start your 7-day free trial and begin deeper conversations today
+                </p>
+              </>
+            )}
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -243,8 +274,18 @@ export default function Checkout() {
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-white mb-2">
+                    {hasDiscount && tier === 'advanced' && (
+                      <div className="text-lg text-white/60 line-through mb-1">
+                        {currentPlan.originalPrice}/month
+                      </div>
+                    )}
                     {currentPlan.price}
                     <span className="text-lg font-normal text-white/70">/month</span>
+                    {hasDiscount && tier === 'advanced' && (
+                      <div className="text-sm text-amber-300 font-semibold mt-1">
+                        50% OFF LIMITED TIME
+                      </div>
+                    )}
                   </div>
                   <p className="text-white/80 text-sm">{currentPlan.description}</p>
                 </div>
