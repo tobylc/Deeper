@@ -290,10 +290,7 @@ export default function Checkout() {
                 <h1 className="text-3xl font-bold text-white mb-4">
                   Complete Your Discounted Subscription
                 </h1>
-                <p className="text-white/80">
-                  Start your 7-day free trial at 50% off - just $4.50/month after trial
-                </p>
-                <p className="text-amber-200 text-sm mt-2 italic font-medium">
+                <p className="text-white text-sm mt-2 italic font-medium">
                   Cheaper and more effective than having coffee once a month with your Deeper partner!
                 </p>
               </>
