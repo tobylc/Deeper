@@ -126,7 +126,7 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan, isImmediateCh
 export default function Checkout() {
   const [, params] = useRoute('/checkout/:tier');
   const [, setLocation] = useLocation();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -172,19 +172,33 @@ export default function Checkout() {
       return;
     }
 
+    // Wait for authentication to load before redirecting
+    if (authLoading) {
+      return;
+    }
+
     if (!user) {
+      console.log('User not authenticated, redirecting to auth page');
       setLocation('/auth?redirect=/checkout/' + tier + (hasDiscount ? '?discount=' + discountPercent : ''));
       return;
     }
 
+    console.log('User authenticated:', user.email, 'proceeding with checkout');
+
     // Create subscription
     const createSubscription = async () => {
       try {
+        // Ensure user is still authenticated before making subscription request
+        if (!user) {
+          throw new Error('Authentication required');
+        }
+
         const requestBody: { tier: string; discountPercent?: number } = { tier };
         if (hasDiscount) {
           requestBody.discountPercent = discountPercent;
         }
         
+        console.log('Creating subscription with:', requestBody);
         const response = await apiRequest("POST", "/api/subscription/upgrade", requestBody);
         
         if (!response.ok) {
@@ -234,7 +248,7 @@ export default function Checkout() {
     };
 
     createSubscription();
-  }, [tier, user, currentPlan, setLocation, toast]);
+  }, [tier, user, currentPlan, setLocation, toast, hasDiscount, discountPercent, authLoading]);
 
   const handleSuccess = () => {
     setTimeout(() => {
