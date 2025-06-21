@@ -178,11 +178,18 @@ Continue conversation: https://deepersocial.replit.app/conversation/${params.con
     const message = `Your Deeper verification code is: ${code}
 This code will expire in 10 minutes. Enter it to verify your phone number.`;
 
-    await this.client.messages.create({
+    const messageOptions: any = {
       body: message,
-      from: this.fromPhone,
       to: phoneNumber
-    });
+    };
+
+    if (this.messagingServiceSid) {
+      messageOptions.messagingServiceSid = this.messagingServiceSid;
+    } else {
+      messageOptions.from = this.fromPhone;
+    }
+
+    await this.client.messages.create(messageOptions);
   }
 }
 
@@ -225,10 +232,11 @@ export function createSMSService(): SMSService {
   const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
   const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
   const twilioFromPhone = process.env.TWILIO_PHONE_NUMBER;
+  const twilioMessagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
 
   // Use production SMS service if Twilio credentials are available
-  if (twilioAccountSid && twilioAuthToken && twilioFromPhone) {
-    return new ProductionSMSService(twilioAccountSid, twilioAuthToken, twilioFromPhone);
+  if (twilioAccountSid && twilioAuthToken && (twilioFromPhone || twilioMessagingServiceSid)) {
+    return new ProductionSMSService(twilioAccountSid, twilioAuthToken, twilioFromPhone, twilioMessagingServiceSid);
   } else if (process.env.NODE_ENV === 'development') {
     return new ConsoleSMSService();
   } else {
