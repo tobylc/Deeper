@@ -1152,27 +1152,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Handle discount for Advanced plan
-      let couponId = undefined;
-      if (discountPercent && tier === 'advanced' && discountPercent === 50) {
-        // Create or get 50% off coupon for Advanced plan
-        try {
-          const coupon = await stripe.coupons.create({
-            percent_off: 50,
-            duration: 'forever',
-            name: 'Advanced 50% Off Trial Offer',
-            metadata: {
-              tier: 'advanced',
-              offer_type: 'trial_expiration'
-            }
-          });
-          couponId = coupon.id;
-        } catch (error: any) {
-          // If coupon creation fails, proceed without discount
-          console.error('Coupon creation error:', error);
-        }
-      }
-
       // Create new subscription with 7-day trial
       const subscriptionConfig: any = {
         customer: customer.id,
@@ -1188,9 +1167,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      // Apply discount coupon if available
-      if (couponId) {
-        subscriptionConfig.coupon = couponId;
+      // Handle discount for Advanced plan via price modification
+      if (discountPercent && tier === 'advanced' && discountPercent === 50) {
+        try {
+          // Create a discounted price for 50% off Advanced plan
+          const discountedPrice = await stripe.prices.create({
+            unit_amount: Math.round(995 / 2), // $9.95 -> $4.95 (50% off)
+            currency: 'usd',
+            recurring: { interval: 'month' },
+            product_data: {
+              name: 'Advanced Plan (50% Off Trial Offer)',
+              description: 'Advanced plan with exclusive 50% discount for trial users'
+            },
+            metadata: {
+              original_price: '995',
+              discount_percent: '50',
+              tier: 'advanced'
+            }
+          });
+          
+          // Use the discounted price instead
+          subscriptionConfig.items[0].price = discountedPrice.id;
+        } catch (error: any) {
+          console.error('Discounted price creation error:', error);
+          // Fall back to regular price if discount fails
+        }
       }
 
       const subscription = await stripe.subscriptions.create(subscriptionConfig);
