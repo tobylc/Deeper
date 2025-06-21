@@ -14,6 +14,7 @@ import ProfileAvatar from "@/components/profile-avatar";
 import OnboardingPopup from "@/components/onboarding-popup";
 import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
 import NotificationPreferencePopup from "@/components/notification-preference-popup";
+import TrialExpirationPopup from "@/components/trial-expiration-popup";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
@@ -29,6 +30,7 @@ export default function ConversationPage() {
   const [showThreadsView, setShowThreadsView] = useState(false);
   const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
+  const [showTrialExpirationPopup, setShowTrialExpirationPopup] = useState(false);
 
   const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
   const [responseStartTime, setResponseStartTime] = useState<Date | null>(null);
@@ -237,10 +239,25 @@ export default function ConversationPage() {
     },
     onError: (error: any) => {
       console.error("Send message error:", error);
+      
+      // Parse error response to check for trial expiration
+      let errorData;
+      try {
+        errorData = JSON.parse(error.message);
+      } catch {
+        errorData = { message: error.message };
+      }
+      
+      // Show beautiful trial expiration popup for trial expired errors
+      if (errorData.type === "TRIAL_EXPIRED" || (errorData.message && errorData.message.includes("trial has expired"))) {
+        setShowTrialExpirationPopup(true);
+        return;
+      }
+      
+      // For other errors, still show a nicer toast (not destructive red)
       toast({
-        title: "Error",
-        description: error.message || "Failed to send message",
-        variant: "destructive",
+        title: "Unable to send message",
+        description: errorData.message || "Please try again in a moment",
       });
     },
   });
@@ -634,6 +651,13 @@ export default function ConversationPage() {
         onClose={handleThoughtfulResponseClose}
         onProceed={handleThoughtfulResponseProceed}
         remainingSeconds={getRemainingTime()}
+      />
+
+      {/* Trial Expiration Popup */}
+      <TrialExpirationPopup
+        isOpen={showTrialExpirationPopup}
+        onClose={() => setShowTrialExpirationPopup(false)}
+        action="messaging"
       />
     </div>
   );
