@@ -1111,17 +1111,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Subscription management endpoints
   app.post("/api/subscription/upgrade", async (req: any, res) => {
     try {
-      // Check session-based authentication first
+      // Check authentication with detailed logging
+      console.log("[SUBSCRIPTION] Authentication check:", {
+        hasUser: !!req.user,
+        isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
+        hasSession: !!req.session,
+        sessionUser: !!req.session?.user,
+        method: req.method,
+        url: req.url
+      });
+
       let userId;
       let user;
 
+      // Try multiple authentication methods
       if (req.session?.user) {
         userId = req.session.user.id;
         user = await storage.getUser(userId);
+        console.log("[SUBSCRIPTION] Using session auth for user:", userId);
       } else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
         userId = req.user.claims?.sub || req.user.id;
         user = await storage.getUser(userId);
+        console.log("[SUBSCRIPTION] Using OAuth auth for user:", userId);
       } else {
+        console.log("[SUBSCRIPTION] No valid authentication found");
         return res.status(401).json({ 
           message: "Authentication required. Please log in again.",
           code: "AUTH_REQUIRED"
@@ -1129,7 +1142,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (!userId || !user) {
-        return res.status(401).json({ message: "User not authenticated" });
+        console.log("[SUBSCRIPTION] User lookup failed:", { userId, hasUser: !!user });
+        return res.status(401).json({ message: "User not found" });
       }
 
       const { tier, discountPercent } = req.body;
@@ -1316,9 +1330,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "Advanced subscription created successfully with 7-day trial and 50% discount!" : 
             "Subscription created successfully with 7-day trial" 
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Subscription upgrade error:", error);
-      res.status(500).json({ message: "Failed to upgrade subscription" });
+      console.error("Error details:", {
+        message: error?.message || 'Unknown error',
+        stack: error?.stack,
+        userId: req.user?.claims?.sub || req.user?.id,
+        tier: req.body?.tier,
+        discountPercent: req.body?.discountPercent
+      });
+      res.status(500).json({ 
+        message: "Failed to upgrade subscription",
+        error: process.env.NODE_ENV === 'development' ? (error?.message || 'Unknown error') : 'Internal server error'
+      });
     }
   });
 

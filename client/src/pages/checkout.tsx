@@ -202,18 +202,29 @@ export default function Checkout() {
         }
       } catch (error: any) {
         console.error('Subscription creation error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          status: error.status,
+          response: error.response,
+          tier,
+          hasDiscount,
+          discountPercent,
+          user: user?.email
+        });
         
         // Handle authentication errors specifically
-        if (error.message && (error.message.includes('Authentication') || error.message.includes('401'))) {
+        if (error.message && (error.message.includes('Authentication') || error.message.includes('401') || error.message.includes('Unauthorized'))) {
+          console.log('Authentication error detected, redirecting to auth');
           toast({
             title: "Please log in to continue",
             description: "You'll need to sign in to set up your subscription",
           });
           setLocation('/auth?redirect=/checkout/' + tier + (hasDiscount ? '?discount=' + discountPercent : ''));
         } else {
+          console.log('Non-auth error, redirecting to pricing');
           toast({
             title: "Unable to set up subscription",
-            description: "Please try again in a moment or contact support if the issue persists",
+            description: error.message || "Please try again in a moment or contact support if the issue persists",
           });
           setLocation('/pricing');
         }
