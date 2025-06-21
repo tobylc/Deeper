@@ -21,6 +21,7 @@ import QuotesIcon from "@/components/quotes-icon";
 import { getRoleDisplayInfo, getDashboardSectionTitle } from "@shared/role-display-utils";
 import { TrialStatus } from "@/components/trial-status";
 import { SubscriptionEnforcement } from "@/components/subscription-enforcement";
+import AdminCleanup from "@/components/admin-cleanup";
 
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -691,6 +692,13 @@ export default function Dashboard() {
         {user && (
           <div className="mb-8">
             <NotificationPreferences user={user} />
+          </div>
+        )}
+
+        {/* Admin Section */}
+        {user && (user.email?.includes('toby@gowithclark.com') || user.email?.includes('thetobyclarkshow@gmail.com')) && (
+          <div className="mb-8">
+            <AdminCleanup />
           </div>
         )}
       </div>

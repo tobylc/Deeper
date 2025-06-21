@@ -89,23 +89,29 @@ async function upsertUser(profile: any, provider: string, req?: any) {
       console.log(`[AUTH] Linking Google account to existing email user: ${email}`);
       const linkedUser = await storage.linkGoogleAccount(existingUser.id, profile.id);
       if (linkedUser) {
-        // Update profile information from Google if available
+        // Update profile information from Google if available, keeping existing data priority
         return await storage.updateUser(existingUser.id, {
-          firstName: profile.name?.givenName || existingUser.firstName,
-          lastName: profile.name?.familyName || existingUser.lastName,
-          profileImageUrl: profile.photos?.[0]?.value || existingUser.profileImageUrl,
+          firstName: existingUser.firstName || profile.name?.givenName,
+          lastName: existingUser.lastName || profile.name?.familyName,
+          profileImageUrl: existingUser.profileImageUrl || profile.photos?.[0]?.value,
           googleId: profile.id,
         });
       }
       return existingUser;
     } else if (existingUser && existingUser.googleId === profile.id) {
       // User already linked, just return existing user
+      console.log(`[AUTH] User already linked with Google: ${email}`);
+      return existingUser;
+    } else if (existingUser && existingUser.googleId && existingUser.googleId !== profile.id) {
+      // User exists with different Google ID - this shouldn't happen normally
+      console.log(`[AUTH] User ${email} already has different Google ID, using existing account`);
       return existingUser;
     }
     
     // Check if user with this Google ID already exists but different email
     const existingGoogleUser = await storage.getUserByGoogleId(profile.id);
     if (existingGoogleUser) {
+      console.log(`[AUTH] Found existing Google user with ID: ${profile.id}`);
       return existingGoogleUser;
     }
   }

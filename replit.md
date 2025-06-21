@@ -671,6 +671,16 @@ Changelog:
   * Enhanced toast styling with rounded corners, backdrop blur, ocean blue borders, and white text for elegance
   * Improved error messaging with user-friendly language instead of technical error details
   * Complete subscription upgrade flow now works seamlessly with sophisticated notification system
+- June 21, 2025. Google OAuth account linking system fixes and duplicate user cleanup:
+  * Fixed critical OAuth authentication bug that created separate Google accounts instead of linking to existing email users
+  * Enhanced OAuth logic to properly check for existing email-based accounts before creating new users
+  * Created comprehensive database cleanup utility to merge duplicate Google OAuth accounts with original email accounts
+  * Added admin cleanup endpoint with proper authorization for resolving existing duplicate accounts
+  * Implemented AdminCleanup component in dashboard for authorized users to run account merge operations
+  * Updated OAuth authentication flow to prioritize existing user data when linking Google accounts
+  * Added detailed logging and error handling for account linking operations
+  * Database cleanup utility safely migrates all connections, conversations, and messages from duplicate accounts
+  * Complete resolution for Google OAuth duplicate account creation issue
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications

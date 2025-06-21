@@ -248,6 +248,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint to cleanup duplicate users
+  app.post('/api/admin/cleanup-users', isAuthenticated, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      
+      // Only allow admin users
+      if (!user?.email?.includes('toby@gowithclark.com') && !user?.email?.includes('thetobyclarkshow@gmail.com')) {
+        return res.status(403).json({ message: "Unauthorized - Admin access required" });
+      }
+      
+      console.log(`[ADMIN] User ${user.email} initiated duplicate user cleanup`);
+      const result = await runUserCleanup();
+      
+      res.json({
+        success: true,
+        ...result
+      });
+    } catch (error) {
+      console.error('[ADMIN] Cleanup endpoint error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: "Cleanup failed",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   app.get("/api/metrics", async (req, res) => {
     try {
       const metrics = await analytics.getDashboardMetrics();
