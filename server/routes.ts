@@ -1103,7 +1103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
 
-      const { tier, discountPercent } = req.body;
+      const { tier } = req.body;
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -1153,7 +1153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create new subscription with 7-day trial
-      const subscriptionConfig: any = {
+      const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [{
           price: STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES],
@@ -1162,39 +1162,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metadata: {
           userId: user.id,
           tier: tier,
-          platform: 'deeper',
-          discount_applied: discountPercent ? discountPercent.toString() : 'none'
+          platform: 'deeper'
         }
-      };
-
-      // Handle discount for Advanced plan via price modification
-      if (discountPercent && tier === 'advanced' && discountPercent === 50) {
-        try {
-          // Create a discounted price for 50% off Advanced plan
-          const discountedPrice = await stripe.prices.create({
-            unit_amount: Math.round(995 / 2), // $9.95 -> $4.95 (50% off)
-            currency: 'usd',
-            recurring: { interval: 'month' },
-            product_data: {
-              name: 'Advanced Plan (50% Off Trial Offer)',
-              description: 'Advanced plan with exclusive 50% discount for trial users'
-            },
-            metadata: {
-              original_price: '995',
-              discount_percent: '50',
-              tier: 'advanced'
-            }
-          });
-          
-          // Use the discounted price instead
-          subscriptionConfig.items[0].price = discountedPrice.id;
-        } catch (error: any) {
-          console.error('Discounted price creation error:', error);
-          // Fall back to regular price if discount fails
-        }
-      }
-
-      const subscription = await stripe.subscriptions.create(subscriptionConfig);
+      });
 
       // Update user subscription in database
       await storage.updateUserSubscription(userId, {
@@ -1213,10 +1183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionId: subscription.id,
         clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret,
         trialEnd: new Date(subscription.trial_end! * 1000),
-        discountApplied: discountPercent ? `${discountPercent}%` : null,
-        message: discountPercent && tier === 'advanced' ? 
-          "Subscription created successfully with 7-day trial and 50% discount!" : 
-          "Subscription created successfully with 7-day trial" 
+        message: "Subscription created successfully with 7-day trial" 
       });
     } catch (error) {
       console.error("Subscription upgrade error:", error);
