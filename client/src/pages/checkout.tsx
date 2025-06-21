@@ -199,6 +199,13 @@ export default function Checkout() {
         }
         
         console.log('Creating subscription with:', requestBody);
+        
+        // Verify authentication before making request
+        const authResponse = await apiRequest("GET", "/api/auth/user", {});
+        if (!authResponse.ok) {
+          throw new Error('Authentication required');
+        }
+        
         const response = await apiRequest("POST", "/api/subscription/upgrade", requestBody);
         
         if (!response.ok) {

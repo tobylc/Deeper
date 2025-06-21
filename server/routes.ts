@@ -1111,30 +1111,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Subscription management endpoints
   app.post("/api/subscription/upgrade", async (req: any, res) => {
     try {
-      // Check authentication with detailed logging
-      console.log("[SUBSCRIPTION] Authentication check:", {
+      console.log("[SUBSCRIPTION] Request received:", {
         hasUser: !!req.user,
         isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
         hasSession: !!req.session,
         sessionUser: !!req.session?.user,
-        method: req.method,
-        url: req.url
+        headers: {
+          authorization: !!req.headers.authorization,
+          cookie: !!req.headers.cookie,
+          userAgent: req.headers['user-agent']?.substring(0, 50)
+        }
       });
 
+      // Enhanced authentication check with session recovery
       let userId;
       let user;
 
-      // Try multiple authentication methods
-      if (req.session?.user) {
+      if (req.session?.user?.id) {
         userId = req.session.user.id;
         user = await storage.getUser(userId);
-        console.log("[SUBSCRIPTION] Using session auth for user:", userId);
-      } else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
-        userId = req.user.claims?.sub || req.user.id;
-        user = await storage.getUser(userId);
-        console.log("[SUBSCRIPTION] Using OAuth auth for user:", userId);
+        console.log("[SUBSCRIPTION] Session auth successful for user:", userId);
+      } else if (req.isAuthenticated?.() && req.user) {
+        const oauthUserId = req.user.claims?.sub || req.user.id;
+        user = await storage.getUser(oauthUserId);
+        if (user) {
+          userId = user.id;
+          // Restore session for this user
+          req.session.user = {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName
+          };
+          // Force session save
+          req.session.save((err: any) => {
+            if (err) console.error('[SUBSCRIPTION] Session save error:', err);
+          });
+          console.log("[SUBSCRIPTION] OAuth auth restored session for user:", userId);
+        }
       } else {
-        console.log("[SUBSCRIPTION] No valid authentication found");
+        console.log("[SUBSCRIPTION] Authentication failed - no valid session or OAuth");
         return res.status(401).json({ 
           message: "Authentication required. Please log in again.",
           code: "AUTH_REQUIRED"
@@ -1143,7 +1159,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!userId || !user) {
         console.log("[SUBSCRIPTION] User lookup failed:", { userId, hasUser: !!user });
-        return res.status(401).json({ message: "User not found" });
+        return res.status(401).json({ 
+          message: "User not found. Please log in again.",
+          code: "USER_NOT_FOUND"
+        });
       }
 
       const { tier, discountPercent } = req.body;
