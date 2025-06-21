@@ -332,7 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (process.env.NODE_ENV === 'development' && req.query.test_user) {
         const testUser = await storage.getUserByEmail('thetobyclarkshow@gmail.com');
         if (testUser) {
-          // Establish session for test user
+          // Establish persistent session for test user
           req.session.user = {
             id: testUser.id,
             email: testUser.email,
@@ -340,6 +340,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             lastName: testUser.lastName
           };
           req.user = req.session.user;
+          
+          // Force session save for persistence
+          req.session.save((err: any) => {
+            if (err) console.error('Session save error:', err);
+          });
           
           return res.json({
             id: testUser.id,
@@ -1197,7 +1202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
-        subscriptionExpiresAt: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : null
+        subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
       });
 
       res.json({ 
