@@ -113,7 +113,7 @@ export default function Pricing() {
                   <p className="text-xs text-muted-foreground mb-4 text-center">
                     7-day free trial • Cancel anytime
                   </p>
-                  <Link href="/auth">
+                  <Link href="/checkout/basic">
                     <Button className="w-full card-button py-2 text-xs">
                       Start Basic Plan
                     </Button>
@@ -169,7 +169,7 @@ export default function Pricing() {
                   <p className="text-xs text-muted-foreground mb-4 text-center">
                     7-day free trial • Cancel anytime
                   </p>
-                  <Link href="/auth">
+                  <Link href="/checkout/advanced">
                     <Button className="w-full card-button py-2 text-xs">
                       Choose Advanced
                     </Button>
@@ -225,7 +225,7 @@ export default function Pricing() {
                   <p className="text-xs text-muted-foreground mb-4 text-center">
                     7-day free trial • Cancel anytime
                   </p>
-                  <Link href="/auth">
+                  <Link href="/checkout/unlimited">
                     <Button className="w-full card-button py-2 text-xs">
                       Choose Unlimited
                     </Button>

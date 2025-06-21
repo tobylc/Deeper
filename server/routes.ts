@@ -52,7 +52,7 @@ const STRIPE_PRICES = {
 // Webhook handler functions
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
-  const userId = subscription.metadata.userId;
+  const userId = subscription.metadata?.userId;
   
   if (!userId) return;
 
@@ -64,15 +64,15 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
                 subscription.status === 'past_due' ? 'past_due' : 'inactive';
 
   await storage.updateUserSubscription(userId, {
-    subscriptionTier: subscription.metadata.tier || user.subscriptionTier,
+    subscriptionTier: subscription.metadata?.tier || user.subscriptionTier || 'free',
     subscriptionStatus: status,
-    maxConnections: user.maxConnections,
-    subscriptionExpiresAt: new Date(subscription.current_period_end * 1000)
+    maxConnections: user.maxConnections || 1,
+    subscriptionExpiresAt: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined
   });
 }
 
 async function handleSubscriptionCancellation(subscription: Stripe.Subscription) {
-  const userId = subscription.metadata.userId;
+  const userId = subscription.metadata?.userId;
   
   if (!userId) return;
 
@@ -89,7 +89,7 @@ async function handleSubscriptionCancellation(subscription: Stripe.Subscription)
 }
 
 async function handlePaymentSuccess(invoice: Stripe.Invoice) {
-  const subscription = invoice.subscription;
+  const subscription = (invoice as any).subscription;
   if (subscription && typeof subscription === 'string') {
     const sub = await stripe.subscriptions.retrieve(subscription);
     await handleSubscriptionUpdate(sub);
@@ -97,18 +97,18 @@ async function handlePaymentSuccess(invoice: Stripe.Invoice) {
 }
 
 async function handlePaymentFailure(invoice: Stripe.Invoice) {
-  const subscription = invoice.subscription;
+  const subscription = (invoice as any).subscription;
   if (subscription && typeof subscription === 'string') {
     const sub = await stripe.subscriptions.retrieve(subscription);
-    const userId = sub.metadata.userId;
+    const userId = sub.metadata?.userId;
     
     if (userId) {
       const user = await storage.getUser(userId);
       if (user) {
         await storage.updateUserSubscription(userId, {
-          subscriptionTier: user.subscriptionTier,
+          subscriptionTier: user.subscriptionTier || 'free',
           subscriptionStatus: 'past_due',
-          maxConnections: user.maxConnections
+          maxConnections: user.maxConnections || 1
         });
       }
     }
