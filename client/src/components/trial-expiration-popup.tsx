@@ -117,10 +117,10 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
             </Card>
 
             {/* Action buttons */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <Link href="/checkout/advanced?discount=50">
                 <Button
-                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-amber/25 transition-all duration-200 font-medium"
+                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-blue/25 transition-all duration-200 font-medium"
                 >
                   <Crown className="w-4 h-4 mr-2" />
                   Subscribe Now - 50% Off
@@ -130,17 +130,17 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
               <Link href="/pricing">
                 <Button
                   variant="outline"
-                  className="w-full border-ocean/30 text-ocean hover:bg-ocean/5 hover:border-ocean/50"
+                  className="w-full py-3 border-ocean/30 text-ocean hover:bg-ocean/5 hover:border-ocean/50"
                 >
                   Learn More
                 </Button>
               </Link>
               
-              <div className="pt-2">
+              <div className="pt-4">
                 <Button
                   onClick={onClose}
-                  variant="ghost"
-                  className="w-full text-amber-600 hover:text-amber-700 hover:bg-amber-50 text-sm font-medium"
+                  variant="outline"
+                  className="w-full py-3 bg-gradient-to-r from-amber-500/10 to-amber-600/10 border-amber-400/40 text-amber-700 hover:from-amber-500/20 hover:to-amber-600/20 hover:border-amber-500/60 hover:text-amber-800 transition-all duration-200 font-medium"
                 >
                   Maybe Later
                 </Button>
