@@ -332,6 +332,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (process.env.NODE_ENV === 'development' && req.query.test_user) {
         const testUser = await storage.getUserByEmail('thetobyclarkshow@gmail.com');
         if (testUser) {
+          // Establish session for test user
+          req.session.user = {
+            id: testUser.id,
+            email: testUser.email,
+            firstName: testUser.firstName,
+            lastName: testUser.lastName
+          };
+          req.user = req.session.user;
+          
           return res.json({
             id: testUser.id,
             email: testUser.email,
@@ -1108,31 +1117,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get or create Stripe customer
       let customer;
-      if (currentUser.stripeCustomerId) {
-        customer = await stripe.customers.retrieve(currentUser.stripeCustomerId);
+      if (user.stripeCustomerId) {
+        customer = await stripe.customers.retrieve(user.stripeCustomerId);
       } else {
         customer = await stripe.customers.create({
-          email: currentUser.email!,
-          name: currentUser.firstName && currentUser.lastName ? `${currentUser.firstName} ${currentUser.lastName}` : currentUser.email!,
+          email: user.email!,
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email!,
           metadata: {
-            userId: currentUser.id,
+            userId: user.id,
             platform: 'deeper'
           }
         });
         
         // Update user with Stripe customer ID
         await storage.updateUserSubscription(userId, {
-          subscriptionTier: currentUser.subscriptionTier || 'free',
-          subscriptionStatus: currentUser.subscriptionStatus || 'active',
-          maxConnections: currentUser.maxConnections || 1,
+          subscriptionTier: user.subscriptionTier || 'free',
+          subscriptionStatus: user.subscriptionStatus || 'active',
+          maxConnections: user.maxConnections || 1,
           stripeCustomerId: customer.id
         });
       }
 
       // Cancel existing subscription if any
-      if (currentUser.stripeSubscriptionId) {
+      if (user.stripeSubscriptionId) {
         try {
-          await stripe.subscriptions.cancel(currentUser.stripeSubscriptionId);
+          await stripe.subscriptions.cancel(user.stripeSubscriptionId);
         } catch (error) {
           console.error("Error canceling existing subscription:", error);
         }
