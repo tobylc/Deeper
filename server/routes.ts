@@ -49,6 +49,72 @@ const STRIPE_PRICES = {
   unlimited: 'price_1QcxByKKf4E3Y8q3a1qThK4a', // $19.95/month - Update with your actual price ID
 };
 
+// Webhook handler functions
+async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
+  const customerId = subscription.customer as string;
+  const userId = subscription.metadata.userId;
+  
+  if (!userId) return;
+
+  const user = await storage.getUser(userId);
+  if (!user) return;
+
+  const status = subscription.status === 'trialing' ? 'trialing' : 
+                subscription.status === 'active' ? 'active' : 
+                subscription.status === 'past_due' ? 'past_due' : 'inactive';
+
+  await storage.updateUserSubscription(userId, {
+    subscriptionTier: subscription.metadata.tier || user.subscriptionTier,
+    subscriptionStatus: status,
+    maxConnections: user.maxConnections,
+    subscriptionExpiresAt: new Date(subscription.current_period_end * 1000)
+  });
+}
+
+async function handleSubscriptionCancellation(subscription: Stripe.Subscription) {
+  const userId = subscription.metadata.userId;
+  
+  if (!userId) return;
+
+  const user = await storage.getUser(userId);
+  if (!user) return;
+
+  await storage.updateUserSubscription(userId, {
+    subscriptionTier: 'free',
+    subscriptionStatus: 'canceled',
+    maxConnections: 1,
+    stripeSubscriptionId: undefined,
+    subscriptionExpiresAt: undefined
+  });
+}
+
+async function handlePaymentSuccess(invoice: Stripe.Invoice) {
+  const subscription = invoice.subscription;
+  if (subscription && typeof subscription === 'string') {
+    const sub = await stripe.subscriptions.retrieve(subscription);
+    await handleSubscriptionUpdate(sub);
+  }
+}
+
+async function handlePaymentFailure(invoice: Stripe.Invoice) {
+  const subscription = invoice.subscription;
+  if (subscription && typeof subscription === 'string') {
+    const sub = await stripe.subscriptions.retrieve(subscription);
+    const userId = sub.metadata.userId;
+    
+    if (userId) {
+      const user = await storage.getUser(userId);
+      if (user) {
+        await storage.updateUserSubscription(userId, {
+          subscriptionTier: user.subscriptionTier,
+          subscriptionStatus: 'past_due',
+          maxConnections: user.maxConnections
+        });
+      }
+    }
+  }
+}
+
 // Configure multer for file uploads
 const storage_config = multer.memoryStorage();
 const upload = multer({
@@ -986,31 +1052,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get or create Stripe customer
       let customer;
-      if (user.stripeCustomerId) {
-        customer = await stripe.customers.retrieve(user.stripeCustomerId);
+      if (currentUser.stripeCustomerId) {
+        customer = await stripe.customers.retrieve(currentUser.stripeCustomerId);
       } else {
         customer = await stripe.customers.create({
-          email: user.email,
-          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email,
+          email: currentUser.email!,
+          name: currentUser.firstName && currentUser.lastName ? `${currentUser.firstName} ${currentUser.lastName}` : currentUser.email!,
           metadata: {
-            userId: user.id,
+            userId: currentUser.id,
             platform: 'deeper'
           }
         });
         
         // Update user with Stripe customer ID
         await storage.updateUserSubscription(userId, {
-          subscriptionTier: user.subscriptionTier,
-          subscriptionStatus: user.subscriptionStatus,
-          maxConnections: user.maxConnections,
+          subscriptionTier: currentUser.subscriptionTier || 'free',
+          subscriptionStatus: currentUser.subscriptionStatus || 'active',
+          maxConnections: currentUser.maxConnections || 1,
           stripeCustomerId: customer.id
         });
       }
 
       // Cancel existing subscription if any
-      if (user.stripeSubscriptionId) {
+      if (currentUser.stripeSubscriptionId) {
         try {
-          await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+          await stripe.subscriptions.cancel(currentUser.stripeSubscriptionId);
         } catch (error) {
           console.error("Error canceling existing subscription:", error);
         }
@@ -1024,7 +1090,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }],
         trial_period_days: 7,
         metadata: {
-          userId: user.id,
+          userId: currentUser.id,
           tier: tier,
           platform: 'deeper'
         }
@@ -1045,7 +1111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tier, 
         maxConnections: benefits.maxConnections,
         subscriptionId: subscription.id,
-        clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+        clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret,
         trialEnd: new Date(subscription.trial_end! * 1000),
         message: "Subscription created successfully with 7-day trial" 
       });
