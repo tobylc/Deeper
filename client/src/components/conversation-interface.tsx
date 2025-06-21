@@ -10,6 +10,7 @@ import VoiceRecorder from "@/components/voice-recorder";
 import VoiceMessageDisplay from "@/components/voice-message-display";
 import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
 import TranscriptionProgress from "@/components/transcription-progress";
+import MesmerizingWaitingVisual from "@/components/mesmerizing-waiting-visual";
 import type { Message, User, Connection } from "@shared/schema";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
@@ -250,23 +251,7 @@ export default function ConversationInterface({
             </div>
           </div>
         ) : (
-          <div className="text-center space-y-4 max-w-md">
-            <h3 className="text-xl font-bold bg-gradient-to-r from-ocean to-amber bg-clip-text text-transparent">
-              Waiting for Magic
-            </h3>
-            <p className="text-slate-600 leading-relaxed">
-              <UserDisplayName email={otherParticipantEmail} /> is preparing the first question. 
-              Great conversations are worth the wait.
-            </p>
-            <div className="flex items-center justify-center space-x-2">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-ocean rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                <div className="w-2 h-2 bg-ocean rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
-              </div>
-              <span className="text-sm text-ocean/80">Anticipating...</span>
-            </div>
-          </div>
+          <MesmerizingWaitingVisual otherUserName={otherParticipantEmail} />
         )}
       </div>
     );
@@ -683,10 +668,18 @@ export default function ConversationInterface({
               </div>
             )}
 
-            {/* Typing Indicator */}
+            {/* Mesmerizing Waiting Visual */}
             {messages.length > 0 && messages[messages.length - 1]?.type === 'question' && 
              messages[messages.length - 1]?.senderEmail !== currentUserEmail && !isMyTurn && (
-              <TypingIndicator />
+              <div className="mb-8">
+                <MesmerizingWaitingVisual 
+                  otherUserName={
+                    messages[messages.length - 1]?.senderEmail === participant1Email 
+                      ? participant1Email 
+                      : participant2Email
+                  } 
+                />
+              </div>
             )}
           </div>
         )}
