@@ -18,13 +18,18 @@ export function TrialStatus() {
   const { user } = useAuth();
   const [showTrialExpiredPopup, setShowTrialExpiredPopup] = useState(false);
   
-  const { data: trialStatus, isLoading } = useQuery<TrialStatusData>({
+  const { data: trialStatus, isLoading, error } = useQuery<TrialStatusData>({
     queryKey: ['/api/trial-status'],
     refetchInterval: 60000, // Check every minute
-    enabled: !!user
+    enabled: !!user,
+    retry: false, // Don't retry on auth errors
+    meta: {
+      errorMessage: "Failed to load trial status"
+    }
   });
 
-  if (isLoading || !trialStatus || !user) {
+  // Fallback to user data when API fails but user is authenticated
+  if (isLoading && !error) {
     return (
       <div className="mt-4">
         <div className="flex items-center space-x-2 text-slate-600">
@@ -35,10 +40,22 @@ export function TrialStatus() {
     );
   }
 
-  // Calculate days remaining for trialing users
-  const isDuringTrial = user.subscriptionStatus === 'trialing';
-  const isExpiredTrial = user.subscriptionTier === 'free' && !isDuringTrial;
-  const isPaidSubscription = user.subscriptionTier && ['basic', 'advanced', 'unlimited'].includes(user.subscriptionTier);
+  // Use user data as fallback when trial status API fails
+  const effectiveTrialStatus = trialStatus || {
+    isExpired: user?.subscriptionStatus !== 'trialing' && user?.subscriptionTier === 'free',
+    daysRemaining: user?.subscriptionStatus === 'trialing' ? 7 : 0,
+    subscriptionTier: user?.subscriptionTier || 'free',
+    subscriptionStatus: user?.subscriptionStatus || 'inactive'
+  };
+
+  if (!user) {
+    return null;
+  }
+
+  // Calculate days remaining for trialing users using effective data
+  const isDuringTrial = effectiveTrialStatus.subscriptionStatus === 'trialing';
+  const isExpiredTrial = effectiveTrialStatus.subscriptionTier === 'free' && !isDuringTrial;
+  const isPaidSubscription = effectiveTrialStatus.subscriptionTier && ['basic', 'advanced', 'unlimited'].includes(effectiveTrialStatus.subscriptionTier);
 
   if (isPaidSubscription) {
     return (
@@ -48,19 +65,19 @@ export function TrialStatus() {
             <span className="text-sm text-slate-600">Current Plan</span>
           </div>
           <Badge className="bg-ocean text-white capitalize">
-            {user.subscriptionTier}
+            {effectiveTrialStatus.subscriptionTier}
           </Badge>
         </div>
-        {user.subscriptionStatus === 'trialing' && trialStatus.daysRemaining > 0 && (
+        {effectiveTrialStatus.subscriptionStatus === 'trialing' && effectiveTrialStatus.daysRemaining > 0 && (
           <div className="mt-2 text-xs text-slate-500">
-            Trial ends in {trialStatus.daysRemaining} {trialStatus.daysRemaining === 1 ? 'day' : 'days'}
+            Trial ends in {effectiveTrialStatus.daysRemaining} {effectiveTrialStatus.daysRemaining === 1 ? 'day' : 'days'}
           </div>
         )}
       </div>
     );
   }
 
-  if (isExpiredTrial || trialStatus.isExpired) {
+  if (isExpiredTrial || effectiveTrialStatus.isExpired) {
     return (
       <>
         <div className="mt-4">
@@ -105,10 +122,10 @@ export function TrialStatus() {
           free
         </Badge>
       </div>
-      {isDuringTrial && trialStatus.daysRemaining > 0 && (
+      {isDuringTrial && effectiveTrialStatus.daysRemaining > 0 && (
         <div className="mt-2 flex items-center space-x-2 text-xs text-amber-600">
           <Clock className="w-3 h-3" />
-          <span>{trialStatus.daysRemaining} {trialStatus.daysRemaining === 1 ? 'day' : 'days'} left in trial</span>
+          <span>{effectiveTrialStatus.daysRemaining} {effectiveTrialStatus.daysRemaining === 1 ? 'day' : 'days'} left in trial</span>
         </div>
       )}
       <Link href="/pricing">
