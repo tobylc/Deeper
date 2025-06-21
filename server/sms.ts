@@ -163,16 +163,16 @@ export class InternalSMSService implements SMSService {
     this.fromPhone = fromPhone;
   }
 
-  async sendConnectionInvitation(connection: Connection): Promise<void> {
+  async sendConnectionInvitation(connection: ConnectionWithSMS): Promise<void> {
     // Internal SMS service could use a different provider or queue system
     console.log('Internal SMS - Connection Invitation queued');
   }
 
-  async sendConnectionAccepted(connection: Connection): Promise<void> {
+  async sendConnectionAccepted(connection: ConnectionWithSMS): Promise<void> {
     console.log('Internal SMS - Connection Accepted queued');
   }
 
-  async sendConnectionDeclined(connection: Connection): Promise<void> {
+  async sendConnectionDeclined(connection: ConnectionWithSMS): Promise<void> {
     console.log('Internal SMS - Connection Declined queued');
   }
 
