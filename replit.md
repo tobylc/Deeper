@@ -681,6 +681,12 @@ Changelog:
   * Updated checkout UI to show crossed-out original price and discount messaging for discounted subscriptions
   * Included coffee comparison tagline: "Cheaper and more effective than having coffee once a month with your Deeper partner!"
   * Complete 50% discount flow from trial expiration popup through Stripe checkout with permanent discount application
+- June 21, 2025. Trial expiration popup and checkout page refinements:
+  * Removed duplicate X button from trial expiration popup and improved button spacing for better user experience
+  * Fixed checkout page text readability by changing unreadable black text to white/light colors against dark background
+  * Updated checkout button text from "Start 7-Day Trial" to "Upgrade to Advanced - 50% Off" for seamless trial-to-paid conversion
+  * Enhanced checkout page messaging to reflect upgrade action rather than new trial signup for existing trial users
+  * Improved visual contrast and user experience throughout trial expiration and checkout flow
 - June 21, 2025. Voice recording interface cleanup:
   * Removed microphone level readout bar from voice recording interface for cleaner, less distracting experience
   * Recording area now shows only essential information: timer, recording status, and control buttons

@@ -20,9 +20,11 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 interface CheckoutFormProps {
   tier: string;
   onSuccess: () => void;
+  hasDiscount: boolean;
+  currentPlan: any;
 }
 
-const CheckoutForm = ({ tier, onSuccess }: CheckoutFormProps) => {
+const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -86,11 +88,11 @@ const CheckoutForm = ({ tier, onSuccess }: CheckoutFormProps) => {
             Processing...
           </>
         ) : (
-          'Start 7-Day Trial'
+          hasDiscount && tier === 'advanced' ? 'Upgrade to Advanced - 50% Off' : `Upgrade to ${currentPlan.name}`
         )}
       </Button>
       
-      <p className="text-xs text-center text-slate-600">
+      <p className="text-xs text-center text-white/70">
         Your trial starts immediately. You won't be charged until day 8.
         Cancel anytime during your trial period.
       </p>
@@ -368,7 +370,7 @@ export default function Checkout() {
               </CardHeader>
               <CardContent>
                 <Elements stripe={stripePromise} options={{ clientSecret }}>
-                  <CheckoutForm tier={tier} onSuccess={handleSuccess} />
+                  <CheckoutForm tier={tier} onSuccess={handleSuccess} hasDiscount={hasDiscount} currentPlan={currentPlan} />
                 </Elements>
               </CardContent>
             </Card>
