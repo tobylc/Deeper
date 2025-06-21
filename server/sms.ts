@@ -82,7 +82,7 @@ export class ProductionSMSService implements SMSService {
     this.fromPhone = fromPhone;
   }
 
-  async sendConnectionInvitation(connection: Connection): Promise<void> {
+  async sendConnectionInvitation(connection: ConnectionWithSMS): Promise<void> {
     if (!connection.inviteePhone) return;
 
     const message = `You've been invited to start a deeper conversation on Deeper! 
@@ -97,7 +97,7 @@ Accept your invitation: https://deepersocial.replit.app/invitation/${connection.
     });
   }
 
-  async sendConnectionAccepted(connection: Connection): Promise<void> {
+  async sendConnectionAccepted(connection: ConnectionWithSMS): Promise<void> {
     if (!connection.inviterPhone) return;
 
     const message = `Great news! ${connection.inviteeName} accepted your invitation to connect on Deeper.
@@ -111,7 +111,7 @@ Begin your conversation: https://deepersocial.replit.app/dashboard`;
     });
   }
 
-  async sendConnectionDeclined(connection: Connection): Promise<void> {
+  async sendConnectionDeclined(connection: ConnectionWithSMS): Promise<void> {
     if (!connection.inviterPhone) return;
 
     const message = `${connection.inviteeName} has respectfully declined your invitation to connect on Deeper. 
@@ -196,7 +196,8 @@ export function createSMSService(): SMSService {
   const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
   const twilioFromPhone = process.env.TWILIO_PHONE_NUMBER;
 
-  if (process.env.NODE_ENV === 'production' && twilioAccountSid && twilioAuthToken && twilioFromPhone) {
+  // Use production SMS service if Twilio credentials are available
+  if (twilioAccountSid && twilioAuthToken && twilioFromPhone) {
     return new ProductionSMSService(twilioAccountSid, twilioAuthToken, twilioFromPhone);
   } else if (process.env.NODE_ENV === 'development') {
     return new ConsoleSMSService();

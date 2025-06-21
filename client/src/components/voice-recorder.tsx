@@ -322,25 +322,25 @@ export default function VoiceRecorder({
   };
 
   return (
-    <Card className={cn("p-4 bg-gradient-to-r from-slate-50 to-blue-50 border-[#4FACFE]/20", className)}>
-      <div className="space-y-3">
+    <Card className={cn("p-2 bg-gradient-to-r from-slate-50 to-blue-50 border-[#4FACFE]/20", className)}>
+      <div className="space-y-2">
         {/* Recording Controls */}
-        <div className="flex flex-col items-center justify-center space-y-3">
+        <div className="flex items-center justify-center space-x-2">
           {/* Main Recording Button with Volume Visualization */}
           <div className="relative">
             <Button
               onClick={() => !isRecording ? startRecording() : toggleRecording()}
               disabled={disabled || hasRecording}
               className={cn(
-                "w-16 h-16 rounded-full transition-all duration-300 shadow-lg relative",
+                "w-12 h-12 rounded-full transition-all duration-300 shadow-lg relative",
                 getRecordingButtonStyle()
               )}
               style={isRecording && !isPaused ? { backgroundColor: getVolumeColor(volumeLevel) } : {}}
             >
               {isRecording ? (
-                isPaused ? <Play className="w-6 h-6" /> : <Mic className="w-6 h-6" />
+                isPaused ? <Play className="w-4 h-4" /> : <Mic className="w-4 h-4" />
               ) : (
-                <Mic className="w-6 h-6" />
+                <Mic className="w-4 h-4" />
               )}
             </Button>
             
@@ -357,90 +357,70 @@ export default function VoiceRecorder({
             )}
           </div>
 
-          {/* Pause and Stop Controls */}
-          {isRecording && (
-            <div className="flex items-center space-x-4">
-              <Button
-                onClick={pauseRecording}
-                disabled={isPaused}
-                size="sm"
-                className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 text-xs"
-              >
-                {isPaused ? "Paused" : "Pause"}
-              </Button>
-              
-              <Button
-                onClick={stopRecording}
-                size="sm"
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 text-xs"
-              >
-                <Square className="w-3 h-3 mr-1" />
-                Stop
-              </Button>
-            </div>
-          )}
-          
+          {/* Compact Recording Status */}
           <div className="text-center">
-            <div className="text-2xl font-mono text-slate-800 font-semibold">
+            <div className="text-lg font-mono text-slate-800 font-semibold">
               {formatDuration(duration)}
             </div>
-            <div className="text-xs text-slate-600 mt-1">
+            <div className="text-xs text-slate-600">
               {isRecording ? (
                 isPaused ? "Paused" : "Recording..."
               ) : hasRecording ? "Ready to send" : "Tap to record"}
             </div>
           </div>
+
+          {/* Compact Control Buttons */}
+          {isRecording && (
+            <div className="flex items-center justify-center space-x-2">
+              <Button
+                onClick={pauseRecording}
+                disabled={isPaused}
+                size="sm"
+                className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 text-xs"
+              >
+                {isPaused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
+              </Button>
+              
+              <Button
+                onClick={stopRecording}
+                size="sm"
+                className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 text-xs"
+              >
+                <Square className="w-3 h-3" />
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Audio Playback */}
+        {/* Compact Audio Playback */}
         {hasRecording && audioUrl && (
-          <div className="space-y-2">
+          <div className="space-y-1">
             <audio
               ref={audioRef}
               src={audioUrl}
               controls
-              className="w-full h-8"
+              className="w-full h-6"
               preload="metadata"
             />
             
-            {/* Action Buttons */}
-            <div className="flex justify-center space-x-2">
+            {/* Compact Action Buttons */}
+            <div className="flex justify-center space-x-1">
               <Button
                 onClick={clearRecording}
                 size="sm"
-                className="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800 hover:from-slate-200 hover:to-slate-300 border border-slate-300 shadow-sm text-xs px-3 py-1"
+                className="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800 hover:from-slate-200 hover:to-slate-300 border border-slate-300 shadow-sm text-xs px-2 py-1"
               >
-                <Trash2 className="w-3 h-3 mr-1" />
-                Delete
+                <Trash2 className="w-3 h-3" />
               </Button>
               
               <Button
                 onClick={sendVoiceMessage}
                 disabled={disabled || (hasStartedResponse && responseStartTime !== null && 
                   (new Date().getTime() - responseStartTime.getTime()) / 1000 / 60 < 10)}
-                className="bg-gradient-to-r from-[#4FACFE] to-[#3B82F6] text-white hover:from-[#4FACFE]/90 hover:to-[#3B82F6]/90 shadow-lg text-xs px-3 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-gradient-to-r from-[#4FACFE] to-[#3B82F6] text-white hover:from-[#4FACFE]/90 hover:to-[#3B82F6]/90 shadow-lg text-xs px-2 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Send className="w-3 h-3 mr-1" />
-                Send Voice Message
+                <Send className="w-3 h-3" />
               </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Recording Status Indicator */}
-        {isRecording && (
-          <div className="text-center">
-            <div className="inline-flex items-center space-x-2">
-              <div 
-                className="w-2 h-2 rounded-full animate-pulse"
-                style={{ backgroundColor: getVolumeColor(volumeLevel) }}
-              />
-              <span className="text-xs font-medium" style={{ color: getVolumeColor(volumeLevel) }}>
-                {isPaused ? "Paused" : "Recording in progress"}
-              </span>
-            </div>
-            <div className="text-xs text-slate-500 mt-1">
-              Maximum recording time: 30 minutes
             </div>
           </div>
         )}
