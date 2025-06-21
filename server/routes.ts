@@ -29,11 +29,25 @@ import { jobQueue } from "./jobs";
 import { setupAuth, isAuthenticated } from "./oauthAuth";
 import { generateRelationshipSpecificTitle } from "./thread-naming";
 import OpenAI from "openai";
+import Stripe from "stripe";
 
 // Initialize OpenAI client
 const openai = new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY 
 });
+
+// Initialize Stripe client
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Stripe price configuration for subscription tiers
+const STRIPE_PRICES = {
+  basic: 'price_1QcxByKKf4E3Y8q3h8oRfH2y', // $4.95/month - Update with your actual price ID
+  advanced: 'price_1QcxByKKf4E3Y8q3z9pSgJ3z', // $9.95/month - Update with your actual price ID  
+  unlimited: 'price_1QcxByKKf4E3Y8q3a1qThK4a', // $19.95/month - Update with your actual price ID
+};
 
 // Configure multer for file uploads
 const storage_config = multer.memoryStorage();
@@ -970,23 +984,196 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid subscription tier" });
       }
 
-      // For now, simulate successful upgrade (Stripe integration would go here)
+      // Get or create Stripe customer
+      let customer;
+      if (user.stripeCustomerId) {
+        customer = await stripe.customers.retrieve(user.stripeCustomerId);
+      } else {
+        customer = await stripe.customers.create({
+          email: user.email,
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email,
+          metadata: {
+            userId: user.id,
+            platform: 'deeper'
+          }
+        });
+        
+        // Update user with Stripe customer ID
+        await storage.updateUserSubscription(userId, {
+          subscriptionTier: user.subscriptionTier,
+          subscriptionStatus: user.subscriptionStatus,
+          maxConnections: user.maxConnections,
+          stripeCustomerId: customer.id
+        });
+      }
+
+      // Cancel existing subscription if any
+      if (user.stripeSubscriptionId) {
+        try {
+          await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+        } catch (error) {
+          console.error("Error canceling existing subscription:", error);
+        }
+      }
+
+      // Create new subscription with 7-day trial
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{
+          price: STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES],
+        }],
+        trial_period_days: 7,
+        metadata: {
+          userId: user.id,
+          tier: tier,
+          platform: 'deeper'
+        }
+      });
+
+      // Update user subscription in database
       await storage.updateUserSubscription(userId, {
         subscriptionTier: tier,
-        subscriptionStatus: 'active',
+        subscriptionStatus: 'trialing',
         maxConnections: benefits.maxConnections,
-        subscriptionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+        stripeCustomerId: customer.id,
+        stripeSubscriptionId: subscription.id,
+        subscriptionExpiresAt: new Date(subscription.current_period_end * 1000)
       });
 
       res.json({ 
         success: true, 
         tier, 
         maxConnections: benefits.maxConnections,
-        message: "Subscription upgraded successfully" 
+        subscriptionId: subscription.id,
+        clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+        trialEnd: new Date(subscription.trial_end! * 1000),
+        message: "Subscription created successfully with 7-day trial" 
       });
     } catch (error) {
       console.error("Subscription upgrade error:", error);
       res.status(500).json({ message: "Failed to upgrade subscription" });
+    }
+  });
+
+  // Stripe webhook for handling subscription events
+  app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test');
+    } catch (err: any) {
+      console.error(`Webhook signature verification failed:`, err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    try {
+      switch (event.type) {
+        case 'customer.subscription.updated':
+        case 'customer.subscription.created':
+          const subscription = event.data.object as Stripe.Subscription;
+          await handleSubscriptionUpdate(subscription);
+          break;
+
+        case 'customer.subscription.deleted':
+          const deletedSubscription = event.data.object as Stripe.Subscription;
+          await handleSubscriptionCancellation(deletedSubscription);
+          break;
+
+        case 'invoice.payment_succeeded':
+          const invoice = event.data.object as Stripe.Invoice;
+          await handlePaymentSuccess(invoice);
+          break;
+
+        case 'invoice.payment_failed':
+          const failedInvoice = event.data.object as Stripe.Invoice;
+          await handlePaymentFailure(failedInvoice);
+          break;
+
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error('Webhook processing error:', error);
+      res.status(500).json({ error: 'Webhook processing failed' });
+    }
+  });
+
+  // Get subscription status
+  app.get('/api/subscriptions/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = req.user;
+      
+      if (!user.stripeSubscriptionId) {
+        return res.json({
+          status: 'none',
+          tier: user.subscriptionTier || 'free',
+          maxConnections: user.maxConnections || 1
+        });
+      }
+
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      
+      res.json({
+        status: subscription.status,
+        tier: user.subscriptionTier,
+        maxConnections: user.maxConnections,
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null
+      });
+    } catch (error) {
+      console.error('Subscription status error:', error);
+      res.status(500).json({ message: 'Failed to retrieve subscription status' });
+    }
+  });
+
+  // Cancel subscription
+  app.post('/api/subscriptions/cancel', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = req.user;
+      
+      if (!user.stripeSubscriptionId) {
+        return res.status(400).json({ message: 'No active subscription found' });
+      }
+
+      const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: true
+      });
+
+      res.json({
+        success: true,
+        message: 'Subscription will be canceled at the end of the current period',
+        cancelAt: new Date(subscription.current_period_end * 1000)
+      });
+    } catch (error) {
+      console.error('Subscription cancellation error:', error);
+      res.status(500).json({ message: 'Failed to cancel subscription' });
+    }
+  });
+
+  // Reactivate subscription
+  app.post('/api/subscriptions/reactivate', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = req.user;
+      
+      if (!user.stripeSubscriptionId) {
+        return res.status(400).json({ message: 'No subscription found' });
+      }
+
+      const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: false
+      });
+
+      res.json({
+        success: true,
+        message: 'Subscription reactivated successfully'
+      });
+    } catch (error) {
+      console.error('Subscription reactivation error:', error);
+      res.status(500).json({ message: 'Failed to reactivate subscription' });
     }
   });
 
