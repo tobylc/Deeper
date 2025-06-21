@@ -251,7 +251,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
           </CardContent>
         </Card>
       ) : !canUseRightColumn ? (
-        // Show message when user needs to provide a response first
+        // Show message when user needs to complete initial exchange before asking new questions
         <Card className="card-elevated border-ocean/30 bg-ocean/5 h-fit">
           <CardContent className="p-4">
             <div className="text-center space-y-3">
@@ -260,10 +260,13 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
               </div>
               <div>
                 <h3 className="font-semibold text-foreground font-inter mb-2 text-sm">
-                  Response Required
+                  {nextMessageType === 'response' ? 'Response Required' : 'Initial Exchange Needed'}
                 </h3>
                 <p className="text-xs text-slate-700 font-inter leading-relaxed">
-                  Please respond to the current question using the middle column before asking a new question.
+                  {nextMessageType === 'response' 
+                    ? 'Please respond to the current question using the middle column before asking a new question.'
+                    : 'Complete at least one question-response exchange before starting new question threads.'
+                  }
                 </p>
               </div>
             </div>
