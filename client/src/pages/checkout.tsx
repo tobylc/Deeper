@@ -106,10 +106,17 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan, isImmediateCh
         )}
       </Button>
       
-      {!hasDiscount && (
-        <p className="text-xs text-center text-black">
+      {!isImmediateCharge && (
+        <p className="text-xs text-center text-white">
           Your trial starts immediately. You won't be charged until day 8.
           Cancel anytime during your trial period.
+        </p>
+      )}
+      
+      {isImmediateCharge && (
+        <p className="text-xs text-center text-white">
+          You'll be charged $4.95 immediately with your 50% discount.
+          This is cheaper than having coffee once a month with your Deeper partner!
         </p>
       )}
     </form>
@@ -384,9 +391,16 @@ export default function Checkout() {
                 <CardTitle className="text-slate-800">Payment Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <Elements stripe={stripePromise} options={{ clientSecret }}>
-                  <CheckoutForm tier={tier} onSuccess={handleSuccess} hasDiscount={hasDiscount} currentPlan={currentPlan} />
-                </Elements>
+                {clientSecret ? (
+                  <Elements stripe={stripePromise} options={{ clientSecret }}>
+                    <CheckoutForm tier={tier} onSuccess={handleSuccess} hasDiscount={hasDiscount} currentPlan={currentPlan} isImmediateCharge={isImmediateCharge} />
+                  </Elements>
+                ) : (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-slate-600" />
+                    <span className="ml-2 text-slate-600">Setting up payment...</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

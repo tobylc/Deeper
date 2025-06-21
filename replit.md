@@ -699,6 +699,15 @@ Changelog:
   * Added synchronized typing dots, breathing animations, and organic movement patterns
   * Designed to be genuinely mesmerizing while preserving professional application design consistency
   * Waiting visuals appear during empty states and when users wait for responses in ongoing conversations
+- June 21, 2025. Critical Stripe immediate charge system for 50% discount users:
+  * Fixed subscription upgrade endpoint to immediately charge users accessing 50% discount page instead of creating another trial
+  * Modified backend logic to detect discount users and create PaymentIntent for immediate $4.95 charge rather than SetupIntent for trial
+  * Updated checkout frontend to handle both confirmPayment (immediate charge) and confirmSetup (trial) scenarios
+  * Added isImmediateCharge state tracking and proper UI messaging for discount users
+  * Subscription status correctly set to 'active' for immediate charge users vs 'trialing' for trial users
+  * Enhanced payment confirmation flow with appropriate success messages for immediate vs trial scenarios
+  * 50% discount users now charged $4.95 immediately upon checkout completion instead of waiting 7 days
+  * Complete production-ready billing system ensuring proper revenue collection for discount conversions
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications
