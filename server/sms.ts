@@ -76,10 +76,12 @@ export class ConsoleSMSService implements SMSService {
 export class ProductionSMSService implements SMSService {
   private client: twilio.Twilio;
   private fromPhone: string;
+  private messagingServiceSid?: string;
 
-  constructor(accountSid: string, authToken: string, fromPhone: string = "+1234567890") {
+  constructor(accountSid: string, authToken: string, fromPhone: string = "+1234567890", messagingServiceSid?: string) {
     this.client = twilio(accountSid, authToken);
     this.fromPhone = fromPhone;
+    this.messagingServiceSid = messagingServiceSid;
   }
 
   async sendConnectionInvitation(connection: ConnectionWithSMS): Promise<void> {
@@ -90,11 +92,18 @@ ${connection.inviterName} wants to connect as ${connection.relationshipType}.
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
 Accept your invitation: https://deepersocial.replit.app/invitation/${connection.id}`;
 
-    await this.client.messages.create({
+    const messageOptions: any = {
       body: message,
-      from: this.fromPhone,
       to: connection.inviteePhone
-    });
+    };
+
+    if (this.messagingServiceSid) {
+      messageOptions.messagingServiceSid = this.messagingServiceSid;
+    } else {
+      messageOptions.from = this.fromPhone;
+    }
+
+    await this.client.messages.create(messageOptions);
   }
 
   async sendConnectionAccepted(connection: ConnectionWithSMS): Promise<void> {
@@ -104,11 +113,18 @@ Accept your invitation: https://deepersocial.replit.app/invitation/${connection.
 You can now start meaningful conversations together.
 Begin your conversation: https://deepersocial.replit.app/dashboard`;
 
-    await this.client.messages.create({
+    const messageOptions: any = {
       body: message,
-      from: this.fromPhone,
       to: connection.inviterPhone
-    });
+    };
+
+    if (this.messagingServiceSid) {
+      messageOptions.messagingServiceSid = this.messagingServiceSid;
+    } else {
+      messageOptions.from = this.fromPhone;
+    }
+
+    await this.client.messages.create(messageOptions);
   }
 
   async sendConnectionDeclined(connection: ConnectionWithSMS): Promise<void> {
@@ -117,11 +133,18 @@ Begin your conversation: https://deepersocial.replit.app/dashboard`;
     const message = `${connection.inviteeName} has respectfully declined your invitation to connect on Deeper. 
 Thank you for reaching out. You can always try connecting with other people who are open to deeper conversations.`;
 
-    await this.client.messages.create({
+    const messageOptions: any = {
       body: message,
-      from: this.fromPhone,
       to: connection.inviterPhone
-    });
+    };
+
+    if (this.messagingServiceSid) {
+      messageOptions.messagingServiceSid = this.messagingServiceSid;
+    } else {
+      messageOptions.from = this.fromPhone;
+    }
+
+    await this.client.messages.create(messageOptions);
   }
 
   async sendTurnNotification(params: {
@@ -137,11 +160,18 @@ Thank you for reaching out. You can always try connecting with other people who 
 It's your turn to respond!
 Continue conversation: https://deepersocial.replit.app/conversation/${params.conversationId}`;
 
-    await this.client.messages.create({
+    const messageOptions: any = {
       body: message,
-      from: this.fromPhone,
       to: params.recipientPhone
-    });
+    };
+
+    if (this.messagingServiceSid) {
+      messageOptions.messagingServiceSid = this.messagingServiceSid;
+    } else {
+      messageOptions.from = this.fromPhone;
+    }
+
+    await this.client.messages.create(messageOptions);
   }
 
   async sendVerificationCode(phoneNumber: string, code: string): Promise<void> {
