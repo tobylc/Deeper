@@ -1608,6 +1608,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     validateEmail,
     isAuthenticated,
     async (req: any, res) => {
+    let audioPath: string | null = null;
     try {
       const conversationId = parseInt(req.params.id);
       const { senderEmail, type, duration } = req.body;
@@ -1683,7 +1684,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const randomString = Math.random().toString(36).substring(2, 15);
       const fileExtension = req.file.mimetype.split('/')[1] || 'webm';
       const fileName = `voice_${timestamp}_${randomString}.${fileExtension}`;
-      const audioPath = path.join(uploadsDir, fileName);
+      audioPath = path.join(uploadsDir, fileName);
       
       // Save audio file securely
       try {
