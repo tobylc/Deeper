@@ -393,6 +393,61 @@ export class DatabaseStorage implements IStorage {
       .delete(verificationCodes)
       .where(sql`${verificationCodes.expiresAt} < NOW()`);
   }
+
+  // Trial Management
+  async initializeTrial(userId: string): Promise<User | undefined> {
+    const trialStartedAt = new Date();
+    const trialExpiresAt = new Date(trialStartedAt);
+    trialExpiresAt.setDate(trialExpiresAt.getDate() + 7); // 7 days from now
+
+    const [user] = await db
+      .update(users)
+      .set({
+        subscriptionTier: 'trial',
+        subscriptionStatus: 'active',
+        maxConnections: 1,
+        trialStartedAt,
+        trialExpiresAt,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async checkTrialStatus(userId: string): Promise<{ isExpired: boolean; daysRemaining: number; user: User | undefined }> {
+    const user = await this.getUser(userId);
+    if (!user) return { isExpired: true, daysRemaining: 0, user: undefined };
+
+    // If user has paid subscription, trial doesn't apply
+    if (user.subscriptionTier !== 'trial') {
+      return { isExpired: false, daysRemaining: 0, user };
+    }
+
+    if (!user.trialExpiresAt) {
+      // Initialize trial if not set
+      const updatedUser = await this.initializeTrial(userId);
+      return { isExpired: false, daysRemaining: 7, user: updatedUser };
+    }
+
+    const now = new Date();
+    const isExpired = now > user.trialExpiresAt;
+    const daysRemaining = Math.max(0, Math.ceil((user.trialExpiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+    return { isExpired, daysRemaining, user };
+  }
+
+  async expireTrialUser(userId: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({
+        subscriptionStatus: 'trial_expired',
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
 }
 
 export const storage = new DatabaseStorage();

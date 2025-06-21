@@ -454,6 +454,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Trial status endpoint
+  app.get('/api/trial-status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const trialStatus = await storage.checkTrialStatus(userId);
+      const connectionCount = await storage.getInitiatedConnectionsCount(currentUser.email);
+
+      res.json({
+        isExpired: trialStatus.isExpired,
+        daysRemaining: trialStatus.daysRemaining,
+        subscriptionTier: currentUser.subscriptionTier,
+        subscriptionStatus: currentUser.subscriptionStatus,
+        maxConnections: currentUser.maxConnections,
+        currentConnections: connectionCount
+      });
+    } catch (error) {
+      console.error('Trial status error:', error);
+      res.status(500).json({ message: 'Failed to check trial status' });
+    }
+  });
+
   // Get user display name endpoint with enhanced validation
   app.get("/api/users/display-name/:email", 
     rateLimit(100, 60 * 1000), // 100 requests per minute
@@ -791,7 +818,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "User email not found" });
       }
 
-      // Check subscription limits before allowing connection creation
+      // Check trial status and subscription limits before allowing connection creation
+      const trialStatus = await storage.checkTrialStatus(currentUser.id);
+      
+      // Block all actions if trial has expired and user doesn't have paid subscription
+      if (trialStatus.isExpired && currentUser.subscriptionTier === 'trial') {
+        await storage.expireTrialUser(currentUser.id);
+        return res.status(403).json({ 
+          message: "Your 7-day free trial has expired. Choose a subscription plan to continue using Deeper.", 
+          type: "TRIAL_EXPIRED",
+          subscriptionTier: currentUser.subscriptionTier,
+          requiresUpgrade: true
+        });
+      }
+
       const initiatedConnectionsCount = await storage.getInitiatedConnectionsCount(currentUser.email);
       const userMaxConnections = currentUser.maxConnections || 1;
       
@@ -801,7 +841,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           type: "SUBSCRIPTION_LIMIT",
           currentCount: initiatedConnectionsCount,
           maxAllowed: userMaxConnections,
-          subscriptionTier: currentUser.subscriptionTier || 'free'
+          subscriptionTier: currentUser.subscriptionTier || 'trial',
+          requiresUpgrade: true
         });
       }
 
