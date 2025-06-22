@@ -1331,13 +1331,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let subscription;
       
       if (shouldChargeImmediately) {
-        // Create payment intent for immediate charge with discount
-        const paymentIntent = await stripe.paymentIntents.create({
-          amount: Math.round(495), // $4.95 for 50% off Advanced plan
-          currency: 'usd',
+        console.log('[SUBSCRIPTION] Creating immediate charge flow for 50% discount');
+        console.log('[SUBSCRIPTION] Customer ID:', customer.id);
+        console.log('[SUBSCRIPTION] Price ID:', finalPrice);
+        console.log('[SUBSCRIPTION] Coupon ID:', couponId);
+
+        // For immediate charge users, create subscription with default payment method
+        const subscriptionConfig: any = {
           customer: customer.id,
-          setup_future_usage: 'off_session',
-          payment_method_types: ['card'],
+          items: [{
+            price: finalPrice,
+          }],
+          payment_behavior: 'default_incomplete',
+          payment_settings: {
+            save_default_payment_method: 'on_subscription'
+          },
+          expand: ['latest_invoice.payment_intent'],
           metadata: {
             userId: user.id,
             tier: actualTier!,
@@ -1345,30 +1354,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
             discount_applied: discountPercent?.toString() || '0',
             immediate_charge: 'true'
           }
-        });
-
-        // Create subscription without trial period
-        const subscriptionConfig: any = {
-          customer: customer.id,
-          items: [{
-            price: finalPrice,
-          }],
-          metadata: {
-            userId: user.id,
-            tier: actualTier,
-            platform: 'deeper',
-            discount_applied: discountPercent.toString(),
-            immediate_charge: 'true'
-          }
         };
 
         // Apply discount if coupon was created successfully
         if (couponId) {
           subscriptionConfig.discounts = [{ coupon: couponId }];
+          console.log('[SUBSCRIPTION] Applied 50% discount coupon:', couponId);
         }
 
+        console.log('[SUBSCRIPTION] Creating subscription with config:', JSON.stringify(subscriptionConfig, null, 2));
         subscription = await stripe.subscriptions.create(subscriptionConfig);
-        setupIntent = { client_secret: paymentIntent.client_secret };
+        
+        // Get client secret from the subscription's latest invoice
+        const latestInvoice = subscription.latest_invoice as any;
+        const paymentIntent = latestInvoice?.payment_intent;
+        
+        if (paymentIntent?.client_secret) {
+          setupIntent = { client_secret: paymentIntent.client_secret };
+          console.log('[SUBSCRIPTION] Payment intent client secret obtained');
+        } else {
+          throw new Error('Failed to create payment intent for immediate charge');
+        }
       } else {
         // Regular trial flow for new users
         // First create a setup intent for payment method collection during trial
