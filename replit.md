@@ -699,6 +699,15 @@ Changelog:
   * Added synchronized typing dots, breathing animations, and organic movement patterns
   * Designed to be genuinely mesmerizing while preserving professional application design consistency
   * Waiting visuals appear during empty states and when users wait for responses in ongoing conversations
+- June 22, 2025. Immediate charging for discounted Advanced plan offers implementation:
+  * Removed trial period for 50% discounted Advanced plan offers ensuring immediate payment collection
+  * Updated checkout page to remove trial messaging and show "Permanent 50% discount" for discounted offers
+  * Enhanced subscription upgrade endpoint to skip trial_period_days for discounted Advanced plans
+  * Users with trial-expired status are charged immediately at $4.50/month for Advanced plan benefits
+  * Subscription status set to 'active' instead of 'trialing' for discounted Advanced plan subscriptions
+  * Updated button text to "Upgrade to Advanced - 50% Off" clearly indicating immediate upgrade action
+  * Permanent discount applied through Stripe coupons with duration 'forever' for lifetime pricing
+  * Complete immediate charging system for trial-expired users upgrading to discounted Advanced plans
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications

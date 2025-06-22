@@ -1213,13 +1213,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      // Create subscription with trial period
+      // Create subscription - no trial for discounted Advanced plan offers
+      const isDiscountedAdvanced = discountPercent && tier === 'advanced' && discountPercent === 50;
+      
       const subscriptionConfig: any = {
         customer: customer.id,
         items: [{
           price: finalPrice,
         }],
-        trial_period_days: 7,
         metadata: {
           userId: user.id,
           tier: tier,
@@ -1227,6 +1228,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           discount_applied: discountPercent ? discountPercent.toString() : 'none'
         }
       };
+
+      // Only add trial period if NOT a discounted Advanced plan
+      if (!isDiscountedAdvanced) {
+        subscriptionConfig.trial_period_days = 7;
+      }
 
       // Apply discount if coupon was created successfully
       if (couponId) {
@@ -1236,9 +1242,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
       // Update user subscription in database
+      const subscriptionStatus = isDiscountedAdvanced ? 'active' : 'trialing';
       await storage.updateUserSubscription(userId, {
         subscriptionTier: tier,
-        subscriptionStatus: 'trialing',
+        subscriptionStatus: subscriptionStatus,
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
@@ -1251,10 +1258,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxConnections: benefits.maxConnections,
         subscriptionId: subscription.id,
         clientSecret: setupIntent.client_secret,
-        trialEnd: new Date(subscription.trial_end! * 1000),
+        trialEnd: isDiscountedAdvanced ? null : new Date(subscription.trial_end! * 1000),
         discountApplied: discountPercent ? `${discountPercent}%` : null,
-        message: discountPercent && tier === 'advanced' ? 
-          "Subscription created successfully with 7-day trial and 50% discount!" : 
+        message: isDiscountedAdvanced ? 
+          "Advanced subscription activated with permanent 50% discount!" : 
           "Subscription created successfully with 7-day trial" 
       });
     } catch (error) {

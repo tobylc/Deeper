@@ -86,7 +86,7 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
             Processing...
           </>
         ) : (
-          hasDiscount && tier === 'advanced' ? 'Upgrade to Advanced' : `Upgrade to ${currentPlan.name}`
+          hasDiscount && tier === 'advanced' ? 'Upgrade to Advanced - 50% Off' : `Start 7-Day Trial`
         )}
       </Button>
       
@@ -348,15 +348,23 @@ export default function Checkout() {
                     <CheckCircle className="w-5 h-5 text-green-400" />
                     <span className="text-white">AI question suggestions</span>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-400" />
-                    <span className="text-white">7-day free trial</span>
-                  </div>
+                  {!(hasDiscount && tier === 'advanced') && (
+                    <div className="flex items-center space-x-3">
+                      <CheckCircle className="w-5 h-5 text-green-400" />
+                      <span className="text-white">7-day free trial</span>
+                    </div>
+                  )}
                 </div>
 
-                <Badge variant="secondary" className="w-full justify-center py-2 bg-green-100 text-green-800">
-                  Free for 7 days, then {currentPlan.price}/month
-                </Badge>
+                {hasDiscount && tier === 'advanced' ? (
+                  <Badge variant="secondary" className="w-full justify-center py-2 bg-amber-100 text-amber-800">
+                    Permanent 50% discount - {currentPlan.price}/month
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="w-full justify-center py-2 bg-green-100 text-green-800">
+                    Free for 7 days, then {currentPlan.price}/month
+                  </Badge>
+                )}
               </CardContent>
             </Card>
 
