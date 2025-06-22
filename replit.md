@@ -699,30 +699,6 @@ Changelog:
   * Added synchronized typing dots, breathing animations, and organic movement patterns
   * Designed to be genuinely mesmerizing while preserving professional application design consistency
   * Waiting visuals appear during empty states and when users wait for responses in ongoing conversations
-- June 21, 2025. Critical Stripe immediate charge system for 50% discount users:
-  * Fixed subscription upgrade endpoint to immediately charge users accessing 50% discount page instead of creating another trial
-  * Modified backend logic to detect discount users and create PaymentIntent for immediate $4.95 charge rather than SetupIntent for trial
-  * Updated checkout frontend to handle both confirmPayment (immediate charge) and confirmSetup (trial) scenarios
-  * Added isImmediateCharge state tracking and proper UI messaging for discount users
-  * Subscription status correctly set to 'active' for immediate charge users vs 'trialing' for trial users
-  * Enhanced payment confirmation flow with appropriate success messages for immediate vs trial scenarios
-  * 50% discount users now charged $4.95 immediately upon checkout completion instead of waiting 7 days
-  * Complete production-ready billing system ensuring proper revenue collection for discount conversions
-- June 21, 2025. Fixed subscription tier assignment for 50% discount users:
-  * Corrected critical bug where 50% discount users received "basic" subscription instead of "advanced"
-  * Added actualTier logic to force 'advanced' tier when 50% discount is applied regardless of frontend input
-  * Updated all Stripe metadata and database operations to use correct tier for discount users
-  * 50% discount users now properly receive Advanced subscription with 3 connections instead of Basic with 1 connection
-  * Enhanced success messaging to clearly indicate "Advanced subscription" for discount conversions
-  * Complete tier assignment fix ensuring discount users receive proper subscription benefits
-- June 21, 2025. Authentication system fixes for 50% discount checkout completion:
-  * Resolved critical authentication failures preventing 50% discount users from completing subscription upgrades
-  * Enhanced subscription upgrade endpoint with robust session recovery and multi-method authentication validation
-  * Fixed "Failed to execute 'fetch' on 'Window': Request with GET/HEAD method cannot have body" error in checkout flow
-  * Implemented comprehensive authentication logging and error handling for subscription endpoint debugging
-  * Added session restoration logic for OAuth users accessing subscription upgrade functionality
-  * 50% discount checkout now successfully processes authentication and proceeds to Stripe payment confirmation
-  * Complete resolution of 401 authentication errors that were blocking discount subscription conversions
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications

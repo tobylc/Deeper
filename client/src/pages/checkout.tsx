@@ -22,10 +22,9 @@ interface CheckoutFormProps {
   onSuccess: () => void;
   hasDiscount: boolean;
   currentPlan: any;
-  isImmediateCharge: boolean;
 }
 
-const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan, isImmediateCharge }: CheckoutFormProps) => {
+const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -41,27 +40,14 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan, isImmediateCh
     setIsProcessing(true);
 
     try {
-      let result;
-      
-      if (isImmediateCharge) {
-        // For immediate charge (50% discount users), use confirmPayment
-        result = await stripe.confirmPayment({
-          elements,
-          confirmParams: {
-            return_url: `${window.location.origin}/dashboard`,
-          },
-        });
-      } else {
-        // For trial setup, use confirmSetup
-        result = await stripe.confirmSetup({
-          elements,
-          confirmParams: {
-            return_url: `${window.location.origin}/dashboard`,
-          },
-        });
-      }
+      const { error } = await stripe.confirmSetup({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/dashboard`,
+        },
+      });
 
-      if (result.error) {
+      if (error) {
         toast({
           title: "Unable to process payment",
           description: "Please check your payment details and try again",
@@ -69,9 +55,7 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan, isImmediateCh
       } else {
         toast({
           title: "Subscription Activated",
-          description: isImmediateCharge ? 
-            "Payment successful! You've been charged $4.95 with 50% discount. Redirecting to dashboard..." :
-            "Welcome to your new plan! Redirecting to dashboard...",
+          description: "Welcome to your new plan! Redirecting to dashboard...",
         });
         onSuccess();
       }
@@ -106,17 +90,10 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan, isImmediateCh
         )}
       </Button>
       
-      {!isImmediateCharge && (
-        <p className="text-xs text-center text-white">
+      {!hasDiscount && (
+        <p className="text-xs text-center text-black">
           Your trial starts immediately. You won't be charged until day 8.
           Cancel anytime during your trial period.
-        </p>
-      )}
-      
-      {isImmediateCharge && (
-        <p className="text-xs text-center text-white">
-          You'll be charged $4.95 immediately with your 50% discount.
-          This is cheaper than having coffee once a month with your Deeper partner!
         </p>
       )}
     </form>
@@ -126,11 +103,10 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan, isImmediateCh
 export default function Checkout() {
   const [, params] = useRoute('/checkout/:tier');
   const [, setLocation] = useLocation();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isImmediateCharge, setIsImmediateCharge] = useState(false);
 
   const tier = params?.tier;
   
@@ -172,33 +148,18 @@ export default function Checkout() {
       return;
     }
 
-    // Wait for authentication to load before redirecting
-    if (authLoading) {
-      return;
-    }
-
     if (!user) {
-      console.log('User not authenticated, redirecting to auth page');
       setLocation('/auth?redirect=/checkout/' + tier + (hasDiscount ? '?discount=' + discountPercent : ''));
       return;
     }
 
-    console.log('User authenticated:', user.email, 'proceeding with checkout');
-
     // Create subscription
     const createSubscription = async () => {
       try {
-        // Ensure user is still authenticated before making subscription request
-        if (!user) {
-          throw new Error('Authentication required');
-        }
-
         const requestBody: { tier: string; discountPercent?: number } = { tier };
         if (hasDiscount) {
           requestBody.discountPercent = discountPercent;
         }
-        
-        console.log('Creating subscription with:', requestBody);
         
         const response = await apiRequest("POST", "/api/subscription/upgrade", requestBody);
         
@@ -211,35 +172,23 @@ export default function Checkout() {
         
         if (data.success && data.clientSecret) {
           setClientSecret(data.clientSecret);
-          setIsImmediateCharge(data.immediateCharge || false);
         } else {
           throw new Error(data.message || 'Failed to create subscription');
         }
       } catch (error: any) {
         console.error('Subscription creation error:', error);
-        console.error('Error details:', {
-          message: error.message,
-          status: error.status,
-          response: error.response,
-          tier,
-          hasDiscount,
-          discountPercent,
-          user: user?.email
-        });
         
         // Handle authentication errors specifically
-        if (error.message && (error.message.includes('Authentication') || error.message.includes('401') || error.message.includes('Unauthorized'))) {
-          console.log('Authentication error detected, redirecting to auth');
+        if (error.message && (error.message.includes('Authentication') || error.message.includes('401'))) {
           toast({
             title: "Please log in to continue",
             description: "You'll need to sign in to set up your subscription",
           });
           setLocation('/auth?redirect=/checkout/' + tier + (hasDiscount ? '?discount=' + discountPercent : ''));
         } else {
-          console.log('Non-auth error, redirecting to pricing');
           toast({
             title: "Unable to set up subscription",
-            description: error.message || "Please try again in a moment or contact support if the issue persists",
+            description: "Please try again in a moment or contact support if the issue persists",
           });
           setLocation('/pricing');
         }
@@ -249,7 +198,7 @@ export default function Checkout() {
     };
 
     createSubscription();
-  }, [tier, user, currentPlan, setLocation, toast, hasDiscount, discountPercent, authLoading]);
+  }, [tier, user, currentPlan, setLocation, toast]);
 
   const handleSuccess = () => {
     setTimeout(() => {
@@ -417,16 +366,9 @@ export default function Checkout() {
                 <CardTitle className="text-slate-800">Payment Details</CardTitle>
               </CardHeader>
               <CardContent>
-                {clientSecret ? (
-                  <Elements stripe={stripePromise} options={{ clientSecret }}>
-                    <CheckoutForm tier={tier} onSuccess={handleSuccess} hasDiscount={hasDiscount} currentPlan={currentPlan} isImmediateCharge={isImmediateCharge} />
-                  </Elements>
-                ) : (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-slate-600" />
-                    <span className="ml-2 text-slate-600">Setting up payment...</span>
-                  </div>
-                )}
+                <Elements stripe={stripePromise} options={{ clientSecret }}>
+                  <CheckoutForm tier={tier} onSuccess={handleSuccess} hasDiscount={hasDiscount} currentPlan={currentPlan} />
+                </Elements>
               </CardContent>
             </Card>
           </div>

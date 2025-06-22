@@ -1111,53 +1111,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Subscription management endpoints
   app.post("/api/subscription/upgrade", async (req: any, res) => {
     try {
-      console.log("[SUBSCRIPTION] Request received:", {
-        hasUser: !!req.user,
-        isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
-        hasSession: !!req.session,
-        sessionUser: !!req.session?.user,
-        testUserQuery: req.query.test_user,
-        headers: {
-          authorization: !!req.headers.authorization,
-          cookie: !!req.headers.cookie,
-          userAgent: req.headers['user-agent']?.substring(0, 50)
-        }
-      });
-
-      // Enhanced authentication check with test user support
+      // Check session-based authentication first
       let userId;
       let user;
 
-      if (req.session?.user?.id) {
+      if (req.session?.user) {
         userId = req.session.user.id;
         user = await storage.getUser(userId);
-        console.log("[SUBSCRIPTION] Session auth successful for user:", userId);
-      } else if (req.isAuthenticated?.() && req.user) {
-        const oauthUserId = req.user.claims?.sub || req.user.id;
-        user = await storage.getUser(oauthUserId);
-        if (user) {
-          userId = user.id;
-          // Restore session for this user
-          req.session.user = {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName
-          };
-          // Force session save
-          req.session.save((err: any) => {
-            if (err) console.error('[SUBSCRIPTION] Session save error:', err);
-          });
-          console.log("[SUBSCRIPTION] OAuth auth restored session for user:", userId);
-        }
-      }
-      
-      if (!userId || !user) {
-        console.log("[SUBSCRIPTION] Authentication failed:", { userId, hasUser: !!user });
+      } else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+        userId = req.user.claims?.sub || req.user.id;
+        user = await storage.getUser(userId);
+      } else {
         return res.status(401).json({ 
           message: "Authentication required. Please log in again.",
           code: "AUTH_REQUIRED"
         });
+      }
+      
+      if (!userId || !user) {
+        return res.status(401).json({ message: "User not authenticated" });
       }
 
       const { tier, discountPercent } = req.body;
@@ -1166,16 +1138,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Force tier to 'advanced' when 50% discount is applied, regardless of what frontend sends
-      const actualTier = (discountPercent === 50 && tier === 'advanced') ? 'advanced' : tier;
-
       const tierBenefits: Record<string, { maxConnections: number, price: number }> = {
         'basic': { maxConnections: 1, price: 4.95 },
         'advanced': { maxConnections: 3, price: 9.95 },
         'unlimited': { maxConnections: 999, price: 19.95 }
       };
 
-      const benefits = tierBenefits[actualTier];
+      const benefits = tierBenefits[tier];
       if (!benefits) {
         return res.status(400).json({ message: "Invalid subscription tier" });
       }
@@ -1213,10 +1182,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Handle discount for Advanced plan
-      let finalPrice = STRIPE_PRICES[actualTier as keyof typeof STRIPE_PRICES];
+      let finalPrice = STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES];
       let couponId = null;
       
-      if (discountPercent && actualTier === 'advanced' && discountPercent === 50) {
+      if (discountPercent && tier === 'advanced' && discountPercent === 50) {
         try {
           // Create 50% off coupon for Advanced plan
           const coupon = await stripe.coupons.create({
@@ -1231,98 +1200,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Check if user has already had a trial (expired trial users should be charged immediately)
-      const now = new Date();
-      const isExpiredTrial = user.subscriptionStatus === 'trialing' && 
-                            user.subscriptionExpiresAt && 
-                            user.subscriptionExpiresAt < now;
-      
-      // For 50% discount users (expired trial), charge immediately instead of creating another trial
-      const shouldChargeImmediately = discountPercent && discountPercent === 50;
-
-      let setupIntent;
-      let subscription;
-      
-      if (shouldChargeImmediately) {
-        // Create payment intent for immediate charge with discount
-        const paymentIntent = await stripe.paymentIntents.create({
-          amount: Math.round(495), // $4.95 for 50% off Advanced plan
-          currency: 'usd',
-          customer: customer.id,
-          setup_future_usage: 'off_session',
-          metadata: {
-            userId: user.id,
-            tier: actualTier,
-            platform: 'deeper',
-            discount_applied: discountPercent.toString(),
-            immediate_charge: 'true'
-          }
-        });
-
-        // Create subscription without trial period
-        const subscriptionConfig: any = {
-          customer: customer.id,
-          items: [{
-            price: finalPrice,
-          }],
-          metadata: {
-            userId: user.id,
-            tier: actualTier,
-            platform: 'deeper',
-            discount_applied: discountPercent.toString(),
-            immediate_charge: 'true'
-          }
-        };
-
-        // Apply discount if coupon was created successfully
-        if (couponId) {
-          subscriptionConfig.discounts = [{ coupon: couponId }];
+      // First create a setup intent for payment method collection during trial
+      const setupIntent = await stripe.setupIntents.create({
+        customer: customer.id,
+        usage: 'off_session',
+        payment_method_types: ['card'],
+        metadata: {
+          userId: user.id,
+          tier: tier,
+          platform: 'deeper',
+          discount_applied: discountPercent ? discountPercent.toString() : 'none'
         }
+      });
 
-        subscription = await stripe.subscriptions.create(subscriptionConfig);
-        setupIntent = { client_secret: paymentIntent.client_secret };
-      } else {
-        // Regular trial flow for new users
-        // First create a setup intent for payment method collection during trial
-        setupIntent = await stripe.setupIntents.create({
-          customer: customer.id,
-          usage: 'off_session',
-          payment_method_types: ['card'],
-          metadata: {
-            userId: user.id,
-            tier: actualTier,
-            platform: 'deeper',
-            discount_applied: discountPercent ? discountPercent.toString() : 'none'
-          }
-        });
-
-        // Create subscription with trial period
-        const subscriptionConfig: any = {
-          customer: customer.id,
-          items: [{
-            price: finalPrice,
-          }],
-          trial_period_days: 7,
-          metadata: {
-            userId: user.id,
-            tier: actualTier,
-            platform: 'deeper',
-            discount_applied: discountPercent ? discountPercent.toString() : 'none'
-          }
-        };
-
-        // Apply discount if coupon was created successfully
-        if (couponId) {
-          subscriptionConfig.discounts = [{ coupon: couponId }];
+      // Create subscription with trial period
+      const subscriptionConfig: any = {
+        customer: customer.id,
+        items: [{
+          price: finalPrice,
+        }],
+        trial_period_days: 7,
+        metadata: {
+          userId: user.id,
+          tier: tier,
+          platform: 'deeper',
+          discount_applied: discountPercent ? discountPercent.toString() : 'none'
         }
+      };
 
-        subscription = await stripe.subscriptions.create(subscriptionConfig);
+      // Apply discount if coupon was created successfully
+      if (couponId) {
+        subscriptionConfig.discounts = [{ coupon: couponId }];
       }
+
+      const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
       // Update user subscription in database
       await storage.updateUserSubscription(userId, {
-        subscriptionTier: actualTier,
-        subscriptionStatus: shouldChargeImmediately ? 'active' : 'trialing',
+        subscriptionTier: tier,
+        subscriptionStatus: 'trialing',
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
@@ -1331,32 +1247,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ 
         success: true, 
-        tier: actualTier, 
+        tier, 
         maxConnections: benefits.maxConnections,
         subscriptionId: subscription.id,
         clientSecret: setupIntent.client_secret,
-        trialEnd: shouldChargeImmediately ? null : new Date(subscription.trial_end! * 1000),
+        trialEnd: new Date(subscription.trial_end! * 1000),
         discountApplied: discountPercent ? `${discountPercent}%` : null,
-        immediateCharge: shouldChargeImmediately,
-        message: shouldChargeImmediately ? 
-          "Advanced subscription upgraded successfully! You'll be charged $4.95 immediately with 50% discount." :
-          discountPercent && actualTier === 'advanced' ? 
-            "Advanced subscription created successfully with 7-day trial and 50% discount!" : 
-            "Subscription created successfully with 7-day trial" 
+        message: discountPercent && tier === 'advanced' ? 
+          "Subscription created successfully with 7-day trial and 50% discount!" : 
+          "Subscription created successfully with 7-day trial" 
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Subscription upgrade error:", error);
-      console.error("Error details:", {
-        message: error?.message || 'Unknown error',
-        stack: error?.stack,
-        userId: req.user?.claims?.sub || req.user?.id,
-        tier: req.body?.tier,
-        discountPercent: req.body?.discountPercent
-      });
-      res.status(500).json({ 
-        message: "Failed to upgrade subscription",
-        error: process.env.NODE_ENV === 'development' ? (error?.message || 'Unknown error') : 'Internal server error'
-      });
+      res.status(500).json({ message: "Failed to upgrade subscription" });
     }
   });
 
