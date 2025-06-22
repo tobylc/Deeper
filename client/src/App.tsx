@@ -14,7 +14,7 @@ import InvitationLanding from "@/pages/invitation";
 import InvitationSignup from "@/pages/invitation-signup";
 import Checkout from "@/pages/checkout";
 import NotFound from "@/pages/not-found";
-import { Component, ReactNode, useEffect } from "react";
+import { Component, ReactNode, useEffect, Suspense } from "react";
 
 class ErrorBoundary extends Component<
   { children: ReactNode },
@@ -72,32 +72,43 @@ function Router() {
   }
 
   return (
-    <Switch>
-      {/* Invitation and auth routes are always accessible */}
-      <Route path="/invitation/signup" component={InvitationSignup} />
-      <Route path="/invitation/:params*" component={InvitationLanding} />
-      <Route path="/invitation" component={InvitationLanding} />
-      <Route path="/auth" component={Auth} />
-      
-      {!isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/features" component={Features} />
-          <Route path="/pricing" component={Pricing} />
-          <Route component={NotFound} />
-        </>
-      ) : (
-        <>
-          <Route path="/" component={Dashboard} />
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/conversation/:id" component={Conversation} />
-          <Route path="/checkout/:tier" component={Checkout} />
-          <Route path="/features" component={Features} />
-          <Route path="/pricing" component={Pricing} />
-          <Route component={NotFound} />
-        </>
-      )}
-    </Switch>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-radial from-slate-900 via-slate-800 to-slate-900">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center p-3 mx-auto mb-4">
+            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <p className="text-slate-300">Loading...</p>
+        </div>
+      </div>
+    }>
+      <Switch>
+        {/* Invitation and auth routes are always accessible */}
+        <Route path="/invitation/signup" component={InvitationSignup} />
+        <Route path="/invitation/:params*" component={InvitationLanding} />
+        <Route path="/invitation" component={InvitationLanding} />
+        <Route path="/auth" component={Auth} />
+        
+        {!isAuthenticated ? (
+          <>
+            <Route path="/" component={Landing} />
+            <Route path="/features" component={Features} />
+            <Route path="/pricing" component={Pricing} />
+            <Route component={NotFound} />
+          </>
+        ) : (
+          <>
+            <Route path="/" component={Dashboard} />
+            <Route path="/dashboard" component={Dashboard} />
+            <Route path="/conversation/:id" component={Conversation} />
+            <Route path="/checkout/:tier" component={Checkout} />
+            <Route path="/features" component={Features} />
+            <Route path="/pricing" component={Pricing} />
+            <Route component={NotFound} />
+          </>
+        )}
+      </Switch>
+    </Suspense>
   );
 }
 

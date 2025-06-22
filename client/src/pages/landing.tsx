@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { SafeDialog } from "@/components/safe-dialog";
 import { MessageSquare, HelpCircle, Shield, X } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -167,26 +167,27 @@ export default function Landing() {
         </div>
 
         {/* Step Detail Modal */}
-        <Dialog open={selectedStep !== null} onOpenChange={() => setSelectedStep(null)}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-inter font-bold text-foreground flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold">{selectedStep}</span>
-                </div>
-                {selectedStep && stepDetails[selectedStep as keyof typeof stepDetails].title}
-              </DialogTitle>
-              <DialogDescription className="sr-only">
-                Detailed explanation of step {selectedStep}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="mt-6">
-              <p className="text-muted-foreground leading-relaxed text-lg">
-                {selectedStep && stepDetails[selectedStep as keyof typeof stepDetails].detailedExplanation}
-              </p>
+        <SafeDialog 
+          open={selectedStep !== null} 
+          onOpenChange={() => setSelectedStep(null)}
+          title={selectedStep ? stepDetails[selectedStep as keyof typeof stepDetails].title : ""}
+          description={`Detailed explanation of step ${selectedStep}`}
+          className="max-w-2xl"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold">{selectedStep}</span>
             </div>
-          </DialogContent>
-        </Dialog>
+            <h3 className="text-2xl font-inter font-bold text-foreground">
+              {selectedStep && stepDetails[selectedStep as keyof typeof stepDetails].title}
+            </h3>
+          </div>
+          <div className="mt-6">
+            <p className="text-muted-foreground leading-relaxed text-lg">
+              {selectedStep && stepDetails[selectedStep as keyof typeof stepDetails].detailedExplanation}
+            </p>
+          </div>
+        </SafeDialog>
       </section>
 
       {/* CTA Section */}

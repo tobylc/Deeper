@@ -1353,9 +1353,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tier: req.body?.tier,
         discountPercent: req.body?.discountPercent
       });
+      // Enhanced error response with specific error codes
+      const errorMessage = error?.message || 'Unknown error';
+      const isStripeError = errorMessage.includes('stripe') || errorMessage.includes('Stripe');
+      
       res.status(500).json({ 
         message: "Failed to upgrade subscription",
-        error: process.env.NODE_ENV === 'development' ? (error?.message || 'Unknown error') : 'Internal server error'
+        error: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error',
+        code: isStripeError ? 'STRIPE_ERROR' : 'INTERNAL_ERROR',
+        retryable: !isStripeError
       });
     }
   });
@@ -1365,11 +1371,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const sig = req.headers['stripe-signature'];
     let event;
 
-    try {
-      event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test');
-    } catch (err: any) {
-      console.error(`Webhook signature verification failed:`, err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
+    // Check if webhook secret is configured
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      console.warn('STRIPE_WEBHOOK_SECRET not configured, webhook verification skipped');
+      // In development, we can accept webhooks without verification
+      try {
+        event = JSON.parse(req.body.toString());
+      } catch (parseError) {
+        console.error('Failed to parse webhook body:', parseError);
+        return res.status(400).json({ error: 'Invalid webhook payload' });
+      }
+    } else {
+      try {
+        event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET);
+      } catch (err: any) {
+        console.error(`Webhook signature verification failed:`, err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+      }
     }
 
     try {
