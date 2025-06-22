@@ -90,7 +90,12 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
         )}
       </Button>
       
-      {!hasDiscount && (
+      {hasDiscount && tier === 'advanced' ? (
+        <p className="text-xs text-center text-black">
+          You will be charged $4.50 immediately for your first month of Advanced plan benefits.
+          This 50% discount is permanent for as long as you keep your subscription active.
+        </p>
+      ) : !hasDiscount && (
         <p className="text-xs text-center text-black">
           Your trial starts immediately. You won't be charged until day 8.
           Cancel anytime during your trial period.
@@ -352,6 +357,12 @@ export default function Checkout() {
                     <div className="flex items-center space-x-3">
                       <CheckCircle className="w-5 h-5 text-green-400" />
                       <span className="text-white">7-day free trial</span>
+                    </div>
+                  )}
+                  {hasDiscount && tier === 'advanced' && (
+                    <div className="flex items-center space-x-3">
+                      <CheckCircle className="w-5 h-5 text-green-400" />
+                      <span className="text-white">Immediate access - no trial</span>
                     </div>
                   )}
                 </div>

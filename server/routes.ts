@@ -1138,13 +1138,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
+      // Determine if this is a discounted Advanced plan offer early
+      const isDiscountedAdvanced = discountPercent && tier === 'advanced' && discountPercent === 50;
+      
       const tierBenefits: Record<string, { maxConnections: number, price: number }> = {
         'basic': { maxConnections: 1, price: 4.95 },
         'advanced': { maxConnections: 3, price: 9.95 },
         'unlimited': { maxConnections: 999, price: 19.95 }
       };
 
-      const benefits = tierBenefits[tier];
+      // Use finalTier for benefits to ensure Advanced plan benefits for discounted offers
+      const benefitsTier = isDiscountedAdvanced ? 'advanced' : tier;
+      const benefits = tierBenefits[benefitsTier];
       if (!benefits) {
         return res.status(400).json({ message: "Invalid subscription tier" });
       }
@@ -1213,8 +1218,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      // Create subscription - no trial for discounted Advanced plan offers
-      const isDiscountedAdvanced = discountPercent && tier === 'advanced' && discountPercent === 50;
+      // Force tier to 'advanced' for any discount offer to ensure correct plan upgrade
+      const finalTier = isDiscountedAdvanced ? 'advanced' : tier;
       
       const subscriptionConfig: any = {
         customer: customer.id,
@@ -1223,7 +1228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }],
         metadata: {
           userId: user.id,
-          tier: tier,
+          tier: finalTier,
           platform: 'deeper',
           discount_applied: discountPercent ? discountPercent.toString() : 'none'
         }
@@ -1232,6 +1237,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Only add trial period if NOT a discounted Advanced plan
       if (!isDiscountedAdvanced) {
         subscriptionConfig.trial_period_days = 7;
+      } else {
+        // For discounted Advanced plans, ensure immediate billing
+        subscriptionConfig.billing_cycle_anchor = 'now';
+        subscriptionConfig.proration_behavior = 'create_prorations';
       }
 
       // Apply discount if coupon was created successfully
@@ -1244,7 +1253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update user subscription in database
       const subscriptionStatus = isDiscountedAdvanced ? 'active' : 'trialing';
       await storage.updateUserSubscription(userId, {
-        subscriptionTier: tier,
+        subscriptionTier: finalTier,
         subscriptionStatus: subscriptionStatus,
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
