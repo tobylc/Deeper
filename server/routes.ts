@@ -1124,15 +1124,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      // Enhanced authentication check with test user support
+      // Enhanced authentication check with comprehensive user resolution
       let userId;
       let user;
 
+      // Method 1: Check session user
       if (req.session?.user?.id) {
         userId = req.session.user.id;
         user = await storage.getUser(userId);
         console.log("[SUBSCRIPTION] Session auth successful for user:", userId);
-      } else if (req.isAuthenticated?.() && req.user) {
+      } 
+      // Method 2: Check OAuth user
+      else if (req.isAuthenticated?.() && req.user) {
         const oauthUserId = req.user.claims?.sub || req.user.id;
         user = await storage.getUser(oauthUserId);
         if (user) {
@@ -1151,9 +1154,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log("[SUBSCRIPTION] OAuth auth restored session for user:", userId);
         }
       }
+      // Method 3: Check for OAuth user by email in session
+      else if (req.user?.email) {
+        user = await storage.getUserByEmail(req.user.email);
+        if (user) {
+          userId = user.id;
+          // Restore full session
+          req.session.user = {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName
+          };
+          req.session.save((err: any) => {
+            if (err) console.error('[SUBSCRIPTION] Session save error:', err);
+          });
+          console.log("[SUBSCRIPTION] Email-based auth successful for user:", userId);
+        }
+      }
+      // Method 4: Check session email fallback
+      else if (req.session?.passport?.user?.email) {
+        user = await storage.getUserByEmail(req.session.passport.user.email);
+        if (user) {
+          userId = user.id;
+          req.session.user = {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName
+          };
+          console.log("[SUBSCRIPTION] Passport session auth successful for user:", userId);
+        }
+      }
+      // Method 5: Final fallback - check for any valid session with passport user
+      else if (req.session?.passport?.user?.id) {
+        const passportUserId = req.session.passport.user.id;
+        user = await storage.getUser(passportUserId);
+        if (user) {
+          userId = user.id;
+          req.session.user = {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName
+          };
+          console.log("[SUBSCRIPTION] Passport ID auth successful for user:", userId);
+        }
+      }
       
       if (!userId || !user) {
-        console.log("[SUBSCRIPTION] Authentication failed:", { userId, hasUser: !!user });
+        console.log("[SUBSCRIPTION] Authentication failed after all methods");
+        console.log("[SUBSCRIPTION] Debug info:", {
+          sessionUser: req.session?.user,
+          passportUser: req.session?.passport?.user,
+          reqUser: req.user,
+          isAuthenticated: req.isAuthenticated?.(),
+          sessionId: req.session?.id,
+          cookies: Object.keys(req.cookies || {}),
+          sessionKeys: Object.keys(req.session || {})
+        });
+        
         return res.status(401).json({ 
           message: "Authentication required. Please log in again.",
           code: "AUTH_REQUIRED"
