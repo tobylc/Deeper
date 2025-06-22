@@ -1427,20 +1427,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Subscription upgrade error:", error);
       console.error("Error details:", {
         message: error?.message || 'Unknown error',
-        stack: error?.stack,
-        userId: req.user?.claims?.sub || req.user?.id,
+        type: error?.type,
+        code: error?.code,
+        param: error?.param,
+        stack: error?.stack?.split('\n').slice(0, 5).join('\n'), // First 5 lines only
+        userId: userId,
+        userEmail: user?.email,
         tier: req.body?.tier,
-        discountPercent: req.body?.discountPercent
+        actualTier,
+        discountPercent: req.body?.discountPercent,
+        stripeCustomerId: user?.stripeCustomerId,
+        stripeConfig: {
+          hasSecretKey: !!process.env.STRIPE_SECRET_KEY,
+          hasPrices: !!STRIPE_PRICES[actualTier],
+          priceId: STRIPE_PRICES[actualTier]
+        }
       });
+      
       // Enhanced error response with specific error codes
       const errorMessage = error?.message || 'Unknown error';
-      const isStripeError = errorMessage.includes('stripe') || errorMessage.includes('Stripe');
+      const isStripeError = error?.type === 'StripeError' || 
+                           error?.constructor?.name === 'StripeError' ||
+                           errorMessage.includes('stripe') || 
+                           errorMessage.includes('Stripe');
+      
+      // Provide more specific error information
+      let responseError = 'Internal server error';
+      if (process.env.NODE_ENV === 'development') {
+        responseError = errorMessage;
+      } else if (isStripeError) {
+        responseError = 'Payment service error. Please try again or contact support.';
+      }
       
       res.status(500).json({ 
         message: "Failed to upgrade subscription",
-        error: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error',
+        error: responseError,
         code: isStripeError ? 'STRIPE_ERROR' : 'INTERNAL_ERROR',
-        retryable: !isStripeError
+        retryable: !isStripeError,
+        details: process.env.NODE_ENV === 'development' ? {
+          type: error?.type,
+          code: error?.code,
+          param: error?.param
+        } : undefined
       });
     }
   });
