@@ -1293,14 +1293,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error("[SUBSCRIPTION] Upgrade error details:", {
-        message: error?.message,
-        stack: error?.stack,
-        name: error?.name,
-        code: error?.code
+        message: error?.message || 'Unknown error',
+        stack: error?.stack || 'No stack trace',
+        name: error?.name || 'Unknown error type',
+        code: error?.code || 'No error code',
+        type: error?.type || 'Unknown type'
       });
       res.status(500).json({ 
         message: "Failed to upgrade subscription",
-        error: process.env.NODE_ENV === 'development' ? error?.message : undefined
+        error: process.env.NODE_ENV === 'development' ? (error?.message || 'Unknown error') : undefined
       });
     }
   });
