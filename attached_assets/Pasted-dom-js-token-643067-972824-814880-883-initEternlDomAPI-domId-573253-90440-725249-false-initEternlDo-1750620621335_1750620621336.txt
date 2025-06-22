@@ -1,0 +1,113 @@
+dom.js?token=643067-972824-814880:883 initEternlDomAPI: domId 573253-90440-725249 false
+initEternlDomAPI @ dom.js?token=643067-972824-814880:883
+dom.js?token=643067-972824-814880:884 initEternlDomAPI: href https://deepersocial.replit.app/dashboard
+initEternlDomAPI @ dom.js?token=643067-972824-814880:884
+dashboard:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+content.js:30 Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+index-CS8nPMvX.js:375 [WebSocket] Connected
+index-CS8nPMvX.js:375 [WebSocket] Connection confirmed
+index-CS8nPMvX.js:375 [WebSocket] Subscribed to dashboard updates
+dom.js?token=522635-517758-534549:883 initEternlDomAPI: domId 493009-154905-246598 true
+initEternlDomAPI @ dom.js?token=522635-517758-534549:883
+dom.js?token=522635-517758-534549:884 initEternlDomAPI: href https://js.stripe.com/v3/controller-with-preconnect-54f7370dac57d8eaf70a6d513d50b149.html#__shared_params__[version]=basil&apiKey=pk_live_51RcXMUJk5EQAqG1W7QaKuCgwJ8cZy9fowW6P4VQlFr3DoqIxmMBvICaFRMvFM7VHVcSe9fGKCZzFvKwzMY7egk0G005BMn3dvL&apiVersion=2025-03-31.basil&stripeJsId=cfa52ced-7dd1-420b-b144-3145f759020d&firstStripeInstanceCreatedLatency=11&controllerCount=1&isCheckout=false&stripeJsLoadTime=1750620584072&manualBrowserDeprecationRollout=false&mids[guid]=NA&mids[muid]=95b5dec2-1992-4528-afc0-d41ef514ab67f5b1c9&mids[sid]=eb1e1281-d038-4694-89c1-c9e14beab22830a346&referrer=https%3A%2F%2Fdeepersocial.replit.app%2Fdashboard&controllerId=__privateStripeController7661
+initEternlDomAPI @ dom.js?token=522635-517758-534549:884
+index-CS8nPMvX.js:461 Setting conversation ID from URL: 58
+index-CS8nPMvX.js:375 [WebSocket] Disconnected: 1006 
+index-CS8nPMvX.js:375 [WebSocket] Reconnecting in 1000ms (attempt 1)
+index-CS8nPMvX.js:375 [WebSocket] Connected
+index-CS8nPMvX.js:375 [WebSocket] Connection confirmed
+index-CS8nPMvX.js:375 [WebSocket] Subscribed to dashboard updates
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+dom.js?token=210968-425532-563991:883 initEternlDomAPI: domId 21780-215711-625396 true
+initEternlDomAPI @ dom.js?token=210968-425532-563991:883
+dom.js?token=210968-425532-563991:884 initEternlDomAPI: href https://m.stripe.network/inner.html#url=https%3A%2F%2Fdeepersocial.replit.app%2Fconversation%2F58&title=&referrer=https%3A%2F%2Faccounts.google.com%2F&muid=95b5dec2-1992-4528-afc0-d41ef514ab67f5b1c9&sid=eb1e1281-d038-4694-89c1-c9e14beab22830a346&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=210968-425532-563991:884
+dom.js?token=266180-579047-85119:883 initEternlDomAPI: domId 25005-401062-73946 true
+initEternlDomAPI @ dom.js?token=266180-579047-85119:883
+dom.js?token=266180-579047-85119:884 initEternlDomAPI: href https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fdeepersocial.replit.app%2Fconversation%2F58&title=&referrer=https%3A%2F%2Faccounts.google.com%2F&muid=95b5dec2-1992-4528-afc0-d41ef514ab67f5b1c9&sid=eb1e1281-d038-4694-89c1-c9e14beab22830a346&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=266180-579047-85119:884
+api/conversations/58/messages:1 
+            
+            
+           Failed to load resource: the server responded with a status of 403 ()
+index-CS8nPMvX.js:461 Send message error: Error: 403: {"type":"TRIAL_EXPIRED","message":"Your free trial has expired. Please upgrade to continue conversations.","subscriptionTier":"free","subscriptionStatus":"active"}
+    at qw (index-CS8nPMvX.js:48:42765)
+    at async Se (index-CS8nPMvX.js:48:42966)
+    at async Object.mutationFn (index-CS8nPMvX.js:461:34367)
+onError @ index-CS8nPMvX.js:461
+index-CS8nPMvX.js:352 `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+(anonymous) @ index-CS8nPMvX.js:352
+index-CS8nPMvX.js:352 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ index-CS8nPMvX.js:352
+index-CS8nPMvX.js:462 User authenticated: thetobyclarkshow@gmail.com proceeding with checkout
+index-CS8nPMvX.js:462 Creating subscription with: Object
+index-CS8nPMvX.js:375 [WebSocket] Disconnected: 1006 
+index-CS8nPMvX.js:375 [WebSocket] Reconnecting in 1000ms (attempt 1)
+api/subscription/upgrade:1 
+            
+            
+           Failed to load resource: the server responded with a status of 500 ()
+index-CS8nPMvX.js:462 Subscription creation error: Error: 500: Internal Server Error
+    at qw (index-CS8nPMvX.js:48:42765)
+    at async Se (index-CS8nPMvX.js:48:42966)
+    at async index-CS8nPMvX.js:462:13052
+(anonymous) @ index-CS8nPMvX.js:462
+index-CS8nPMvX.js:462 Error details: Object
+(anonymous) @ index-CS8nPMvX.js:462
+index-CS8nPMvX.js:462 Non-auth error, redirecting to pricing
+deeper-logo.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 500 ()
+index-CS8nPMvX.js:352 Logo failed to load: t
+onError @ index-CS8nPMvX.js:352
+favicon.ico:1 
+            
+            
+           Failed to load resource: the server responded with a status of 500 ()
+index-CS8nPMvX.js:375 WebSocket connection to 'wss://deepersocial.replit.app/ws?email=thetobyclarkshow%40gmail.com&userId=google_107906065894691225512' failed: 
+u @ index-CS8nPMvX.js:375
+index-CS8nPMvX.js:375 [WebSocket] Error: Event
+r.current.onerror @ index-CS8nPMvX.js:375
+index-CS8nPMvX.js:375 [WebSocket] Disconnected: 1006 
+index-CS8nPMvX.js:375 [WebSocket] Reconnecting in 1000ms (attempt 1)
+index-CS8nPMvX.js:375 WebSocket connection to 'wss://deepersocial.replit.app/ws?email=thetobyclarkshow%40gmail.com&userId=google_107906065894691225512' failed: 
+u @ index-CS8nPMvX.js:375
+index-CS8nPMvX.js:375 [WebSocket] Error: Event
+r.current.onerror @ index-CS8nPMvX.js:375
+index-CS8nPMvX.js:375 [WebSocket] Disconnected: 1006 
+index-CS8nPMvX.js:375 [WebSocket] Reconnecting in 1000ms (attempt 1)
+index-CS8nPMvX.js:375 WebSocket connection to 'wss://deepersocial.replit.app/ws?email=thetobyclarkshow%40gmail.com&userId=google_107906065894691225512' failed: 
+u @ index-CS8nPMvX.js:375
+index-CS8nPMvX.js:375 [WebSocket] Error: Event
+r.current.onerror @ index-CS8nPMvX.js:375
+index-CS8nPMvX.js:375 [WebSocket] Disconnected: 1006 
+index-CS8nPMvX.js:375 [WebSocket] Reconnecting in 1000ms (attempt 1)
+index-CS8nPMvX.js:375 WebSocket connection to 'wss://deepersocial.replit.app/ws?email=thetobyclarkshow%40gmail.com&userId=google_107906065894691225512' failed: 
+u @ index-CS8nPMvX.js:375
+index-CS8nPMvX.js:375 [WebSocket] Error: Event
+r.current.onerror @ index-CS8nPMvX.js:375
+index-CS8nPMvX.js:375 [WebSocket] Disconnected: 1006 
+index-CS8nPMvX.js:375 [WebSocket] Reconnecting in 1000ms (attempt 1)
+index-CS8nPMvX.js:375 [WebSocket] Connected
+index-CS8nPMvX.js:375 [WebSocket] Connection confirmed
+index-CS8nPMvX.js:375 [WebSocket] Subscribed to dashboard updates

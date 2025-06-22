@@ -1329,6 +1329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           currency: 'usd',
           customer: customer.id,
           setup_future_usage: 'off_session',
+          payment_method_types: ['card'],
           metadata: {
             userId: user.id,
             tier: actualTier,
@@ -1431,16 +1432,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         code: error?.code,
         param: error?.param,
         stack: error?.stack?.split('\n').slice(0, 5).join('\n'), // First 5 lines only
-        userId: userId,
-        userEmail: user?.email,
         tier: req.body?.tier,
-        actualTier,
         discountPercent: req.body?.discountPercent,
-        stripeCustomerId: user?.stripeCustomerId,
         stripeConfig: {
           hasSecretKey: !!process.env.STRIPE_SECRET_KEY,
-          hasPrices: !!STRIPE_PRICES[actualTier],
-          priceId: STRIPE_PRICES[actualTier]
+          hasPrices: !!(req.body?.tier && STRIPE_PRICES[req.body.tier as keyof typeof STRIPE_PRICES]),
+          priceId: req.body?.tier ? STRIPE_PRICES[req.body.tier as keyof typeof STRIPE_PRICES] : null
         }
       });
       
