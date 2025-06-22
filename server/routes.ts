@@ -1180,26 +1180,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid subscription tier" });
       }
 
+      // Validate required Stripe environment variables
+      if (!STRIPE_PRICES[actualTier as keyof typeof STRIPE_PRICES]) {
+        console.error('Missing Stripe price ID for tier:', actualTier, 'Available:', STRIPE_PRICES);
+        return res.status(500).json({ 
+          message: "Subscription configuration error",
+          error: "Invalid tier configuration",
+          code: "CONFIG_ERROR"
+        });
+      }
+
       // Get or create Stripe customer
       let customer;
-      if (user.stripeCustomerId) {
-        customer = await stripe.customers.retrieve(user.stripeCustomerId);
-      } else {
-        customer = await stripe.customers.create({
-          email: user.email!,
-          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email!,
-          metadata: {
-            userId: user.id,
-            platform: 'deeper'
-          }
-        });
-        
-        // Update user with Stripe customer ID
-        await storage.updateUserSubscription(userId, {
-          subscriptionTier: user.subscriptionTier || 'free',
-          subscriptionStatus: user.subscriptionStatus || 'active',
-          maxConnections: user.maxConnections || 1,
-          stripeCustomerId: customer.id
+      try {
+        if (user.stripeCustomerId) {
+          customer = await stripe.customers.retrieve(user.stripeCustomerId);
+        } else {
+          customer = await stripe.customers.create({
+            email: user.email!,
+            name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email!,
+            metadata: {
+              userId: user.id,
+              platform: 'deeper'
+            }
+          });
+          
+          // Update user with Stripe customer ID
+          await storage.updateUserSubscription(userId, {
+            subscriptionTier: user.subscriptionTier || 'free',
+            subscriptionStatus: user.subscriptionStatus || 'active',
+            maxConnections: user.maxConnections || 1,
+            stripeCustomerId: customer.id
+          });
+        }
+      } catch (stripeError: any) {
+        console.error('Stripe customer creation/retrieval error:', stripeError);
+        return res.status(500).json({
+          message: "Failed to create customer account",
+          error: process.env.NODE_ENV === 'development' ? stripeError.message : 'Payment service error',
+          code: 'STRIPE_CUSTOMER_ERROR'
         });
       }
 
