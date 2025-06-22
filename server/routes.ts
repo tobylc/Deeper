@@ -1111,6 +1111,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Subscription management endpoints
   app.post("/api/subscription/upgrade", async (req: any, res) => {
     try {
+      console.log("[SUBSCRIPTION] Upgrade attempt:", { 
+        hasSession: !!req.session?.user, 
+        isAuthenticated: req.isAuthenticated?.(), 
+        hasUser: !!req.user,
+        body: req.body 
+      });
+
       // Check session-based authentication first
       let userId;
       let user;
@@ -1122,6 +1129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId = req.user.claims?.sub || req.user.id;
         user = await storage.getUser(userId);
       } else {
+        console.log("[SUBSCRIPTION] Authentication failed - no valid session or user");
         return res.status(401).json({ 
           message: "Authentication required. Please log in again.",
           code: "AUTH_REQUIRED"
@@ -1129,10 +1137,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (!userId || !user) {
+        console.log("[SUBSCRIPTION] User lookup failed:", { userId, userFound: !!user });
         return res.status(401).json({ message: "User not authenticated" });
       }
 
       const { tier, discountPercent } = req.body;
+      console.log("[SUBSCRIPTION] Processing upgrade for user:", userId, "tier:", tier, "discount:", discountPercent);
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -1190,6 +1200,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let finalPrice = STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES];
       let couponId = null;
       
+      console.log("[SUBSCRIPTION] Stripe price for tier:", tier, "=", finalPrice);
+      
+      if (!finalPrice) {
+        console.error("[SUBSCRIPTION] Missing Stripe price for tier:", tier);
+        return res.status(400).json({ message: `Invalid subscription tier: ${tier}` });
+      }
+      
       if (discountPercent && tier === 'advanced' && discountPercent === 50) {
         try {
           // Create 50% off coupon for Advanced plan
@@ -1199,8 +1216,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             name: 'Advanced Plan 50% Off Trial Offer'
           });
           couponId = coupon.id;
+          console.log("[SUBSCRIPTION] Created discount coupon:", couponId);
         } catch (error: any) {
-          console.error('Coupon creation error:', error);
+          console.error('[SUBSCRIPTION] Coupon creation error:', error);
           // Continue without discount if coupon creation fails
         }
       }
@@ -1273,9 +1291,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "Advanced subscription activated with permanent 50% discount!" : 
           "Subscription created successfully with 7-day trial" 
       });
-    } catch (error) {
-      console.error("Subscription upgrade error:", error);
-      res.status(500).json({ message: "Failed to upgrade subscription" });
+    } catch (error: any) {
+      console.error("[SUBSCRIPTION] Upgrade error details:", {
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name,
+        code: error?.code
+      });
+      res.status(500).json({ 
+        message: "Failed to upgrade subscription",
+        error: process.env.NODE_ENV === 'development' ? error?.message : undefined
+      });
     }
   });
 
