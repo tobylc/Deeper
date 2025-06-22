@@ -1297,11 +1297,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stack: error?.stack || 'No stack trace',
         name: error?.name || 'Unknown error type',
         code: error?.code || 'No error code',
-        type: error?.type || 'Unknown type'
+        type: error?.type || 'Unknown type',
+        stripeError: error?.type?.startsWith?.('Stripe') ? error : null,
+        requestBody: req.body,
+        userId: userId,
+        tier: req.body?.tier,
+        discountPercent: req.body?.discountPercent
       });
       res.status(500).json({ 
         message: "Failed to upgrade subscription",
-        error: process.env.NODE_ENV === 'development' ? (error?.message || 'Unknown error') : undefined
+        error: process.env.NODE_ENV === 'development' ? (error?.message || 'Unknown error') : undefined,
+        debug: process.env.NODE_ENV === 'development' ? {
+          errorType: error?.constructor?.name,
+          stripeError: error?.type?.startsWith?.('Stripe') ? error.type : null
+        } : undefined
       });
     }
   });
