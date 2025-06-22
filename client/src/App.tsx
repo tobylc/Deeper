@@ -73,11 +73,12 @@ function Router() {
 
   return (
     <Switch>
-      {/* Invitation and auth routes are always accessible */}
+      {/* Invitation, auth, and checkout routes are always accessible */}
       <Route path="/invitation/signup" component={InvitationSignup} />
       <Route path="/invitation/:params*" component={InvitationLanding} />
       <Route path="/invitation" component={InvitationLanding} />
       <Route path="/auth" component={Auth} />
+      <Route path="/checkout/:tier" component={Checkout} />
       
       {!isAuthenticated ? (
         <>
@@ -91,7 +92,6 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/conversation/:id" component={Conversation} />
-          <Route path="/checkout/:tier" component={Checkout} />
           <Route path="/features" component={Features} />
           <Route path="/pricing" component={Pricing} />
           <Route component={NotFound} />
