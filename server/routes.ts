@@ -1378,7 +1378,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           payment_method_types: ['card'],
           metadata: {
             userId: user.id,
-            tier: actualTier,
+            tier: actualTier!,
             platform: 'deeper',
             discount_applied: discountPercent ? discountPercent.toString() : 'none'
           }
@@ -1408,8 +1408,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Update user subscription in database
-      await storage.updateUserSubscription(userId, {
-        subscriptionTier: actualTier,
+      await storage.updateUserSubscription(userId!, {
+        subscriptionTier: actualTier!,
         subscriptionStatus: shouldChargeImmediately ? 'active' : 'trialing',
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
