@@ -750,14 +750,6 @@ Changelog:
   * Removed microphone level readout bar from voice recording interface for cleaner, less distracting experience
   * Recording area now shows only essential information: timer, recording status, and control buttons
   * Simplified voice recording UI focuses user attention on the recording process without technical volume indicators
-- June 22, 2025. Critical STRIPE_ERROR 500 subscription system fixes:
-  * Fixed TypeScript compilation errors causing server crashes during 50% discount checkout attempts
-  * Resolved variable scope issues in subscription upgrade endpoint (userId, user, actualTier)
-  * Enhanced type safety throughout subscription creation flow to prevent runtime errors
-  * Corrected immediate charge flow for 50% discount users using proper Stripe subscription creation
-  * Replaced separate PaymentIntent/Subscription creation with unified subscription flow using payment_behavior: 'default_incomplete'
-  * Added comprehensive error logging and debugging for Stripe integration issues
-  * Fixed subscription upgrade endpoint to handle 50% discount conversions without server crashes
 - June 21, 2025. AI transcription progress indicator and enhanced voice message playback:
   * Created TranscriptionProgress component with real-time percentage updates during voice message processing
   * Added AI transcription stages: processing audio, AI transcribing speech, transcription complete

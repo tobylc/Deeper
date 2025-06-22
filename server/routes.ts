@@ -1110,10 +1110,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Subscription management endpoints
   app.post("/api/subscription/upgrade", async (req: any, res) => {
-    let userId: string | undefined;
-    let user: any;
-    let actualTier: string | undefined;
-    
     try {
       console.log("[SUBSCRIPTION] Request received:", {
         hasUser: !!req.user,
@@ -1128,18 +1124,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      // Enhanced authentication check with comprehensive user resolution
+      // Enhanced authentication check with test user support
+      let userId;
+      let user;
 
-      // Method 1: Check session user
       if (req.session?.user?.id) {
         userId = req.session.user.id;
-        if (userId) {
-          user = await storage.getUser(userId);
-          console.log("[SUBSCRIPTION] Session auth successful for user:", userId);
-        }
-      } 
-      // Method 2: Check OAuth user
-      else if (req.isAuthenticated?.() && req.user) {
+        user = await storage.getUser(userId);
+        console.log("[SUBSCRIPTION] Session auth successful for user:", userId);
+      } else if (req.isAuthenticated?.() && req.user) {
         const oauthUserId = req.user.claims?.sub || req.user.id;
         user = await storage.getUser(oauthUserId);
         if (user) {
@@ -1158,66 +1151,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log("[SUBSCRIPTION] OAuth auth restored session for user:", userId);
         }
       }
-      // Method 3: Check for OAuth user by email in session
-      else if (req.user?.email) {
-        user = await storage.getUserByEmail(req.user.email);
-        if (user) {
-          userId = user.id;
-          // Restore full session
-          req.session.user = {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName
-          };
-          req.session.save((err: any) => {
-            if (err) console.error('[SUBSCRIPTION] Session save error:', err);
-          });
-          console.log("[SUBSCRIPTION] Email-based auth successful for user:", userId);
-        }
-      }
-      // Method 4: Check session email fallback
-      else if (req.session?.passport?.user?.email) {
-        user = await storage.getUserByEmail(req.session.passport.user.email);
-        if (user) {
-          userId = user.id;
-          req.session.user = {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName
-          };
-          console.log("[SUBSCRIPTION] Passport session auth successful for user:", userId);
-        }
-      }
-      // Method 5: Final fallback - check for any valid session with passport user
-      else if (req.session?.passport?.user?.id) {
-        const passportUserId = req.session.passport.user.id;
-        user = await storage.getUser(passportUserId);
-        if (user) {
-          userId = user.id;
-          req.session.user = {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName
-          };
-          console.log("[SUBSCRIPTION] Passport ID auth successful for user:", userId);
-        }
-      }
       
       if (!userId || !user) {
-        console.log("[SUBSCRIPTION] Authentication failed after all methods");
-        console.log("[SUBSCRIPTION] Debug info:", {
-          sessionUser: req.session?.user,
-          passportUser: req.session?.passport?.user,
-          reqUser: req.user,
-          isAuthenticated: req.isAuthenticated?.(),
-          sessionId: req.session?.id,
-          cookies: Object.keys(req.cookies || {}),
-          sessionKeys: Object.keys(req.session || {})
-        });
-        
+        console.log("[SUBSCRIPTION] Authentication failed:", { userId, hasUser: !!user });
         return res.status(401).json({ 
           message: "Authentication required. Please log in again.",
           code: "AUTH_REQUIRED"
@@ -1231,7 +1167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Force tier to 'advanced' when 50% discount is applied, regardless of what frontend sends
-      actualTier = (discountPercent === 50 && tier === 'advanced') ? 'advanced' : tier;
+      const actualTier = (discountPercent === 50 && tier === 'advanced') ? 'advanced' : tier;
 
       const tierBenefits: Record<string, { maxConnections: number, price: number }> = {
         'basic': { maxConnections: 1, price: 4.95 },
@@ -1239,54 +1175,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'unlimited': { maxConnections: 999, price: 19.95 }
       };
 
-      if (!actualTier) {
-        return res.status(400).json({ message: "Invalid subscription tier" });
-      }
-      
       const benefits = tierBenefits[actualTier];
       if (!benefits) {
         return res.status(400).json({ message: "Invalid subscription tier" });
       }
 
-      // Validate required Stripe environment variables
-      if (!STRIPE_PRICES[actualTier as keyof typeof STRIPE_PRICES]) {
-        console.error('Missing Stripe price ID for tier:', actualTier, 'Available:', STRIPE_PRICES);
-        return res.status(500).json({ 
-          message: "Subscription configuration error",
-          error: "Invalid tier configuration",
-          code: "CONFIG_ERROR"
-        });
-      }
-
       // Get or create Stripe customer
       let customer;
-      try {
-        if (user.stripeCustomerId) {
-          customer = await stripe.customers.retrieve(user.stripeCustomerId);
-        } else {
-          customer = await stripe.customers.create({
-            email: user.email!,
-            name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email!,
-            metadata: {
-              userId: user.id,
-              platform: 'deeper'
-            }
-          });
-          
-          // Update user with Stripe customer ID
-          await storage.updateUserSubscription(userId, {
-            subscriptionTier: user.subscriptionTier || 'free',
-            subscriptionStatus: user.subscriptionStatus || 'active',
-            maxConnections: user.maxConnections || 1,
-            stripeCustomerId: customer.id
-          });
-        }
-      } catch (stripeError: any) {
-        console.error('Stripe customer creation/retrieval error:', stripeError);
-        return res.status(500).json({
-          message: "Failed to create customer account",
-          error: process.env.NODE_ENV === 'development' ? stripeError.message : 'Payment service error',
-          code: 'STRIPE_CUSTOMER_ERROR'
+      if (user.stripeCustomerId) {
+        customer = await stripe.customers.retrieve(user.stripeCustomerId);
+      } else {
+        customer = await stripe.customers.create({
+          email: user.email!,
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email!,
+          metadata: {
+            userId: user.id,
+            platform: 'deeper'
+          }
+        });
+        
+        // Update user with Stripe customer ID
+        await storage.updateUserSubscription(userId, {
+          subscriptionTier: user.subscriptionTier || 'free',
+          subscriptionStatus: user.subscriptionStatus || 'active',
+          maxConnections: user.maxConnections || 1,
+          stripeCustomerId: customer.id
         });
       }
 
@@ -1331,27 +1244,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let subscription;
       
       if (shouldChargeImmediately) {
-        console.log('[SUBSCRIPTION] Creating immediate charge flow for 50% discount');
-        console.log('[SUBSCRIPTION] Customer ID:', customer.id);
-        console.log('[SUBSCRIPTION] Price ID:', finalPrice);
-        console.log('[SUBSCRIPTION] Coupon ID:', couponId);
+        // Create payment intent for immediate charge with discount
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: Math.round(495), // $4.95 for 50% off Advanced plan
+          currency: 'usd',
+          customer: customer.id,
+          setup_future_usage: 'off_session',
+          metadata: {
+            userId: user.id,
+            tier: actualTier,
+            platform: 'deeper',
+            discount_applied: discountPercent.toString(),
+            immediate_charge: 'true'
+          }
+        });
 
-        // For immediate charge users, create subscription with default payment method
+        // Create subscription without trial period
         const subscriptionConfig: any = {
           customer: customer.id,
           items: [{
             price: finalPrice,
           }],
-          payment_behavior: 'default_incomplete',
-          payment_settings: {
-            save_default_payment_method: 'on_subscription'
-          },
-          expand: ['latest_invoice.payment_intent'],
           metadata: {
             userId: user.id,
-            tier: actualTier!,
+            tier: actualTier,
             platform: 'deeper',
-            discount_applied: discountPercent?.toString() || '0',
+            discount_applied: discountPercent.toString(),
             immediate_charge: 'true'
           }
         };
@@ -1359,22 +1277,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Apply discount if coupon was created successfully
         if (couponId) {
           subscriptionConfig.discounts = [{ coupon: couponId }];
-          console.log('[SUBSCRIPTION] Applied 50% discount coupon:', couponId);
         }
 
-        console.log('[SUBSCRIPTION] Creating subscription with config:', JSON.stringify(subscriptionConfig, null, 2));
         subscription = await stripe.subscriptions.create(subscriptionConfig);
-        
-        // Get client secret from the subscription's latest invoice
-        const latestInvoice = subscription.latest_invoice as any;
-        const paymentIntent = latestInvoice?.payment_intent;
-        
-        if (paymentIntent?.client_secret) {
-          setupIntent = { client_secret: paymentIntent.client_secret };
-          console.log('[SUBSCRIPTION] Payment intent client secret obtained');
-        } else {
-          throw new Error('Failed to create payment intent for immediate charge');
-        }
+        setupIntent = { client_secret: paymentIntent.client_secret };
       } else {
         // Regular trial flow for new users
         // First create a setup intent for payment method collection during trial
@@ -1384,7 +1290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           payment_method_types: ['card'],
           metadata: {
             userId: user.id,
-            tier: actualTier!,
+            tier: actualTier,
             platform: 'deeper',
             discount_applied: discountPercent ? discountPercent.toString() : 'none'
           }
@@ -1414,8 +1320,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Update user subscription in database
-      await storage.updateUserSubscription(userId!, {
-        subscriptionTier: actualTier!,
+      await storage.updateUserSubscription(userId, {
+        subscriptionTier: actualTier,
         subscriptionStatus: shouldChargeImmediately ? 'active' : 'trialing',
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
@@ -1442,44 +1348,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Subscription upgrade error:", error);
       console.error("Error details:", {
         message: error?.message || 'Unknown error',
-        type: error?.type,
-        code: error?.code,
-        param: error?.param,
-        stack: error?.stack?.split('\n').slice(0, 5).join('\n'), // First 5 lines only
+        stack: error?.stack,
+        userId: req.user?.claims?.sub || req.user?.id,
         tier: req.body?.tier,
-        discountPercent: req.body?.discountPercent,
-        stripeConfig: {
-          hasSecretKey: !!process.env.STRIPE_SECRET_KEY,
-          hasPrices: !!(req.body?.tier && STRIPE_PRICES[req.body.tier as keyof typeof STRIPE_PRICES]),
-          priceId: req.body?.tier ? STRIPE_PRICES[req.body.tier as keyof typeof STRIPE_PRICES] : null
-        }
+        discountPercent: req.body?.discountPercent
       });
-      
-      // Enhanced error response with specific error codes
-      const errorMessage = error?.message || 'Unknown error';
-      const isStripeError = error?.type === 'StripeError' || 
-                           error?.constructor?.name === 'StripeError' ||
-                           errorMessage.includes('stripe') || 
-                           errorMessage.includes('Stripe');
-      
-      // Provide more specific error information
-      let responseError = 'Internal server error';
-      if (process.env.NODE_ENV === 'development') {
-        responseError = errorMessage;
-      } else if (isStripeError) {
-        responseError = 'Payment service error. Please try again or contact support.';
-      }
-      
       res.status(500).json({ 
         message: "Failed to upgrade subscription",
-        error: responseError,
-        code: isStripeError ? 'STRIPE_ERROR' : 'INTERNAL_ERROR',
-        retryable: !isStripeError,
-        details: process.env.NODE_ENV === 'development' ? {
-          type: error?.type,
-          code: error?.code,
-          param: error?.param
-        } : undefined
+        error: process.env.NODE_ENV === 'development' ? (error?.message || 'Unknown error') : 'Internal server error'
       });
     }
   });
@@ -1489,23 +1365,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const sig = req.headers['stripe-signature'];
     let event;
 
-    // Check if webhook secret is configured
-    if (!process.env.STRIPE_WEBHOOK_SECRET) {
-      console.warn('STRIPE_WEBHOOK_SECRET not configured, webhook verification skipped');
-      // In development, we can accept webhooks without verification
-      try {
-        event = JSON.parse(req.body.toString());
-      } catch (parseError) {
-        console.error('Failed to parse webhook body:', parseError);
-        return res.status(400).json({ error: 'Invalid webhook payload' });
-      }
-    } else {
-      try {
-        event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET);
-      } catch (err: any) {
-        console.error(`Webhook signature verification failed:`, err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-      }
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test');
+    } catch (err: any) {
+      console.error(`Webhook signature verification failed:`, err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
     try {
