@@ -1110,6 +1110,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Subscription management endpoints
   app.post("/api/subscription/upgrade", async (req: any, res) => {
+    let userId: string | undefined;
+    let user: any;
+    let actualTier: string | undefined;
+    
     try {
       console.log("[SUBSCRIPTION] Request received:", {
         hasUser: !!req.user,
@@ -1125,14 +1129,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Enhanced authentication check with comprehensive user resolution
-      let userId;
-      let user;
 
       // Method 1: Check session user
       if (req.session?.user?.id) {
         userId = req.session.user.id;
-        user = await storage.getUser(userId);
-        console.log("[SUBSCRIPTION] Session auth successful for user:", userId);
+        if (userId) {
+          user = await storage.getUser(userId);
+          console.log("[SUBSCRIPTION] Session auth successful for user:", userId);
+        }
       } 
       // Method 2: Check OAuth user
       else if (req.isAuthenticated?.() && req.user) {
@@ -1227,7 +1231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Force tier to 'advanced' when 50% discount is applied, regardless of what frontend sends
-      const actualTier = (discountPercent === 50 && tier === 'advanced') ? 'advanced' : tier;
+      actualTier = (discountPercent === 50 && tier === 'advanced') ? 'advanced' : tier;
 
       const tierBenefits: Record<string, { maxConnections: number, price: number }> = {
         'basic': { maxConnections: 1, price: 4.95 },
@@ -1235,6 +1239,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'unlimited': { maxConnections: 999, price: 19.95 }
       };
 
+      if (!actualTier) {
+        return res.status(400).json({ message: "Invalid subscription tier" });
+      }
+      
       const benefits = tierBenefits[actualTier];
       if (!benefits) {
         return res.status(400).json({ message: "Invalid subscription tier" });
@@ -1332,9 +1340,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           payment_method_types: ['card'],
           metadata: {
             userId: user.id,
-            tier: actualTier,
+            tier: actualTier!,
             platform: 'deeper',
-            discount_applied: discountPercent.toString(),
+            discount_applied: discountPercent?.toString() || '0',
             immediate_charge: 'true'
           }
         });
