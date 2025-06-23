@@ -52,6 +52,18 @@ const STRIPE_PRICES = {
   advanced_50_off: process.env.STRIPE_PRICE_ID_ADVANCED_50_OFF || '',
 };
 
+// Debug: Log Stripe configuration on startup
+console.log('Stripe configuration:', {
+  hasSecretKey: !!process.env.STRIPE_SECRET_KEY,
+  hasPublicKey: !!process.env.VITE_STRIPE_PUBLIC_KEY,
+  prices: {
+    basic: !!STRIPE_PRICES.basic,
+    advanced: !!STRIPE_PRICES.advanced,
+    unlimited: !!STRIPE_PRICES.unlimited,
+    advanced_50_off: !!STRIPE_PRICES.advanced_50_off
+  }
+});
+
 // Webhook handler functions
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
@@ -245,6 +257,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'unhealthy',
         error: 'Health check failed',
         timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // Test subscription creation endpoint
+  app.post('/api/test/subscription', async (req, res) => {
+    try {
+      console.log('Testing Stripe configuration...');
+      
+      // Test customer creation
+      const testCustomer = await stripe.customers.create({
+        email: 'test@example.com',
+        name: 'Test User',
+        metadata: {
+          userId: 'test-123',
+          platform: 'deeper'
+        }
+      });
+      console.log('Test customer created:', testCustomer.id);
+      
+      // Test price retrieval
+      const advancedPrice = STRIPE_PRICES.advanced_50_off;
+      console.log('Advanced 50% off price ID:', advancedPrice);
+      
+      if (!advancedPrice) {
+        return res.status(500).json({ error: 'Missing advanced_50_off price ID' });
+      }
+      
+      // Test price object retrieval
+      const priceObject = await stripe.prices.retrieve(advancedPrice);
+      console.log('Price object retrieved:', priceObject.id, priceObject.unit_amount);
+      
+      res.json({ 
+        success: true, 
+        customerId: testCustomer.id,
+        priceId: advancedPrice,
+        priceAmount: priceObject.unit_amount
+      });
+      
+    } catch (error: any) {
+      console.error('Test subscription error:', error);
+      res.status(500).json({ 
+        error: error.message,
+        type: error.type,
+        code: error.code
       });
     }
   });
@@ -1205,6 +1262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // First create a setup intent for payment method collection during trial
+      console.log('Creating setup intent for customer:', customer.id);
       const setupIntent = await stripe.setupIntents.create({
         customer: customer.id,
         usage: 'off_session',
@@ -1216,6 +1274,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           discount_applied: discountPercent ? discountPercent.toString() : 'none'
         }
       });
+      console.log('Setup intent created successfully:', setupIntent.id);
 
       // Create subscription with trial period (no trial for discounted advanced plan)
       const subscriptionConfig: any = {
@@ -1236,7 +1295,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionConfig.trial_period_days = 7;
       }
 
+      console.log('Creating subscription with config:', JSON.stringify(subscriptionConfig, null, 2));
       const subscription = await stripe.subscriptions.create(subscriptionConfig);
+      console.log('Subscription created successfully:', subscription.id, 'status:', subscription.status);
 
       // Update user subscription in database
       const subscriptionStatus = (discountPercent && tier === 'advanced' && discountPercent === 50) ? 'active' : 'trialing';
