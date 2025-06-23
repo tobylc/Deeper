@@ -126,7 +126,7 @@ export default function Checkout() {
     },
     advanced: {
       name: 'Advanced',
-      price: hasDiscount && discountPercent === 50 ? '$4.50' : '$9.95',
+      price: hasDiscount && discountPercent === 50 ? '$4.95' : '$9.95',
       originalPrice: '$9.95',
       connections: 3,
       description: 'For meaningful relationships'
