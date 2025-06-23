@@ -750,6 +750,14 @@ Changelog:
   * Trial subscriptions maintain 7-day trial period with tier updates only after payment confirmation
   * Enhanced webhook handlers with proper tier benefits mapping for secure subscription management
   * Complete payment verification flow ensuring users only get upgraded plans after successful payment
+- June 23, 2025. Discount subscription 500 error resolution and production payment system fixes:
+  * Fixed critical 500 Internal Server Error in discount subscription creation by implementing proper Stripe payment behavior
+  * Enhanced discount subscription handling with payment_behavior: 'default_incomplete' for immediate charging
+  * Implemented proper client secret handling for incomplete discount subscriptions using payment intent instead of setup intent
+  * Added comprehensive error logging and debugging for subscription upgrade endpoint failures
+  * Resolved production Stripe API compatibility issues for immediate-charge discount subscriptions
+  * Enhanced subscription creation flow to handle both trial and immediate payment scenarios correctly
+  * Complete discount subscription system now functional for $4.95 Advanced plan immediate activation
 ```
 
 ## User Preferences

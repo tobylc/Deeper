@@ -1299,8 +1299,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For regular subscriptions, use 7-day trial
       if (!discountPercent || discountPercent === 0) {
         subscriptionConfig.trial_period_days = 7;
+      } else {
+        // For discount subscriptions that charge immediately, use default_incomplete status
+        // This allows the subscription to be created and completed when payment method is added
+        subscriptionConfig.payment_behavior = 'default_incomplete';
+        subscriptionConfig.expand = ['latest_invoice.payment_intent'];
       }
-      // Note: Discount subscriptions will charge immediately when payment method is attached
 
       console.log("[SUBSCRIPTION] Creating subscription with config:", JSON.stringify(subscriptionConfig, null, 2));
       let subscription;
@@ -1345,16 +1349,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // For discount subscriptions, we need to return the payment intent client secret if subscription is incomplete
+      let clientSecret = setupIntent.client_secret;
+      
+      if (discountPercent && discountPercent > 0 && subscription.status === 'incomplete') {
+        // For incomplete discount subscriptions, use the payment intent from the invoice
+        const latestInvoice = subscription.latest_invoice;
+        if (latestInvoice && typeof latestInvoice === 'object' && latestInvoice.payment_intent) {
+          const paymentIntent = latestInvoice.payment_intent;
+          if (typeof paymentIntent === 'object' && paymentIntent.client_secret) {
+            clientSecret = paymentIntent.client_secret;
+          }
+        }
+      }
+
       res.json({ 
         success: true, 
         tier: discountPercent && discountPercent > 0 ? tier : (user.subscriptionTier || 'free'),
         maxConnections: discountPercent && discountPercent > 0 ? benefits.maxConnections : (user.maxConnections || 1),
         subscriptionId: subscription.id,
-        clientSecret: setupIntent.client_secret,
+        clientSecret: clientSecret,
         trialEnd: subscription.trial_end ? new Date(subscription.trial_end! * 1000) : null,
         discountApplied: discountPercent ? `${discountPercent}%` : null,
+        subscriptionStatus: subscription.status,
         message: discountPercent && discountPercent > 0 ? 
-          "Discount subscription activated! Complete payment to access your new plan." : 
+          "Discount subscription created! Complete payment to access your new plan." : 
           "Subscription setup complete. Your trial will begin after payment confirmation." 
       });
     } catch (error) {
