@@ -1134,24 +1134,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Subscription management endpoints
-  app.post("/api/subscription/upgrade", async (req: any, res) => {
+  app.post("/api/subscription/upgrade", isAuthenticated, async (req: any, res) => {
     try {
-      // Check session-based authentication first
-      let userId;
-      let user;
-
-      if (req.session?.user) {
-        userId = req.session.user.id;
-        user = await storage.getUser(userId);
-      } else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
-        userId = req.user.claims?.sub || req.user.id;
-        user = await storage.getUser(userId);
-      } else {
-        return res.status(401).json({ 
-          message: "Authentication required. Please log in again.",
-          code: "AUTH_REQUIRED"
-        });
-      }
+      const userId = req.user.claims?.sub || req.user.id;
+      const user = await storage.getUser(userId);
       
       if (!userId || !user) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -1304,7 +1290,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Subscription upgrade error:", error);
-      res.status(500).json({ message: "Failed to upgrade subscription" });
+      console.error("Error details:", {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack',
+        requestBody: req.body
+      });
+      res.status(500).json({ 
+        message: "Failed to upgrade subscription",
+        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
+      });
     }
   });
 
