@@ -60,6 +60,29 @@ console.log('[STRIPE] Price configuration:', {
   advanced_50_off: STRIPE_PRICES.advanced_50_off ? 'configured' : 'missing'
 });
 
+// Validate Stripe price IDs on startup
+async function validateStripePrices() {
+  try {
+    console.log('[STRIPE] Validating price IDs...');
+    
+    for (const [tier, priceId] of Object.entries(STRIPE_PRICES)) {
+      if (priceId) {
+        try {
+          const price = await stripe.prices.retrieve(priceId);
+          console.log(`[STRIPE] ✓ ${tier} price valid:`, price.id, `(${price.unit_amount/100} ${price.currency})`);
+        } catch (error) {
+          console.error(`[STRIPE] ✗ ${tier} price INVALID:`, priceId, error.message);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[STRIPE] Price validation failed:', error);
+  }
+}
+
+// Run validation after a short delay to allow server startup
+setTimeout(validateStripePrices, 2000);
+
 // Webhook handler functions
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
