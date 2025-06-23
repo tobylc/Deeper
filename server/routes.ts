@@ -140,6 +140,38 @@ async function handlePaymentFailure(invoice: Stripe.Invoice) {
   }
 }
 
+async function handleSetupIntentSuccess(setupIntent: Stripe.SetupIntent) {
+  const userId = setupIntent.metadata?.userId;
+  const tier = setupIntent.metadata?.tier;
+  const discountApplied = setupIntent.metadata?.discount_applied;
+  
+  if (!userId || !tier) return;
+
+  const user = await storage.getUser(userId);
+  if (!user || !user.stripeSubscriptionId) return;
+
+  // For discount subscriptions, attach payment method and activate subscription immediately
+  if (discountApplied && discountApplied !== 'none') {
+    try {
+      // Attach the payment method to the subscription
+      await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        default_payment_method: setupIntent.payment_method as string,
+      });
+
+      // Get the updated subscription to trigger webhook events
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      
+      // If it's a discount subscription with no trial, it should charge immediately
+      if (!subscription.trial_end) {
+        // Force subscription update to activate the new tier
+        await handleSubscriptionUpdate(subscription);
+      }
+    } catch (error) {
+      console.error('Error handling discount subscription activation:', error);
+    }
+  }
+}
+
 // Configure multer for file uploads
 const storage_config = multer.memoryStorage();
 const upload = multer({
@@ -1250,13 +1282,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      // Only add trial period for non-discount subscriptions
+      // For discount subscriptions, don't use trial - charge immediately
+      // For regular subscriptions, use 7-day trial
       if (!discountPercent || discountPercent === 0) {
         subscriptionConfig.trial_period_days = 7;
-      } else {
-        // For discount subscriptions, charge immediately with default payment method
-        subscriptionConfig.default_payment_method = 'pm_card_visa'; // This will be replaced by actual payment method
       }
+      // Note: Discount subscriptions will charge immediately when payment method is attached
 
       // Apply discount if coupon was created successfully
       if (couponId) {
@@ -1340,6 +1371,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         case 'invoice.payment_failed':
           const failedInvoice = event.data.object as Stripe.Invoice;
           await handlePaymentFailure(failedInvoice);
+          break;
+
+        case 'setup_intent.succeeded':
+          const setupIntent = event.data.object as Stripe.SetupIntent;
+          const userId = setupIntent.metadata?.userId;
+          const tier = setupIntent.metadata?.tier;
+          const discountApplied = setupIntent.metadata?.discount_applied;
+          
+          if (userId && tier && discountApplied && discountApplied !== 'none') {
+            const user = await storage.getUser(userId);
+            if (user && user.stripeSubscriptionId) {
+              // For discount subscriptions, attach payment method and activate immediately
+              await stripe.subscriptions.update(user.stripeSubscriptionId, {
+                default_payment_method: setupIntent.payment_method as string,
+              });
+              
+              // Get updated subscription and force activation
+              const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+              await handleSubscriptionUpdate(subscription);
+            }
+          }
           break;
 
         default:
