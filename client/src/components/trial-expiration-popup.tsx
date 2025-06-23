@@ -105,13 +105,10 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
                     </div>
                     <div className="text-2xl font-bold text-slate-800">
                       <span className="line-through text-slate-500 text-lg">$9.95</span>
-                      <span className="ml-2 text-amber-600">$4.95</span>
+                      <span className="ml-2 text-amber-600">$4.50</span>
                       <span className="text-sm font-normal text-slate-600">/month</span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-600 font-medium">
-                    Charged immediately, then $4.95/month until you cancel.
-                  </p>
                   <p className="text-xs text-slate-600 italic">
                     Cheaper and more effective than having coffee once a month with your Deeper partner!
                   </p>
@@ -121,7 +118,7 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
 
             {/* Action buttons */}
             <div className="space-y-6">
-              <Link href="/checkout-discount/advanced">
+              <Link href="/checkout/advanced?discount=50">
                 <Button
                   className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-blue/25 transition-all duration-200 font-medium"
                 >

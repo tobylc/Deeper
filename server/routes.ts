@@ -48,24 +48,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const STRIPE_PRICES = {
   basic: process.env.STRIPE_PRICE_ID_BASIC || '',
   advanced: process.env.STRIPE_PRICE_ID_ADVANCED || '',
-  advanced_50_off: process.env.STRIPE_PRICE_ID_ADVANCED_50_OFF || '',
   unlimited: process.env.STRIPE_PRICE_ID_UNLIMITED || '',
 };
-
-// Validate Stripe configuration on startup
-const validateStripeConfig = () => {
-  const missingPrices = Object.entries(STRIPE_PRICES)
-    .filter(([key, value]) => !value)
-    .map(([key]) => key);
-    
-  if (missingPrices.length > 0) {
-    console.warn(`Warning: Missing Stripe price IDs for: ${missingPrices.join(', ')}`);
-  } else {
-    console.log('[STRIPE] All price IDs configured successfully');
-  }
-};
-
-validateStripeConfig();
 
 // Webhook handler functions
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
@@ -1127,8 +1111,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Subscription management endpoints
   app.post("/api/subscription/upgrade", async (req: any, res) => {
     try {
-      console.log('[SUBSCRIPTION] Upgrade request received:', { body: req.body, sessionUser: !!req.session?.user, authUser: !!req.user });
-      
       // Check session-based authentication first
       let userId;
       let user;
@@ -1136,13 +1118,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.session?.user) {
         userId = req.session.user.id;
         user = await storage.getUser(userId);
-        console.log('[SUBSCRIPTION] Using session auth:', { userId, userFound: !!user });
       } else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
         userId = req.user.claims?.sub || req.user.id;
         user = await storage.getUser(userId);
-        console.log('[SUBSCRIPTION] Using OAuth auth:', { userId, userFound: !!user });
       } else {
-        console.log('[SUBSCRIPTION] No valid authentication found');
         return res.status(401).json({ 
           message: "Authentication required. Please log in again.",
           code: "AUTH_REQUIRED"
@@ -1150,12 +1129,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (!userId || !user) {
-        console.log('[SUBSCRIPTION] User not found:', { userId, user: !!user });
         return res.status(401).json({ message: "User not authenticated" });
       }
 
       const { tier, discountPercent } = req.body;
-      console.log('[SUBSCRIPTION] Processing upgrade:', { tier, discountPercent, userEmail: user.email });
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -1204,21 +1181,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Handle discount for Advanced plan using dedicated price ID
+      // Handle discount for Advanced plan
       let finalPrice = STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES];
+      let couponId = null;
       
       if (discountPercent && tier === 'advanced' && discountPercent === 50) {
-        // Use dedicated 50% off price ID for permanent discount
-        finalPrice = STRIPE_PRICES.advanced_50_off;
+        try {
+          // Create 50% off coupon for Advanced plan
+          const coupon = await stripe.coupons.create({
+            percent_off: 50,
+            duration: 'forever',
+            name: 'Advanced Plan 50% Off Trial Offer'
+          });
+          couponId = coupon.id;
+        } catch (error: any) {
+          console.error('Coupon creation error:', error);
+          // Continue without discount if coupon creation fails
+        }
       }
-
-      // Validate price ID exists
-      if (!finalPrice) {
-        console.error('[SUBSCRIPTION] Missing price ID:', { tier, discountPercent, finalPrice, STRIPE_PRICES });
-        throw new Error(`No Stripe price ID configured for tier: ${tier}${discountPercent ? ` with ${discountPercent}% discount` : ''}`);
-      }
-      
-      console.log('[SUBSCRIPTION] Using price ID:', { tier, discountPercent, finalPrice });
 
       // First create a setup intent for payment method collection during trial
       const setupIntent = await stripe.setupIntents.create({
@@ -1233,12 +1213,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      // Create subscription - with or without trial based on discount
+      // Create subscription with trial period
       const subscriptionConfig: any = {
         customer: customer.id,
         items: [{
           price: finalPrice,
         }],
+        trial_period_days: 7,
         metadata: {
           userId: user.id,
           tier: tier,
@@ -1247,18 +1228,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      // Only add trial period for non-discounted subscriptions
-      if (!discountPercent || discountPercent !== 50) {
-        subscriptionConfig.trial_period_days = 7;
+      // Apply discount if coupon was created successfully
+      if (couponId) {
+        subscriptionConfig.discounts = [{ coupon: couponId }];
       }
 
       const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
       // Update user subscription in database
-      const subscriptionStatus = discountPercent === 50 ? 'active' : 'trialing';
       await storage.updateUserSubscription(userId, {
         subscriptionTier: tier,
-        subscriptionStatus: subscriptionStatus,
+        subscriptionStatus: 'trialing',
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
@@ -1271,37 +1251,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxConnections: benefits.maxConnections,
         subscriptionId: subscription.id,
         clientSecret: setupIntent.client_secret,
-        trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+        trialEnd: new Date(subscription.trial_end! * 1000),
         discountApplied: discountPercent ? `${discountPercent}%` : null,
-        message: discountPercent === 50 && tier === 'advanced' ? 
-          "Advanced subscription activated with 50% permanent discount!" : 
+        message: discountPercent && tier === 'advanced' ? 
+          "Subscription created successfully with 7-day trial and 50% discount!" : 
           "Subscription created successfully with 7-day trial" 
       });
-    } catch (error: any) {
-      console.error("[SUBSCRIPTION] Upgrade error:", error);
-      console.error("Error details:", {
-        message: error.message,
-        stack: error.stack,
-        stripe_error: error.type || 'unknown',
-        code: error.code,
-        param: error.param
-      });
-      
-      // Provide specific error messages for common issues
-      let errorMessage = "Failed to upgrade subscription";
-      if (error.type === 'StripeCardError') {
-        errorMessage = "Payment failed. Please check your card details.";
-      } else if (error.type === 'StripeInvalidRequestError') {
-        errorMessage = "Invalid request. Please try again.";
-      } else if (error.message && error.message.includes('price')) {
-        errorMessage = "Subscription configuration error. Please contact support.";
-      }
-      
-      res.status(500).json({ 
-        message: errorMessage,
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-        type: error.type || 'unknown'
-      });
+    } catch (error) {
+      console.error("Subscription upgrade error:", error);
+      res.status(500).json({ message: "Failed to upgrade subscription" });
     }
   });
 
@@ -1975,30 +1933,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const subscriptionStatus = senderUser.subscriptionStatus || 'inactive';
       const subscriptionExpiresAt = senderUser.subscriptionExpiresAt;
 
-      // Check if user is an invitee (invited by someone else) - only if email exists
-      let isInvitee = false;
-      if (senderUser.email) {
-        const userConnections = await storage.getConnectionsByEmail(senderUser.email);
-        isInvitee = userConnections.some(conn => conn.inviteeEmail === senderUser.email);
-      }
-      
-      // Allow messaging for: active paid subscriptions, valid trials, or invitees with inherited benefits
-      const hasActiveSubscription = ['basic', 'advanced', 'unlimited'].includes(subscriptionTier) && subscriptionStatus === 'active';
-      const hasValidTrial = subscriptionStatus === 'trialing' && (!subscriptionExpiresAt || subscriptionExpiresAt > now);
-      const hasAnyActiveSubscription = subscriptionStatus === 'active'; // Any active subscription regardless of tier
-      
-      console.log('[MESSAGING] Subscription check:', { 
-        userEmail: senderUser.email, 
-        subscriptionTier, 
-        subscriptionStatus, 
-        hasActiveSubscription, 
-        hasValidTrial, 
-        hasAnyActiveSubscription,
-        isInvitee 
-      });
-      
-      if (!hasActiveSubscription && !hasValidTrial && !hasAnyActiveSubscription && !isInvitee) {
-        console.log('[MESSAGING] Blocking message - trial expired');
+      // Enforce trial expiration for messaging
+      if (subscriptionTier === 'free' || (subscriptionStatus === 'trialing' && subscriptionExpiresAt && subscriptionExpiresAt < now)) {
         return res.status(403).json({ 
           type: 'TRIAL_EXPIRED',
           message: "Your free trial has expired. Please upgrade to continue conversations.",

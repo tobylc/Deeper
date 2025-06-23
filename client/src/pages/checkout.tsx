@@ -86,16 +86,11 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
             Processing...
           </>
         ) : (
-          hasDiscount && tier === 'advanced' ? 'Subscribe to Advanced - 50% Off' : `Start ${currentPlan.name} Trial`
+          hasDiscount && tier === 'advanced' ? 'Upgrade to Advanced' : `Upgrade to ${currentPlan.name}`
         )}
       </Button>
       
-      {hasDiscount ? (
-        <p className="text-xs text-center text-white">
-          You'll be charged $4.95 immediately, then $4.95/month until you cancel.
-          No trial period for discounted subscriptions.
-        </p>
-      ) : (
+      {!hasDiscount && (
         <p className="text-xs text-center text-black">
           Your trial starts immediately. You won't be charged until day 8.
           Cancel anytime during your trial period.
@@ -107,18 +102,17 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
 
 export default function Checkout() {
   const [, params] = useRoute('/checkout/:tier');
-  const [, discountParams] = useRoute('/checkout-discount/:tier');
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  const tier = params?.tier || discountParams?.tier;
+  const tier = params?.tier;
   
-  // Check if this is the discount route
-  const isDiscountRoute = !!discountParams?.tier;
-  const discountPercent = isDiscountRoute ? 50 : 0;
+  // Check for discount parameter in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const discountPercent = parseInt(urlParams.get('discount') || '0');
   const hasDiscount = discountPercent > 0;
 
   // Plan details
