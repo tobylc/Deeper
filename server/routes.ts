@@ -52,6 +52,21 @@ const STRIPE_PRICES = {
   unlimited: process.env.STRIPE_PRICE_ID_UNLIMITED || '',
 };
 
+// Validate Stripe configuration on startup
+const validateStripeConfig = () => {
+  const missingPrices = Object.entries(STRIPE_PRICES)
+    .filter(([key, value]) => !value)
+    .map(([key]) => key);
+    
+  if (missingPrices.length > 0) {
+    console.warn(`Warning: Missing Stripe price IDs for: ${missingPrices.join(', ')}`);
+  } else {
+    console.log('[STRIPE] All price IDs configured successfully');
+  }
+};
+
+validateStripeConfig();
+
 // Webhook handler functions
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
@@ -1190,6 +1205,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         finalPrice = STRIPE_PRICES.advanced_50_off;
       }
 
+      // Validate price ID exists
+      if (!finalPrice) {
+        throw new Error(`No Stripe price ID configured for tier: ${tier}${discountPercent ? ` with ${discountPercent}% discount` : ''}`);
+      }
+
       // First create a setup intent for payment method collection during trial
       const setupIntent = await stripe.setupIntents.create({
         customer: customer.id,
@@ -1247,9 +1267,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "Advanced subscription activated with 50% permanent discount!" : 
           "Subscription created successfully with 7-day trial" 
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Subscription upgrade error:", error);
-      res.status(500).json({ message: "Failed to upgrade subscription" });
+      console.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        stripe_error: error.type || 'unknown'
+      });
+      res.status(500).json({ 
+        message: "Failed to upgrade subscription",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
     }
   });
 
@@ -1923,8 +1951,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const subscriptionStatus = senderUser.subscriptionStatus || 'inactive';
       const subscriptionExpiresAt = senderUser.subscriptionExpiresAt;
 
-      // Enforce trial expiration for messaging
-      if (subscriptionTier === 'free' || (subscriptionStatus === 'trialing' && subscriptionExpiresAt && subscriptionExpiresAt < now)) {
+      // Check if user is an invitee (invited by someone else)
+      const userConnections = await storage.getConnectionsByEmail(senderUser.email);
+      const isInvitee = userConnections.some(conn => conn.inviteeEmail === senderUser.email);
+      
+      // Enforce trial expiration for messaging (but allow invitees with inherited benefits)
+      const hasActiveSubscription = ['basic', 'advanced', 'unlimited'].includes(subscriptionTier) && subscriptionStatus === 'active';
+      const hasValidTrial = subscriptionStatus === 'trialing' && (!subscriptionExpiresAt || subscriptionExpiresAt > now);
+      
+      if (!hasActiveSubscription && !hasValidTrial && !isInvitee) {
         return res.status(403).json({ 
           type: 'TRIAL_EXPIRED',
           message: "Your free trial has expired. Please upgrade to continue conversations.",
