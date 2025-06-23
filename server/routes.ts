@@ -140,37 +140,7 @@ async function handlePaymentFailure(invoice: Stripe.Invoice) {
   }
 }
 
-async function handleSetupIntentSuccess(setupIntent: Stripe.SetupIntent) {
-  const userId = setupIntent.metadata?.userId;
-  const tier = setupIntent.metadata?.tier;
-  const discountApplied = setupIntent.metadata?.discount_applied;
-  
-  if (!userId || !tier) return;
 
-  const user = await storage.getUser(userId);
-  if (!user || !user.stripeSubscriptionId) return;
-
-  // For discount subscriptions, attach payment method and activate subscription immediately
-  if (discountApplied && discountApplied !== 'none') {
-    try {
-      // Attach the payment method to the subscription
-      await stripe.subscriptions.update(user.stripeSubscriptionId, {
-        default_payment_method: setupIntent.payment_method as string,
-      });
-
-      // Get the updated subscription to trigger webhook events
-      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-      
-      // If it's a discount subscription with no trial, it should charge immediately
-      if (!subscription.trial_end) {
-        // Force subscription update to activate the new tier
-        await handleSubscriptionUpdate(subscription);
-      }
-    } catch (error) {
-      console.error('Error handling discount subscription activation:', error);
-    }
-  }
-}
 
 // Configure multer for file uploads
 const storage_config = multer.memoryStorage();
