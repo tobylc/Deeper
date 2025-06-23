@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 
 interface MesmerizingWaitingVisualProps {
