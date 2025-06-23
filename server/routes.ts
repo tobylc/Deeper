@@ -52,6 +52,14 @@ const STRIPE_PRICES = {
   advanced_50_off: process.env.STRIPE_PRICE_ID_ADVANCED_50_OFF || '',
 };
 
+// Log Stripe configuration on startup
+console.log('[STRIPE] Price configuration:', {
+  basic: STRIPE_PRICES.basic ? 'configured' : 'missing',
+  advanced: STRIPE_PRICES.advanced ? 'configured' : 'missing', 
+  unlimited: STRIPE_PRICES.unlimited ? 'configured' : 'missing',
+  advanced_50_off: STRIPE_PRICES.advanced_50_off ? 'configured' : 'missing'
+});
+
 // Webhook handler functions
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
