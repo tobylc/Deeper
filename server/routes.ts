@@ -1302,13 +1302,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!discountPercent || discountPercent === 0) {
         subscriptionConfig.trial_period_days = 7;
       } else {
-        // For discount subscriptions - charge immediately with payment behavior
-        subscriptionConfig.payment_behavior = 'allow_incomplete';
+        // For discount subscriptions - create subscription that requires immediate payment
+        subscriptionConfig.payment_behavior = 'default_incomplete';
         subscriptionConfig.expand = ['latest_invoice.payment_intent'];
-        subscriptionConfig.payment_settings = {
-          payment_method_types: ['card'],
-          save_default_payment_method: 'on_subscription'
-        };
       }
 
       console.log("[SUBSCRIPTION] Creating subscription with config:", JSON.stringify(subscriptionConfig, null, 2));
@@ -1340,37 +1336,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionExpiresAt: user.subscriptionExpiresAt ? user.subscriptionExpiresAt : undefined
       });
 
-      // For discount subscriptions with payment confirmation, immediately upgrade
-      if (discountPercent && discountPercent > 0 && subscription.status === 'active') {
-        console.log(`[DISCOUNT] Subscription active immediately, upgrading user ${userId} to ${tier}`);
-        const tierBenefits = {
-          basic: { maxConnections: 1 },
-          advanced: { maxConnections: 3 },
-          unlimited: { maxConnections: 999 }
-        };
-        const benefits = tierBenefits[tier as keyof typeof tierBenefits] || tierBenefits.basic;
-        
-        await storage.updateUserSubscription(userId, {
-          subscriptionTier: tier,
-          subscriptionStatus: 'active',
-          maxConnections: benefits.maxConnections,
-          stripeCustomerId: customer.id,
-          stripeSubscriptionId: subscription.id,
-          subscriptionExpiresAt: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined
-        });
-      }
+      // For discount subscriptions, we'll upgrade the tier when payment is confirmed via webhook
+      // This ensures secure payment verification before tier activation
 
       // For discount subscriptions, we need to return the payment intent client secret if subscription is incomplete
       let clientSecret = setupIntent.client_secret;
       
       if (discountPercent && discountPercent > 0 && subscription.status === 'incomplete') {
-        // For incomplete discount subscriptions, use the payment intent from the invoice
-        const latestInvoice = subscription.latest_invoice;
-        if (latestInvoice && typeof latestInvoice === 'object' && latestInvoice.payment_intent) {
-          const paymentIntent = latestInvoice.payment_intent;
-          if (typeof paymentIntent === 'object' && paymentIntent.client_secret) {
-            clientSecret = paymentIntent.client_secret;
-          }
+        // For incomplete discount subscriptions, expand and get the payment intent
+        const expandedSubscription = await stripe.subscriptions.retrieve(subscription.id, {
+          expand: ['latest_invoice.payment_intent']
+        });
+        
+        const latestInvoice = expandedSubscription.latest_invoice as any;
+        if (latestInvoice?.payment_intent?.client_secret) {
+          clientSecret = latestInvoice.payment_intent.client_secret;
+          console.log(`[DISCOUNT] Using payment intent client secret for immediate $4.95 charge`);
         }
       }
 
@@ -1458,7 +1439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const paymentTier = paymentIntent.metadata?.tier;
           
           if (paymentUserId && paymentTier) {
-            console.log(`[SECURITY] Payment confirmed for user ${paymentUserId}, activating ${paymentTier} plan`);
+            console.log(`[PAYMENT] Payment confirmed for user ${paymentUserId}, activating ${paymentTier} plan`);
             const paymentUser = await storage.getUser(paymentUserId);
             
             if (paymentUser && paymentUser.stripeSubscriptionId) {
@@ -1466,6 +1447,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const subscription = await stripe.subscriptions.retrieve(paymentUser.stripeSubscriptionId);
               await handleSubscriptionUpdate(subscription);
             }
+          }
+          break;
+
+        case 'invoice.paid':
+          const paidInvoice = event.data.object as Stripe.Invoice;
+          if (paidInvoice.subscription) {
+            console.log(`[INVOICE] Invoice paid for subscription ${paidInvoice.subscription}`);
+            const subscription = await stripe.subscriptions.retrieve(paidInvoice.subscription as string);
+            await handleSubscriptionUpdate(subscription);
           }
           break;
 
@@ -1501,15 +1491,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       ? subscription.latest_invoice 
                       : subscription.latest_invoice.id;
                     
-                    const invoice = await stripe.invoices.retrieve(invoiceId);
-                    
-                    if (invoice.payment_intent && typeof invoice.payment_intent === 'object') {
-                      // Confirm the payment intent to charge immediately
-                      await stripe.paymentIntents.confirm(invoice.payment_intent.id, {
-                        payment_method: setupIntent.payment_method as string,
-                      });
+                    if (invoiceId) {
+                      const invoice = await stripe.invoices.retrieve(invoiceId);
                       
-                      console.log(`[DISCOUNT] Payment confirmed for subscription ${user.stripeSubscriptionId}`);
+                      // Check if invoice has payment intent
+                      const latestInvoice = subscription.latest_invoice as any;
+                      if (latestInvoice && latestInvoice.payment_intent) {
+                        const paymentIntentId = typeof latestInvoice.payment_intent === 'string' 
+                          ? latestInvoice.payment_intent 
+                          : latestInvoice.payment_intent.id;
+                        
+                        // Confirm the payment intent to charge immediately
+                        await stripe.paymentIntents.confirm(paymentIntentId, {
+                          payment_method: setupIntent.payment_method as string,
+                        });
+                        
+                        console.log(`[DISCOUNT] Payment confirmed for subscription ${user.stripeSubscriptionId}`);
+                        
+                        // Trigger subscription update to activate the plan
+                        const updatedSubscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+                        await handleSubscriptionUpdate(updatedSubscription);
+                      }
                     }
                   }
                 } catch (paymentError) {

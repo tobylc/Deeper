@@ -173,6 +173,7 @@ export default function Checkout() {
         }
         
         const data = await response.json();
+        console.log('Subscription response data:', data);
         
         if (data.success && data.clientSecret) {
           setClientSecret(data.clientSecret);
