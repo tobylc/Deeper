@@ -69,9 +69,9 @@ async function validateStripePrices() {
       if (priceId) {
         try {
           const price = await stripe.prices.retrieve(priceId);
-          console.log(`[STRIPE] ✓ ${tier} price valid:`, price.id, `(${price.unit_amount/100} ${price.currency})`);
+          console.log(`[STRIPE] ✓ ${tier} price valid:`, price.id, `(${(price.unit_amount || 0)/100} ${price.currency})`);
         } catch (error) {
-          console.error(`[STRIPE] ✗ ${tier} price INVALID:`, priceId, error.message);
+          console.error(`[STRIPE] ✗ ${tier} price INVALID:`, priceId, (error as Error).message);
         }
       }
     }
@@ -1364,9 +1364,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : 'No stack',
         requestBody: req.body,
-        userId: userId,
-        tier: tier,
-        discountPercent: discountPercent
+        userId: req.user?.id,
+        tier: req.body.tier,
+        discountPercent: req.body.discountPercent
       });
       console.error("===============================================");
       

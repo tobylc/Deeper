@@ -161,10 +161,14 @@ export default function Checkout() {
           requestBody.discountPercent = discountPercent;
         }
         
+        console.log('Making subscription upgrade request:', requestBody);
         const response = await apiRequest("POST", "/api/subscription/upgrade", requestBody);
+        
+        console.log('Subscription upgrade response status:', response.status);
         
         if (!response.ok) {
           const errorData = await response.json();
+          console.error('Subscription upgrade error response:', errorData);
           throw new Error(errorData.message || 'Failed to create subscription');
         }
         
