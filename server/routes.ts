@@ -1286,6 +1286,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("[SUBSCRIPTION] Subscription created:", subscription.id);
       } catch (subscriptionError) {
         console.error("[SUBSCRIPTION] Subscription creation failed:", subscriptionError);
+        console.error("[SUBSCRIPTION] Full error details:", {
+          message: subscriptionError instanceof Error ? subscriptionError.message : 'Unknown error',
+          type: subscriptionError?.constructor?.name,
+          code: (subscriptionError as any)?.code,
+          param: (subscriptionError as any)?.param,
+          priceId: finalPrice,
+          customerId: customer.id,
+          subscriptionConfig: JSON.stringify(subscriptionConfig, null, 2)
+        });
         throw new Error("Failed to create subscription: " + (subscriptionError instanceof Error ? subscriptionError.message : 'Unknown error'));
       }
 
