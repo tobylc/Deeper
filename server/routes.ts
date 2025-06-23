@@ -52,17 +52,7 @@ const STRIPE_PRICES = {
   advanced_50_off: process.env.STRIPE_PRICE_ID_ADVANCED_50_OFF || '',
 };
 
-// Debug: Log Stripe configuration on startup
-console.log('Stripe configuration:', {
-  hasSecretKey: !!process.env.STRIPE_SECRET_KEY,
-  hasPublicKey: !!process.env.VITE_STRIPE_PUBLIC_KEY,
-  prices: {
-    basic: !!STRIPE_PRICES.basic,
-    advanced: !!STRIPE_PRICES.advanced,
-    unlimited: !!STRIPE_PRICES.unlimited,
-    advanced_50_off: !!STRIPE_PRICES.advanced_50_off
-  }
-});
+
 
 // Webhook handler functions
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
@@ -261,72 +251,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Test full subscription creation endpoint
-  app.post('/api/test/full-subscription', async (req, res) => {
-    try {
-      console.log('Testing full subscription creation...');
-      
-      // Test customer creation
-      const testCustomer = await stripe.customers.create({
-        email: 'test@example.com',
-        name: 'Test User',
-        metadata: {
-          userId: 'test-123',
-          platform: 'deeper'
-        }
-      });
-      console.log('Test customer created:', testCustomer.id);
-      
-      // Test setup intent creation
-      const setupIntent = await stripe.setupIntents.create({
-        customer: testCustomer.id,
-        usage: 'off_session',
-        payment_method_types: ['card'],
-        metadata: {
-          userId: 'test-123',
-          tier: 'advanced',
-          platform: 'deeper',
-          discount_applied: '50'
-        }
-      });
-      console.log('Setup intent created:', setupIntent.id);
-      
-      // Test subscription creation (without trial for discount)
-      const subscriptionConfig = {
-        customer: testCustomer.id,
-        items: [{
-          price: STRIPE_PRICES.advanced_50_off,
-        }],
-        metadata: {
-          userId: 'test-123',
-          tier: 'advanced',
-          platform: 'deeper',
-          discount_applied: '50'
-        }
-      };
-      
-      console.log('Creating subscription with config:', JSON.stringify(subscriptionConfig, null, 2));
-      const subscription = await stripe.subscriptions.create(subscriptionConfig);
-      console.log('Subscription created successfully:', subscription.id, 'status:', subscription.status);
-      
-      res.json({ 
-        success: true, 
-        customerId: testCustomer.id,
-        setupIntentId: setupIntent.id,
-        subscriptionId: subscription.id,
-        subscriptionStatus: subscription.status
-      });
-      
-    } catch (error: any) {
-      console.error('Test full subscription error:', error);
-      res.status(500).json({ 
-        error: error.message,
-        type: error.type,
-        code: error.code,
-        requestId: error.requestId
-      });
-    }
-  });
 
   // Admin endpoint to cleanup duplicate users
   app.post('/api/admin/cleanup-users', isAuthenticated, async (req, res) => {
@@ -1189,7 +1113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Subscription management endpoints
-  app.post("/api/subscription/upgrade", async (req: any, res) => {
+  app.post("/api/subscriptions/upgrade", async (req: any, res) => {
     try {
       // Check session-based authentication first
       let userId;
@@ -1284,7 +1208,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // First create a setup intent for payment method collection during trial
-      console.log('Creating setup intent for customer:', customer.id);
       const setupIntent = await stripe.setupIntents.create({
         customer: customer.id,
         usage: 'off_session',
@@ -1296,7 +1219,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           discount_applied: discountPercent ? discountPercent.toString() : 'none'
         }
       });
-      console.log('Setup intent created successfully:', setupIntent.id);
 
       // Create subscription with trial period (no trial for discounted advanced plan)
       const subscriptionConfig: any = {
@@ -1317,9 +1239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionConfig.trial_period_days = 7;
       }
 
-      console.log('Creating subscription with config:', JSON.stringify(subscriptionConfig, null, 2));
       const subscription = await stripe.subscriptions.create(subscriptionConfig);
-      console.log('Subscription created successfully:', subscription.id, 'status:', subscription.status);
 
       // Update user subscription in database
       const subscriptionStatus = (discountPercent && tier === 'advanced' && discountPercent === 50) ? 'active' : 'trialing';
