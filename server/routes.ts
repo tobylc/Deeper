@@ -252,6 +252,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
+  // Production readiness test endpoint - bypasses auth for testing
+  app.get('/api/health/subscription-system', async (req, res) => {
+    try {
+      // Test Stripe configuration
+      const hasStripeKey = !!process.env.STRIPE_SECRET_KEY;
+      const hasPriceIds = !!(STRIPE_PRICES.basic && STRIPE_PRICES.advanced && STRIPE_PRICES.unlimited && STRIPE_PRICES.advanced_50_off);
+      
+      // Test database connectivity
+      const dbTest = await storage.getConnectionsByEmail('test@example.com');
+      const hasDatabase = Array.isArray(dbTest);
+      
+      // Test email service
+      const hasEmailConfig = !!(process.env.SENDGRID_API_KEY || process.env.CONSOLE_EMAIL);
+      
+      res.json({
+        status: 'healthy',
+        subscription_system: {
+          stripe_configured: hasStripeKey,
+          price_ids_configured: hasPriceIds,
+          database_connected: hasDatabase,
+          email_service_configured: hasEmailConfig
+        },
+        endpoints: {
+          subscription_upgrade: '/api/subscriptions/upgrade',
+          trial_status: '/api/subscriptions/trial-status',
+          webhook: '/api/stripe/webhook'
+        },
+        pricing: {
+          basic: '$4.95',
+          advanced: '$9.95',
+          advanced_50_off: '$4.95',
+          unlimited: '$19.95'
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'unhealthy',
+        error: error.message
+      });
+    }
+  });
+
   // Admin endpoint to cleanup duplicate users
   app.post('/api/admin/cleanup-users', isAuthenticated, async (req, res) => {
     try {
