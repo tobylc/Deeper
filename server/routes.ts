@@ -1160,6 +1160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { tier, discountPercent } = req.body;
+      console.log("[SUBSCRIPTION] Request body:", { tier, discountPercent });
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -1177,10 +1178,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get or create Stripe customer
+      console.log("[SUBSCRIPTION] Getting/creating Stripe customer...");
       let customer;
       if (user.stripeCustomerId) {
+        console.log("[SUBSCRIPTION] Retrieving existing customer:", user.stripeCustomerId);
         customer = await stripe.customers.retrieve(user.stripeCustomerId);
       } else {
+        console.log("[SUBSCRIPTION] Creating new customer for:", user.email);
         customer = await stripe.customers.create({
           email: user.email!,
           name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email!,
@@ -1189,6 +1193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             platform: 'deeper'
           }
         });
+        console.log("[SUBSCRIPTION] Created customer:", customer.id);
         
         // Update user with Stripe customer ID
         await storage.updateUserSubscription(userId, {
@@ -1228,17 +1233,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create setup intent for payment method collection
-      const setupIntent = await stripe.setupIntents.create({
-        customer: customer.id,
-        usage: 'off_session',
-        payment_method_types: ['card'],
-        metadata: {
-          userId: user.id,
-          tier: tier,
-          platform: 'deeper',
-          discount_applied: discountPercent ? discountPercent.toString() : 'none'
-        }
-      });
+      console.log("[SUBSCRIPTION] Creating setup intent for customer:", customer.id);
+      let setupIntent;
+      try {
+        setupIntent = await stripe.setupIntents.create({
+          customer: customer.id,
+          usage: 'off_session',
+          payment_method_types: ['card'],
+          metadata: {
+            userId: user.id,
+            tier: tier,
+            platform: 'deeper',
+            discount_applied: discountPercent ? discountPercent.toString() : 'none'
+          }
+        });
+        console.log("[SUBSCRIPTION] Setup intent created:", setupIntent.id);
+      } catch (setupError) {
+        console.error("[SUBSCRIPTION] Setup intent creation failed:", setupError);
+        throw new Error("Failed to create payment setup: " + (setupError instanceof Error ? setupError.message : 'Unknown error'));
+      }
 
       // Create subscription - with trial for regular, immediate charge for discount
       const subscriptionConfig: any = {
@@ -1266,7 +1279,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionConfig.discounts = [{ coupon: couponId }];
       }
 
-      const subscription = await stripe.subscriptions.create(subscriptionConfig);
+      console.log("[SUBSCRIPTION] Creating subscription with config:", JSON.stringify(subscriptionConfig, null, 2));
+      let subscription;
+      try {
+        subscription = await stripe.subscriptions.create(subscriptionConfig);
+        console.log("[SUBSCRIPTION] Subscription created:", subscription.id);
+      } catch (subscriptionError) {
+        console.error("[SUBSCRIPTION] Subscription creation failed:", subscriptionError);
+        throw new Error("Failed to create subscription: " + (subscriptionError instanceof Error ? subscriptionError.message : 'Unknown error'));
+      }
 
       // For discount subscriptions, update tier immediately since they're charged right away
       // For trial subscriptions, keep current tier until webhook confirms payment
