@@ -1110,35 +1110,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Subscription management endpoints
   app.post("/api/subscription/upgrade", async (req: any, res) => {
+    // Declare variables outside try-catch for error handling scope
+    let userId: string | undefined;
+    let user: any;
+
     try {
       console.log("[SUBSCRIPTION] Upgrade attempt:", { 
         hasSession: !!req.session?.user, 
         isAuthenticated: req.isAuthenticated?.(), 
         hasUser: !!req.user,
+        sessionUser: req.session?.user,
+        passportUser: req.user,
         body: req.body 
       });
 
-      // Check session-based authentication first
-      let userId;
-      let user;
+      // Enhanced authentication handling for multiple methods
 
-      if (req.session?.user) {
-        userId = req.session.user.id;
-        user = await storage.getUser(userId);
-      } else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
-        userId = req.user.claims?.sub || req.user.id;
-        user = await storage.getUser(userId);
-      } else {
-        console.log("[SUBSCRIPTION] Authentication failed - no valid session or user");
+      // Method 1: Session-based authentication (from manual login)
+      if (req.session?.user?.id) {
+        userId = String(req.session.user.id);
+        if (userId) {
+          user = await storage.getUser(userId);
+          console.log("[SUBSCRIPTION] Using session auth for user:", userId);
+        }
+      }
+      // Method 2: Passport OAuth authentication
+      else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+        // Handle different user ID formats from OAuth providers
+        const rawUserId = req.user.id || req.user.claims?.sub || req.user._id;
+        if (rawUserId) {
+          userId = String(rawUserId);
+          user = await storage.getUser(userId);
+          console.log("[SUBSCRIPTION] Using OAuth auth for user:", userId);
+        }
+      }
+      // Method 3: Try to find user by email if available
+      else if (req.user?.email || req.session?.user?.email) {
+        const email = req.user?.email || req.session?.user?.email;
+        if (email) {
+          user = await storage.getUserByEmail(email);
+          if (user) {
+            userId = String(user.id);
+            console.log("[SUBSCRIPTION] Using email lookup for user:", userId);
+          }
+        }
+      }
+
+      if (!userId || !user) {
+        console.log("[SUBSCRIPTION] Authentication failed - unable to identify user:", { 
+          userId, 
+          userFound: !!user,
+          sessionData: req.session?.user,
+          passportData: req.user 
+        });
         return res.status(401).json({ 
           message: "Authentication required. Please log in again.",
           code: "AUTH_REQUIRED"
         });
-      }
-      
-      if (!userId || !user) {
-        console.log("[SUBSCRIPTION] User lookup failed:", { userId, userFound: !!user });
-        return res.status(401).json({ message: "User not authenticated" });
       }
 
       const { tier, discountPercent } = req.body;
@@ -1300,7 +1328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: error?.type || 'Unknown type',
         stripeError: error?.type?.startsWith?.('Stripe') ? error : null,
         requestBody: req.body,
-        userId: userId,
+        userId: userId || 'unknown',
         tier: req.body?.tier,
         discountPercent: req.body?.discountPercent
       });
