@@ -1127,6 +1127,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Subscription management endpoints
   app.post("/api/subscription/upgrade", async (req: any, res) => {
     try {
+      console.log('[SUBSCRIPTION] Upgrade request received:', { body: req.body, sessionUser: !!req.session?.user, authUser: !!req.user });
+      
       // Check session-based authentication first
       let userId;
       let user;
@@ -1134,10 +1136,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.session?.user) {
         userId = req.session.user.id;
         user = await storage.getUser(userId);
+        console.log('[SUBSCRIPTION] Using session auth:', { userId, userFound: !!user });
       } else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
         userId = req.user.claims?.sub || req.user.id;
         user = await storage.getUser(userId);
+        console.log('[SUBSCRIPTION] Using OAuth auth:', { userId, userFound: !!user });
       } else {
+        console.log('[SUBSCRIPTION] No valid authentication found');
         return res.status(401).json({ 
           message: "Authentication required. Please log in again.",
           code: "AUTH_REQUIRED"
@@ -1145,10 +1150,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (!userId || !user) {
+        console.log('[SUBSCRIPTION] User not found:', { userId, user: !!user });
         return res.status(401).json({ message: "User not authenticated" });
       }
 
       const { tier, discountPercent } = req.body;
+      console.log('[SUBSCRIPTION] Processing upgrade:', { tier, discountPercent, userEmail: user.email });
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -1207,8 +1214,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Validate price ID exists
       if (!finalPrice) {
+        console.error('[SUBSCRIPTION] Missing price ID:', { tier, discountPercent, finalPrice, STRIPE_PRICES });
         throw new Error(`No Stripe price ID configured for tier: ${tier}${discountPercent ? ` with ${discountPercent}% discount` : ''}`);
       }
+      
+      console.log('[SUBSCRIPTION] Using price ID:', { tier, discountPercent, finalPrice });
 
       // First create a setup intent for payment method collection during trial
       const setupIntent = await stripe.setupIntents.create({
@@ -1268,15 +1278,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "Subscription created successfully with 7-day trial" 
       });
     } catch (error: any) {
-      console.error("Subscription upgrade error:", error);
+      console.error("[SUBSCRIPTION] Upgrade error:", error);
       console.error("Error details:", {
         message: error.message,
         stack: error.stack,
-        stripe_error: error.type || 'unknown'
+        stripe_error: error.type || 'unknown',
+        code: error.code,
+        param: error.param
       });
+      
+      // Provide specific error messages for common issues
+      let errorMessage = "Failed to upgrade subscription";
+      if (error.type === 'StripeCardError') {
+        errorMessage = "Payment failed. Please check your card details.";
+      } else if (error.type === 'StripeInvalidRequestError') {
+        errorMessage = "Invalid request. Please try again.";
+      } else if (error.message && error.message.includes('price')) {
+        errorMessage = "Subscription configuration error. Please contact support.";
+      }
+      
       res.status(500).json({ 
-        message: "Failed to upgrade subscription",
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        message: errorMessage,
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        type: error.type || 'unknown'
       });
     }
   });
@@ -1958,11 +1982,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isInvitee = userConnections.some(conn => conn.inviteeEmail === senderUser.email);
       }
       
-      // Enforce trial expiration for messaging (but allow invitees with inherited benefits)
+      // Allow messaging for: active paid subscriptions, valid trials, or invitees with inherited benefits
       const hasActiveSubscription = ['basic', 'advanced', 'unlimited'].includes(subscriptionTier) && subscriptionStatus === 'active';
       const hasValidTrial = subscriptionStatus === 'trialing' && (!subscriptionExpiresAt || subscriptionExpiresAt > now);
+      const hasAnyActiveSubscription = subscriptionStatus === 'active'; // Any active subscription regardless of tier
       
-      if (!hasActiveSubscription && !hasValidTrial && !isInvitee) {
+      console.log('[MESSAGING] Subscription check:', { 
+        userEmail: senderUser.email, 
+        subscriptionTier, 
+        subscriptionStatus, 
+        hasActiveSubscription, 
+        hasValidTrial, 
+        hasAnyActiveSubscription,
+        isInvitee 
+      });
+      
+      if (!hasActiveSubscription && !hasValidTrial && !hasAnyActiveSubscription && !isInvitee) {
+        console.log('[MESSAGING] Blocking message - trial expired');
         return res.status(403).json({ 
           type: 'TRIAL_EXPIRED',
           message: "Your free trial has expired. Please upgrade to continue conversations.",

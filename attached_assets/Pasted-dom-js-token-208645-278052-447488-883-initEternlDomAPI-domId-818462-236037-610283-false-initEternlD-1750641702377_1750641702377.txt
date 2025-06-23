@@ -1,0 +1,73 @@
+dom.js?token=208645-278052-447488:883 initEternlDomAPI: domId 818462-236037-610283 false
+initEternlDomAPI @ dom.js?token=208645-278052-447488:883
+dom.js?token=208645-278052-447488:884 initEternlDomAPI: href https://deepersocial.replit.app/dashboard
+initEternlDomAPI @ dom.js?token=208645-278052-447488:884
+dashboard:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+content.js:30 Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+dom.js?token=522733-651008-338452:883 initEternlDomAPI: domId 229508-332685-970309 true
+initEternlDomAPI @ dom.js?token=522733-651008-338452:883
+dom.js?token=522733-651008-338452:884 initEternlDomAPI: href https://js.stripe.com/v3/controller-with-preconnect-54f7370dac57d8eaf70a6d513d50b149.html#__shared_params__[version]=basil&apiKey=pk_live_51RcXMUJk5EQAqG1W7QaKuCgwJ8cZy9fowW6P4VQlFr3DoqIxmMBvICaFRMvFM7VHVcSe9fGKCZzFvKwzMY7egk0G005BMn3dvL&apiVersion=2025-03-31.basil&stripeJsId=1325ba50-6a96-4996-80f2-3acad5880431&firstStripeInstanceCreatedLatency=11&controllerCount=1&isCheckout=false&stripeJsLoadTime=1750641635795&manualBrowserDeprecationRollout=false&mids[guid]=NA&mids[muid]=95b5dec2-1992-4528-afc0-d41ef514ab67f5b1c9&mids[sid]=7080854f-5127-4ee3-94b4-88291c9dccb5962187&referrer=https%3A%2F%2Fdeepersocial.replit.app%2Fdashboard&controllerId=__privateStripeController0791
+initEternlDomAPI @ dom.js?token=522733-651008-338452:884
+index-CpnaesTM.js:375 [WebSocket] Connected
+index-CpnaesTM.js:375 [WebSocket] Connection confirmed
+index-CpnaesTM.js:375 [WebSocket] Subscribed to dashboard updates
+index-CpnaesTM.js:461 Setting conversation ID from URL: 61
+index-CpnaesTM.js:375 [WebSocket] Disconnected: 1000 User initiated disconnect
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+dom.js?token=139332-339479-186245:883 initEternlDomAPI: domId 579531-589526-408939 true
+initEternlDomAPI @ dom.js?token=139332-339479-186245:883
+dom.js?token=139332-339479-186245:884 initEternlDomAPI: href https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fdeepersocial.replit.app%2Fconversation%2F61&title=&referrer=https%3A%2F%2Faccounts.google.com%2F&muid=95b5dec2-1992-4528-afc0-d41ef514ab67f5b1c9&sid=7080854f-5127-4ee3-94b4-88291c9dccb5962187&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=139332-339479-186245:884
+dom.js?token=29675-299989-173224:883 initEternlDomAPI: domId 955403-499223-81279 true
+initEternlDomAPI @ dom.js?token=29675-299989-173224:883
+dom.js?token=29675-299989-173224:884 initEternlDomAPI: href https://m.stripe.network/inner.html#url=https%3A%2F%2Fdeepersocial.replit.app%2Fconversation%2F61&title=&referrer=https%3A%2F%2Faccounts.google.com%2F&muid=95b5dec2-1992-4528-afc0-d41ef514ab67f5b1c9&sid=7080854f-5127-4ee3-94b4-88291c9dccb5962187&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=29675-299989-173224:884
+api/conversations/61/messages:1 
+            
+            
+           Failed to load resource: the server responded with a status of 403 ()
+index-CpnaesTM.js:461 Send message error: Error: 403: {"type":"TRIAL_EXPIRED","message":"Your free trial has expired. Please upgrade to continue conversations.","subscriptionTier":"free","subscriptionStatus":"active"}
+    at Qw (index-CpnaesTM.js:48:42765)
+    at async Se (index-CpnaesTM.js:48:42966)
+    at async Object.mutationFn (index-CpnaesTM.js:461:34367)
+onError @ index-CpnaesTM.js:461
+index-CpnaesTM.js:352 `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+(anonymous) @ index-CpnaesTM.js:352
+index-CpnaesTM.js:352 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ index-CpnaesTM.js:352
+api/subscription/upgrade:1 
+            
+            
+           Failed to load resource: the server responded with a status of 500 ()
+index-CpnaesTM.js:462 Subscription creation error: Error: 500: {"message":"Failed to upgrade subscription"}
+    at Qw (index-CpnaesTM.js:48:42765)
+    at async Se (index-CpnaesTM.js:48:42966)
+    at async index-CpnaesTM.js:462:12558
+(anonymous) @ index-CpnaesTM.js:462
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+ [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+ [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
