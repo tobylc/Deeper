@@ -1215,6 +1215,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Handle discount for Advanced plan
       let finalPrice = STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES];
+      console.log("[SUBSCRIPTION] Price ID for tier", tier + ":", finalPrice);
+      
+      if (!finalPrice) {
+        console.error("[SUBSCRIPTION] No price ID found for tier:", tier);
+        throw new Error(`No Stripe price configured for tier: ${tier}`);
+      }
+      
       let couponId = null;
       
       if (discountPercent && tier === 'advanced' && discountPercent === 50) {
