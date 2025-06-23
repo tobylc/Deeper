@@ -49,6 +49,7 @@ const STRIPE_PRICES = {
   basic: process.env.STRIPE_PRICE_ID_BASIC || '',
   advanced: process.env.STRIPE_PRICE_ID_ADVANCED || '',
   unlimited: process.env.STRIPE_PRICE_ID_UNLIMITED || '',
+  advanced_50_off: process.env.STRIPE_PRICE_ID_ADVANCED_50_OFF || '',
 };
 
 // Webhook handler functions
