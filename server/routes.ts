@@ -49,6 +49,7 @@ const STRIPE_PRICES = {
   basic: process.env.STRIPE_PRICE_ID_BASIC || '',
   advanced: process.env.STRIPE_PRICE_ID_ADVANCED || '',
   unlimited: process.env.STRIPE_PRICE_ID_UNLIMITED || '',
+  advanced_50_off: process.env.STRIPE_PRICE_ID_ADVANCED_50_OFF || '',
 };
 
 // Webhook handler functions
@@ -1213,30 +1214,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Handle discount for Advanced plan
-      let finalPrice = STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES];
-      console.log("[SUBSCRIPTION] Price ID for tier", tier + ":", finalPrice);
-      
-      if (!finalPrice) {
-        console.error("[SUBSCRIPTION] No price ID found for tier:", tier);
-        throw new Error(`No Stripe price configured for tier: ${tier}`);
+      // Handle discount for Advanced plan - use dedicated discount price ID
+      let finalPrice;
+      if (discountPercent && tier === 'advanced' && discountPercent === 50) {
+        finalPrice = STRIPE_PRICES.advanced_50_off;
+        console.log("[SUBSCRIPTION] Using 50% discount price ID:", finalPrice);
+      } else {
+        finalPrice = STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES];
+        console.log("[SUBSCRIPTION] Using regular price ID for tier", tier + ":", finalPrice);
       }
       
-      let couponId = null;
-      
-      if (discountPercent && tier === 'advanced' && discountPercent === 50) {
-        try {
-          // Create 50% off coupon for Advanced plan
-          const coupon = await stripe.coupons.create({
-            percent_off: 50,
-            duration: 'forever',
-            name: 'Advanced Plan 50% Off Trial Offer'
-          });
-          couponId = coupon.id;
-        } catch (error: any) {
-          console.error('Coupon creation error:', error);
-          // Continue without discount if coupon creation fails
-        }
+      if (!finalPrice) {
+        console.error("[SUBSCRIPTION] No price ID found for tier:", tier, "with discount:", discountPercent);
+        throw new Error(`No Stripe price configured for tier: ${tier}${discountPercent ? ' with discount' : ''}`);
       }
 
       // Create setup intent for payment method collection
@@ -1280,11 +1270,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionConfig.trial_period_days = 7;
       }
       // Note: Discount subscriptions will charge immediately when payment method is attached
-
-      // Apply discount if coupon was created successfully
-      if (couponId) {
-        subscriptionConfig.discounts = [{ coupon: couponId }];
-      }
 
       console.log("[SUBSCRIPTION] Creating subscription with config:", JSON.stringify(subscriptionConfig, null, 2));
       let subscription;
