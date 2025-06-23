@@ -166,7 +166,7 @@ export default function Checkout() {
           requestBody.discountPercent = discountPercent;
         }
         
-        const response = await apiRequest("POST", "/api/subscription/upgrade", requestBody);
+        const response = await apiRequest("POST", "/api/subscriptions/upgrade", requestBody);
         
         if (!response.ok) {
           const errorData = await response.json();

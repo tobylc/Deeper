@@ -261,10 +261,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Test subscription creation endpoint
-  app.post('/api/test/subscription', async (req, res) => {
+  // Test full subscription creation endpoint
+  app.post('/api/test/full-subscription', async (req, res) => {
     try {
-      console.log('Testing Stripe configuration...');
+      console.log('Testing full subscription creation...');
       
       // Test customer creation
       const testCustomer = await stripe.customers.create({
@@ -277,31 +277,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       console.log('Test customer created:', testCustomer.id);
       
-      // Test price retrieval
-      const advancedPrice = STRIPE_PRICES.advanced_50_off;
-      console.log('Advanced 50% off price ID:', advancedPrice);
+      // Test setup intent creation
+      const setupIntent = await stripe.setupIntents.create({
+        customer: testCustomer.id,
+        usage: 'off_session',
+        payment_method_types: ['card'],
+        metadata: {
+          userId: 'test-123',
+          tier: 'advanced',
+          platform: 'deeper',
+          discount_applied: '50'
+        }
+      });
+      console.log('Setup intent created:', setupIntent.id);
       
-      if (!advancedPrice) {
-        return res.status(500).json({ error: 'Missing advanced_50_off price ID' });
-      }
+      // Test subscription creation (without trial for discount)
+      const subscriptionConfig = {
+        customer: testCustomer.id,
+        items: [{
+          price: STRIPE_PRICES.advanced_50_off,
+        }],
+        metadata: {
+          userId: 'test-123',
+          tier: 'advanced',
+          platform: 'deeper',
+          discount_applied: '50'
+        }
+      };
       
-      // Test price object retrieval
-      const priceObject = await stripe.prices.retrieve(advancedPrice);
-      console.log('Price object retrieved:', priceObject.id, priceObject.unit_amount);
+      console.log('Creating subscription with config:', JSON.stringify(subscriptionConfig, null, 2));
+      const subscription = await stripe.subscriptions.create(subscriptionConfig);
+      console.log('Subscription created successfully:', subscription.id, 'status:', subscription.status);
       
       res.json({ 
         success: true, 
         customerId: testCustomer.id,
-        priceId: advancedPrice,
-        priceAmount: priceObject.unit_amount
+        setupIntentId: setupIntent.id,
+        subscriptionId: subscription.id,
+        subscriptionStatus: subscription.status
       });
       
     } catch (error: any) {
-      console.error('Test subscription error:', error);
+      console.error('Test full subscription error:', error);
       res.status(500).json({ 
         error: error.message,
         type: error.type,
-        code: error.code
+        code: error.code,
+        requestId: error.requestId
       });
     }
   });
