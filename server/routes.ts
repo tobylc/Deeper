@@ -1951,9 +1951,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const subscriptionStatus = senderUser.subscriptionStatus || 'inactive';
       const subscriptionExpiresAt = senderUser.subscriptionExpiresAt;
 
-      // Check if user is an invitee (invited by someone else)
-      const userConnections = await storage.getConnectionsByEmail(senderUser.email);
-      const isInvitee = userConnections.some(conn => conn.inviteeEmail === senderUser.email);
+      // Check if user is an invitee (invited by someone else) - only if email exists
+      let isInvitee = false;
+      if (senderUser.email) {
+        const userConnections = await storage.getConnectionsByEmail(senderUser.email);
+        isInvitee = userConnections.some(conn => conn.inviteeEmail === senderUser.email);
+      }
       
       // Enforce trial expiration for messaging (but allow invitees with inherited benefits)
       const hasActiveSubscription = ['basic', 'advanced', 'unlimited'].includes(subscriptionTier) && subscriptionStatus === 'active';

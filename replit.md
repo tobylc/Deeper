@@ -714,6 +714,13 @@ Changelog:
   * Updated trial expiration popup to clearly indicate immediate payment with no trial period for discount offers
   * Discounted subscriptions begin billing immediately with permanent $4.95/month pricing until cancellation
   * Regular subscriptions maintain 7-day trial period, discounted subscriptions require immediate payment activation
+- June 23, 2025. Fixed subscription system errors and trial expiration logic:
+  * Added comprehensive Stripe price ID validation with startup logging for configuration verification
+  * Enhanced subscription upgrade error handling with detailed development mode error messages
+  * Fixed trial expiration logic to properly handle invitee users and active subscription holders
+  * Updated message sending endpoint to allow invitees to send messages using inherited subscription benefits
+  * Resolved 403 TRIAL_EXPIRED errors for users with valid subscriptions or invitee status
+  * Complete subscription system now properly differentiates between trial users, paid users, and invitees
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications
