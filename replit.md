@@ -648,7 +648,7 @@ Changelog:
   * Implemented automatic 50% off coupon generation for Advanced plan trial expiration offers
   * Updated TrialStatus component with countdown timer underneath subscription status section
   * Added "Upgrade Now" button for expired trial users with seamless trial expiration popup integration
-  * Enhanced TrialExpirationPopup with exclusive 50% discount offer ($4.50/month instead of $9.95)
+  * Enhanced TrialExpirationPopup with exclusive 50% discount offer ($4.95/month instead of $9.95)
   * Created production-ready discount flow from trial expiration through Stripe checkout
   * Subscription system successfully tested: Advanced plan with 50% discount and 7-day trial
   * Complete user-friendly trial-to-paid conversion system for maximum subscription conversion rates
@@ -708,7 +708,7 @@ Changelog:
   * All error messages now user-friendly ("Unable to send message" vs technical "Error" labels)
   * Complete visual consistency with elegant error handling guiding users toward solutions rather than showing technical errors
 - June 21, 2025. 50% discount trial expiration offer system implementation:
-  * Enhanced TrialExpirationPopup with exclusive 50% discount offer for Advanced plan ($4.50/month instead of $9.95)
+  * Enhanced TrialExpirationPopup with exclusive 50% discount offer for Advanced plan ($4.95/month instead of $9.95)
   * Added "Learn More" button redirecting to pricing page and "Subscribe Now" button for direct checkout with discount
   * Implemented discount parameter support in checkout page (/checkout/advanced?discount=50) with prominent discount display
   * Enhanced backend subscription upgrade endpoint to handle discountPercent parameter and create Stripe coupons

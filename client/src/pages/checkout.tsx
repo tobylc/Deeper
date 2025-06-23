@@ -348,14 +348,20 @@ export default function Checkout() {
                     <CheckCircle className="w-5 h-5 text-green-400" />
                     <span className="text-white">AI question suggestions</span>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-400" />
-                    <span className="text-white">7-day free trial</span>
-                  </div>
+                  {!(hasDiscount && tier === 'advanced') && (
+                    <div className="flex items-center space-x-3">
+                      <CheckCircle className="w-5 h-5 text-green-400" />
+                      <span className="text-white">7-day free trial</span>
+                    </div>
+                  )}
                 </div>
 
                 <Badge variant="secondary" className="w-full justify-center py-2 bg-green-100 text-green-800">
-                  Free for 7 days, then {currentPlan.price}/month
+                  {hasDiscount && tier === 'advanced' ? (
+                    `Just ${currentPlan.price}/month`
+                  ) : (
+                    `Free for 7 days, then ${currentPlan.price}/month`
+                  )}
                 </Badge>
               </CardContent>
             </Card>
