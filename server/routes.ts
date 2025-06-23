@@ -1305,6 +1305,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // For discount subscriptions - create subscription that requires immediate payment
         subscriptionConfig.payment_behavior = 'default_incomplete';
         subscriptionConfig.expand = ['latest_invoice.payment_intent'];
+        // Force immediate billing - no trial period
+        delete subscriptionConfig.trial_period_days;
       }
 
       console.log("[SUBSCRIPTION] Creating subscription with config:", JSON.stringify(subscriptionConfig, null, 2));
@@ -1451,10 +1453,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           break;
 
         case 'invoice.paid':
-          const paidInvoice = event.data.object as Stripe.Invoice;
+          const paidInvoice = event.data.object as any;
           if (paidInvoice.subscription) {
-            console.log(`[INVOICE] Invoice paid for subscription ${paidInvoice.subscription}`);
+            console.log(`[INVOICE] Invoice paid for subscription ${paidInvoice.subscription}, amount: ${paidInvoice.amount_paid}`);
             const subscription = await stripe.subscriptions.retrieve(paidInvoice.subscription as string);
+            
+            // For discount subscriptions ($4.95), immediately activate Advanced tier
+            if (paidInvoice.amount_paid === 495) { // $4.95 in cents
+              console.log(`[DISCOUNT] $4.95 payment confirmed - activating Advanced plan immediately`);
+            }
+            
             await handleSubscriptionUpdate(subscription);
           }
           break;
