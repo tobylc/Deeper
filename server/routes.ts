@@ -1136,11 +1136,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Subscription management endpoints
   app.post("/api/subscription/upgrade", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims?.sub || req.user.id;
-      const user = await storage.getUser(userId);
+      console.log("[SUBSCRIPTION] Upgrade request received:", {
+        hasUser: !!req.user,
+        userKeys: req.user ? Object.keys(req.user) : [],
+        body: req.body,
+        sessionId: req.sessionID
+      });
       
-      if (!userId || !user) {
-        return res.status(401).json({ message: "User not authenticated" });
+      const userId = req.user.claims?.sub || req.user.id;
+      console.log("[SUBSCRIPTION] Extracted userId:", userId);
+      
+      if (!userId) {
+        console.log("[SUBSCRIPTION] No userId found in request");
+        return res.status(401).json({ message: "User ID not found in session" });
+      }
+      
+      const user = await storage.getUser(userId);
+      console.log("[SUBSCRIPTION] Retrieved user:", user ? 'found' : 'not found');
+      
+      if (!user) {
+        console.log("[SUBSCRIPTION] User not found in database for ID:", userId);
+        return res.status(404).json({ message: "User not found in database" });
       }
 
       const { tier, discountPercent } = req.body;
