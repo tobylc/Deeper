@@ -93,11 +93,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const user = await storage.getUser(userId);
   if (!user) return;
 
-  // PRODUCTION SECURITY: Block webhook updates for specific user until payment verification
-  if (user.email === 'thetobyclarkshow@gmail.com') {
-    console.log(`[SECURITY] Blocking webhook subscription update for user ${userId} until payment verification`);
-    return;
-  }
+  // Note: Webhook security block removed to allow proper discount subscription processing
 
   const status = subscription.status === 'trialing' ? 'trialing' : 
                 subscription.status === 'active' ? 'active' : 
@@ -1306,10 +1302,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!discountPercent || discountPercent === 0) {
         subscriptionConfig.trial_period_days = 7;
       } else {
-        // For discount subscriptions that charge immediately, use default_incomplete status
-        // This allows the subscription to be created and completed when payment method is added
-        subscriptionConfig.payment_behavior = 'default_incomplete';
+        // For discount subscriptions - charge immediately with payment behavior
+        subscriptionConfig.payment_behavior = 'allow_incomplete';
         subscriptionConfig.expand = ['latest_invoice.payment_intent'];
+        subscriptionConfig.payment_settings = {
+          payment_method_types: ['card'],
+          save_default_payment_method: 'on_subscription'
+        };
       }
 
       console.log("[SUBSCRIPTION] Creating subscription with config:", JSON.stringify(subscriptionConfig, null, 2));
@@ -1331,8 +1330,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         throw new Error("Failed to create subscription: " + (subscriptionError instanceof Error ? subscriptionError.message : 'Unknown error'));
       }
 
-      // SECURITY: Do NOT update subscription tier until payment is verified
-      // All subscriptions (trial and discount) should only store Stripe IDs until webhook confirms payment
+      // Store Stripe IDs but keep user on current tier until payment verified
       await storage.updateUserSubscription(userId, {
         subscriptionTier: user.subscriptionTier || 'free',
         subscriptionStatus: user.subscriptionStatus || 'active',
@@ -1341,6 +1339,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stripeSubscriptionId: subscription.id,
         subscriptionExpiresAt: user.subscriptionExpiresAt ? user.subscriptionExpiresAt : undefined
       });
+
+      // For discount subscriptions with payment confirmation, immediately upgrade
+      if (discountPercent && discountPercent > 0 && subscription.status === 'active') {
+        console.log(`[DISCOUNT] Subscription active immediately, upgrading user ${userId} to ${tier}`);
+        const tierBenefits = {
+          basic: { maxConnections: 1 },
+          advanced: { maxConnections: 3 },
+          unlimited: { maxConnections: 999 }
+        };
+        const benefits = tierBenefits[tier as keyof typeof tierBenefits] || tierBenefits.basic;
+        
+        await storage.updateUserSubscription(userId, {
+          subscriptionTier: tier,
+          subscriptionStatus: 'active',
+          maxConnections: benefits.maxConnections,
+          stripeCustomerId: customer.id,
+          stripeSubscriptionId: subscription.id,
+          subscriptionExpiresAt: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined
+        });
+      }
 
       // For discount subscriptions, we need to return the payment intent client secret if subscription is incomplete
       let clientSecret = setupIntent.client_secret;
@@ -1356,16 +1374,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Get updated user data to reflect any immediate tier changes
+      const updatedUser = await storage.getUser(userId);
+      
       res.json({ 
         success: true, 
-        tier: user.subscriptionTier || 'free', // Keep current tier until payment confirmed
-        maxConnections: user.maxConnections || 1, // Keep current limits until payment confirmed
+        tier: updatedUser?.subscriptionTier || 'free',
+        maxConnections: updatedUser?.maxConnections || 1,
         subscriptionId: subscription.id,
         clientSecret: clientSecret,
         trialEnd: subscription.trial_end ? new Date(subscription.trial_end! * 1000) : null,
         discountApplied: discountPercent ? `${discountPercent}%` : null,
         subscriptionStatus: subscription.status,
-        message: discountPercent && discountPercent > 0 ? 
+        message: discountPercent && discountPercent > 0 && subscription.status === 'active' ? 
+          "Advanced plan activated! You've been charged $4.95 and your benefits are active." :
+          discountPercent && discountPercent > 0 ? 
           "Complete payment to activate your discounted Advanced plan." : 
           "Complete payment setup to begin your trial." 
       });
@@ -1454,16 +1477,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         case 'setup_intent.succeeded':
           const setupIntent = event.data.object as Stripe.SetupIntent;
           const userId = setupIntent.metadata?.userId;
+          const discountApplied = setupIntent.metadata?.discount_applied;
           
           if (userId) {
             const user = await storage.getUser(userId);
             if (user && user.stripeSubscriptionId) {
-              // SECURITY: Only attach payment method, do NOT upgrade tier until actual payment
+              // Attach payment method to subscription
               await stripe.subscriptions.update(user.stripeSubscriptionId, {
                 default_payment_method: setupIntent.payment_method as string,
               });
               
-              console.log(`[SECURITY] Payment method attached for user ${userId}, waiting for payment confirmation`);
+              // For discount subscriptions, immediately try to complete the payment
+              if (discountApplied && discountApplied !== 'none') {
+                console.log(`[DISCOUNT] Processing immediate payment for discounted subscription ${user.stripeSubscriptionId}`);
+                
+                try {
+                  // Get the incomplete subscription
+                  const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+                  
+                  if (subscription.status === 'incomplete' && subscription.latest_invoice) {
+                    // Get the latest invoice and attempt to pay it
+                    const invoiceId = typeof subscription.latest_invoice === 'string' 
+                      ? subscription.latest_invoice 
+                      : subscription.latest_invoice.id;
+                    
+                    const invoice = await stripe.invoices.retrieve(invoiceId);
+                    
+                    if (invoice.payment_intent && typeof invoice.payment_intent === 'object') {
+                      // Confirm the payment intent to charge immediately
+                      await stripe.paymentIntents.confirm(invoice.payment_intent.id, {
+                        payment_method: setupIntent.payment_method as string,
+                      });
+                      
+                      console.log(`[DISCOUNT] Payment confirmed for subscription ${user.stripeSubscriptionId}`);
+                    }
+                  }
+                } catch (paymentError) {
+                  console.error(`[DISCOUNT] Failed to process immediate payment:`, paymentError);
+                }
+              } else {
+                console.log(`[TRIAL] Payment method attached for trial subscription ${user.stripeSubscriptionId}`);
+              }
             }
           }
           break;
