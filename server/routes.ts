@@ -49,10 +49,7 @@ const STRIPE_PRICES = {
   basic: process.env.STRIPE_PRICE_ID_BASIC || '',
   advanced: process.env.STRIPE_PRICE_ID_ADVANCED || '',
   unlimited: process.env.STRIPE_PRICE_ID_UNLIMITED || '',
-  advanced_50_off: process.env.STRIPE_PRICE_ID_ADVANCED_50_OFF || '',
 };
-
-
 
 // Webhook handler functions
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
@@ -250,8 +247,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-
-
 
   // Admin endpoint to cleanup duplicate users
   app.post('/api/admin/cleanup-users', isAuthenticated, async (req, res) => {
@@ -1114,38 +1109,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Subscription management endpoints
-  app.post("/api/subscriptions/upgrade", async (req: any, res) => {
-    console.log('[SUBSCRIPTION] Upgrade request received:', {
-      body: req.body,
-      sessionId: req.sessionID,
-      hasSession: !!req.session,
-      user: req.user ? { id: req.user.id, email: req.user.email } : 'none'
-    });
-    
+  app.post("/api/subscription/upgrade", async (req: any, res) => {
     try {
       // Check session-based authentication first
       let userId;
       let user;
 
-      console.log('[SUBSCRIPTION] Auth check details:', {
-        hasSessionUser: !!req.session?.user,
-        sessionUserId: req.session?.user?.id,
-        isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
-        hasReqUser: !!req.user,
-        reqUserId: req.user?.id,
-        reqUserClaims: req.user?.claims?.sub
-      });
-
       if (req.session?.user) {
         userId = req.session.user.id;
-        console.log('[SUBSCRIPTION] Using session user:', userId);
         user = await storage.getUser(userId);
       } else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
         userId = req.user.claims?.sub || req.user.id;
-        console.log('[SUBSCRIPTION] Using authenticated user:', userId);
         user = await storage.getUser(userId);
       } else {
-        console.log('[SUBSCRIPTION] Authentication failed - no valid user found');
         return res.status(401).json({ 
           message: "Authentication required. Please log in again.",
           code: "AUTH_REQUIRED"
@@ -1157,14 +1133,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { tier, discountPercent } = req.body;
-      
-      console.log('Subscription upgrade request:', { 
-        userId, 
-        tier, 
-        discountPercent, 
-        userEmail: user.email,
-        hasStripeCustomerId: !!user.stripeCustomerId 
-      });
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -1182,43 +1150,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get or create Stripe customer
-      console.log('[SUBSCRIPTION] Processing Stripe customer for user:', user.email);
       let customer;
       if (user.stripeCustomerId) {
-        console.log('[SUBSCRIPTION] Retrieving existing customer:', user.stripeCustomerId);
-        try {
-          customer = await stripe.customers.retrieve(user.stripeCustomerId);
-          console.log('[SUBSCRIPTION] Customer retrieved successfully:', customer.id);
-        } catch (customerError: any) {
-          console.error('[SUBSCRIPTION] Error retrieving customer:', customerError);
-          throw new Error(`Failed to retrieve Stripe customer: ${customerError?.message || 'Unknown error'}`);
-        }
+        customer = await stripe.customers.retrieve(user.stripeCustomerId);
       } else {
-        console.log('[SUBSCRIPTION] Creating new Stripe customer for:', user.email);
-        try {
-          customer = await stripe.customers.create({
-            email: user.email!,
-            name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email!,
-            metadata: {
-              userId: user.id,
-              platform: 'deeper'
-            }
-          });
-          console.log('[SUBSCRIPTION] Customer created successfully:', customer.id);
-          
-          // Update user with Stripe customer ID
-          console.log('[SUBSCRIPTION] Updating user with customer ID');
-          await storage.updateUserSubscription(userId, {
-            subscriptionTier: user.subscriptionTier || 'free',
-            subscriptionStatus: user.subscriptionStatus || 'active',
-            maxConnections: user.maxConnections || 1,
-            stripeCustomerId: customer.id
-          });
-          console.log('[SUBSCRIPTION] User updated with customer ID');
-        } catch (customerError: any) {
-          console.error('[SUBSCRIPTION] Error creating customer:', customerError);
-          throw new Error(`Failed to create Stripe customer: ${customerError?.message || 'Unknown error'}`);
-        }
+        customer = await stripe.customers.create({
+          email: user.email!,
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email!,
+          metadata: {
+            userId: user.id,
+            platform: 'deeper'
+          }
+        });
+        
+        // Update user with Stripe customer ID
+        await storage.updateUserSubscription(userId, {
+          subscriptionTier: user.subscriptionTier || 'free',
+          subscriptionStatus: user.subscriptionStatus || 'active',
+          maxConnections: user.maxConnections || 1,
+          stripeCustomerId: customer.id
+        });
       }
 
       // Cancel existing subscription if any
@@ -1232,45 +1183,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Handle discount for Advanced plan
       let finalPrice = STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES];
+      let couponId = null;
       
-      // Use special 50% discount price ID for Advanced plan
       if (discountPercent && tier === 'advanced' && discountPercent === 50) {
-        finalPrice = STRIPE_PRICES.advanced_50_off;
-        console.log('Using 50% discount price ID:', finalPrice);
-      }
-      
-      if (!finalPrice) {
-        console.error('Missing Stripe price ID for tier:', tier, 'discount:', discountPercent);
-        return res.status(500).json({ message: 'Invalid subscription configuration' });
+        try {
+          // Create 50% off coupon for Advanced plan
+          const coupon = await stripe.coupons.create({
+            percent_off: 50,
+            duration: 'forever',
+            name: 'Advanced Plan 50% Off Trial Offer'
+          });
+          couponId = coupon.id;
+        } catch (error: any) {
+          console.error('Coupon creation error:', error);
+          // Continue without discount if coupon creation fails
+        }
       }
 
       // First create a setup intent for payment method collection during trial
-      console.log('[SUBSCRIPTION] Creating setup intent for customer:', customer.id);
-      let setupIntent;
-      try {
-        setupIntent = await stripe.setupIntents.create({
-          customer: customer.id,
-          usage: 'off_session',
-          payment_method_types: ['card'],
-          metadata: {
-            userId: user.id,
-            tier: tier,
-            platform: 'deeper',
-            discount_applied: discountPercent ? discountPercent.toString() : 'none'
-          }
-        });
-        console.log('[SUBSCRIPTION] Setup intent created successfully:', setupIntent.id);
-      } catch (setupError: any) {
-        console.error('[SUBSCRIPTION] Error creating setup intent:', setupError);
-        throw new Error(`Failed to create setup intent: ${setupError?.message || 'Unknown error'}`);
-      }
+      const setupIntent = await stripe.setupIntents.create({
+        customer: customer.id,
+        usage: 'off_session',
+        payment_method_types: ['card'],
+        metadata: {
+          userId: user.id,
+          tier: tier,
+          platform: 'deeper',
+          discount_applied: discountPercent ? discountPercent.toString() : 'none'
+        }
+      });
 
-      // Create subscription with trial period (no trial for discounted advanced plan)
+      // Create subscription with trial period
       const subscriptionConfig: any = {
         customer: customer.id,
         items: [{
           price: finalPrice,
         }],
+        trial_period_days: 7,
         metadata: {
           userId: user.id,
           tier: tier,
@@ -1279,30 +1228,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      // Only add trial period if not using discount
-      if (!(discountPercent && tier === 'advanced' && discountPercent === 50)) {
-        subscriptionConfig.trial_period_days = 7;
+      // Apply discount if coupon was created successfully
+      if (couponId) {
+        subscriptionConfig.discounts = [{ coupon: couponId }];
       }
 
-      console.log('[SUBSCRIPTION] Creating subscription with config:', JSON.stringify(subscriptionConfig, null, 2));
-      let subscription;
-      try {
-        subscription = await stripe.subscriptions.create(subscriptionConfig);
-        console.log('[SUBSCRIPTION] Subscription created successfully:', {
-          id: subscription.id,
-          status: subscription.status,
-          customerId: subscription.customer
-        });
-      } catch (subscriptionError: any) {
-        console.error('[SUBSCRIPTION] Error creating subscription:', subscriptionError);
-        throw new Error(`Failed to create subscription: ${subscriptionError?.message || 'Unknown error'}`);
-      }
+      const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
       // Update user subscription in database
-      const subscriptionStatus = (discountPercent && tier === 'advanced' && discountPercent === 50) ? 'active' : 'trialing';
       await storage.updateUserSubscription(userId, {
         subscriptionTier: tier,
-        subscriptionStatus: subscriptionStatus,
+        subscriptionStatus: 'trialing',
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
@@ -1315,24 +1251,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxConnections: benefits.maxConnections,
         subscriptionId: subscription.id,
         clientSecret: setupIntent.client_secret,
-        trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+        trialEnd: new Date(subscription.trial_end! * 1000),
         discountApplied: discountPercent ? `${discountPercent}%` : null,
         message: discountPercent && tier === 'advanced' ? 
-          "Subscription created successfully with 50% discount - charged immediately!" : 
+          "Subscription created successfully with 7-day trial and 50% discount!" : 
           "Subscription created successfully with 7-day trial" 
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Subscription upgrade error:", error);
-      console.error("Error details:", {
-        message: error?.message || 'Unknown error',
-        stack: error?.stack || 'No stack trace',
-        requestBody: req.body,
-        userId: req.userId
-      });
-      res.status(500).json({ 
-        message: "Failed to upgrade subscription",
-        error: process.env.NODE_ENV === 'development' ? error?.message : undefined
-      });
+      res.status(500).json({ message: "Failed to upgrade subscription" });
     }
   });
 
@@ -1617,61 +1544,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Profile image import error:", error);
       res.status(500).json({ message: "Failed to import profile image" });
-    }
-  });
-
-  // Basic signup endpoint for testing (production uses invitation flow)
-  app.post("/api/auth/signup", async (req, res) => {
-    try {
-      const { email, password, firstName, lastName } = req.body;
-      
-      if (!email || !password || !firstName || !lastName) {
-        return res.status(400).json({ message: "All fields required" });
-      }
-
-      // Check if user already exists
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
-        return res.status(409).json({ message: "User already exists" });
-      }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 12);
-      
-      // Create user with trial
-      const now = new Date();
-      const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days
-      
-      const user = await storage.createUser({
-        email,
-        passwordHash: hashedPassword,
-        firstName,
-        lastName,
-        subscriptionTier: 'free',
-        subscriptionStatus: 'trialing',
-        trialStartedAt: now,
-        trialExpiresAt: trialEnd,
-        maxConnections: 1
-      });
-      
-      const userId = user.id;
-
-      // Set up session
-      (req.session as any).user = { 
-        id: userId, 
-        email, 
-        firstName, 
-        lastName 
-      };
-
-      res.status(201).json({ 
-        success: true, 
-        user: { id: userId, email, firstName, lastName }
-      });
-
-    } catch (error: any) {
-      console.error("Signup error:", error);
-      res.status(500).json({ message: "Signup failed" });
     }
   });
 

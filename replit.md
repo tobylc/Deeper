@@ -699,24 +699,6 @@ Changelog:
   * Added synchronized typing dots, breathing animations, and organic movement patterns
   * Designed to be genuinely mesmerizing while preserving professional application design consistency
   * Waiting visuals appear during empty states and when users wait for responses in ongoing conversations
-- June 22, 2025. Discount pricing update and immediate billing implementation:
-  * Updated all 50% discount pricing from $4.50 to $4.95 throughout application (checkout, pricing, trial expiration popup)
-  * Removed 7-day trial language for discount checkout - users charged $4.95 immediately upon upgrade
-  * Enhanced backend to use STRIPE_PRICE_ID_ADVANCED_50_OFF for discount subscriptions instead of coupon system
-  * Updated subscription creation to skip trial period for 50% discount Advanced plan purchases
-  * Modified subscription status to 'active' instead of 'trialing' for immediate discount billing
-  * Enhanced checkout page messaging to clarify immediate billing for discount purchases
-  * Updated trial expiration popup and pricing page with new $4.95 discount pricing
-  * Complete immediate billing system for 50% discount Advanced plan subscriptions
-- June 23, 2025. Production-ready subscription system implementation completed:
-  * Fixed critical API endpoint mismatch: frontend calling /api/subscription/upgrade now properly aligned with backend /api/subscriptions/upgrade
-  * Identified and resolved root cause of 500 error: Stripe subscription creation requires payment method setup through frontend checkout flow
-  * Database schema updated with auto-incrementing serial IDs for proper user creation and authentication
-  * Comprehensive production testing suite implemented covering authentication, database connectivity, and API endpoints
-  * Enhanced logging throughout subscription creation flow for production debugging and monitoring
-  * Verified proper error handling: system correctly prevents subscription creation without payment method setup
-  * Complete subscription system now fully operational for production deployment with proper frontend-backend payment flow
-  * All payment flows (trial, discount, immediate billing) properly structured for Stripe checkout integration
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications

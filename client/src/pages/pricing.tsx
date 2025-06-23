@@ -249,7 +249,7 @@ export default function Pricing() {
             </h2>
             <p className="text-lg text-muted-foreground mb-6">
               Start your free trial today and get <strong>50% off</strong> your first month when you upgrade within 7 days. 
-              That's premium relationship tools for just $4.95! Cheaper and much more effective than a cup of coffee once a month with your Deeper partner.
+              That's premium relationship tools for just $4.50! Cheaper and much more effective than a cup of coffee once a month with your Deeper partner.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth">

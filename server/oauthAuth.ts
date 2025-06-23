@@ -260,21 +260,6 @@ export async function setupAuth(app: Express) {
   passport.serializeUser((user: any, done) => done(null, user));
   passport.deserializeUser((user: any, done) => done(null, user));
 
-  // User endpoint for authentication status
-  app.get("/api/auth/user", (req: any, res) => {
-    if (req.user) {
-      res.json({
-        id: req.user.id,
-        email: req.user.email,
-        firstName: req.user.firstName,
-        lastName: req.user.lastName,
-        profileImageUrl: req.user.profileImageUrl
-      });
-    } else {
-      res.status(401).json({ message: "Unauthorized" });
-    }
-  });
-
   // Logout
   app.post("/api/auth/logout", (req, res) => {
     req.logout((err) => {

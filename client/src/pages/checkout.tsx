@@ -86,16 +86,11 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
             Processing...
           </>
         ) : (
-          hasDiscount && tier === 'advanced' ? 'Upgrade to Advanced - 50% Off' : `Start 7-Day Trial`
+          hasDiscount && tier === 'advanced' ? 'Upgrade to Advanced' : `Upgrade to ${currentPlan.name}`
         )}
       </Button>
       
-      {hasDiscount && tier === 'advanced' ? (
-        <p className="text-xs text-center text-black">
-          You will be charged $4.95 immediately and upgraded to the Advanced plan.
-          Cancel anytime from your dashboard.
-        </p>
-      ) : (
+      {!hasDiscount && (
         <p className="text-xs text-center text-black">
           Your trial starts immediately. You won't be charged until day 8.
           Cancel anytime during your trial period.
@@ -131,7 +126,7 @@ export default function Checkout() {
     },
     advanced: {
       name: 'Advanced',
-      price: hasDiscount && discountPercent === 50 ? '$4.95' : '$9.95',
+      price: hasDiscount && discountPercent === 50 ? '$4.50' : '$9.95',
       originalPrice: '$9.95',
       connections: 3,
       description: 'For meaningful relationships'
@@ -166,7 +161,7 @@ export default function Checkout() {
           requestBody.discountPercent = discountPercent;
         }
         
-        const response = await apiRequest("POST", "/api/subscriptions/upgrade", requestBody);
+        const response = await apiRequest("POST", "/api/subscription/upgrade", requestBody);
         
         if (!response.ok) {
           const errorData = await response.json();
@@ -353,19 +348,14 @@ export default function Checkout() {
                     <CheckCircle className="w-5 h-5 text-green-400" />
                     <span className="text-white">AI question suggestions</span>
                   </div>
-                  {!hasDiscount && (
-                    <div className="flex items-center space-x-3">
-                      <CheckCircle className="w-5 h-5 text-green-400" />
-                      <span className="text-white">7-day free trial</span>
-                    </div>
-                  )}
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span className="text-white">7-day free trial</span>
+                  </div>
                 </div>
 
                 <Badge variant="secondary" className="w-full justify-center py-2 bg-green-100 text-green-800">
-                  {hasDiscount && tier === 'advanced' 
-                    ? `Charged immediately - ${currentPlan.price}/month` 
-                    : `Free for 7 days, then ${currentPlan.price}/month`
-                  }
+                  Free for 7 days, then {currentPlan.price}/month
                 </Badge>
               </CardContent>
             </Card>

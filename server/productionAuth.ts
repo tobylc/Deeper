@@ -39,9 +39,29 @@ export function getSession() {
 }
 
 export async function setupAuth(app: Express) {
-  // Import OAuth setup directly to avoid conflicts
-  const { setupAuth: setupOAuthAuth } = await import('./oauthAuth.js');
-  await setupOAuthAuth(app);
+  app.set("trust proxy", 1);
+  app.use(getSession());
+
+  // Production authentication will be handled by Replit's built-in auth
+  // This is a placeholder for when Replit Auth is properly configured
+  
+  // For now, require manual configuration of OAuth providers
+  app.get("/api/auth/login", (req, res) => {
+    res.status(501).json({ 
+      error: "Authentication not configured",
+      message: "Please configure OAuth providers in your Replit secrets"
+    });
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("[AUTH] Logout failed:", err);
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      res.json({ success: true });
+    });
+  });
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
