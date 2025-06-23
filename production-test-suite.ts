@@ -41,7 +41,7 @@ async function runProductionTests() {
     try {
       const { DatabaseStorage } = await import('./server/storage');
       const storage = new DatabaseStorage();
-      await storage.getConnections();
+      await storage.getConnectionsByEmail('test@example.com');
       console.log('✅ Database connection successful');
       results.database_connection = true;
     } catch (error) {
@@ -162,7 +162,8 @@ async function runProductionTests() {
 }
 
 // Run tests if called directly
-if (require.main === module) {
+import { fileURLToPath } from 'url';
+if (import.meta.url === `file://${process.argv[1]}`) {
   runProductionTests().then(success => {
     process.exit(success ? 0 : 1);
   });
