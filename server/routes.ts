@@ -1642,20 +1642,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const now = new Date();
       const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days
       
-      const userId = await storage.createUser({
+      const user = await storage.createUser({
         email,
         passwordHash: hashedPassword,
         firstName,
         lastName,
         subscriptionTier: 'free',
         subscriptionStatus: 'trialing',
-        trialStartDate: now,
-        trialEndDate: trialEnd,
+        trialStartedAt: now,
+        trialExpiresAt: trialEnd,
         maxConnections: 1
       });
+      
+      const userId = user.id;
 
       // Set up session
-      req.session.user = { 
+      (req.session as any).user = { 
         id: userId, 
         email, 
         firstName, 
