@@ -1283,11 +1283,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Only add trial period if NOT a discounted Advanced plan
       if (!isDiscountedAdvanced) {
         subscriptionConfig.trial_period_days = 7;
-      } else {
-        // For discounted Advanced plans, ensure immediate billing
-        subscriptionConfig.billing_cycle_anchor = 'now';
-        subscriptionConfig.proration_behavior = 'create_prorations';
       }
+      // For discounted Advanced plans, skip trial and start billing immediately
+      // Note: Removing billing_cycle_anchor allows Stripe to handle immediate billing automatically
 
       // Apply discount if coupon was created successfully
       if (couponId) {
