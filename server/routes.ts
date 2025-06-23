@@ -65,12 +65,35 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
                 subscription.status === 'active' ? 'active' : 
                 subscription.status === 'past_due' ? 'past_due' : 'inactive';
 
-  await storage.updateUserSubscription(userId, {
-    subscriptionTier: subscription.metadata?.tier || user.subscriptionTier || 'free',
-    subscriptionStatus: status,
-    maxConnections: user.maxConnections || 1,
-    subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
-  });
+  // Get the new tier from subscription metadata
+  const newTier = subscription.metadata?.tier as 'basic' | 'advanced' | 'unlimited' | 'free';
+  
+  // Only update subscription tier and benefits when payment is confirmed (active or trialing)
+  if (status === 'active' || status === 'trialing') {
+    const tierBenefits = {
+      free: { maxConnections: 1 },
+      basic: { maxConnections: 1 },
+      advanced: { maxConnections: 3 },
+      unlimited: { maxConnections: 999 }
+    };
+
+    const benefits = tierBenefits[newTier] || tierBenefits.free;
+
+    await storage.updateUserSubscription(userId, {
+      subscriptionTier: newTier || 'free',
+      subscriptionStatus: status,
+      maxConnections: benefits.maxConnections,
+      subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
+    });
+  } else {
+    // For failed/inactive subscriptions, keep current tier but update status
+    await storage.updateUserSubscription(userId, {
+      subscriptionTier: user.subscriptionTier || 'free',
+      subscriptionStatus: status,
+      maxConnections: user.maxConnections || 1,
+      subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
+    });
+  }
 }
 
 async function handleSubscriptionCancellation(subscription: Stripe.Subscription) {
@@ -1235,27 +1258,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
-      // Update user subscription in database
+      // Only update Stripe customer ID and subscription ID in database
+      // Don't update tier/status until payment is confirmed via webhook
       await storage.updateUserSubscription(userId, {
-        subscriptionTier: tier,
-        subscriptionStatus: 'trialing',
-        maxConnections: benefits.maxConnections,
+        subscriptionTier: user.subscriptionTier || 'free', // Keep current tier
+        subscriptionStatus: user.subscriptionStatus || 'active', // Keep current status
+        maxConnections: user.maxConnections || 1, // Keep current connections
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
-        subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
+        subscriptionExpiresAt: user.subscriptionExpiresAt ? user.subscriptionExpiresAt : undefined // Keep current expiration
       });
 
       res.json({ 
         success: true, 
-        tier, 
-        maxConnections: benefits.maxConnections,
+        tier: user.subscriptionTier || 'free', // Return current tier, not the pending one
+        maxConnections: user.maxConnections || 1, // Return current connections
         subscriptionId: subscription.id,
         clientSecret: setupIntent.client_secret,
         trialEnd: new Date(subscription.trial_end! * 1000),
         discountApplied: discountPercent ? `${discountPercent}%` : null,
         message: discountPercent && tier === 'advanced' ? 
-          "Subscription created successfully with 7-day trial and 50% discount!" : 
-          "Subscription created successfully with 7-day trial" 
+          "Subscription setup complete. Your plan will activate after payment confirmation." : 
+          "Subscription setup complete. Your trial will begin after payment confirmation." 
       });
     } catch (error) {
       console.error("Subscription upgrade error:", error);
