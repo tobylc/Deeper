@@ -1423,6 +1423,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await handlePaymentSuccess(invoice);
           break;
 
+        case 'payment_intent.succeeded':
+          const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          const paymentUserId = paymentIntent.metadata?.userId;
+          const paymentTier = paymentIntent.metadata?.tier;
+          
+          if (paymentUserId && paymentTier) {
+            console.log(`[SECURITY] Payment confirmed for user ${paymentUserId}, activating ${paymentTier} plan`);
+            const paymentUser = await storage.getUser(paymentUserId);
+            
+            if (paymentUser && paymentUser.stripeSubscriptionId) {
+              // Get subscription and force tier update after payment verification
+              const subscription = await stripe.subscriptions.retrieve(paymentUser.stripeSubscriptionId);
+              await handleSubscriptionUpdate(subscription);
+            }
+          }
+          break;
+
         case 'invoice.payment_failed':
           const failedInvoice = event.data.object as Stripe.Invoice;
           await handlePaymentFailure(failedInvoice);
@@ -1431,20 +1448,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         case 'setup_intent.succeeded':
           const setupIntent = event.data.object as Stripe.SetupIntent;
           const userId = setupIntent.metadata?.userId;
-          const tier = setupIntent.metadata?.tier;
-          const discountApplied = setupIntent.metadata?.discount_applied;
           
-          if (userId && tier && discountApplied && discountApplied !== 'none') {
+          if (userId) {
             const user = await storage.getUser(userId);
             if (user && user.stripeSubscriptionId) {
-              // For discount subscriptions, attach payment method and activate immediately
+              // SECURITY: Only attach payment method, do NOT upgrade tier until actual payment
               await stripe.subscriptions.update(user.stripeSubscriptionId, {
                 default_payment_method: setupIntent.payment_method as string,
               });
               
-              // Get updated subscription and force activation
-              const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-              await handleSubscriptionUpdate(subscription);
+              console.log(`[SECURITY] Payment method attached for user ${userId}, waiting for payment confirmation`);
             }
           }
           break;

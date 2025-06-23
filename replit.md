@@ -758,6 +758,15 @@ Changelog:
   * Resolved production Stripe API compatibility issues for immediate-charge discount subscriptions
   * Enhanced subscription creation flow to handle both trial and immediate payment scenarios correctly
   * Complete discount subscription system now functional for $4.95 Advanced plan immediate activation
+- June 23, 2025. Critical subscription security fix and immediate discount activation system:
+  * Fixed critical security vulnerability where subscription tiers were updated before payment verification
+  * Enhanced subscription upgrade endpoint to only update tier after successful Stripe payment confirmation
+  * Implemented immediate charging for discount subscriptions - no trial period for 50% off Advanced plan
+  * Added setup_intent.succeeded webhook handler for instant discount subscription activation
+  * Discount subscribers now charged $4.95 immediately and see Advanced plan benefits right away
+  * Trial subscriptions maintain 7-day trial period with tier updates only after payment confirmation
+  * Enhanced webhook handlers with proper tier benefits mapping for secure subscription management
+  * Complete payment verification flow ensuring users only get upgraded plans after successful payment
 ```
 
 ## User Preferences
