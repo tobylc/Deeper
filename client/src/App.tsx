@@ -79,6 +79,8 @@ function Router() {
       <Route path="/invitation" component={InvitationLanding} />
       <Route path="/auth" component={Auth} />
       
+      <Route path="/checkout/:tier" component={Checkout} />
+      
       {!isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
@@ -91,7 +93,6 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/conversation/:id" component={Conversation} />
-          <Route path="/checkout/:tier" component={Checkout} />
           <Route path="/features" component={Features} />
           <Route path="/pricing" component={Pricing} />
           <Route component={NotFound} />
