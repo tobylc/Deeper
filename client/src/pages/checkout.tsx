@@ -86,11 +86,16 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
             Processing...
           </>
         ) : (
-          hasDiscount && tier === 'advanced' ? 'Upgrade to Advanced' : `Upgrade to ${currentPlan.name}`
+          hasDiscount && tier === 'advanced' ? 'Subscribe to Advanced - 50% Off' : `Start ${currentPlan.name} Trial`
         )}
       </Button>
       
-      {!hasDiscount && (
+      {hasDiscount ? (
+        <p className="text-xs text-center text-white">
+          You'll be charged $4.95 immediately, then $4.95/month until you cancel.
+          No trial period for discounted subscriptions.
+        </p>
+      ) : (
         <p className="text-xs text-center text-black">
           Your trial starts immediately. You won't be charged until day 8.
           Cancel anytime during your trial period.

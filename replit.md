@@ -707,6 +707,13 @@ Changelog:
   * Updated trial expiration popup to use new discount route for streamlined user experience
   * Enhanced checkout page to handle both regular and discounted routes with proper price display
   * Complete permanent discount system using Stripe's native pricing structure for reliable billing
+- June 23, 2025. Immediate payment system for 50% discount subscriptions:
+  * Updated subscription creation to skip trial period for 50% discount Advanced plan subscriptions
+  * Enhanced backend to set subscription status as 'active' immediately for discounted plans instead of 'trialing'
+  * Modified checkout page to show immediate payment messaging ($4.95 charged immediately, then recurring monthly)
+  * Updated trial expiration popup to clearly indicate immediate payment with no trial period for discount offers
+  * Discounted subscriptions begin billing immediately with permanent $4.95/month pricing until cancellation
+  * Regular subscriptions maintain 7-day trial period, discounted subscriptions require immediate payment activation
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications

@@ -1203,13 +1203,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      // Create subscription with trial period
+      // Create subscription - with or without trial based on discount
       const subscriptionConfig: any = {
         customer: customer.id,
         items: [{
           price: finalPrice,
         }],
-        trial_period_days: 7,
         metadata: {
           userId: user.id,
           tier: tier,
@@ -1218,12 +1217,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
+      // Only add trial period for non-discounted subscriptions
+      if (!discountPercent || discountPercent !== 50) {
+        subscriptionConfig.trial_period_days = 7;
+      }
+
       const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
       // Update user subscription in database
+      const subscriptionStatus = discountPercent === 50 ? 'active' : 'trialing';
       await storage.updateUserSubscription(userId, {
         subscriptionTier: tier,
-        subscriptionStatus: 'trialing',
+        subscriptionStatus: subscriptionStatus,
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
@@ -1236,10 +1241,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxConnections: benefits.maxConnections,
         subscriptionId: subscription.id,
         clientSecret: setupIntent.client_secret,
-        trialEnd: new Date(subscription.trial_end! * 1000),
+        trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
         discountApplied: discountPercent ? `${discountPercent}%` : null,
-        message: discountPercent && tier === 'advanced' ? 
-          "Subscription created successfully with 7-day trial and 50% discount!" : 
+        message: discountPercent === 50 && tier === 'advanced' ? 
+          "Advanced subscription activated with 50% permanent discount!" : 
           "Subscription created successfully with 7-day trial" 
       });
     } catch (error) {

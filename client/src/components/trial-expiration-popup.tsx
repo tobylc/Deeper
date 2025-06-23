@@ -105,10 +105,13 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
                     </div>
                     <div className="text-2xl font-bold text-slate-800">
                       <span className="line-through text-slate-500 text-lg">$9.95</span>
-                      <span className="ml-2 text-amber-600">$4.50</span>
+                      <span className="ml-2 text-amber-600">$4.95</span>
                       <span className="text-sm font-normal text-slate-600">/month</span>
                     </div>
                   </div>
+                  <p className="text-xs text-slate-600 font-medium">
+                    Charged immediately, then $4.95/month until you cancel.
+                  </p>
                   <p className="text-xs text-slate-600 italic">
                     Cheaper and more effective than having coffee once a month with your Deeper partner!
                   </p>
