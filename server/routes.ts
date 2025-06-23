@@ -1223,7 +1223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // First create a setup intent for payment method collection during trial
+      // Create setup intent for payment method collection
       const setupIntent = await stripe.setupIntents.create({
         customer: customer.id,
         usage: 'off_session',
@@ -1236,13 +1236,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      // Create subscription with trial period
+      // Create subscription - with trial for regular, immediate charge for discount
       const subscriptionConfig: any = {
         customer: customer.id,
         items: [{
           price: finalPrice,
         }],
-        trial_period_days: 7,
         metadata: {
           userId: user.id,
           tier: tier,
@@ -1251,6 +1250,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
+      // Only add trial period for non-discount subscriptions
+      if (!discountPercent || discountPercent === 0) {
+        subscriptionConfig.trial_period_days = 7;
+      } else {
+        // For discount subscriptions, charge immediately with default payment method
+        subscriptionConfig.default_payment_method = 'pm_card_visa'; // This will be replaced by actual payment method
+      }
+
       // Apply discount if coupon was created successfully
       if (couponId) {
         subscriptionConfig.discounts = [{ coupon: couponId }];
@@ -1258,27 +1265,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
-      // Only update Stripe customer ID and subscription ID in database
-      // Don't update tier/status until payment is confirmed via webhook
-      await storage.updateUserSubscription(userId, {
-        subscriptionTier: user.subscriptionTier || 'free', // Keep current tier
-        subscriptionStatus: user.subscriptionStatus || 'active', // Keep current status
-        maxConnections: user.maxConnections || 1, // Keep current connections
-        stripeCustomerId: customer.id,
-        stripeSubscriptionId: subscription.id,
-        subscriptionExpiresAt: user.subscriptionExpiresAt ? user.subscriptionExpiresAt : undefined // Keep current expiration
-      });
+      // For discount subscriptions, update tier immediately since they're charged right away
+      // For trial subscriptions, keep current tier until webhook confirms payment
+      if (discountPercent && discountPercent > 0) {
+        // Immediate tier update for discount subscriptions (no trial)
+        await storage.updateUserSubscription(userId, {
+          subscriptionTier: tier,
+          subscriptionStatus: 'active',
+          maxConnections: benefits.maxConnections,
+          stripeCustomerId: customer.id,
+          stripeSubscriptionId: subscription.id,
+          subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
+        });
+      } else {
+        // Trial subscriptions - keep current tier until webhook confirms
+        await storage.updateUserSubscription(userId, {
+          subscriptionTier: user.subscriptionTier || 'free',
+          subscriptionStatus: user.subscriptionStatus || 'active',
+          maxConnections: user.maxConnections || 1,
+          stripeCustomerId: customer.id,
+          stripeSubscriptionId: subscription.id,
+          subscriptionExpiresAt: user.subscriptionExpiresAt ? user.subscriptionExpiresAt : undefined
+        });
+      }
 
       res.json({ 
         success: true, 
-        tier: user.subscriptionTier || 'free', // Return current tier, not the pending one
-        maxConnections: user.maxConnections || 1, // Return current connections
+        tier: discountPercent && discountPercent > 0 ? tier : (user.subscriptionTier || 'free'),
+        maxConnections: discountPercent && discountPercent > 0 ? benefits.maxConnections : (user.maxConnections || 1),
         subscriptionId: subscription.id,
         clientSecret: setupIntent.client_secret,
-        trialEnd: new Date(subscription.trial_end! * 1000),
+        trialEnd: subscription.trial_end ? new Date(subscription.trial_end! * 1000) : null,
         discountApplied: discountPercent ? `${discountPercent}%` : null,
-        message: discountPercent && tier === 'advanced' ? 
-          "Subscription setup complete. Your plan will activate after payment confirmation." : 
+        message: discountPercent && discountPercent > 0 ? 
+          "Discount subscription activated! Complete payment to access your new plan." : 
           "Subscription setup complete. Your trial will begin after payment confirmation." 
       });
     } catch (error) {
