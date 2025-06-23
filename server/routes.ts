@@ -1284,7 +1284,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionConfig.trial_period_days = 7;
       }
 
-      const subscription = await stripe.subscriptions.create(subscriptionConfig);
+      console.log('[SUBSCRIPTION] Creating subscription with config:', JSON.stringify(subscriptionConfig, null, 2));
+      let subscription;
+      try {
+        subscription = await stripe.subscriptions.create(subscriptionConfig);
+        console.log('[SUBSCRIPTION] Subscription created successfully:', {
+          id: subscription.id,
+          status: subscription.status,
+          customerId: subscription.customer
+        });
+      } catch (subscriptionError: any) {
+        console.error('[SUBSCRIPTION] Error creating subscription:', subscriptionError);
+        throw new Error(`Failed to create subscription: ${subscriptionError?.message || 'Unknown error'}`);
+      }
 
       // Update user subscription in database
       const subscriptionStatus = (discountPercent && tier === 'advanced' && discountPercent === 50) ? 'active' : 'trialing';
@@ -1605,6 +1617,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Profile image import error:", error);
       res.status(500).json({ message: "Failed to import profile image" });
+    }
+  });
+
+  // Basic signup endpoint for testing (production uses invitation flow)
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const { email, password, firstName, lastName } = req.body;
+      
+      if (!email || !password || !firstName || !lastName) {
+        return res.status(400).json({ message: "All fields required" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(409).json({ message: "User already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 12);
+      
+      // Create user with trial
+      const now = new Date();
+      const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days
+      
+      const userId = await storage.createUser({
+        email,
+        passwordHash: hashedPassword,
+        firstName,
+        lastName,
+        subscriptionTier: 'free',
+        subscriptionStatus: 'trialing',
+        trialStartDate: now,
+        trialEndDate: trialEnd,
+        maxConnections: 1
+      });
+
+      // Set up session
+      req.session.user = { 
+        id: userId, 
+        email, 
+        firstName, 
+        lastName 
+      };
+
+      res.status(201).json({ 
+        success: true, 
+        user: { id: userId, email, firstName, lastName }
+      });
+
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      res.status(500).json({ message: "Signup failed" });
     }
   });
 
