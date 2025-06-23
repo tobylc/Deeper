@@ -1110,84 +1110,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Subscription management endpoints
   app.post("/api/subscription/upgrade", async (req: any, res) => {
-    // Declare variables outside try-catch for error handling scope
-    let userId: string | undefined;
-    let user: any;
-
     try {
-      console.log("[SUBSCRIPTION] Upgrade attempt:", { 
-        hasSession: !!req.session?.user, 
-        isAuthenticated: req.isAuthenticated?.(), 
-        hasUser: !!req.user,
-        sessionUser: req.session?.user,
-        passportUser: req.user,
-        body: req.body 
-      });
+      // Check session-based authentication first
+      let userId;
+      let user;
 
-      // Enhanced authentication handling for multiple methods
-
-      // Method 1: Session-based authentication (from manual login)
-      if (req.session?.user?.id) {
-        userId = String(req.session.user.id);
-        if (userId) {
-          user = await storage.getUser(userId);
-          console.log("[SUBSCRIPTION] Using session auth for user:", userId);
-        }
-      }
-      // Method 2: Passport OAuth authentication
-      else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
-        // Handle different user ID formats from OAuth providers
-        const rawUserId = req.user.id || req.user.claims?.sub || req.user._id;
-        if (rawUserId) {
-          userId = String(rawUserId);
-          user = await storage.getUser(userId);
-          console.log("[SUBSCRIPTION] Using OAuth auth for user:", userId);
-        }
-      }
-      // Method 3: Try to find user by email if available
-      else if (req.user?.email || req.session?.user?.email) {
-        const email = req.user?.email || req.session?.user?.email;
-        if (email) {
-          user = await storage.getUserByEmail(email);
-          if (user) {
-            userId = String(user.id);
-            console.log("[SUBSCRIPTION] Using email lookup for user:", userId);
-          }
-        }
-      }
-
-      if (!userId || !user) {
-        console.log("[SUBSCRIPTION] Authentication failed - unable to identify user:", { 
-          userId, 
-          userFound: !!user,
-          sessionData: req.session?.user,
-          passportData: req.user 
-        });
+      if (req.session?.user) {
+        userId = req.session.user.id;
+        user = await storage.getUser(userId);
+      } else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+        userId = req.user.claims?.sub || req.user.id;
+        user = await storage.getUser(userId);
+      } else {
         return res.status(401).json({ 
           message: "Authentication required. Please log in again.",
           code: "AUTH_REQUIRED"
         });
       }
+      
+      if (!userId || !user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
 
       const { tier, discountPercent } = req.body;
-      console.log("[SUBSCRIPTION] Processing upgrade for user:", userId, "tier:", tier, "discount:", discountPercent);
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Determine if this is a discounted Advanced plan offer early
-      const isDiscountedAdvanced = discountPercent && tier === 'advanced' && discountPercent === 50;
-      
       const tierBenefits: Record<string, { maxConnections: number, price: number }> = {
         'basic': { maxConnections: 1, price: 4.95 },
         'advanced': { maxConnections: 3, price: 9.95 },
         'unlimited': { maxConnections: 999, price: 19.95 }
       };
 
-      // Use finalTier for benefits to ensure Advanced plan benefits for discounted offers
-      const benefitsTier = isDiscountedAdvanced ? 'advanced' : tier;
-      const benefits = tierBenefits[benefitsTier];
+      const benefits = tierBenefits[tier];
       if (!benefits) {
         return res.status(400).json({ message: "Invalid subscription tier" });
       }
@@ -1228,13 +1185,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let finalPrice = STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES];
       let couponId = null;
       
-      console.log("[SUBSCRIPTION] Stripe price for tier:", tier, "=", finalPrice);
-      
-      if (!finalPrice) {
-        console.error("[SUBSCRIPTION] Missing Stripe price for tier:", tier);
-        return res.status(400).json({ message: `Invalid subscription tier: ${tier}` });
-      }
-      
       if (discountPercent && tier === 'advanced' && discountPercent === 50) {
         try {
           // Create 50% off coupon for Advanced plan
@@ -1244,9 +1194,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             name: 'Advanced Plan 50% Off Trial Offer'
           });
           couponId = coupon.id;
-          console.log("[SUBSCRIPTION] Created discount coupon:", couponId);
         } catch (error: any) {
-          console.error('[SUBSCRIPTION] Coupon creation error:', error);
+          console.error('Coupon creation error:', error);
           // Continue without discount if coupon creation fails
         }
       }
@@ -1264,28 +1213,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      // Force tier to 'advanced' for any discount offer to ensure correct plan upgrade
-      const finalTier = isDiscountedAdvanced ? 'advanced' : tier;
-      
+      // Create subscription with trial period
       const subscriptionConfig: any = {
         customer: customer.id,
         items: [{
           price: finalPrice,
         }],
+        trial_period_days: 7,
         metadata: {
           userId: user.id,
-          tier: finalTier,
+          tier: tier,
           platform: 'deeper',
           discount_applied: discountPercent ? discountPercent.toString() : 'none'
         }
       };
-
-      // Only add trial period if NOT a discounted Advanced plan
-      if (!isDiscountedAdvanced) {
-        subscriptionConfig.trial_period_days = 7;
-      }
-      // For discounted Advanced plans, skip trial and start billing immediately
-      // Note: Removing billing_cycle_anchor allows Stripe to handle immediate billing automatically
 
       // Apply discount if coupon was created successfully
       if (couponId) {
@@ -1295,10 +1236,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
       // Update user subscription in database
-      const subscriptionStatus = isDiscountedAdvanced ? 'active' : 'trialing';
       await storage.updateUserSubscription(userId, {
-        subscriptionTier: finalTier,
-        subscriptionStatus: subscriptionStatus,
+        subscriptionTier: tier,
+        subscriptionStatus: 'trialing',
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
@@ -1311,33 +1251,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxConnections: benefits.maxConnections,
         subscriptionId: subscription.id,
         clientSecret: setupIntent.client_secret,
-        trialEnd: isDiscountedAdvanced ? null : new Date(subscription.trial_end! * 1000),
+        trialEnd: new Date(subscription.trial_end! * 1000),
         discountApplied: discountPercent ? `${discountPercent}%` : null,
-        message: isDiscountedAdvanced ? 
-          "Advanced subscription activated with permanent 50% discount!" : 
+        message: discountPercent && tier === 'advanced' ? 
+          "Subscription created successfully with 7-day trial and 50% discount!" : 
           "Subscription created successfully with 7-day trial" 
       });
-    } catch (error: any) {
-      console.error("[SUBSCRIPTION] Upgrade error details:", {
-        message: error?.message || 'Unknown error',
-        stack: error?.stack || 'No stack trace',
-        name: error?.name || 'Unknown error type',
-        code: error?.code || 'No error code',
-        type: error?.type || 'Unknown type',
-        stripeError: error?.type?.startsWith?.('Stripe') ? error : null,
-        requestBody: req.body,
-        userId: userId || 'unknown',
-        tier: req.body?.tier,
-        discountPercent: req.body?.discountPercent
-      });
-      res.status(500).json({ 
-        message: "Failed to upgrade subscription",
-        error: process.env.NODE_ENV === 'development' ? (error?.message || 'Unknown error') : undefined,
-        debug: process.env.NODE_ENV === 'development' ? {
-          errorType: error?.constructor?.name,
-          stripeError: error?.type?.startsWith?.('Stripe') ? error.type : null
-        } : undefined
-      });
+    } catch (error) {
+      console.error("Subscription upgrade error:", error);
+      res.status(500).json({ message: "Failed to upgrade subscription" });
     }
   });
 

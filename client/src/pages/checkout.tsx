@@ -86,16 +86,11 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
             Processing...
           </>
         ) : (
-          hasDiscount && tier === 'advanced' ? 'Upgrade to Advanced - 50% Off' : `Start 7-Day Trial`
+          hasDiscount && tier === 'advanced' ? 'Upgrade to Advanced' : `Upgrade to ${currentPlan.name}`
         )}
       </Button>
       
-      {hasDiscount && tier === 'advanced' ? (
-        <p className="text-xs text-center text-black">
-          You will be charged $4.50 immediately for your first month of Advanced plan benefits.
-          This 50% discount is permanent for as long as you keep your subscription active.
-        </p>
-      ) : !hasDiscount && (
+      {!hasDiscount && (
         <p className="text-xs text-center text-black">
           Your trial starts immediately. You won't be charged until day 8.
           Cancel anytime during your trial period.
@@ -353,29 +348,15 @@ export default function Checkout() {
                     <CheckCircle className="w-5 h-5 text-green-400" />
                     <span className="text-white">AI question suggestions</span>
                   </div>
-                  {!(hasDiscount && tier === 'advanced') && (
-                    <div className="flex items-center space-x-3">
-                      <CheckCircle className="w-5 h-5 text-green-400" />
-                      <span className="text-white">7-day free trial</span>
-                    </div>
-                  )}
-                  {hasDiscount && tier === 'advanced' && (
-                    <div className="flex items-center space-x-3">
-                      <CheckCircle className="w-5 h-5 text-green-400" />
-                      <span className="text-white">Immediate access - no trial</span>
-                    </div>
-                  )}
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span className="text-white">7-day free trial</span>
+                  </div>
                 </div>
 
-                {hasDiscount && tier === 'advanced' ? (
-                  <Badge variant="secondary" className="w-full justify-center py-2 bg-amber-100 text-amber-800">
-                    Permanent 50% discount - {currentPlan.price}/month
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary" className="w-full justify-center py-2 bg-green-100 text-green-800">
-                    Free for 7 days, then {currentPlan.price}/month
-                  </Badge>
-                )}
+                <Badge variant="secondary" className="w-full justify-center py-2 bg-green-100 text-green-800">
+                  Free for 7 days, then {currentPlan.price}/month
+                </Badge>
               </CardContent>
             </Card>
 

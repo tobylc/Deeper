@@ -671,13 +671,6 @@ Changelog:
   * Enhanced toast styling with rounded corners, backdrop blur, ocean blue borders, and white text for elegance
   * Improved error messaging with user-friendly language instead of technical error details
   * Complete subscription upgrade flow now works seamlessly with sophisticated notification system
-- June 22, 2025. 50% discount subscription upgrade system fixes:
-  * Fixed authentication handling in subscription upgrade endpoint to support multiple auth methods
-  * Resolved Stripe billing_cycle_anchor error by removing invalid "now" parameter for discounted subscriptions
-  * Enhanced authentication to handle session-based, OAuth, and email-based user identification
-  * Added comprehensive error logging and debugging for subscription upgrade troubleshooting
-  * 50% discount Advanced plan subscriptions now create successfully with immediate billing
-  * Production-ready discount subscription flow from trial expiration through Stripe checkout completion
 - June 21, 2025. Google OAuth account linking system fixes and duplicate user cleanup:
   * Fixed critical OAuth authentication bug that created separate Google accounts instead of linking to existing email users
   * Enhanced OAuth logic to properly check for existing email-based accounts before creating new users
@@ -706,15 +699,6 @@ Changelog:
   * Added synchronized typing dots, breathing animations, and organic movement patterns
   * Designed to be genuinely mesmerizing while preserving professional application design consistency
   * Waiting visuals appear during empty states and when users wait for responses in ongoing conversations
-- June 22, 2025. Immediate charging for discounted Advanced plan offers implementation:
-  * Removed trial period for 50% discounted Advanced plan offers ensuring immediate payment collection
-  * Updated checkout page to remove trial messaging and show "Permanent 50% discount" for discounted offers
-  * Enhanced subscription upgrade endpoint to skip trial_period_days for discounted Advanced plans
-  * Users with trial-expired status are charged immediately at $4.50/month for Advanced plan benefits
-  * Subscription status set to 'active' instead of 'trialing' for discounted Advanced plan subscriptions
-  * Updated button text to "Upgrade to Advanced - 50% Off" clearly indicating immediate upgrade action
-  * Permanent discount applied through Stripe coupons with duration 'forever' for lifetime pricing
-  * Complete immediate charging system for trial-expired users upgrading to discounted Advanced plans
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications
