@@ -1325,29 +1325,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         throw new Error("Failed to create subscription: " + (subscriptionError instanceof Error ? subscriptionError.message : 'Unknown error'));
       }
 
-      // For discount subscriptions, update tier immediately since they're charged right away
-      // For trial subscriptions, keep current tier until webhook confirms payment
-      if (discountPercent && discountPercent > 0) {
-        // Immediate tier update for discount subscriptions (no trial)
-        await storage.updateUserSubscription(userId, {
-          subscriptionTier: tier,
-          subscriptionStatus: 'active',
-          maxConnections: benefits.maxConnections,
-          stripeCustomerId: customer.id,
-          stripeSubscriptionId: subscription.id,
-          subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
-        });
-      } else {
-        // Trial subscriptions - keep current tier until webhook confirms
-        await storage.updateUserSubscription(userId, {
-          subscriptionTier: user.subscriptionTier || 'free',
-          subscriptionStatus: user.subscriptionStatus || 'active',
-          maxConnections: user.maxConnections || 1,
-          stripeCustomerId: customer.id,
-          stripeSubscriptionId: subscription.id,
-          subscriptionExpiresAt: user.subscriptionExpiresAt ? user.subscriptionExpiresAt : undefined
-        });
-      }
+      // SECURITY: Do NOT update subscription tier until payment is verified
+      // All subscriptions (trial and discount) should only store Stripe IDs until webhook confirms payment
+      await storage.updateUserSubscription(userId, {
+        subscriptionTier: user.subscriptionTier || 'free',
+        subscriptionStatus: user.subscriptionStatus || 'active',
+        maxConnections: user.maxConnections || 1,
+        stripeCustomerId: customer.id,
+        stripeSubscriptionId: subscription.id,
+        subscriptionExpiresAt: user.subscriptionExpiresAt ? user.subscriptionExpiresAt : undefined
+      });
 
       // For discount subscriptions, we need to return the payment intent client secret if subscription is incomplete
       let clientSecret = setupIntent.client_secret;
@@ -1365,16 +1352,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ 
         success: true, 
-        tier: discountPercent && discountPercent > 0 ? tier : (user.subscriptionTier || 'free'),
-        maxConnections: discountPercent && discountPercent > 0 ? benefits.maxConnections : (user.maxConnections || 1),
+        tier: user.subscriptionTier || 'free', // Keep current tier until payment confirmed
+        maxConnections: user.maxConnections || 1, // Keep current limits until payment confirmed
         subscriptionId: subscription.id,
         clientSecret: clientSecret,
         trialEnd: subscription.trial_end ? new Date(subscription.trial_end! * 1000) : null,
         discountApplied: discountPercent ? `${discountPercent}%` : null,
         subscriptionStatus: subscription.status,
         message: discountPercent && discountPercent > 0 ? 
-          "Discount subscription created! Complete payment to access your new plan." : 
-          "Subscription setup complete. Your trial will begin after payment confirmation." 
+          "Complete payment to activate your discounted Advanced plan." : 
+          "Complete payment setup to begin your trial." 
       });
     } catch (error) {
       console.error("============ SUBSCRIPTION UPGRADE ERROR ============");
@@ -1610,6 +1597,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Profile image upload error:", error);
       res.status(500).json({ message: "Failed to upload profile image" });
+    }
+  });
+
+  // Security fix: Reset prematurely upgraded subscriptions until payment verification
+  app.post("/api/subscription/reset-unverified", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).claims?.sub || (req.user as any).id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if user has a Stripe subscription but shouldn't be upgraded yet
+      if (user.stripeSubscriptionId && user.subscriptionTier !== 'free') {
+        console.log(`[SECURITY] Resetting prematurely upgraded user ${userId} from ${user.subscriptionTier} to free`);
+        
+        // Reset to free tier until webhook confirms payment
+        await storage.updateUserSubscription(userId, {
+          subscriptionTier: 'free',
+          subscriptionStatus: 'active',
+          maxConnections: 1,
+          stripeCustomerId: user.stripeCustomerId,
+          stripeSubscriptionId: user.stripeSubscriptionId,
+          subscriptionExpiresAt: user.subscriptionExpiresAt
+        });
+
+        res.json({ 
+          success: true,
+          message: "Subscription reset to free tier pending payment verification",
+          tier: 'free',
+          maxConnections: 1
+        });
+      } else {
+        res.json({ 
+          success: true,
+          message: "No subscription reset needed",
+          tier: user.subscriptionTier || 'free',
+          maxConnections: user.maxConnections || 1
+        });
+      }
+    } catch (error) {
+      console.error("Subscription reset error:", error);
+      res.status(500).json({ message: "Failed to reset subscription" });
     }
   });
 
