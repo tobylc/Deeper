@@ -671,6 +671,13 @@ Changelog:
   * Enhanced toast styling with rounded corners, backdrop blur, ocean blue borders, and white text for elegance
   * Improved error messaging with user-friendly language instead of technical error details
   * Complete subscription upgrade flow now works seamlessly with sophisticated notification system
+- June 22, 2025. 50% discount subscription upgrade system fixes:
+  * Fixed authentication handling in subscription upgrade endpoint to support multiple auth methods
+  * Resolved Stripe billing_cycle_anchor error by removing invalid "now" parameter for discounted subscriptions
+  * Enhanced authentication to handle session-based, OAuth, and email-based user identification
+  * Added comprehensive error logging and debugging for subscription upgrade troubleshooting
+  * 50% discount Advanced plan subscriptions now create successfully with immediate billing
+  * Production-ready discount subscription flow from trial expiration through Stripe checkout completion
 - June 21, 2025. Google OAuth account linking system fixes and duplicate user cleanup:
   * Fixed critical OAuth authentication bug that created separate Google accounts instead of linking to existing email users
   * Enhanced OAuth logic to properly check for existing email-based accounts before creating new users
