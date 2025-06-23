@@ -1184,21 +1184,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Handle discount for Advanced plan
       let finalPrice = STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES];
-      let couponId = null;
       
+      // Use special 50% discount price ID for Advanced plan
       if (discountPercent && tier === 'advanced' && discountPercent === 50) {
-        try {
-          // Create 50% off coupon for Advanced plan
-          const coupon = await stripe.coupons.create({
-            percent_off: 50,
-            duration: 'forever',
-            name: 'Advanced Plan 50% Off Trial Offer'
-          });
-          couponId = coupon.id;
-        } catch (error: any) {
-          console.error('Coupon creation error:', error);
-          // Continue without discount if coupon creation fails
-        }
+        finalPrice = STRIPE_PRICES.advanced_50_off;
       }
 
       // First create a setup intent for payment method collection during trial
@@ -1214,13 +1203,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      // Create subscription with trial period
+      // Create subscription with trial period (no trial for discounted advanced plan)
       const subscriptionConfig: any = {
         customer: customer.id,
         items: [{
           price: finalPrice,
         }],
-        trial_period_days: 7,
         metadata: {
           userId: user.id,
           tier: tier,
@@ -1229,17 +1217,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
-      // Apply discount if coupon was created successfully
-      if (couponId) {
-        subscriptionConfig.discounts = [{ coupon: couponId }];
+      // Only add trial period if not using discount
+      if (!(discountPercent && tier === 'advanced' && discountPercent === 50)) {
+        subscriptionConfig.trial_period_days = 7;
       }
 
       const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
       // Update user subscription in database
+      const subscriptionStatus = (discountPercent && tier === 'advanced' && discountPercent === 50) ? 'active' : 'trialing';
       await storage.updateUserSubscription(userId, {
         subscriptionTier: tier,
-        subscriptionStatus: 'trialing',
+        subscriptionStatus: subscriptionStatus,
         maxConnections: benefits.maxConnections,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
@@ -1252,10 +1241,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxConnections: benefits.maxConnections,
         subscriptionId: subscription.id,
         clientSecret: setupIntent.client_secret,
-        trialEnd: new Date(subscription.trial_end! * 1000),
+        trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
         discountApplied: discountPercent ? `${discountPercent}%` : null,
         message: discountPercent && tier === 'advanced' ? 
-          "Subscription created successfully with 7-day trial and 50% discount!" : 
+          "Subscription created successfully with 50% discount - charged immediately!" : 
           "Subscription created successfully with 7-day trial" 
       });
     } catch (error) {

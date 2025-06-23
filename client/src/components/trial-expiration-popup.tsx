@@ -105,7 +105,7 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
                     </div>
                     <div className="text-2xl font-bold text-slate-800">
                       <span className="line-through text-slate-500 text-lg">$9.95</span>
-                      <span className="ml-2 text-amber-600">$4.50</span>
+                      <span className="ml-2 text-amber-600">$4.95</span>
                       <span className="text-sm font-normal text-slate-600">/month</span>
                     </div>
                   </div>

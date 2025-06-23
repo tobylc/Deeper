@@ -699,6 +699,15 @@ Changelog:
   * Added synchronized typing dots, breathing animations, and organic movement patterns
   * Designed to be genuinely mesmerizing while preserving professional application design consistency
   * Waiting visuals appear during empty states and when users wait for responses in ongoing conversations
+- June 22, 2025. Discount pricing update and immediate billing implementation:
+  * Updated all 50% discount pricing from $4.50 to $4.95 throughout application (checkout, pricing, trial expiration popup)
+  * Removed 7-day trial language for discount checkout - users charged $4.95 immediately upon upgrade
+  * Enhanced backend to use STRIPE_PRICE_ID_ADVANCED_50_OFF for discount subscriptions instead of coupon system
+  * Updated subscription creation to skip trial period for 50% discount Advanced plan purchases
+  * Modified subscription status to 'active' instead of 'trialing' for immediate discount billing
+  * Enhanced checkout page messaging to clarify immediate billing for discount purchases
+  * Updated trial expiration popup and pricing page with new $4.95 discount pricing
+  * Complete immediate billing system for 50% discount Advanced plan subscriptions
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications
