@@ -1134,6 +1134,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { tier, discountPercent } = req.body;
+      
+      console.log('Subscription upgrade request:', { 
+        userId, 
+        tier, 
+        discountPercent, 
+        userEmail: user.email,
+        hasStripeCustomerId: !!user.stripeCustomerId 
+      });
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -1188,6 +1196,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use special 50% discount price ID for Advanced plan
       if (discountPercent && tier === 'advanced' && discountPercent === 50) {
         finalPrice = STRIPE_PRICES.advanced_50_off;
+        console.log('Using 50% discount price ID:', finalPrice);
+      }
+      
+      if (!finalPrice) {
+        console.error('Missing Stripe price ID for tier:', tier, 'discount:', discountPercent);
+        return res.status(500).json({ message: 'Invalid subscription configuration' });
       }
 
       // First create a setup intent for payment method collection during trial
@@ -1249,7 +1263,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Subscription upgrade error:", error);
-      res.status(500).json({ message: "Failed to upgrade subscription" });
+      console.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        tier,
+        discountPercent,
+        userId: user?.id
+      });
+      res.status(500).json({ 
+        message: "Failed to upgrade subscription",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
     }
   });
 
