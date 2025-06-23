@@ -1358,12 +1358,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "Subscription setup complete. Your trial will begin after payment confirmation." 
       });
     } catch (error) {
+      console.error("============ SUBSCRIPTION UPGRADE ERROR ============");
       console.error("Subscription upgrade error:", error);
       console.error("Error details:", {
         message: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : 'No stack',
-        requestBody: req.body
+        requestBody: req.body,
+        userId: userId,
+        tier: tier,
+        discountPercent: discountPercent
       });
+      console.error("===============================================");
+      
+      // Write error to a temporary file for debugging
+      const fs = require('fs');
+      const errorLog = {
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack',
+        requestBody: req.body
+      };
+      fs.writeFileSync('/tmp/subscription-error.json', JSON.stringify(errorLog, null, 2));
+      
       res.status(500).json({ 
         message: "Failed to upgrade subscription",
         details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
