@@ -1261,18 +1261,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "Subscription created successfully with 50% discount - charged immediately!" : 
           "Subscription created successfully with 7-day trial" 
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Subscription upgrade error:", error);
       console.error("Error details:", {
-        message: error.message,
-        stack: error.stack,
-        tier,
-        discountPercent,
-        userId: user?.id
+        message: error?.message || 'Unknown error',
+        stack: error?.stack || 'No stack trace',
+        requestBody: req.body,
+        userId: req.userId
       });
       res.status(500).json({ 
         message: "Failed to upgrade subscription",
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        error: process.env.NODE_ENV === 'development' ? error?.message : undefined
       });
     }
   });
