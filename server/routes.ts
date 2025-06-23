@@ -1115,18 +1115,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Subscription management endpoints
   app.post("/api/subscriptions/upgrade", async (req: any, res) => {
+    console.log('[SUBSCRIPTION] Upgrade request received:', {
+      body: req.body,
+      sessionId: req.sessionID,
+      hasSession: !!req.session,
+      user: req.user ? { id: req.user.id, email: req.user.email } : 'none'
+    });
+    
     try {
       // Check session-based authentication first
       let userId;
       let user;
 
+      console.log('[SUBSCRIPTION] Auth check details:', {
+        hasSessionUser: !!req.session?.user,
+        sessionUserId: req.session?.user?.id,
+        isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
+        hasReqUser: !!req.user,
+        reqUserId: req.user?.id,
+        reqUserClaims: req.user?.claims?.sub
+      });
+
       if (req.session?.user) {
         userId = req.session.user.id;
+        console.log('[SUBSCRIPTION] Using session user:', userId);
         user = await storage.getUser(userId);
       } else if (req.isAuthenticated && req.isAuthenticated() && req.user) {
         userId = req.user.claims?.sub || req.user.id;
+        console.log('[SUBSCRIPTION] Using authenticated user:', userId);
         user = await storage.getUser(userId);
       } else {
+        console.log('[SUBSCRIPTION] Authentication failed - no valid user found');
         return res.status(401).json({ 
           message: "Authentication required. Please log in again.",
           code: "AUTH_REQUIRED"
@@ -1163,26 +1182,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get or create Stripe customer
+      console.log('[SUBSCRIPTION] Processing Stripe customer for user:', user.email);
       let customer;
       if (user.stripeCustomerId) {
-        customer = await stripe.customers.retrieve(user.stripeCustomerId);
+        console.log('[SUBSCRIPTION] Retrieving existing customer:', user.stripeCustomerId);
+        try {
+          customer = await stripe.customers.retrieve(user.stripeCustomerId);
+          console.log('[SUBSCRIPTION] Customer retrieved successfully:', customer.id);
+        } catch (customerError: any) {
+          console.error('[SUBSCRIPTION] Error retrieving customer:', customerError);
+          throw new Error(`Failed to retrieve Stripe customer: ${customerError?.message || 'Unknown error'}`);
+        }
       } else {
-        customer = await stripe.customers.create({
-          email: user.email!,
-          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email!,
-          metadata: {
-            userId: user.id,
-            platform: 'deeper'
-          }
-        });
-        
-        // Update user with Stripe customer ID
-        await storage.updateUserSubscription(userId, {
-          subscriptionTier: user.subscriptionTier || 'free',
-          subscriptionStatus: user.subscriptionStatus || 'active',
-          maxConnections: user.maxConnections || 1,
-          stripeCustomerId: customer.id
-        });
+        console.log('[SUBSCRIPTION] Creating new Stripe customer for:', user.email);
+        try {
+          customer = await stripe.customers.create({
+            email: user.email!,
+            name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email!,
+            metadata: {
+              userId: user.id,
+              platform: 'deeper'
+            }
+          });
+          console.log('[SUBSCRIPTION] Customer created successfully:', customer.id);
+          
+          // Update user with Stripe customer ID
+          console.log('[SUBSCRIPTION] Updating user with customer ID');
+          await storage.updateUserSubscription(userId, {
+            subscriptionTier: user.subscriptionTier || 'free',
+            subscriptionStatus: user.subscriptionStatus || 'active',
+            maxConnections: user.maxConnections || 1,
+            stripeCustomerId: customer.id
+          });
+          console.log('[SUBSCRIPTION] User updated with customer ID');
+        } catch (customerError: any) {
+          console.error('[SUBSCRIPTION] Error creating customer:', customerError);
+          throw new Error(`Failed to create Stripe customer: ${customerError?.message || 'Unknown error'}`);
+        }
       }
 
       // Cancel existing subscription if any
@@ -1209,17 +1245,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // First create a setup intent for payment method collection during trial
-      const setupIntent = await stripe.setupIntents.create({
-        customer: customer.id,
-        usage: 'off_session',
-        payment_method_types: ['card'],
-        metadata: {
-          userId: user.id,
-          tier: tier,
-          platform: 'deeper',
-          discount_applied: discountPercent ? discountPercent.toString() : 'none'
-        }
-      });
+      console.log('[SUBSCRIPTION] Creating setup intent for customer:', customer.id);
+      let setupIntent;
+      try {
+        setupIntent = await stripe.setupIntents.create({
+          customer: customer.id,
+          usage: 'off_session',
+          payment_method_types: ['card'],
+          metadata: {
+            userId: user.id,
+            tier: tier,
+            platform: 'deeper',
+            discount_applied: discountPercent ? discountPercent.toString() : 'none'
+          }
+        });
+        console.log('[SUBSCRIPTION] Setup intent created successfully:', setupIntent.id);
+      } catch (setupError: any) {
+        console.error('[SUBSCRIPTION] Error creating setup intent:', setupError);
+        throw new Error(`Failed to create setup intent: ${setupError?.message || 'Unknown error'}`);
+      }
 
       // Create subscription with trial period (no trial for discounted advanced plan)
       const subscriptionConfig: any = {
