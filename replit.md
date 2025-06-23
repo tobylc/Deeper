@@ -699,6 +699,14 @@ Changelog:
   * Added synchronized typing dots, breathing animations, and organic movement patterns
   * Designed to be genuinely mesmerizing while preserving professional application design consistency
   * Waiting visuals appear during empty states and when users wait for responses in ongoing conversations
+- June 23, 2025. Permanent 50% discount system using dedicated Stripe price ID:
+  * Added STRIPE_PRICE_ID_ADVANCED_50_OFF secret for permanent discounted pricing without complex coupon logic
+  * Updated backend subscription upgrade endpoint to use dedicated discounted price ID for Advanced plan 50% off offers
+  * Removed temporary coupon creation logic and replaced with seamless price ID selection
+  * Created dedicated checkout route (/checkout-discount/advanced) for permanent 50% discount subscriptions
+  * Updated trial expiration popup to use new discount route for streamlined user experience
+  * Enhanced checkout page to handle both regular and discounted routes with proper price display
+  * Complete permanent discount system using Stripe's native pricing structure for reliable billing
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications

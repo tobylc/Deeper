@@ -102,17 +102,18 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
 
 export default function Checkout() {
   const [, params] = useRoute('/checkout/:tier');
+  const [, discountParams] = useRoute('/checkout-discount/:tier');
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  const tier = params?.tier;
+  const tier = params?.tier || discountParams?.tier;
   
-  // Check for discount parameter in URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const discountPercent = parseInt(urlParams.get('discount') || '0');
+  // Check if this is the discount route
+  const isDiscountRoute = !!discountParams?.tier;
+  const discountPercent = isDiscountRoute ? 50 : 0;
   const hasDiscount = discountPercent > 0;
 
   // Plan details

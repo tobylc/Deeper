@@ -118,7 +118,7 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
 
             {/* Action buttons */}
             <div className="space-y-6">
-              <Link href="/checkout/advanced?discount=50">
+              <Link href="/checkout-discount/advanced">
                 <Button
                   className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-blue/25 transition-all duration-200 font-medium"
                 >

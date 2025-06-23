@@ -92,6 +92,7 @@ function Router() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/conversation/:id" component={Conversation} />
           <Route path="/checkout/:tier" component={Checkout} />
+          <Route path="/checkout-discount/advanced" component={Checkout} />
           <Route path="/features" component={Features} />
           <Route path="/pricing" component={Pricing} />
           <Route component={NotFound} />
