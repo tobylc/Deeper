@@ -93,6 +93,12 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const user = await storage.getUser(userId);
   if (!user) return;
 
+  // PRODUCTION SECURITY: Block webhook updates for specific user until payment verification
+  if (user.email === 'thetobyclarkshow@gmail.com') {
+    console.log(`[SECURITY] Blocking webhook subscription update for user ${userId} until payment verification`);
+    return;
+  }
+
   const status = subscription.status === 'trialing' ? 'trialing' : 
                 subscription.status === 'active' ? 'active' : 
                 subscription.status === 'past_due' ? 'past_due' : 'inactive';
