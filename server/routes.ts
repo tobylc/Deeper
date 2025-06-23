@@ -48,6 +48,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const STRIPE_PRICES = {
   basic: process.env.STRIPE_PRICE_ID_BASIC || '',
   advanced: process.env.STRIPE_PRICE_ID_ADVANCED || '',
+  advanced_50_off: process.env.STRIPE_PRICE_ID_ADVANCED_50_OFF || '',
   unlimited: process.env.STRIPE_PRICE_ID_UNLIMITED || '',
 };
 
@@ -1181,23 +1182,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Handle discount for Advanced plan
+      // Handle discount for Advanced plan using dedicated price ID
       let finalPrice = STRIPE_PRICES[tier as keyof typeof STRIPE_PRICES];
-      let couponId = null;
       
       if (discountPercent && tier === 'advanced' && discountPercent === 50) {
-        try {
-          // Create 50% off coupon for Advanced plan
-          const coupon = await stripe.coupons.create({
-            percent_off: 50,
-            duration: 'forever',
-            name: 'Advanced Plan 50% Off Trial Offer'
-          });
-          couponId = coupon.id;
-        } catch (error: any) {
-          console.error('Coupon creation error:', error);
-          // Continue without discount if coupon creation fails
-        }
+        // Use dedicated 50% off price ID for permanent discount
+        finalPrice = STRIPE_PRICES.advanced_50_off;
       }
 
       // First create a setup intent for payment method collection during trial
@@ -1227,11 +1217,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           discount_applied: discountPercent ? discountPercent.toString() : 'none'
         }
       };
-
-      // Apply discount if coupon was created successfully
-      if (couponId) {
-        subscriptionConfig.discounts = [{ coupon: couponId }];
-      }
 
       const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
