@@ -107,6 +107,7 @@ export default function Checkout() {
   const { toast } = useToast();
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [subscriptionCreated, setSubscriptionCreated] = useState(false);
 
   const tier = params?.tier;
   
@@ -153,9 +154,16 @@ export default function Checkout() {
       return;
     }
 
+    // Prevent duplicate subscription creation
+    if (subscriptionCreated) {
+      return;
+    }
+
     // Create subscription
     const createSubscription = async () => {
       try {
+        setSubscriptionCreated(true);
+        
         const requestBody: { tier: string; discountPercent?: number } = { tier };
         if (hasDiscount) {
           requestBody.discountPercent = discountPercent;
@@ -182,6 +190,7 @@ export default function Checkout() {
         }
       } catch (error: any) {
         console.error('Subscription creation error:', error);
+        setSubscriptionCreated(false); // Reset on error to allow retry
         
         // Handle authentication errors specifically
         if (error.message && (error.message.includes('Authentication') || error.message.includes('401'))) {
@@ -203,7 +212,7 @@ export default function Checkout() {
     };
 
     createSubscription();
-  }, [tier, user, currentPlan, setLocation, toast]);
+  }, [tier, user, currentPlan]);
 
   const handleSuccess = () => {
     setTimeout(() => {

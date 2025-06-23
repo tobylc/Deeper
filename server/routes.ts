@@ -1302,11 +1302,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!discountPercent || discountPercent === 0) {
         subscriptionConfig.trial_period_days = 7;
       } else {
-        // For discount subscriptions - create subscription that requires immediate payment
+        // For discount subscriptions - create subscription that charges immediately
         subscriptionConfig.payment_behavior = 'default_incomplete';
         subscriptionConfig.expand = ['latest_invoice.payment_intent'];
         // Force immediate billing - no trial period
-        delete subscriptionConfig.trial_period_days;
+        subscriptionConfig.collection_method = 'charge_automatically';
+        subscriptionConfig.payment_settings = {
+          payment_method_types: ['card'],
+          save_default_payment_method: 'on_subscription'
+        };
       }
 
       console.log("[SUBSCRIPTION] Creating subscription with config:", JSON.stringify(subscriptionConfig, null, 2));
@@ -1341,19 +1345,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For discount subscriptions, we'll upgrade the tier when payment is confirmed via webhook
       // This ensures secure payment verification before tier activation
 
-      // For discount subscriptions, we need to return the payment intent client secret if subscription is incomplete
+      // For discount subscriptions, ensure we have the payment intent client secret
       let clientSecret = setupIntent.client_secret;
       
-      if (discountPercent && discountPercent > 0 && subscription.status === 'incomplete') {
-        // For incomplete discount subscriptions, expand and get the payment intent
-        const expandedSubscription = await stripe.subscriptions.retrieve(subscription.id, {
-          expand: ['latest_invoice.payment_intent']
-        });
+      if (discountPercent && discountPercent > 0) {
+        console.log(`[DISCOUNT] Processing discount subscription: ${subscription.status}`);
         
-        const latestInvoice = expandedSubscription.latest_invoice as any;
-        if (latestInvoice?.payment_intent?.client_secret) {
-          clientSecret = latestInvoice.payment_intent.client_secret;
-          console.log(`[DISCOUNT] Using payment intent client secret for immediate $4.95 charge`);
+        if (subscription.status === 'incomplete') {
+          // For incomplete discount subscriptions, get the payment intent from the invoice
+          const expandedSubscription = await stripe.subscriptions.retrieve(subscription.id, {
+            expand: ['latest_invoice.payment_intent']
+          });
+          
+          const latestInvoice = expandedSubscription.latest_invoice as any;
+          if (latestInvoice?.payment_intent?.client_secret) {
+            clientSecret = latestInvoice.payment_intent.client_secret;
+            console.log(`[DISCOUNT] Payment intent client secret obtained for $4.95 immediate charge`);
+          } else {
+            console.error(`[DISCOUNT] No payment intent found for incomplete subscription ${subscription.id}`);
+          }
+        } else if (subscription.status === 'active') {
+          console.log(`[DISCOUNT] Subscription ${subscription.id} is already active - no payment needed`);
         }
       }
 
