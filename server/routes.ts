@@ -1449,6 +1449,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         case 'payment_intent.succeeded':
           const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          console.log(`[PAYMENT] Payment intent succeeded: ${paymentIntent.id}, amount: ${paymentIntent.amount}`);
+          
+          // For $4.95 discount payments, immediately activate Advanced tier
+          if (paymentIntent.amount === 495) {
+            console.log(`[DISCOUNT] $4.95 discount payment confirmed - activating Advanced plan`);
+            
+            // Find user by customer ID
+            const customerId = paymentIntent.customer as string;
+            if (customerId) {
+              const users = await storage.getUsers();
+              const discountUser = users.find(u => u.stripeCustomerId === customerId);
+              
+              if (discountUser && discountUser.stripeSubscriptionId) {
+                console.log(`[DISCOUNT] Found user ${discountUser.id} for discount activation`);
+                const subscription = await stripe.subscriptions.retrieve(discountUser.stripeSubscriptionId);
+                await handleSubscriptionUpdate(subscription);
+              }
+            }
+          }
+          
           const paymentUserId = paymentIntent.metadata?.userId;
           const paymentTier = paymentIntent.metadata?.tier;
           
@@ -1457,7 +1477,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const paymentUser = await storage.getUser(paymentUserId);
             
             if (paymentUser && paymentUser.stripeSubscriptionId) {
-              // Get subscription and force tier update after payment verification
               const subscription = await stripe.subscriptions.retrieve(paymentUser.stripeSubscriptionId);
               await handleSubscriptionUpdate(subscription);
             }
@@ -1514,28 +1533,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     if (invoiceId) {
                       const invoice = await stripe.invoices.retrieve(invoiceId);
                       
-                      // Check if invoice has payment intent
-                      const latestInvoice = subscription.latest_invoice as any;
-                      if (latestInvoice && latestInvoice.payment_intent) {
-                        const paymentIntentId = typeof latestInvoice.payment_intent === 'string' 
-                          ? latestInvoice.payment_intent 
-                          : latestInvoice.payment_intent.id;
+                      // Get the expanded invoice with payment intent
+                      const expandedInvoice = await stripe.invoices.retrieve(invoiceId, {
+                        expand: ['payment_intent']
+                      });
+                      
+                      if (expandedInvoice.payment_intent && typeof expandedInvoice.payment_intent === 'object') {
+                        const paymentIntent = expandedInvoice.payment_intent;
+                        console.log(`[DISCOUNT] Found payment intent ${paymentIntent.id} for $4.95 charge`);
                         
                         // Confirm the payment intent to charge immediately
-                        await stripe.paymentIntents.confirm(paymentIntentId, {
+                        const confirmedPayment = await stripe.paymentIntents.confirm(paymentIntent.id, {
                           payment_method: setupIntent.payment_method as string,
                         });
                         
-                        console.log(`[DISCOUNT] Payment confirmed for subscription ${user.stripeSubscriptionId}`);
+                        console.log(`[DISCOUNT] Payment confirmation result: ${confirmedPayment.status}`);
                         
-                        // Trigger subscription update to activate the plan
-                        const updatedSubscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-                        await handleSubscriptionUpdate(updatedSubscription);
+                        if (confirmedPayment.status === 'succeeded') {
+                          console.log(`[DISCOUNT] $4.95 payment successful for subscription ${user.stripeSubscriptionId}`);
+                          
+                          // Immediately activate the subscription
+                          const updatedSubscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+                          await handleSubscriptionUpdate(updatedSubscription);
+                        } else {
+                          console.error(`[DISCOUNT] Payment confirmation failed with status: ${confirmedPayment.status}`);
+                        }
+                      } else {
+                        console.error(`[DISCOUNT] No payment intent found on invoice ${invoiceId}`);
                       }
                     }
                   }
                 } catch (paymentError) {
                   console.error(`[DISCOUNT] Failed to process immediate payment:`, paymentError);
+                  console.error(`[DISCOUNT] Payment error details:`, {
+                    message: paymentError instanceof Error ? paymentError.message : 'Unknown error',
+                    type: paymentError?.constructor?.name,
+                    code: (paymentError as any)?.code,
+                    userId: userId,
+                    subscriptionId: user.stripeSubscriptionId
+                  });
                 }
               } else {
                 console.log(`[TRIAL] Payment method attached for trial subscription ${user.stripeSubscriptionId}`);
