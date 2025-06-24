@@ -1302,15 +1302,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!discountPercent || discountPercent === 0) {
         subscriptionConfig.trial_period_days = 7;
       } else {
-        // For discount subscriptions - create subscription that charges immediately
+        // For discount subscriptions - set up for immediate payment once payment method is attached
         subscriptionConfig.payment_behavior = 'default_incomplete';
         subscriptionConfig.expand = ['latest_invoice.payment_intent'];
-        // Force immediate billing - no trial period
         subscriptionConfig.collection_method = 'charge_automatically';
         subscriptionConfig.payment_settings = {
           payment_method_types: ['card'],
           save_default_payment_method: 'on_subscription'
         };
+        // Note: Payment method will be attached via webhook when setup intent succeeds
       }
 
       console.log("[SUBSCRIPTION] Creating subscription with config:", JSON.stringify(subscriptionConfig, null, 2));
@@ -1511,74 +1511,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (userId) {
             const user = await storage.getUser(userId);
             if (user && user.stripeSubscriptionId) {
-              // Attach payment method to subscription
-              await stripe.subscriptions.update(user.stripeSubscriptionId, {
+              console.log(`[PAYMENT] Attaching payment method ${setupIntent.payment_method} to subscription ${user.stripeSubscriptionId}`);
+              
+              // Update subscription with payment method
+              const updatedSubscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
                 default_payment_method: setupIntent.payment_method as string,
               });
+              console.log(`[PAYMENT] Subscription updated with payment method, status: ${updatedSubscription.status}`);
               
-              // For discount subscriptions, immediately try to complete the payment
+              // For discount subscriptions, immediately process the invoice payment
               if (discountApplied && discountApplied !== 'none') {
-                console.log(`[DISCOUNT] Processing immediate payment for discounted subscription ${user.stripeSubscriptionId}`);
+                console.log(`[DISCOUNT] Processing immediate $4.95 payment for subscription ${user.stripeSubscriptionId}`);
                 
                 try {
-                  // Get the incomplete subscription
-                  const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+                  // Get the latest subscription data
+                  const currentSubscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, {
+                    expand: ['latest_invoice.payment_intent']
+                  });
                   
-                  if (subscription.status === 'incomplete' && subscription.latest_invoice) {
-                    // Get the latest invoice and attempt to pay it
-                    const invoiceId = typeof subscription.latest_invoice === 'string' 
-                      ? subscription.latest_invoice 
-                      : subscription.latest_invoice.id;
+                  if (currentSubscription.latest_invoice) {
+                    const latestInvoice = currentSubscription.latest_invoice as any;
+                    console.log(`[DISCOUNT] Latest invoice: ${latestInvoice.id}, status: ${latestInvoice.status}`);
                     
-                    if (invoiceId) {
-                      const invoice = await stripe.invoices.retrieve(invoiceId);
+                    // If invoice is still open, pay it immediately
+                    if (latestInvoice.status === 'open' && latestInvoice.payment_intent) {
+                      const paymentIntent = latestInvoice.payment_intent;
+                      console.log(`[DISCOUNT] Found payment intent ${paymentIntent.id}, status: ${paymentIntent.status}`);
                       
-                      // Get the expanded invoice with payment intent
-                      const expandedInvoice = await stripe.invoices.retrieve(invoiceId, {
-                        expand: ['payment_intent']
+                      // Confirm the payment with the attached payment method
+                      const paymentResult = await stripe.paymentIntents.confirm(paymentIntent.id, {
+                        payment_method: setupIntent.payment_method as string
                       });
                       
-                      if (expandedInvoice.payment_intent && typeof expandedInvoice.payment_intent === 'object') {
-                        const paymentIntent = expandedInvoice.payment_intent;
-                        console.log(`[DISCOUNT] Found payment intent ${paymentIntent.id} for $4.95 charge`);
-                        console.log(`[DISCOUNT] Payment intent status: ${paymentIntent.status}, payment method: ${paymentIntent.payment_method || 'none'}`);
-                        console.log(`[DISCOUNT] Attaching payment method: ${setupIntent.payment_method}`);
-                        
-                        // First update the payment intent with the payment method
-                        const updatedPaymentIntent = await stripe.paymentIntents.update(paymentIntent.id, {
-                          payment_method: setupIntent.payment_method as string,
-                        });
-                        console.log(`[DISCOUNT] Payment intent updated, new status: ${updatedPaymentIntent.status}`);
-                        
-                        // Then confirm the payment intent to charge immediately
-                        const confirmedPayment = await stripe.paymentIntents.confirm(paymentIntent.id);
-                        console.log(`[DISCOUNT] Payment confirmation attempted, result: ${confirmedPayment.status}`);
-                        console.log(`[DISCOUNT] Payment amount received: $${(confirmedPayment.amount_received || 0) / 100}`);
-                        
-                        console.log(`[DISCOUNT] Payment confirmation result: ${confirmedPayment.status}`);
-                        
-                        if (confirmedPayment.status === 'succeeded') {
-                          console.log(`[DISCOUNT] $4.95 payment successful for subscription ${user.stripeSubscriptionId}`);
-                          
-                          // Immediately activate the subscription
-                          const updatedSubscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-                          await handleSubscriptionUpdate(updatedSubscription);
-                        } else {
-                          console.error(`[DISCOUNT] Payment confirmation failed with status: ${confirmedPayment.status}`);
-                        }
-                      } else {
-                        console.error(`[DISCOUNT] No payment intent found on invoice ${invoiceId}`);
+                      console.log(`[DISCOUNT] Payment confirmation result: ${paymentResult.status}, amount received: $${(paymentResult.amount_received || 0) / 100}`);
+                      
+                      if (paymentResult.status === 'succeeded') {
+                        console.log(`[DISCOUNT] $4.95 payment successful - activating Advanced plan`);
+                        // The payment_intent.succeeded webhook will handle tier activation
                       }
+                    } else {
+                      console.log(`[DISCOUNT] Invoice status: ${latestInvoice.status}, no immediate payment needed`);
                     }
                   }
                 } catch (paymentError) {
-                  console.error(`[DISCOUNT] Failed to process immediate payment:`, paymentError);
-                  console.error(`[DISCOUNT] Payment error details:`, {
+                  console.error(`[DISCOUNT] Payment processing failed:`, paymentError);
+                  console.error(`[DISCOUNT] Error details:`, {
                     message: paymentError instanceof Error ? paymentError.message : 'Unknown error',
-                    type: paymentError?.constructor?.name,
-                    code: (paymentError as any)?.code,
-                    userId: userId,
-                    subscriptionId: user.stripeSubscriptionId
+                    code: (paymentError as any)?.code
                   });
                 }
               } else {
