@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, MessageCircle, Clock, Users, Mail } from "lucide-react";
+import { Plus, MessageCircle, Clock, Users, Mail, RefreshCw } from "lucide-react";
 import InvitationForm from "@/components/invitation-form";
 import AccountLinking from "@/components/account-linking";
 import ProfileImageUpload from "@/components/profile-image-upload";
@@ -32,6 +32,7 @@ export default function Dashboard() {
   const [welcomeData, setWelcomeData] = useState<{inviterName: string, relationshipType: string} | null>(null);
   const [showSubscriptionEnforcement, setShowSubscriptionEnforcement] = useState(false);
   const [enforcementAction, setEnforcementAction] = useState("");
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -159,7 +160,39 @@ export default function Dashboard() {
     }
   };
 
-  // Logout is handled by redirecting to /api/logout endpoint
+  // Manual payment verification for debugging
+  const verifyPayment = async () => {
+    if (isVerifyingPayment) return;
+    
+    setIsVerifyingPayment(true);
+    try {
+      const response = await apiRequest("POST", "/api/subscriptions/verify-payment", {});
+      
+      if (response.upgraded) {
+        toast({
+          title: "Payment Verified",
+          description: `Successfully upgraded to ${response.tier} tier with ${response.maxConnections} connections!`,
+        });
+        
+        // Refresh user data and connections
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/connections"] });
+      } else {
+        toast({
+          title: "Payment Status",
+          description: response.message || "Payment verification complete",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Verification Failed",
+        description: "Could not verify payment status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsVerifyingPayment(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -184,6 +217,28 @@ export default function Dashboard() {
               <span className="text-sm text-white/80">
                 Welcome, {user.firstName || user.email?.split('@')[0] || 'there'}
               </span>
+              
+              {/* Manual payment verification button for debugging */}
+              {user.subscriptionTier === 'free' && user.stripeSubscriptionId && (
+                <Button 
+                  className="btn-amber px-4 py-2"
+                  onClick={verifyPayment}
+                  disabled={isVerifyingPayment}
+                >
+                  {isVerifyingPayment ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Verify Payment
+                    </>
+                  )}
+                </Button>
+              )}
+              
               <Button 
                 className="btn-ocean px-6 py-2"
                 onClick={async () => {
