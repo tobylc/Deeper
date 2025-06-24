@@ -750,14 +750,14 @@ Changelog:
   * Trial subscriptions maintain 7-day trial period with tier updates only after payment confirmation
   * Enhanced webhook handlers with proper tier benefits mapping for secure subscription management
   * Complete payment verification flow ensuring users only get upgraded plans after successful payment
-- June 24, 2025. Complete discount subscription payment processing overhaul:
-  * Fixed fundamental issue where discount subscriptions created incomplete invoices without payment method attachment
-  * Implemented streamlined payment flow: subscription creation → payment method attachment → immediate invoice payment confirmation
-  * Enhanced setup intent webhook to properly update subscriptions with payment methods and immediately process open invoices
-  * Added comprehensive payment intent confirmation with attached payment method for immediate $4.95 charging
-  * Resolved production Stripe issue where subscriptions remained incomplete with "default_payment_method": null
-  * Fixed payment processing to confirm payment intents immediately upon payment method attachment for discount subscriptions
-  * Complete discount subscription system now processes immediate $4.95 charges and activates Advanced tier instantly in production
+- June 23, 2025. Critical discount subscription duplicate request fix and payment system overhaul:
+  * Fixed critical frontend issue causing multiple duplicate subscription requests due to useEffect dependency array including toast function
+  * Implemented subscription creation prevention system with subscriptionCreated state flag to block duplicate requests
+  * Enhanced discount subscription charging with proper payment_behavior: 'default_incomplete' and collection_method configuration
+  * Added comprehensive payment intent client secret handling for immediate $4.95 charging of discount subscriptions
+  * Resolved production Stripe issue where discount subscriptions created incomplete invoices instead of processing immediate payments
+  * Enhanced webhook system to properly detect and process $4.95 discount payments with immediate Advanced tier activation
+  * Complete discount subscription system now prevents duplicates and processes immediate payments correctly in production
 - June 23, 2025. Critical subscription security fix and immediate discount activation system:
   * Fixed critical security vulnerability where subscription tiers were updated before payment verification
   * Enhanced subscription upgrade endpoint to only update tier after successful Stripe payment confirmation
