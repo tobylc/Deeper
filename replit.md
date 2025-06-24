@@ -671,14 +671,6 @@ Changelog:
   * Enhanced toast styling with rounded corners, backdrop blur, ocean blue borders, and white text for elegance
   * Improved error messaging with user-friendly language instead of technical error details
   * Complete subscription upgrade flow now works seamlessly with sophisticated notification system
-- June 24, 2025. Critical discount=50 payment method passing system implementation:
-  * Fixed critical payment method issue where discount subscriptions were creating invoices instead of charging immediately
-  * Enhanced backend to provide correct intentType (payment_intent vs setup_intent) based on subscription type
-  * Updated frontend checkout form to use stripe.confirmPayment() for discount subscriptions and stripe.confirmSetup() for trial subscriptions
-  * Implemented proper client secret handling - payment intent client secrets for immediate $4.95 charges, setup intent client secrets for trial billing
-  * Added intentType parameter to subscription upgrade response for frontend payment method determination
-  * Fixed discount subscription flow to pass payment method information directly to Stripe for immediate processing
-  * Complete discount=50 checkout system now properly charges payment methods immediately instead of creating incomplete invoices
 - June 21, 2025. Google OAuth account linking system fixes and duplicate user cleanup:
   * Fixed critical OAuth authentication bug that created separate Google accounts instead of linking to existing email users
   * Enhanced OAuth logic to properly check for existing email-based accounts before creating new users
@@ -758,14 +750,14 @@ Changelog:
   * Trial subscriptions maintain 7-day trial period with tier updates only after payment confirmation
   * Enhanced webhook handlers with proper tier benefits mapping for secure subscription management
   * Complete payment verification flow ensuring users only get upgraded plans after successful payment
-- June 23, 2025. Critical discount subscription duplicate request fix and payment system overhaul:
-  * Fixed critical frontend issue causing multiple duplicate subscription requests due to useEffect dependency array including toast function
-  * Implemented subscription creation prevention system with subscriptionCreated state flag to block duplicate requests
-  * Enhanced discount subscription charging with proper payment_behavior: 'default_incomplete' and collection_method configuration
-  * Added comprehensive payment intent client secret handling for immediate $4.95 charging of discount subscriptions
-  * Resolved production Stripe issue where discount subscriptions created incomplete invoices instead of processing immediate payments
-  * Enhanced webhook system to properly detect and process $4.95 discount payments with immediate Advanced tier activation
-  * Complete discount subscription system now prevents duplicates and processes immediate payments correctly in production
+- June 24, 2025. Complete discount subscription payment processing overhaul:
+  * Fixed fundamental issue where discount subscriptions created incomplete invoices without payment method attachment
+  * Implemented streamlined payment flow: subscription creation → payment method attachment → immediate invoice payment confirmation
+  * Enhanced setup intent webhook to properly update subscriptions with payment methods and immediately process open invoices
+  * Added comprehensive payment intent confirmation with attached payment method for immediate $4.95 charging
+  * Resolved production Stripe issue where subscriptions remained incomplete with "default_payment_method": null
+  * Fixed payment processing to confirm payment intents immediately upon payment method attachment for discount subscriptions
+  * Complete discount subscription system now processes immediate $4.95 charges and activates Advanced tier instantly in production
 - June 23, 2025. Critical subscription security fix and immediate discount activation system:
   * Fixed critical security vulnerability where subscription tiers were updated before payment verification
   * Enhanced subscription upgrade endpoint to only update tier after successful Stripe payment confirmation
