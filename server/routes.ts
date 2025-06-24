@@ -1403,7 +1403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stripe webhook for handling subscription events
-  app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  app.post('/api/stripe/webhook', async (req, res) => {
     const sig = req.headers['stripe-signature'];
     let event;
 

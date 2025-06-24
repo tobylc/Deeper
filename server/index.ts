@@ -6,6 +6,11 @@ import { globalErrorHandler, notFoundHandler, setupGracefulShutdown } from "./er
 import { initializeWebSocket } from "./websocket";
 
 const app = express();
+
+// Webhook endpoint needs raw body for signature verification
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+
+// All other routes use JSON parser
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
