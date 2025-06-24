@@ -272,29 +272,27 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  // Enhanced authentication check with session validation
+  // Fixed authentication check - focus on core authentication status
   const isAuth = req.isAuthenticated && req.isAuthenticated();
   const hasUser = !!req.user;
-  const hasSession = !!req.session && !!req.sessionID;
   
   console.log("[AUTH] Authentication check:", {
     isAuthenticated: isAuth,
     hasUser,
-    hasSession,
     sessionID: req.sessionID,
     method: req.method,
-    url: req.url,
-    userAgent: req.headers['user-agent']?.substring(0, 50)
+    url: req.url
   });
 
-  if (!isAuth || !hasUser || !hasSession) {
-    console.log("[AUTH] Authentication failed - missing session or user data");
+  // Primary check - user must be authenticated and have user data
+  if (!isAuth || !hasUser) {
+    console.log("[AUTH] Authentication failed - not authenticated or no user data");
     return res.status(401).json({ 
       message: "Authentication required. Please refresh the page and log in again.",
       details: process.env.NODE_ENV === 'development' ? {
         isAuthenticated: isAuth,
         hasUser,
-        hasSession
+        hasSession: !!req.session
       } : undefined
     });
   }
