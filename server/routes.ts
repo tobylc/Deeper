@@ -1407,14 +1407,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const sig = req.headers['stripe-signature'];
     let event;
 
+    console.log(`[WEBHOOK] Received webhook event, signature present: ${!!sig}`);
+
     try {
       event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test');
+      console.log(`[WEBHOOK] Successfully verified webhook: ${event.type}`);
     } catch (err: any) {
-      console.error(`Webhook signature verification failed:`, err.message);
+      console.error(`[WEBHOOK] Signature verification failed:`, err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
     try {
+      console.log(`[WEBHOOK] Processing event: ${event.type}`);
       switch (event.type) {
         case 'customer.subscription.updated':
         case 'customer.subscription.created':
@@ -1713,6 +1717,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Profile image upload error:", error);
       res.status(500).json({ message: "Failed to upload profile image" });
+    }
+  });
+
+  // Debug endpoint to manually trigger subscription upgrade (development only)
+  app.post("/api/subscription/manual-upgrade", isAuthenticated, async (req, res) => {
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(404).json({ message: "Not found" });
+    }
+    
+    try {
+      const userId = (req.user as any).claims?.sub || (req.user as any).id;
+      const { tier } = req.body;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Manually upgrade user to specified tier
+      const tierBenefits = {
+        basic: { maxConnections: 1 },
+        advanced: { maxConnections: 3 },
+        unlimited: { maxConnections: 999 }
+      };
+      
+      const benefits = tierBenefits[tier as keyof typeof tierBenefits];
+      if (!benefits) {
+        return res.status(400).json({ message: "Invalid tier" });
+      }
+      
+      await storage.updateUserSubscription(userId, {
+        subscriptionTier: tier,
+        subscriptionStatus: 'active',
+        maxConnections: benefits.maxConnections,
+        stripeCustomerId: user.stripeCustomerId,
+        stripeSubscriptionId: user.stripeSubscriptionId,
+        subscriptionExpiresAt: undefined
+      });
+      
+      console.log(`[DEBUG] Manually upgraded user ${userId} to ${tier} tier`);
+      
+      res.json({ 
+        success: true, 
+        message: `User upgraded to ${tier} tier`,
+        tier: tier,
+        maxConnections: benefits.maxConnections
+      });
+    } catch (error) {
+      console.error("Manual upgrade error:", error);
+      res.status(500).json({ message: "Upgrade failed" });
     }
   });
 

@@ -62,6 +62,22 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
             title: "Advanced Plan Activated",
             description: "Payment successful! Your Advanced plan is now active.",
           });
+          
+          // For discount subscriptions, manually trigger upgrade as fallback
+          // since webhooks might not reach development server
+          try {
+            console.log('[CHECKOUT] Triggering manual subscription upgrade fallback');
+            const upgradeResponse = await apiRequest("POST", "/api/subscription/manual-upgrade", {
+              tier: "advanced"
+            });
+            
+            if (upgradeResponse.ok) {
+              console.log('[CHECKOUT] Manual upgrade successful');
+            }
+          } catch (upgradeError) {
+            console.warn('[CHECKOUT] Manual upgrade fallback failed:', upgradeError);
+          }
+          
           onSuccess();
         }
       } else {
