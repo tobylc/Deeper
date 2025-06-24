@@ -1,5 +1,6 @@
 // Test webhook processing directly with Stripe subscription data
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+import Stripe from 'stripe';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 async function testWebhookProcessing() {
   try {
@@ -37,6 +38,21 @@ async function testWebhookProcessing() {
         
         console.log(`Is discount subscription: ${isDiscountSub}`);
         console.log(`Should upgrade: ${isDiscountSub && hasSucceededPayment}`);
+        
+        if (paymentIntent) {
+          console.log(`Payment Intent Details:`);
+          console.log(`  ID: ${paymentIntent.id}`);
+          console.log(`  Status: ${paymentIntent.status}`);
+          console.log(`  Amount: ${paymentIntent.amount} cents`);
+          console.log(`  Amount Received: ${paymentIntent.amount_received} cents`);
+          console.log(`  Client Secret: ${paymentIntent.client_secret ? 'present' : 'missing'}`);
+          
+          if (paymentIntent.status !== 'succeeded') {
+            console.log(`⚠️  Payment Intent not succeeded - current status: ${paymentIntent.status}`);
+          }
+        } else {
+          console.log(`❌ No payment intent found`);
+        }
         
       } catch (error) {
         console.error(`Error retrieving subscription ${subId}:`, error.message);

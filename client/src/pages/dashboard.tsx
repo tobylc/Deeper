@@ -186,7 +186,37 @@ export default function Dashboard() {
                 Welcome, {user.firstName || user.email?.split('@')[0] || 'there'}
               </span>
               
-
+              {/* Show verify payment button for users with discount subscriptions */}
+              {user.subscriptionTier === 'free' && user.stripeSubscriptionId && (
+                <Button 
+                  className="btn-amber px-4 py-2"
+                  onClick={async () => {
+                    try {
+                      const response = await apiRequest("POST", "/api/subscriptions/verify-discount", {});
+                      if (response.upgraded) {
+                        toast({
+                          title: "Payment Verified",
+                          description: `Successfully upgraded to ${response.tier} tier!`,
+                        });
+                        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+                      } else {
+                        toast({
+                          title: "No Upgrade Needed",
+                          description: response.message,
+                        });
+                      }
+                    } catch (error) {
+                      toast({
+                        title: "Verification Failed",
+                        description: "Could not verify payment",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  Fix Payment Status
+                </Button>
+              )}
               
               <Button 
                 className="btn-ocean px-6 py-2"

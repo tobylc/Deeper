@@ -1662,6 +1662,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // Manual verification endpoint to fix stuck discount subscriptions
+  app.post('/api/subscriptions/verify-discount', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = req.user;
+      console.log(`[VERIFY-DISCOUNT] Manual verification for user: ${user.id}`);
+      
+      if (!user.stripeSubscriptionId) {
+        return res.json({ success: false, message: 'No subscription found' });
+      }
+
+      // Get subscription with expanded data
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, {
+        expand: ['latest_invoice.payment_intent']
+      });
+
+      const isDiscountSub = subscription.metadata?.discount_applied === '50';
+      const latestInvoice = subscription.latest_invoice as any;
+      const paymentIntent = latestInvoice?.payment_intent;
+
+      console.log(`[VERIFY-DISCOUNT] Subscription: ${subscription.id}`);
+      console.log(`[VERIFY-DISCOUNT] Status: ${subscription.status}`);
+      console.log(`[VERIFY-DISCOUNT] Is Discount: ${isDiscountSub}`);
+      console.log(`[VERIFY-DISCOUNT] Payment Intent Status: ${paymentIntent?.status}`);
+      console.log(`[VERIFY-DISCOUNT] Amount Received: ${paymentIntent?.amount_received}`);
+
+      // Check if this is a successful $4.95 discount payment that should be upgraded
+      if (isDiscountSub && paymentIntent?.status === 'succeeded' && paymentIntent.amount_received === 495) {
+        console.log(`[VERIFY-DISCOUNT] ✓ $4.95 discount payment verified - upgrading user`);
+        
+        await storage.updateUserSubscription(user.id, {
+          subscriptionTier: 'advanced',
+          subscriptionStatus: 'active',
+          maxConnections: 3,
+          stripeCustomerId: user.stripeCustomerId,
+          stripeSubscriptionId: user.stripeSubscriptionId,
+          subscriptionExpiresAt: undefined
+        });
+        
+        const updatedUser = await storage.getUser(user.id);
+        console.log(`[VERIFY-DISCOUNT] ✓ User upgraded - new tier: ${updatedUser?.subscriptionTier}`);
+        
+        return res.json({
+          success: true,
+          upgraded: true,
+          tier: updatedUser?.subscriptionTier,
+          maxConnections: updatedUser?.maxConnections,
+          message: 'Discount payment verified and user upgraded to Advanced tier'
+        });
+      }
+
+      res.json({
+        success: true,
+        upgraded: false,
+        subscriptionStatus: subscription.status,
+        isDiscountSubscription: isDiscountSub,
+        paymentIntentStatus: paymentIntent?.status,
+        amountReceived: paymentIntent?.amount_received,
+        message: 'Payment verification complete - no upgrade needed'
+      });
+      
+    } catch (error) {
+      console.error('[VERIFY-DISCOUNT] Verification error:', error);
+      res.status(500).json({ success: false, message: 'Verification failed' });
+    }
+  });
+
   // Get subscription status
   app.get('/api/subscriptions/status', isAuthenticated, async (req: any, res) => {
     try {
