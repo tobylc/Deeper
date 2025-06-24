@@ -580,6 +580,14 @@ Changelog:
   * Modified email invitation text templates to use personalized role descriptions throughout
   * Systematically replaced remaining generic relationship descriptions with authentic user-selected role combinations
   * All user-facing text now consistently shows specific roles (e.g., "Father/Son") rather than generic categories (e.g., "Parent-Child")
+- June 24, 2025. Critical discount subscription payment processing fixes:
+  * Fixed webhook endpoint configuration to receive raw body data for proper Stripe signature verification
+  * Enhanced webhook handlers to process incomplete discount subscriptions with successful $4.95 payments
+  * Added comprehensive payment intent success detection for immediate Advanced tier upgrades
+  * Implemented multiple webhook event handlers: payment_intent.succeeded, invoice.paid, and enhanced subscription.created
+  * Fixed "requires_payment_method" status by changing discount checkout from setup to immediate payment confirmation
+  * Resolved webhook delivery failures by updating production webhook URL configuration
+  * Users now automatically upgrade to Advanced tier (3 connections) immediately upon $4.95 discount payment completion
 - June 20, 2025. Vulnerable conversation question system for difficult-to-ask topics:
   * Completely redesigned question curation to focus on emotionally vulnerable, difficult-to-ask questions that foster authentic connection
   * Enhanced questions address fears, regrets, difficult emotions, unspoken truths, and conversations that are hard to bring up in person
