@@ -104,14 +104,17 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   // For discount subscriptions, check payment intent using metadata payment_intent_id
   if (isDiscountSubscription && subscription.status === 'incomplete') {
     try {
-      // Use payment intent ID from metadata instead of latest_invoice expansion
       const paymentIntentId = subscription.metadata?.payment_intent_id;
+      console.log(`[WEBHOOK] Processing discount subscription ${subscription.id}, payment intent: ${paymentIntentId}`);
       
       if (paymentIntentId) {
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        console.log(`[WEBHOOK] Payment status: ${paymentIntent.status}, amount: ${paymentIntent.amount_received}`);
         
         // If payment succeeded for $4.95, upgrade immediately
         if (paymentIntent.status === 'succeeded' && paymentIntent.amount_received === 495) {
+          console.log(`[WEBHOOK] Upgrading user ${userId} to Advanced tier`);
+          
           const tierBenefits = {
             basic: { maxConnections: 1 },
             advanced: { maxConnections: 3 },
@@ -129,6 +132,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
             subscriptionExpiresAt: undefined
           });
           
+          console.log(`[WEBHOOK] User ${userId} successfully upgraded`);
           return;
         }
       }
@@ -1496,8 +1500,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const sig = req.headers['stripe-signature'];
     let event;
 
+    console.log(`[WEBHOOK] Received ${req.method} ${req.url}`);
+
     try {
       event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test');
+      console.log(`[WEBHOOK] Event verified: ${event.type} - ${event.id}`);
     } catch (err: any) {
       console.error(`[WEBHOOK] Signature verification failed:`, err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -1505,10 +1512,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     // Prevent duplicate processing from multiple webhook endpoints
     if (processedWebhooks.has(event.id)) {
+      console.log(`[WEBHOOK] Duplicate event ${event.id} skipped`);
       return res.json({ received: true, duplicate: true });
     }
     
     processedWebhooks.add(event.id);
+    console.log(`[WEBHOOK] Processing ${event.type}`);
 
     try {
       switch (event.type) {
@@ -1636,6 +1645,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+
+  // Process completed discount payment (for manual fixes when webhooks fail)
+  app.post('/api/subscriptions/process-discount-payment', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = req.user;
+      
+      if (!user.stripeSubscriptionId) {
+        return res.status(400).json({ success: false, message: 'No subscription found' });
+      }
+
+      // Get the subscription to check if it's a discount subscription
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      const isDiscountSub = subscription.metadata?.discount_applied === '50';
+      const paymentIntentId = subscription.metadata?.payment_intent_id;
+      
+      if (!isDiscountSub || !paymentIntentId) {
+        return res.status(400).json({ success: false, message: 'Not a discount subscription' });
+      }
+
+      // Check payment intent status
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      if (paymentIntent.status === 'succeeded' && paymentIntent.amount_received === 495) {
+        // Upgrade the user
+        await storage.updateUserSubscription(user.id, {
+          subscriptionTier: 'advanced',
+          subscriptionStatus: 'active',
+          maxConnections: 3,
+          stripeCustomerId: user.stripeCustomerId,
+          stripeSubscriptionId: user.stripeSubscriptionId,
+          subscriptionExpiresAt: undefined
+        });
+        
+        return res.json({
+          success: true,
+          message: 'Successfully upgraded to Advanced tier',
+          tier: 'advanced',
+          maxConnections: 3
+        });
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: 'Payment not completed',
+          paymentStatus: paymentIntent.status,
+          amountReceived: paymentIntent.amount_received
+        });
+      }
+      
+    } catch (error) {
+      console.error('[PROCESS-DISCOUNT] Error:', error);
+      res.status(500).json({ success: false, message: 'Processing failed' });
+    }
+  });
 
   // Get subscription status
   app.get('/api/subscriptions/status', isAuthenticated, async (req: any, res) => {

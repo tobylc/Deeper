@@ -186,8 +186,39 @@ export default function Dashboard() {
                 Welcome, {user.firstName || user.email?.split('@')[0] || 'there'}
               </span>
               
+              {/* Show process payment button for users with completed discount payments */}
+              {user.subscriptionTier === 'free' && user.stripeSubscriptionId && (
+                <Button 
+                  className="btn-amber px-4 py-2"
+                  onClick={async () => {
+                    try {
+                      const response = await apiRequest("POST", "/api/subscriptions/process-discount-payment", {});
+                      if (response.success) {
+                        toast({
+                          title: "Payment Processed",
+                          description: response.message,
+                        });
+                        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+                      } else {
+                        toast({
+                          title: "Processing Failed",
+                          description: response.message,
+                          variant: "destructive",
+                        });
+                      }
+                    } catch (error: any) {
+                      toast({
+                        title: "Error",
+                        description: error.message || "Could not process payment",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  Process Payment
+                </Button>
+              )}
 
-              
               <Button 
                 className="btn-ocean px-6 py-2"
                 onClick={async () => {
