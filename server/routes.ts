@@ -1500,13 +1500,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const sig = req.headers['stripe-signature'];
     let event;
 
-    console.log(`[WEBHOOK] Received ${req.method} ${req.url}`);
+    console.log(`[WEBHOOK] Received ${req.method} ${req.url} at ${new Date().toISOString()}`);
+    console.log(`[WEBHOOK] Headers:`, Object.keys(req.headers));
+    console.log(`[WEBHOOK] Body length:`, req.body?.length || 0);
 
     try {
       event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test');
-      console.log(`[WEBHOOK] Event verified: ${event.type} - ${event.id}`);
+      console.log(`[WEBHOOK] ✓ Event verified: ${event.type} - ${event.id}`);
     } catch (err: any) {
-      console.error(`[WEBHOOK] Signature verification failed:`, err.message);
+      console.error(`[WEBHOOK] ✗ Signature verification failed:`, err.message);
+      console.error(`[WEBHOOK] Raw body:`, req.body ? req.body.toString().substring(0, 200) : 'empty');
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
