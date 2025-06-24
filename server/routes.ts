@@ -1345,8 +1345,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For discount subscriptions, we'll upgrade the tier when payment is confirmed via webhook
       // This ensures secure payment verification before tier activation
 
-      // For discount subscriptions, ensure we have the payment intent client secret
-      let clientSecret = setupIntent.client_secret;
+      // Determine the correct client secret based on subscription type
+      let clientSecret;
+      let intentType;
       
       if (discountPercent && discountPercent > 0) {
         console.log(`[DISCOUNT] Processing discount subscription: ${subscription.status}`);
@@ -1360,13 +1361,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const latestInvoice = expandedSubscription.latest_invoice as any;
           if (latestInvoice?.payment_intent?.client_secret) {
             clientSecret = latestInvoice.payment_intent.client_secret;
+            intentType = 'payment_intent';
             console.log(`[DISCOUNT] Payment intent client secret obtained for $4.95 immediate charge`);
           } else {
             console.error(`[DISCOUNT] No payment intent found for incomplete subscription ${subscription.id}`);
+            // Fallback to setup intent if payment intent not available
+            clientSecret = setupIntent.client_secret;
+            intentType = 'setup_intent';
           }
         } else if (subscription.status === 'active') {
           console.log(`[DISCOUNT] Subscription ${subscription.id} is already active - no payment needed`);
+          clientSecret = setupIntent.client_secret;
+          intentType = 'setup_intent';
+        } else {
+          clientSecret = setupIntent.client_secret;
+          intentType = 'setup_intent';
         }
+      } else {
+        // For regular subscriptions, use setup intent for trial billing
+        clientSecret = setupIntent.client_secret;
+        intentType = 'setup_intent';
+        console.log(`[REGULAR] Using setup intent for trial subscription`);
       }
 
       // Get updated user data to reflect any immediate tier changes
@@ -1378,6 +1393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxConnections: updatedUser?.maxConnections || 1,
         subscriptionId: subscription.id,
         clientSecret: clientSecret,
+        intentType: intentType,
         trialEnd: subscription.trial_end ? new Date(subscription.trial_end! * 1000) : null,
         discountApplied: discountPercent ? `${discountPercent}%` : null,
         subscriptionStatus: subscription.status,

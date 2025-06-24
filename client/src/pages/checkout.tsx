@@ -22,9 +22,10 @@ interface CheckoutFormProps {
   onSuccess: () => void;
   hasDiscount: boolean;
   currentPlan: any;
+  intentType: 'payment_intent' | 'setup_intent';
 }
 
-const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFormProps) => {
+const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan, intentType }: CheckoutFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -40,26 +41,54 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
     setIsProcessing(true);
 
     try {
-      const { error } = await stripe.confirmSetup({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/dashboard`,
-        },
-      });
+      // Use the intent type from backend to determine confirmation method
+      if (intentType === 'payment_intent') {
+        console.log('[CHECKOUT] Processing immediate payment with confirmPayment');
+        const { error } = await stripe.confirmPayment({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/dashboard`,
+          },
+        });
 
-      if (error) {
-        toast({
-          title: "Unable to process payment",
-          description: "Please check your payment details and try again",
-        });
+        if (error) {
+          console.error('[CHECKOUT] Payment confirmation error:', error);
+          toast({
+            title: "Payment failed",
+            description: error.message || "Please check your payment details and try again",
+          });
+        } else {
+          toast({
+            title: "Payment successful!",
+            description: hasDiscount ? "Your discounted Advanced plan is now active!" : "Payment processed successfully!",
+          });
+          onSuccess();
+        }
       } else {
-        toast({
-          title: "Subscription Activated",
-          description: "Welcome to your new plan! Redirecting to dashboard...",
+        console.log('[CHECKOUT] Processing setup for future billing with confirmSetup');
+        const { error } = await stripe.confirmSetup({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/dashboard`,
+          },
         });
-        onSuccess();
+
+        if (error) {
+          console.error('[CHECKOUT] Setup confirmation error:', error);
+          toast({
+            title: "Unable to process payment",
+            description: error.message || "Please check your payment details and try again",
+          });
+        } else {
+          toast({
+            title: "Subscription Activated",
+            description: "Welcome to your new plan! Redirecting to dashboard...",
+          });
+          onSuccess();
+        }
       }
     } catch (error: any) {
+      console.error('[CHECKOUT] Unexpected error:', error);
       toast({
         title: "Payment issue",
         description: "Please try again in a moment or contact support if this continues",
@@ -106,6 +135,7 @@ export default function Checkout() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [clientSecret, setClientSecret] = useState("");
+  const [intentType, setIntentType] = useState<'payment_intent' | 'setup_intent'>('setup_intent');
   const [isLoading, setIsLoading] = useState(true);
   const [subscriptionCreated, setSubscriptionCreated] = useState(false);
 
@@ -185,6 +215,7 @@ export default function Checkout() {
         
         if (data.success && data.clientSecret) {
           setClientSecret(data.clientSecret);
+          setIntentType(data.intentType || 'setup_intent');
         } else {
           throw new Error(data.message || 'Failed to create subscription');
         }
@@ -387,7 +418,7 @@ export default function Checkout() {
               </CardHeader>
               <CardContent>
                 <Elements stripe={stripePromise} options={{ clientSecret }}>
-                  <CheckoutForm tier={tier} onSuccess={handleSuccess} hasDiscount={hasDiscount} currentPlan={currentPlan} />
+                  <CheckoutForm tier={tier} onSuccess={handleSuccess} hasDiscount={hasDiscount} currentPlan={currentPlan} intentType={intentType} />
                 </Elements>
               </CardContent>
             </Card>
