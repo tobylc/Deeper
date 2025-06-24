@@ -88,10 +88,21 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
   const userId = subscription.metadata?.userId;
   
-  if (!userId) return;
+  console.log(`[SUBSCRIPTION] Processing subscription ${subscription.id} for user ${userId || 'unknown'}`);
+  console.log(`[SUBSCRIPTION] Status: ${subscription.status}, Metadata:`, subscription.metadata);
+  
+  if (!userId) {
+    console.log(`[SUBSCRIPTION] No userId in metadata, skipping`);
+    return;
+  }
 
   const user = await storage.getUser(userId);
-  if (!user) return;
+  if (!user) {
+    console.log(`[SUBSCRIPTION] User ${userId} not found in database`);
+    return;
+  }
+
+  console.log(`[SUBSCRIPTION] Found user: ${user.email}, current tier: ${user.subscriptionTier}`);
 
   const status = subscription.status === 'trialing' ? 'trialing' : 
                 subscription.status === 'active' ? 'active' : 
@@ -103,7 +114,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
   // For discount subscriptions with incomplete status, check if payment has been processed
   if (isDiscountSubscription && subscription.status === 'incomplete') {
-    console.log(`[WEBHOOK] Processing incomplete discount subscription: ${subscription.id}`);
+    console.log(`[DISCOUNT] Processing incomplete discount subscription`);
     
     try {
       // Get the latest invoice with payment intent
@@ -114,8 +125,12 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       const latestInvoice = expandedSubscription.latest_invoice as any;
       const paymentIntent = latestInvoice?.payment_intent;
       
+      console.log(`[DISCOUNT] Payment Intent Status: ${paymentIntent?.status}`);
+      console.log(`[DISCOUNT] Amount Received: ${paymentIntent?.amount_received} (expected: 495)`);
+      
       // If payment succeeded for $4.95, upgrade immediately
       if (paymentIntent?.status === 'succeeded' && paymentIntent.amount_received === 495) {
+        console.log(`[DISCOUNT] ✓ $4.95 payment confirmed - upgrading user ${userId} to Advanced tier`);
         
         const tierBenefits = {
           basic: { maxConnections: 1 },
@@ -130,14 +145,17 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
           subscriptionStatus: 'active',
           maxConnections: benefits.maxConnections,
           stripeCustomerId: user.stripeCustomerId,
-          stripeSubscriptionId: user.stripeSubscriptionId,
+          stripeSubscriptionId: subscription.id,
           subscriptionExpiresAt: undefined
         });
         
+        console.log(`[DISCOUNT] ✓ User ${userId} successfully upgraded to ${newTier || 'advanced'} tier`);
         return;
+      } else {
+        console.log(`[DISCOUNT] Payment not yet completed - status: ${paymentIntent?.status}, amount: ${paymentIntent?.amount_received}`);
       }
     } catch (error) {
-      console.error(`[WEBHOOK] Error processing discount subscription: ${error}`);
+      console.error(`[DISCOUNT] Error processing discount subscription: ${error}`);
     }
   }
   
@@ -1492,17 +1510,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Processed webhook events to prevent duplicates from multiple webhook endpoints
+  const processedWebhooks = new Set<string>();
+
   // Stripe webhook for handling subscription events
   app.post('/api/stripe/webhook', async (req, res) => {
     const sig = req.headers['stripe-signature'];
     let event;
 
+    console.log(`[WEBHOOK] Received webhook request with signature: ${!!sig}`);
+
     try {
       event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test');
+      console.log(`[WEBHOOK] ✓ Event verified: ${event.type} (${event.id}) - Object: ${event.data.object.id}`);
     } catch (err: any) {
-      console.error(`[WEBHOOK] Signature verification failed:`, err.message);
+      console.error(`[WEBHOOK] ✗ Signature verification failed:`, err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
+
+    // Prevent duplicate processing from multiple webhook endpoints
+    if (processedWebhooks.has(event.id)) {
+      console.log(`[WEBHOOK] Event ${event.id} already processed, skipping duplicate`);
+      return res.json({ received: true, duplicate: true });
+    }
+    
+    processedWebhooks.add(event.id);
+    console.log(`[WEBHOOK] Processing ${event.type} for ${event.data.object.id}`);
 
     try {
       switch (event.type) {
