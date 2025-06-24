@@ -40,26 +40,55 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
     setIsProcessing(true);
 
     try {
-      const { error } = await stripe.confirmSetup({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/dashboard`,
-        },
-      });
+      // For discount subscriptions, use confirmPayment to immediately charge
+      // For trial subscriptions, use confirmSetup to set up future billing
+      if (hasDiscount && tier === 'advanced') {
+        console.log('[CHECKOUT] Processing discount payment with confirmPayment');
+        const { error } = await stripe.confirmPayment({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/dashboard`,
+          },
+        });
 
-      if (error) {
-        toast({
-          title: "Unable to process payment",
-          description: "Please check your payment details and try again",
-        });
+        if (error) {
+          console.error('[CHECKOUT] Payment confirmation error:', error);
+          toast({
+            title: "Payment Failed",
+            description: error.message || "Please check your payment details and try again",
+          });
+        } else {
+          toast({
+            title: "Advanced Plan Activated",
+            description: "Payment successful! Your Advanced plan is now active.",
+          });
+          onSuccess();
+        }
       } else {
-        toast({
-          title: "Subscription Activated",
-          description: "Welcome to your new plan! Redirecting to dashboard...",
+        console.log('[CHECKOUT] Processing trial subscription with confirmSetup');
+        const { error } = await stripe.confirmSetup({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/dashboard`,
+          },
         });
-        onSuccess();
+
+        if (error) {
+          console.error('[CHECKOUT] Setup confirmation error:', error);
+          toast({
+            title: "Unable to process payment",
+            description: "Please check your payment details and try again",
+          });
+        } else {
+          toast({
+            title: "Subscription Activated",
+            description: "Welcome to your new plan! Redirecting to dashboard...",
+          });
+          onSuccess();
+        }
       }
     } catch (error: any) {
+      console.error('[CHECKOUT] Checkout error:', error);
       toast({
         title: "Payment issue",
         description: "Please try again in a moment or contact support if this continues",
