@@ -1,0 +1,290 @@
+{
+"object": {
+"id": 
+"in_1RdasvJk5EQAqG1W17Af6Syr"
+,
+"object": 
+"invoice",
+"account_country": 
+"US",
+"account_name": 
+"Deeper",
+"account_tax_ids": 
+null,
+"amount_due": 
+495,
+"amount_overpaid": 
+0,
+"amount_paid": 
+0,
+"amount_remaining": 
+495,
+"amount_shipping": 
+0,
+"application": 
+null,
+"attempt_count": 
+0,
+"attempted": 
+false,
+"auto_advance": 
+false,
+"automatic_tax": {
+"disabled_reason": 
+null,
+"enabled": 
+false,
+"liability": 
+null,
+"provider": 
+null,
+"status": 
+null,
+},
+"automatically_finalizes_at": 
+null,
+"billing_reason": 
+"subscription_create",
+"collection_method": 
+"charge_automatically",
+"created": 
+1750787033
+,
+"currency": 
+"usd",
+"custom_fields": 
+null,
+"customer": 
+"cus_SYMD2gjt8VBC7T"
+,
+"customer_address": 
+null,
+"customer_email": 
+"thetobyclarkshow@gmail.com",
+"customer_name": 
+"Toby Clark",
+"customer_phone": 
+null,
+"customer_shipping": 
+null,
+"customer_tax_exempt": 
+"none",
+"customer_tax_ids": [],
+"default_payment_method": 
+null,
+"default_source": 
+null,
+"default_tax_rates": [],
+"description": 
+null,
+"discounts": [],
+"due_date": 
+null,
+"effective_at": 
+1750787033
+,
+"ending_balance": 
+0,
+"footer": 
+null,
+"from_invoice": 
+null,
+"hosted_invoice_url": 
+"https://invoice.stripe.com/i/acct_1RcXMUJk5EQAqG1W/live_YWNjdF8xUmNYTVVKazVFUUFxRzFXLF9TWWlKVGYzOVZEMTQ1enY3dEdmR3NZVXpxREdFbngyLDE0MTMyNzgzNA0200E3aiFSiS?s=ap",
+"invoice_pdf": 
+"https://pay.stripe.com/invoice/acct_1RcXMUJk5EQAqG1W/live_YWNjdF8xUmNYTVVKazVFUUFxRzFXLF9TWWlKVGYzOVZEMTQ1enY3dEdmR3NZVXpxREdFbngyLDE0MTMyNzgzNA0200E3aiFSiS/pdf?s=ap",
+"issuer": {
+"type": 
+"self",
+},
+"last_finalization_error": 
+null,
+"latest_revision": 
+null,
+"lines": {
+"object": 
+"list",
+"data": [
+"0": {
+"id": 
+"il_1RdasvJk5EQAqG1WymmDxx90",
+"object": 
+"line_item",
+"amount": 
+495,
+"currency": 
+"usd",
+"description": 
+"1 × Advanced 50%off (at $4.95 / month)",
+"discount_amounts": [],
+"discountable": 
+true,
+"discounts": [],
+"invoice": 
+"in_1RdasvJk5EQAqG1W17Af6Syr"
+,
+"livemode": 
+true,
+"metadata": {
+"discount_applied": 
+"50",
+"payment_intent_id": 
+"pi_3RdasuJk5EQAqG1W18ORrcsh"
+,
+"platform": 
+"deeper",
+"tier": 
+"advanced",
+"userId": 
+"google_107906065894691225512",
+},
+"parent": {
+"invoice_item_details": 
+null,
+"subscription_item_details": {
+"invoice_item": 
+null,
+"proration": 
+false,
+"proration_details": {
+"credited_items": 
+null,
+},
+"subscription": 
+"sub_1RdasvJk5EQAqG1W8eBnplbY"
+,
+"subscription_item": 
+"si_SYiJABdyNFnzqg"
+,
+},
+"type": 
+"subscription_item_details",
+},
+"period": {
+"end": 
+1753379033,
+"start": 
+1750787033,
+},
+"pretax_credit_amounts": [],
+"pricing": {
+"price_details": {
+"price": 
+"price_1RcymCJk5EQAqG1W462XWrpP"
+,
+"product": 
+"prod_SY4wuDat2Uk8sW"
+,
+},
+"type": 
+"price_details",
+"unit_amount_decimal": 
+"495",
+},
+"quantity": 
+1,
+"taxes": [],
+},
+],
+"has_more": 
+false,
+"total_count": 
+1,
+"url": 
+"/v1/invoices/in_1RdasvJk5EQAqG1W17Af6Syr/lines",
+},
+"livemode": 
+true,
+"metadata": {},
+"next_payment_attempt": 
+null,
+"number": 
+"PZZGQKKG-0088",
+"on_behalf_of": 
+null,
+"parent": {
+"quote_details": 
+null,
+"subscription_details": {
+"metadata": {
+"discount_applied": 
+"50",
+"payment_intent_id": 
+"pi_3RdasuJk5EQAqG1W18ORrcsh"
+,
+"platform": 
+"deeper",
+"tier": 
+"advanced",
+"userId": 
+"google_107906065894691225512",
+},
+"subscription": 
+"sub_1RdasvJk5EQAqG1W8eBnplbY"
+,
+},
+"type": 
+"subscription_details",
+},
+"payment_settings": {
+"default_mandate": 
+null,
+"payment_method_options": 
+null,
+"payment_method_types": 
+null,
+},
+"period_end": 
+1750787033
+,
+"period_start": 
+1750787033
+,
+"post_payment_credit_notes_amount": 
+0,
+"pre_payment_credit_notes_amount": 
+0,
+"receipt_number": 
+null,
+"rendering": 
+null,
+"shipping_cost": 
+null,
+"shipping_details": 
+null,
+"starting_balance": 
+0,
+"statement_descriptor": 
+null,
+"status": 
+"open",
+"status_transitions": {
+"finalized_at": 
+1750787033
+,
+"marked_uncollectible_at": 
+null,
+"paid_at": 
+null,
+"voided_at": 
+null,
+},
+"subtotal": 
+495,
+"subtotal_excluding_tax": 
+495,
+"test_clock": 
+null,
+"total": 
+495,
+"total_discount_amounts": [],
+"total_excluding_tax": 
+495,
+"total_pretax_credit_amounts": [],
+"total_taxes": [],
+"webhooks_delivered_at": 
+1750787033
+,
+},
+"previous_attributes": 
+null,
