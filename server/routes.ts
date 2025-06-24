@@ -116,7 +116,6 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       
       // If payment succeeded for $4.95, upgrade immediately
       if (paymentIntent?.status === 'succeeded' && paymentIntent.amount_received === 495) {
-        console.log(`[WEBHOOK] $4.95 payment confirmed - upgrading to Advanced tier`);
         
         const tierBenefits = {
           basic: { maxConnections: 1 },
@@ -135,7 +134,6 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
           subscriptionExpiresAt: undefined
         });
         
-        console.log(`[WEBHOOK] User ${userId} upgraded to ${newTier} tier via discount payment`);
         return;
       }
     } catch (error) {
@@ -162,8 +160,6 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       stripeSubscriptionId: user.stripeSubscriptionId,
       subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
     });
-    
-    console.log(`[WEBHOOK] User ${userId} upgraded to ${newTier} tier`);
   } else {
     // For failed/inactive subscriptions, keep current tier but update status
     await storage.updateUserSubscription(userId, {
@@ -218,8 +214,6 @@ async function handleDiscountPaymentUpgrade(subscriptionId: string) {
       stripeSubscriptionId: subscriptionId,
       subscriptionExpiresAt: undefined
     });
-    
-    console.log(`[WEBHOOK] User ${userId} upgraded to Advanced tier via discount payment`);
     
   } catch (error) {
     console.error(`[WEBHOOK] Error upgrading discount subscription: ${error}`);
