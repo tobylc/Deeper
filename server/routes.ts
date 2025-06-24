@@ -1541,11 +1541,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       if (expandedInvoice.payment_intent && typeof expandedInvoice.payment_intent === 'object') {
                         const paymentIntent = expandedInvoice.payment_intent;
                         console.log(`[DISCOUNT] Found payment intent ${paymentIntent.id} for $4.95 charge`);
+                        console.log(`[DISCOUNT] Payment intent status: ${paymentIntent.status}, payment method: ${paymentIntent.payment_method || 'none'}`);
+                        console.log(`[DISCOUNT] Attaching payment method: ${setupIntent.payment_method}`);
                         
-                        // Confirm the payment intent to charge immediately
-                        const confirmedPayment = await stripe.paymentIntents.confirm(paymentIntent.id, {
+                        // First update the payment intent with the payment method
+                        const updatedPaymentIntent = await stripe.paymentIntents.update(paymentIntent.id, {
                           payment_method: setupIntent.payment_method as string,
                         });
+                        console.log(`[DISCOUNT] Payment intent updated, new status: ${updatedPaymentIntent.status}`);
+                        
+                        // Then confirm the payment intent to charge immediately
+                        const confirmedPayment = await stripe.paymentIntents.confirm(paymentIntent.id);
+                        console.log(`[DISCOUNT] Payment confirmation attempted, result: ${confirmedPayment.status}`);
+                        console.log(`[DISCOUNT] Payment amount received: $${(confirmedPayment.amount_received || 0) / 100}`);
                         
                         console.log(`[DISCOUNT] Payment confirmation result: ${confirmedPayment.status}`);
                         
