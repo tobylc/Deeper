@@ -1721,6 +1721,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
+  // Production fallback: Check and upgrade paid users whose webhooks failed
+  app.post("/api/subscription/check-payment-status", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).claims?.sub || (req.user as any).id;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeSubscriptionId) {
+        return res.json({ upgraded: false, message: "No subscription found" });
+      }
+
+      // Check Stripe subscription status
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, {
+        expand: ['latest_invoice.payment_intent']
+      });
+
+      console.log(`[PAYMENT_CHECK] Subscription ${subscription.id} status: ${subscription.status}`);
+      
+      // Check if subscription has a successful payment but user isn't upgraded
+      const latestInvoice = subscription.latest_invoice as any;
+      const isDiscountSubscription = subscription.metadata?.discount_applied === '50';
+      
+      if (latestInvoice?.payment_intent?.status === 'succeeded' && 
+          latestInvoice.amount_paid === 495 && 
+          isDiscountSubscription &&
+          user.subscriptionTier !== 'advanced') {
+        
+        console.log(`[PAYMENT_CHECK] Found successful $4.95 payment for user ${userId} - upgrading to Advanced`);
+        
+        // Upgrade user to Advanced tier
+        await storage.updateUserSubscription(userId, {
+          subscriptionTier: 'advanced',
+          subscriptionStatus: 'active',
+          maxConnections: 3,
+          stripeCustomerId: user.stripeCustomerId,
+          stripeSubscriptionId: user.stripeSubscriptionId,
+          subscriptionExpiresAt: undefined
+        });
+
+        return res.json({ 
+          upgraded: true, 
+          tier: 'advanced',
+          message: "Advanced plan activated!" 
+        });
+      }
+
+      res.json({ 
+        upgraded: false, 
+        tier: user.subscriptionTier,
+        message: "No upgrade needed" 
+      });
+    } catch (error) {
+      console.error("Payment status check error:", error);
+      res.status(500).json({ upgraded: false, message: "Check failed" });
+    }
+  });
+
   // Security fix: Reset prematurely upgraded subscriptions until payment verification
   app.post("/api/subscription/reset-unverified", isAuthenticated, async (req, res) => {
     try {

@@ -62,6 +62,28 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
             title: "Advanced Plan Activated",
             description: "Payment successful! Your Advanced plan is now active.",
           });
+          
+          // Check payment status and upgrade if needed (webhook fallback)
+          setTimeout(async () => {
+            try {
+              console.log('[CHECKOUT] Checking payment status for webhook fallback');
+              const checkResponse = await apiRequest("POST", "/api/subscription/check-payment-status", {});
+              
+              if (checkResponse.ok) {
+                const result = await checkResponse.json();
+                if (result.upgraded) {
+                  console.log('[CHECKOUT] Subscription upgraded via fallback check');
+                }
+              }
+              
+              // Refresh page to show updated subscription status
+              window.location.reload();
+            } catch (error) {
+              console.warn('Payment status check failed:', error);
+              window.location.reload();
+            }
+          }, 3000);
+          
           onSuccess();
         }
       } else {

@@ -671,6 +671,14 @@ Changelog:
   * Enhanced toast styling with rounded corners, backdrop blur, ocean blue borders, and white text for elegance
   * Improved error messaging with user-friendly language instead of technical error details
   * Complete subscription upgrade flow now works seamlessly with sophisticated notification system
+- June 24, 2025. Production webhook fallback system for discount subscription upgrades:
+  * Fixed critical issue where Stripe webhooks fail to reach production server ("Failed to connect to remote host")
+  * Implemented /api/subscription/check-payment-status endpoint for direct Stripe payment verification
+  * Added automatic subscription upgrade fallback when webhooks fail to deliver
+  * Enhanced checkout flow with 3-second payment verification and automatic tier upgrade
+  * Dashboard-level checking for retroactive upgrades of users who paid but weren't upgraded
+  * Production-ready solution bypasses webhook dependency with direct Stripe API verification
+  * Discount subscriptions now reliably upgrade to Advanced tier regardless of webhook delivery status
 - June 21, 2025. Google OAuth account linking system fixes and duplicate user cleanup:
   * Fixed critical OAuth authentication bug that created separate Google accounts instead of linking to existing email users
   * Enhanced OAuth logic to properly check for existing email-based accounts before creating new users
