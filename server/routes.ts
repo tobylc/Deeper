@@ -1720,59 +1720,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Debug endpoint to manually trigger subscription upgrade (development only)
-  app.post("/api/subscription/manual-upgrade", isAuthenticated, async (req, res) => {
-    if (process.env.NODE_ENV !== 'development') {
-      return res.status(404).json({ message: "Not found" });
-    }
-    
-    try {
-      const userId = (req.user as any).claims?.sub || (req.user as any).id;
-      const { tier } = req.body;
-      
-      if (!userId) {
-        return res.status(401).json({ message: "User not found" });
-      }
-      
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      // Manually upgrade user to specified tier
-      const tierBenefits = {
-        basic: { maxConnections: 1 },
-        advanced: { maxConnections: 3 },
-        unlimited: { maxConnections: 999 }
-      };
-      
-      const benefits = tierBenefits[tier as keyof typeof tierBenefits];
-      if (!benefits) {
-        return res.status(400).json({ message: "Invalid tier" });
-      }
-      
-      await storage.updateUserSubscription(userId, {
-        subscriptionTier: tier,
-        subscriptionStatus: 'active',
-        maxConnections: benefits.maxConnections,
-        stripeCustomerId: user.stripeCustomerId,
-        stripeSubscriptionId: user.stripeSubscriptionId,
-        subscriptionExpiresAt: undefined
-      });
-      
-      console.log(`[DEBUG] Manually upgraded user ${userId} to ${tier} tier`);
-      
-      res.json({ 
-        success: true, 
-        message: `User upgraded to ${tier} tier`,
-        tier: tier,
-        maxConnections: benefits.maxConnections
-      });
-    } catch (error) {
-      console.error("Manual upgrade error:", error);
-      res.status(500).json({ message: "Upgrade failed" });
-    }
-  });
 
   // Security fix: Reset prematurely upgraded subscriptions until payment verification
   app.post("/api/subscription/reset-unverified", isAuthenticated, async (req, res) => {
