@@ -88,12 +88,18 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
   const userId = subscription.metadata?.userId;
   
-  if (!userId) return;
+  if (!userId) {
+    console.log(`[WEBHOOK] No userId in subscription metadata: ${subscription.id}`);
+    return;
+  }
 
   const user = await storage.getUser(userId);
-  if (!user) return;
+  if (!user) {
+    console.log(`[WEBHOOK] User not found: ${userId}`);
+    return;
+  }
 
-  // Note: Webhook security block removed to allow proper discount subscription processing
+  console.log(`[WEBHOOK] Processing subscription ${subscription.id} for user ${userId}, status: ${subscription.status}`);
 
   const status = subscription.status === 'trialing' ? 'trialing' : 
                 subscription.status === 'active' ? 'active' : 
@@ -101,9 +107,58 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
   // Get the new tier from subscription metadata
   const newTier = subscription.metadata?.tier as 'basic' | 'advanced' | 'unlimited' | 'free';
+  const isDiscountSubscription = subscription.metadata?.discount_applied === '50';
+  
+  console.log(`[WEBHOOK] Subscription metadata: tier=${newTier}, discount=${isDiscountSubscription}, status=${subscription.status}`);
+
+  // For discount subscriptions with incomplete status, check if payment has been processed
+  if (isDiscountSubscription && subscription.status === 'incomplete') {
+    console.log(`[WEBHOOK] Checking payment status for incomplete discount subscription`);
+    
+    try {
+      // Get the latest invoice with payment intent
+      const expandedSubscription = await stripe.subscriptions.retrieve(subscription.id, {
+        expand: ['latest_invoice.payment_intent']
+      });
+      
+      const latestInvoice = expandedSubscription.latest_invoice as any;
+      const paymentIntent = latestInvoice?.payment_intent;
+      
+      console.log(`[WEBHOOK] Payment intent status: ${paymentIntent?.status}, amount_received: ${paymentIntent?.amount_received}`);
+      
+      // If payment succeeded for $4.95, upgrade immediately
+      if (paymentIntent?.status === 'succeeded' && paymentIntent.amount_received === 495) {
+        console.log(`[WEBHOOK] $4.95 payment confirmed - upgrading to Advanced tier`);
+        
+        const tierBenefits = {
+          basic: { maxConnections: 1 },
+          advanced: { maxConnections: 3 },
+          unlimited: { maxConnections: 999 }
+        };
+
+        const benefits = tierBenefits[newTier] || tierBenefits.advanced;
+
+        await storage.updateUserSubscription(userId, {
+          subscriptionTier: newTier || 'advanced',
+          subscriptionStatus: 'active',
+          maxConnections: benefits.maxConnections,
+          stripeCustomerId: user.stripeCustomerId,
+          stripeSubscriptionId: user.stripeSubscriptionId,
+          subscriptionExpiresAt: undefined
+        });
+        
+        console.log(`[WEBHOOK] User ${userId} upgraded to ${newTier} tier via discount subscription`);
+        return;
+      }
+    } catch (error) {
+      console.error(`[WEBHOOK] Error checking payment for discount subscription: ${error}`);
+    }
+  }
   
   // Only update subscription tier and benefits when payment is confirmed (active or trialing)
   if (status === 'active' || status === 'trialing') {
+    console.log(`[WEBHOOK] Upgrading user ${userId} to ${newTier} tier - subscription active`);
+    
     const tierBenefits = {
       free: { maxConnections: 1 },
       basic: { maxConnections: 1 },
@@ -117,16 +172,86 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       subscriptionTier: newTier || 'free',
       subscriptionStatus: status,
       maxConnections: benefits.maxConnections,
+      stripeCustomerId: user.stripeCustomerId,
+      stripeSubscriptionId: user.stripeSubscriptionId,
       subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
     });
+    
+    console.log(`[WEBHOOK] User ${userId} subscription updated: tier=${newTier}, connections=${benefits.maxConnections}`);
   } else {
+    console.log(`[WEBHOOK] Subscription ${subscription.id} status ${subscription.status} - no tier upgrade`);
+    
     // For failed/inactive subscriptions, keep current tier but update status
     await storage.updateUserSubscription(userId, {
       subscriptionTier: user.subscriptionTier || 'free',
       subscriptionStatus: status,
       maxConnections: user.maxConnections || 1,
+      stripeCustomerId: user.stripeCustomerId,
+      stripeSubscriptionId: user.stripeSubscriptionId,
       subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
     });
+  }
+}
+
+async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent) {
+  try {
+    // Check if this is a $4.95 discount payment
+    if (paymentIntent.amount === 495) {
+      console.log(`[WEBHOOK] $4.95 payment intent succeeded: ${paymentIntent.id}`);
+      
+      // Find the subscription associated with this payment
+      const invoices = await stripe.invoices.list({
+        payment_intent: paymentIntent.id,
+        limit: 1
+      });
+      
+      if (invoices.data.length > 0) {
+        const invoice = invoices.data[0];
+        if (invoice.subscription) {
+          console.log(`[WEBHOOK] Found subscription ${invoice.subscription} for payment intent ${paymentIntent.id}`);
+          await handleDiscountPaymentUpgrade(invoice.subscription as string);
+        }
+      }
+    }
+  } catch (error) {
+    console.error(`[WEBHOOK] Error processing payment intent success: ${error}`);
+  }
+}
+
+async function handleDiscountPaymentUpgrade(subscriptionId: string) {
+  try {
+    console.log(`[WEBHOOK] Processing discount payment upgrade for subscription: ${subscriptionId}`);
+    
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const userId = subscription.metadata?.userId;
+    
+    if (!userId) {
+      console.log(`[WEBHOOK] No userId found in subscription metadata`);
+      return;
+    }
+    
+    const user = await storage.getUser(userId);
+    if (!user) {
+      console.log(`[WEBHOOK] User not found: ${userId}`);
+      return;
+    }
+    
+    // Immediately upgrade to Advanced tier for $4.95 payment
+    console.log(`[WEBHOOK] Upgrading user ${userId} to Advanced tier - $4.95 payment confirmed`);
+    
+    await storage.updateUserSubscription(userId, {
+      subscriptionTier: 'advanced',
+      subscriptionStatus: 'active', 
+      maxConnections: 3,
+      stripeCustomerId: user.stripeCustomerId,
+      stripeSubscriptionId: subscriptionId,
+      subscriptionExpiresAt: undefined // Discount subscriptions don't expire
+    });
+    
+    console.log(`[WEBHOOK] Successfully upgraded user ${userId} to Advanced tier via discount payment`);
+    
+  } catch (error) {
+    console.error(`[WEBHOOK] Error upgrading discount subscription: ${error}`);
   }
 }
 
@@ -1423,6 +1548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         case 'customer.subscription.updated':
         case 'customer.subscription.created':
           const subscription = event.data.object as Stripe.Subscription;
+          console.log(`[WEBHOOK] ${event.type}: ${subscription.id}, status: ${subscription.status}, metadata:`, subscription.metadata);
           await handleSubscriptionUpdate(subscription);
           break;
 
@@ -1431,72 +1557,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await handleSubscriptionCancellation(deletedSubscription);
           break;
 
+        case 'payment_intent.succeeded':
+          const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          console.log(`[WEBHOOK] payment_intent.succeeded: ${paymentIntent.id}, amount: ${paymentIntent.amount}, metadata:`, paymentIntent.metadata);
+          await handlePaymentIntentSuccess(paymentIntent);
+          break;
+
         case 'invoice.payment_succeeded':
           const invoice = event.data.object as Stripe.Invoice;
           await handlePaymentSuccess(invoice);
-          break;
-
-        case 'payment_intent.succeeded':
-          const paymentIntent = event.data.object as Stripe.PaymentIntent;
-          console.log(`[PAYMENT] Payment intent succeeded: ${paymentIntent.id}, amount: $${paymentIntent.amount / 100}`);
-          
-          const paymentUserId = paymentIntent.metadata?.userId;
-          const paymentTier = paymentIntent.metadata?.tier;
-          const subscriptionType = paymentIntent.metadata?.subscriptionType;
-          
-          if (paymentUserId && paymentTier && subscriptionType === 'discount') {
-            console.log(`[DISCOUNT] Discount payment confirmed for user ${paymentUserId}, activating ${paymentTier} plan`);
-            
-            const paymentUser = await storage.getUser(paymentUserId);
-            if (paymentUser && paymentUser.stripeSubscriptionId) {
-              // Immediately activate Advanced tier for discount subscription
-              const tierBenefits = {
-                basic: { maxConnections: 1 },
-                advanced: { maxConnections: 3 },
-                unlimited: { maxConnections: 999 }
-              };
-              
-              const benefits = tierBenefits[paymentTier as keyof typeof tierBenefits];
-              if (benefits) {
-                await storage.updateUserSubscription(paymentUserId, {
-                  subscriptionTier: paymentTier,
-                  subscriptionStatus: 'active',
-                  maxConnections: benefits.maxConnections,
-                  stripeCustomerId: paymentUser.stripeCustomerId,
-                  stripeSubscriptionId: paymentUser.stripeSubscriptionId,
-                  subscriptionExpiresAt: undefined // No expiry for paid subscriptions
-                });
-                
-                console.log(`[DISCOUNT] User ${paymentUserId} upgraded to ${paymentTier} tier with ${benefits.maxConnections} connections`);
-                
-                // Update the subscription status in Stripe to active
-                if (paymentUser.stripeSubscriptionId) {
-                  try {
-                    await stripe.subscriptions.update(paymentUser.stripeSubscriptionId, {
-                      default_payment_method: paymentIntent.payment_method as string,
-                    });
-                    console.log(`[DISCOUNT] Subscription ${paymentUser.stripeSubscriptionId} activated with payment method`);
-                  } catch (error) {
-                    console.error(`[DISCOUNT] Error updating subscription: ${error}`);
-                  }
-                }
-              }
-            }
-          }
           break;
 
         case 'invoice.paid':
           const paidInvoice = event.data.object as any;
           if (paidInvoice.subscription) {
             console.log(`[INVOICE] Invoice paid for subscription ${paidInvoice.subscription}, amount: ${paidInvoice.amount_paid}`);
-            const subscription = await stripe.subscriptions.retrieve(paidInvoice.subscription as string);
             
             // For discount subscriptions ($4.95), immediately activate Advanced tier
             if (paidInvoice.amount_paid === 495) { // $4.95 in cents
-              console.log(`[DISCOUNT] $4.95 payment confirmed - activating Advanced plan immediately`);
+              console.log(`[DISCOUNT] $4.95 payment confirmed - upgrading to Advanced tier via invoice.paid`);
+              await handleDiscountPaymentUpgrade(paidInvoice.subscription as string);
+            } else {
+              const subscription = await stripe.subscriptions.retrieve(paidInvoice.subscription as string);
+              await handleSubscriptionUpdate(subscription);
             }
-            
-            await handleSubscriptionUpdate(subscription);
           }
           break;
 
