@@ -247,15 +247,15 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
     <div className="space-y-4">
       {/* Show hypnotic orbs waiting visual when it's not the user's turn */}
       {!isMyTurn ? (
-        <Card className="card-elevated border-ocean/30 bg-transparent h-fit overflow-hidden">
-          <CardContent className="p-0">
+        <div className="bg-transparent h-fit overflow-hidden border-0 shadow-none">
+          <div className="p-0">
             <div className="h-[280px] relative">
               <HypnoticOrbs className="absolute inset-0" />
             </div>
-          </CardContent>
-        </Card>
-      ) : !isMyTurn ? (
-        // Show waiting state when it's not user's turn
+          </div>
+        </div>
+      ) : canUseRightColumn ? (
+        // Show question suggestions when user can interact
         <Card className="card-elevated border-ocean/30 bg-ocean/5 h-fit">
           <CardContent className="p-4">
             <div className="text-center space-y-3">

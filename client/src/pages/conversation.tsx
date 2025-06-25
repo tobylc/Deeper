@@ -121,6 +121,11 @@ export default function ConversationPage() {
         : connection.inviterRole)
     : '';
 
+  // Determine if current user is the inviter
+  const isInviter = connection && user?.email 
+    ? connection.inviterEmail === user.email 
+    : false;
+
   // Get user data for both participants
   const { data: currentUserData } = useQuery<User>({
     queryKey: [`/api/users/by-email/${user?.email}`],
@@ -556,6 +561,7 @@ export default function ConversationPage() {
                 onThreadSelect={handleThreadSelect}
                 selectedConversationId={selectedConversationId || parseInt(id!)}
                 isMyTurn={isMyTurn}
+                isInviter={isInviter}
               />
             )}
           </div>
