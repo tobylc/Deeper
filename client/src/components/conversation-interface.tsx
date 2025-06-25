@@ -834,10 +834,10 @@ export default function ConversationInterface({
           </div>
         </div>
       )}
-    </div>
+      </div>
 
-    {/* Fixed Input Area at Bottom - Only visible when it's user's turn */}
-    {isMyTurn && (
+      {/* Fixed Input Area at Bottom - Only visible when it's user's turn */}
+      {isMyTurn && (
       <div className="flex-shrink-0 border-t border-slate-200/60 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm p-4">
         {/* Message Mode Toggle */}
         <div className="flex items-center justify-center space-x-2 mb-4">
@@ -989,6 +989,6 @@ export default function ConversationInterface({
         </div>
       </div>
     )}
-  </div>
+    </div>
   );
 }
