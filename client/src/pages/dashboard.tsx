@@ -129,8 +129,14 @@ export default function Dashboard() {
       await apiRequest("PATCH", `/api/connections/${connectionId}/accept`, {
         accepterEmail: user.email,
       });
+      // Find the connection to get role information for personalized toast
+      const acceptedConnection = connections.find(c => c.id === connectionId);
+      const roleDisplay = acceptedConnection?.inviterRole && acceptedConnection?.inviteeRole 
+        ? `${acceptedConnection.inviterRole}/${acceptedConnection.inviteeRole}`
+        : acceptedConnection?.relationshipType || 'Connection';
+      
       toast({
-        title: "Connection accepted!",
+        title: `${roleDisplay} connection accepted!`,
         description: "Your conversation space is ready.",
       });
       refetchConnections();
@@ -731,6 +737,8 @@ export default function Dashboard() {
         <InviteeWelcomePopup
           inviterName={welcomeData.inviterName}
           relationshipType={welcomeData.relationshipType}
+          inviterRole={welcomeData.inviterRole}
+          inviteeRole={welcomeData.inviteeRole}
           onClose={() => setShowWelcomePopup(false)}
         />
       )}
