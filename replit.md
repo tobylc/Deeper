@@ -630,6 +630,14 @@ Changelog:
   * Updated conversation interface with parchment-style waiting notifications matching journal aesthetic
   * Removed card shadows and borders from question suggestions right column to allow seamless orb visualization
   * Production-ready application with complete role-based visual differentiation and restored waiting state elements
+- June 25, 2025. Critical turn logic correction to ensure inviters always start conversations:
+  * Fixed conversation creation endpoints to always assign participant1Email (inviter) as first turn holder
+  * Updated all three conversation creation routes to enforce inviter-first turn logic consistently
+  * Corrected new conversation thread creation to ensure questions always originate from inviter
+  * Fixed turn notification system to properly notify invitee when conversation starts
+  * Eliminated confusion where invitee could appear to have first turn in newly created conversations
+  * Turn assignment now correctly follows: inviter asks question → invitee responds → turn alternates naturally
+  * Production-ready turn-based conversation system with proper inviter-initiated dialogue flow
 - June 20, 2025. Vulnerable conversation question system for difficult-to-ask topics:
   * Completely redesigned question curation to focus on emotionally vulnerable, difficult-to-ask questions that foster authentic connection
   * Enhanced questions address fears, regrets, difficult emotions, unspoken truths, and conversations that are hard to bring up in person

@@ -3408,9 +3408,15 @@ Format each as a complete question they can use to begin this important conversa
       // Update conversation turn to invitee (participant2)
       await storage.updateConversationTurn(conversation.id, participant2Email);
       
-      // Send turn notification to other participant
+      // Send turn notification to invitee (participant2)
       try {
-        await notificationService.sendTurnNotification(otherParticipant);
+        await notificationService.sendTurnNotification({
+          recipientEmail: participant2Email,
+          senderEmail: participant1Email,
+          conversationId: conversation.id,
+          relationshipType,
+          messageType: 'question'
+        });
       } catch (notificationError) {
         console.error('Failed to send turn notification:', notificationError);
       }
