@@ -247,7 +247,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
     <div className="space-y-4">
       {/* Show hypnotic orbs waiting visual when it's not the user's turn */}
       {!isMyTurn ? (
-        <Card className="card-elevated border-ocean/30 bg-gradient-to-br from-slate-900/90 to-slate-800/90 h-fit overflow-hidden">
+        <Card className="card-elevated border-ocean/30 bg-transparent h-fit overflow-hidden">
           <CardContent className="p-0">
             <div className="h-[280px] relative">
               <HypnoticOrbs className="absolute inset-0" />

@@ -726,15 +726,16 @@ Changelog:
   * Invitee users maintain access to conversations through their inviter's subscription benefits
   * Clear distinction between users who created accounts independently vs those invited by others
   * Enhanced user experience for invitees with appropriate upgrade paths and messaging
-- June 25, 2025. Hypnotic orbs waiting visual system for enhanced conversation experience:
-  * Created HypnoticOrbs component with abstract, mesmerizing visual effects using HTML5 Canvas
-  * Replaced previous mesmerizing visual with slow-evolving orbs that grow and transform over 20-30 minutes
-  * Implemented 5 unique orbs with different colors (ocean blue, amber, teal, purple, peach) and growth patterns
-  * Each orb gradually expands from 2px to 100px radius over 18-30 minute timeframes with smooth easing
-  * Added subtle spiral drift patterns, pulsing effects, and connecting lines between mature orbs
-  * Orbs feature radial gradients with semi-transparent layers creating depth and organic feel
-  * Designed for prolonged viewing engagement without text or UI clutter
-  * Applied to both middle column empty states and right column waiting states in conversation interface
+- June 25, 2025. Enhanced hypnotic orbs waiting visual system for mesmerizing conversation experience:
+  * Completely redesigned HypnoticOrbs component with 8 abstract orbs using HTML5 Canvas for maximum visual complexity
+  * Removed dark background overlay - orbs now exist transparently on top of existing conversation page background
+  * Added faster movement patterns: spiral drift, chaotic wobble, and figure-8 secondary motion for increased abstractness
+  * Implemented randomized positioning, growth rates (6-18 minutes), and movement speeds for each orb instance
+  * Enhanced with dynamic wavy connecting lines between nearby orbs that pulse and activate after 2 minutes
+  * Added distance-based connection strength and organic curved lines instead of straight connections
+  * Increased orb colors to 8 variations: ocean blue, amber, teal, purple, peach, light blue, golden yellow, lavender
+  * Each orb features unique chaos parameters, wobble speeds, and spiral radii for maximum visual randomness
+  * Created truly mesmerizing abstract visual that evolves continuously over 20+ minutes without any text or UI clutter
 - June 21, 2025. Beautiful error handling system replacing ugly red toast messages:
   * Created elegant TrialExpirationPopup component with parchment-style design matching application aesthetic
   * Replaced all ugly red "destructive" toast messages showing raw JSON data with beautiful custom notifications
