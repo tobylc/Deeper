@@ -826,6 +826,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           passwordHash: hashedPassword,
+          subscriptionTier: 'free', // Invitees get free tier
+          subscriptionStatus: 'forever', // Forever free as long as connected
+          maxConnections: 999, // Unlimited connections for invitees
         });
       } else {
         // Create new user account for invitee with hashed password
@@ -835,6 +838,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           passwordHash: hashedPassword,
+          subscriptionTier: 'free', // Invitees get free tier
+          subscriptionStatus: 'forever', // Forever free as long as connected
+          maxConnections: 999, // Unlimited connections for invitees
         });
       }
 

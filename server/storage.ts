@@ -79,7 +79,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(userData: InsertUser): Promise<User> {
-    // Initialize trial for new users
+    // Default user creation - this should only be used for invitees
+    const [user] = await db
+      .insert(users)
+      .values({
+        ...userData,
+        subscriptionTier: 'free',
+        subscriptionStatus: 'forever',
+        maxConnections: 999, // Invitees get unlimited connections
+      })
+      .returning();
+    return user;
+  }
+
+  async createInviterUser(userData: InsertUser): Promise<User> {
+    // Initialize trial for new inviters (OAuth signups)
     const trialStartsAt = new Date();
     const trialExpiresAt = new Date(trialStartsAt.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
     
@@ -88,7 +102,7 @@ export class DatabaseStorage implements IStorage {
       .values({
         ...userData,
         subscriptionTier: 'trial',
-        subscriptionStatus: 'trialing',
+        subscriptionStatus: 'active',
         maxConnections: 1,
         trialStartedAt: trialStartsAt,
         trialExpiresAt: trialExpiresAt,
@@ -117,7 +131,7 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return user;
     } else {
-      // Create new user
+      // Create new user - use createUser (for invitees) unless specified otherwise
       return await this.createUser(userData);
     }
   }

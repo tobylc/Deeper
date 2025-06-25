@@ -119,7 +119,7 @@ async function upsertUser(profile: any, provider: string, req?: any) {
   // Only create new user if no existing user found with this email
   if (email) {
     console.log(`[AUTH] Creating new Google user with email: ${email}`);
-    return await storage.createUser({
+    return await storage.createInviterUser({
       id: `${provider}_${profile.id}`,
       email: email,
       firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || 'User',
@@ -129,7 +129,7 @@ async function upsertUser(profile: any, provider: string, req?: any) {
     });
   } else {
     // Fallback for users without email
-    return await storage.createUser({
+    return await storage.createInviterUser({
       id: `${provider}_${profile.id}`,
       email: `${provider}_${profile.id}@${provider}.com`,
       firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || 'User',
