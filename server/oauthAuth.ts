@@ -147,9 +147,8 @@ export async function setupAuth(app: Express) {
   app.use(passport.session());
 
   // Use current domain for OAuth callbacks - production or development
-  const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-    ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-    : 'https://joindeeper.com';
+  // Use joindeeper.com domain directly for production OAuth
+  const baseUrl = 'https://joindeeper.com';
 
   // Google OAuth Strategy
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
