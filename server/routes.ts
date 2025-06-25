@@ -2178,7 +2178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         participant1Email,
         participant2Email,
         relationshipType,
-        currentTurn,
+        currentTurn: participant1Email, // Inviter always gets first turn
         status: 'active',
         isMainThread: true
       };
@@ -2308,7 +2308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         participant1Email,
         participant2Email,
         relationshipType,
-        currentTurn: currentUser.email, // Creator starts the conversation
+        currentTurn: participant1Email, // Inviter always gets first turn
         status: 'active',
         title: title || topic,
         topic,
@@ -3386,7 +3386,7 @@ Format each as a complete question they can use to begin this important conversa
         participant1Email,
         participant2Email,
         relationshipType,
-        currentTurn: currentUser.email, // Creator starts the conversation
+        currentTurn: participant1Email, // Inviter always gets first turn
         status: 'active',
         title: threadTitle,
         topic: question,
@@ -3395,19 +3395,18 @@ Format each as a complete question they can use to begin this important conversa
       
       const conversation = await storage.createConversation(conversationData);
       
-      // Immediately create the first message (question)
+      // Immediately create the first message (question) - always from inviter
       const messageData = {
         conversationId: conversation.id,
-        senderEmail: currentUser.email,
+        senderEmail: participant1Email, // Always from inviter
         content: question.trim(),
         type: 'question' as const
       };
       
       const message = await storage.createMessage(messageData);
       
-      // Update conversation turn to other participant
-      const otherParticipant = currentUser.email === participant1Email ? participant2Email : participant1Email;
-      await storage.updateConversationTurn(conversation.id, otherParticipant);
+      // Update conversation turn to invitee (participant2)
+      await storage.updateConversationTurn(conversation.id, participant2Email);
       
       // Send turn notification to other participant
       try {
