@@ -17,7 +17,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import ExchangeRequiredPopup from "@/components/exchange-required-popup";
-import MesmerizingWaitingVisual from "@/components/mesmerizing-waiting-visual";
+import { HypnoticOrbs } from "@/components/hypnotic-orbs";
 
 interface QuestionSuggestionsProps {
   relationshipType: string;
@@ -245,12 +245,12 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
 
   return (
     <div className="space-y-4">
-      {/* Show mesmerizing waiting visual when it's not the user's turn */}
+      {/* Show hypnotic orbs waiting visual when it's not the user's turn */}
       {!isMyTurn ? (
-        <Card className="card-elevated border-ocean/30 bg-gradient-to-br from-ocean/5 to-ocean/8 h-fit overflow-hidden">
+        <Card className="card-elevated border-ocean/30 bg-gradient-to-br from-slate-900/90 to-slate-800/90 h-fit overflow-hidden">
           <CardContent className="p-0">
-            <div className="h-[280px]">
-              <MesmerizingWaitingVisual otherUserName={otherParticipant} />
+            <div className="h-[280px] relative">
+              <HypnoticOrbs className="absolute inset-0" />
             </div>
           </CardContent>
         </Card>

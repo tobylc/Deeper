@@ -10,7 +10,7 @@ import VoiceRecorder from "@/components/voice-recorder";
 import VoiceMessageDisplay from "@/components/voice-message-display";
 import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
 import TranscriptionProgress from "@/components/transcription-progress";
-import MesmerizingWaitingVisual from "@/components/mesmerizing-waiting-visual";
+import { HypnoticOrbs } from "@/components/hypnotic-orbs";
 import type { Message, User, Connection } from "@shared/schema";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
@@ -251,8 +251,8 @@ export default function ConversationInterface({
             </div>
           </div>
         ) : (
-          <div className="min-h-[400px] flex items-center justify-center">
-            <MesmerizingWaitingVisual otherUserName={otherParticipantEmail} />
+          <div className="min-h-[400px] relative">
+            <HypnoticOrbs className="absolute inset-0" />
           </div>
         )}
       </div>
@@ -670,12 +670,10 @@ export default function ConversationInterface({
               </div>
             )}
 
-            {/* Mesmerizing Waiting Visual */}
+            {/* Hypnotic Orbs Waiting Visual */}
             {!isMyTurn && messages.length > 0 && (
-              <div className="mb-8 min-h-[300px] flex items-center justify-center">
-                <MesmerizingWaitingVisual 
-                  otherUserName={otherParticipantEmail} 
-                />
+              <div className="mb-8 min-h-[300px] relative">
+                <HypnoticOrbs className="absolute inset-0" />
               </div>
             )}
           </div>
