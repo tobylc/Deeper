@@ -13,6 +13,7 @@ import Auth from "@/pages/auth";
 import InvitationLanding from "@/pages/invitation";
 import InvitationSignup from "@/pages/invitation-signup";
 import Checkout from "@/pages/checkout";
+import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 import { Component, ReactNode, useEffect } from "react";
 
@@ -93,6 +94,7 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/conversation/:id" component={Conversation} />
+          <Route path="/admin" component={Admin} />
           <Route path="/features" component={Features} />
           <Route path="/pricing" component={Pricing} />
           <Route component={NotFound} />
