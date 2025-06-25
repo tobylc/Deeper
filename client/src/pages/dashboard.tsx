@@ -256,7 +256,7 @@ export default function Dashboard() {
             </div>
             <div className="mt-6 text-center space-y-3">
               <p className="text-sm text-muted-foreground">
-                Paid members can invite others without charge. Invitees inherit your subscription benefits.
+                Paid members can invite others without charge. Invitees can only interact with you.
               </p>
               {((user as any)?.subscriptionTier === 'trial' || !(user as any)?.subscriptionTier) && (
                 <Button 

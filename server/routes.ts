@@ -828,7 +828,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           passwordHash: hashedPassword,
           subscriptionTier: 'free', // Invitees get free tier
           subscriptionStatus: 'forever', // Forever free as long as connected
-          maxConnections: 999, // Unlimited connections for invitees
+          maxConnections: 0, // Invitees cannot send invitations
         });
       } else {
         // Create new user account for invitee with hashed password
@@ -840,7 +840,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           passwordHash: hashedPassword,
           subscriptionTier: 'free', // Invitees get free tier
           subscriptionStatus: 'forever', // Forever free as long as connected
-          maxConnections: 999, // Unlimited connections for invitees
+          maxConnections: 0, // Invitees cannot send invitations
         });
       }
 
@@ -1145,23 +1145,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invitee must register first before accepting connection" });
       }
 
-      // Apply inviter's subscription benefits to invitee when accepting
-      const inviterSubscriptionTier = existingConnection.inviterSubscriptionTier || 'free';
-      const tierBenefits: Record<string, { maxConnections: number }> = {
-        'free': { maxConnections: 1 },
-        'basic': { maxConnections: 1 },
-        'advanced': { maxConnections: 3 },
-        'unlimited': { maxConnections: 999 }
-      };
-
-      const benefits = tierBenefits[inviterSubscriptionTier] || tierBenefits['free'];
-      
-      // Update invitee's subscription to match inviter's tier (without payment)
+      // Invitees remain as free forever users and cannot send invitations
+      // They can only interact with the one person who invited them
       await storage.updateUserSubscription(inviteeUser.id, {
-        subscriptionTier: inviterSubscriptionTier,
-        subscriptionStatus: 'active',
-        maxConnections: benefits.maxConnections,
-        subscriptionExpiresAt: undefined // Inherited access doesn't expire
+        subscriptionTier: 'free',
+        subscriptionStatus: 'forever', 
+        maxConnections: 0, // Invitees cannot send invitations
+        subscriptionExpiresAt: undefined // Forever free as long as connected
       });
 
       const connection = await storage.updateConnectionStatus(id, 'accepted', new Date());

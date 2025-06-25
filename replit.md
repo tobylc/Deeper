@@ -588,9 +588,15 @@ Changelog:
   * Resolved webhook delivery issues causing manual intervention requirements for completed payments
   * Users now automatically upgrade from free to Advanced tier (3 connections) immediately upon $4.95 payment completion
   * Production-ready automatic subscription processing eliminates need for manual payment verification
-- June 25, 2025. Complete subscription status logic correction and invitation flow fixes:
+- June 25, 2025. Complete subscription status logic correction and invitee connection limits:
+  * Fixed invitee max_connections from 999 to 0 - invitees cannot send invitations to others
+  * Updated invitation signup and connection acceptance logic to enforce 0 max_connections for all invitees
+  * Removed subscription benefit inheritance - invitees remain as free forever users with single connection access
+  * Updated dashboard messaging to clarify invitees can only interact with their inviter
+  * Invitees are passive recipients who accept one invitation and interact only with that person
+- June 25, 2025. Complete subscription status logic correction and invitation flow fixes (SUPERSEDED):
   * Fixed critical database subscription logic - inviters now correctly show "trial" tier with "active" status
-  * Fixed invitees to properly show "free" tier with "forever" status and unlimited connections (999)
+  * Fixed invitees to properly show "free" tier with "forever" status and zero max_connections (0)
   * Created separate createInviterUser method for OAuth signups to ensure proper trial status assignment
   * Updated invitation acceptance logic to assign correct subscription tiers based on user type
   * Fixed invitation page to display specific role combinations (Father/Son) instead of generic relationship types
