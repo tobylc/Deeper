@@ -38,6 +38,8 @@ import { format, formatDistanceToNow } from "date-fns";
 import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell } from "recharts";
 import AdminAccessGuard from "@/components/admin-access-guard";
 import RetentionChart from "@/components/retention-chart";
+import AdminDatabaseBrowser from "@/components/admin-database-browser";
+import AdvancedAnalytics from "@/components/advanced-analytics";
 
 // Color palette for charts
 const COLORS = ['#4FACFE', '#D7A087', '#22D3EE', '#F59E0B', '#EF4444', '#10B981'];
@@ -649,7 +651,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-slate-800 border-slate-700">
+          <TabsList className="grid w-full grid-cols-5 bg-slate-800 border-slate-700">
             <TabsTrigger value="overview" className="data-[state=active]:bg-ocean data-[state=active]:text-white">
               <BarChart3 className="h-4 w-4 mr-2" />
               Overview
@@ -661,6 +663,10 @@ export default function Admin() {
             <TabsTrigger value="analytics" className="data-[state=active]:bg-ocean data-[state=active]:text-white">
               <LineChart className="h-4 w-4 mr-2" />
               Analytics
+            </TabsTrigger>
+            <TabsTrigger value="database" className="data-[state=active]:bg-ocean data-[state=active]:text-white">
+              <Database className="h-4 w-4 mr-2" />
+              Database
             </TabsTrigger>
             <TabsTrigger value="system" className="data-[state=active]:bg-ocean data-[state=active]:text-white">
               <Settings className="h-4 w-4 mr-2" />
@@ -678,8 +684,13 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
+            <AdvancedAnalytics />
             <ActivityChart />
             <RetentionChart />
+          </TabsContent>
+
+          <TabsContent value="database" className="space-y-6">
+            <AdminDatabaseBrowser />
           </TabsContent>
 
           <TabsContent value="system" className="space-y-6">

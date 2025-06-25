@@ -496,5 +496,191 @@ export function setupAdminRoutes(app: Express) {
     }
   });
 
+  // Database browser endpoints
+  app.get('/api/admin/database/tables', rateLimit(60, 50), isAdmin, async (req, res) => {
+    try {
+      const tables = await finalDb.execute(sql`
+        SELECT 
+          table_name as name,
+          (SELECT COUNT(*) FROM information_schema.columns WHERE table_name = t.table_name) as column_count
+        FROM information_schema.tables t
+        WHERE table_schema = 'public' 
+        AND table_type = 'BASE TABLE'
+        ORDER BY table_name
+      `);
+
+      const tablesWithCounts = await Promise.all(
+        tables.rows.map(async (table: any) => {
+          try {
+            const countResult = await finalDb.execute(sql`SELECT COUNT(*) as count FROM ${sql.identifier(table.name)}`);
+            return {
+              name: table.name,
+              rowCount: parseInt(countResult.rows[0].count),
+              columns: []
+            };
+          } catch (error) {
+            return {
+              name: table.name,
+              rowCount: 0,
+              columns: []
+            };
+          }
+        })
+      );
+
+      res.json(tablesWithCounts);
+    } catch (error) {
+      console.error('[ADMIN] Database tables error:', error);
+      res.status(500).json({ error: 'Failed to fetch database tables' });
+    }
+  });
+
+  app.get('/api/admin/database/table-data/:tableName', rateLimit(60, 100), isAdmin, async (req, res) => {
+    try {
+      const { tableName } = req.params;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = 50;
+      const offset = (page - 1) * limit;
+      const search = req.query.search as string || '';
+
+      // Get table columns
+      const columns = await finalDb.execute(sql`
+        SELECT 
+          column_name as name,
+          data_type as type,
+          is_nullable as nullable,
+          column_default as default_value
+        FROM information_schema.columns 
+        WHERE table_name = ${tableName}
+        ORDER BY ordinal_position
+      `);
+
+      // Build search query if provided
+      let searchCondition = '';
+      if (search) {
+        const textColumns = columns.rows.filter((col: any) => 
+          col.type.includes('text') || col.type.includes('varchar') || col.type.includes('char')
+        );
+        
+        if (textColumns.length > 0) {
+          const searchClauses = textColumns.map((col: any) => 
+            `${col.name}::text ILIKE '%${search}%'`
+          ).join(' OR ');
+          searchCondition = `WHERE ${searchClauses}`;
+        }
+      }
+
+      // Get total count
+      const totalQuery = `SELECT COUNT(*) as count FROM ${tableName} ${searchCondition}`;
+      const totalResult = await finalDb.execute(sql.raw(totalQuery));
+      const total = parseInt(totalResult.rows[0].count);
+
+      // Get paginated data
+      const dataQuery = `SELECT * FROM ${tableName} ${searchCondition} ORDER BY id DESC LIMIT ${limit} OFFSET ${offset}`;
+      const dataResult = await finalDb.execute(sql.raw(dataQuery));
+
+      res.json({
+        columns: columns.rows.map((col: any) => ({
+          name: col.name,
+          type: col.type,
+          nullable: col.nullable === 'YES',
+          default: col.default_value
+        })),
+        rows: dataResult.rows,
+        total,
+        totalPages: Math.ceil(total / limit),
+        page
+      });
+    } catch (error) {
+      console.error('[ADMIN] Table data error:', error);
+      res.status(500).json({ error: 'Failed to fetch table data' });
+    }
+  });
+
+  app.patch('/api/admin/database/:tableName/:id', rateLimit(60, 20), isAdmin, async (req, res) => {
+    try {
+      const { tableName, id } = req.params;
+      const updateData = req.body;
+
+      // Remove read-only fields
+      delete updateData.id;
+      delete updateData.created_at;
+      delete updateData.updated_at;
+
+      if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({ error: 'No valid fields to update' });
+      }
+
+      // Build update query
+      const setClause = Object.keys(updateData)
+        .map(key => `${key} = $${Object.keys(updateData).indexOf(key) + 1}`)
+        .join(', ');
+      
+      const values = Object.values(updateData);
+      const query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${values.length + 1}`;
+      
+      await finalDb.execute(sql.raw(query, [...values, id]));
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('[ADMIN] Update row error:', error);
+      res.status(500).json({ error: 'Failed to update row' });
+    }
+  });
+
+  app.delete('/api/admin/database/:tableName/:id', rateLimit(60, 10), isAdmin, async (req, res) => {
+    try {
+      const { tableName, id } = req.params;
+
+      // Safety check - don't allow deletion of critical system tables
+      const protectedTables = ['sessions'];
+      if (protectedTables.includes(tableName)) {
+        return res.status(403).json({ error: 'Cannot delete from protected table' });
+      }
+
+      await finalDb.execute(sql.raw(`DELETE FROM ${tableName} WHERE id = $1`, [id]));
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('[ADMIN] Delete row error:', error);
+      res.status(500).json({ error: 'Failed to delete row' });
+    }
+  });
+
+  app.get('/api/admin/database/export/:tableName', rateLimit(60, 5), isAdmin, async (req, res) => {
+    try {
+      const { tableName } = req.params;
+
+      const result = await finalDb.execute(sql.raw(`SELECT * FROM ${tableName}`));
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'No data to export' });
+      }
+
+      // Convert to CSV
+      const headers = Object.keys(result.rows[0]);
+      const csvContent = [
+        headers.join(','),
+        ...result.rows.map(row => 
+          headers.map(header => {
+            const value = row[header];
+            if (value === null || value === undefined) return '';
+            if (typeof value === 'string' && value.includes(',')) {
+              return `"${value.replace(/"/g, '""')}"`;
+            }
+            return String(value);
+          }).join(',')
+        )
+      ].join('\n');
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="${tableName}_export.csv"`);
+      res.send(csvContent);
+    } catch (error) {
+      console.error('[ADMIN] Export error:', error);
+      res.status(500).json({ error: 'Failed to export data' });
+    }
+  });
+
   console.log('[ADMIN] Admin routes configured successfully');
 }
