@@ -29,12 +29,12 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Enhanced orb configuration - more orbs with faster, more abstract movement
+    // Enhanced orb configuration - orbs start visible immediately
     const orbs = [
       {
         x: 0.2 + Math.random() * 0.1,
         y: 0.3 + Math.random() * 0.1,
-        baseRadius: 1,
+        baseRadius: 25, // Start visible immediately
         maxRadius: 60,
         growthDuration: 15 * 60 * 1000, // 15 minutes
         color: { r: 79, g: 172, b: 254 }, // Ocean blue
@@ -49,7 +49,7 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
       {
         x: 0.6 + Math.random() * 0.15,
         y: 0.5 + Math.random() * 0.15,
-        baseRadius: 0.5,
+        baseRadius: 20, // Start visible immediately
         maxRadius: 45,
         growthDuration: 12 * 60 * 1000, // 12 minutes
         color: { r: 215, g: 160, b: 135 }, // Warm amber
@@ -64,7 +64,7 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
       {
         x: 0.4 + Math.random() * 0.2,
         y: 0.2 + Math.random() * 0.2,
-        baseRadius: 2,
+        baseRadius: 30, // Start visible immediately
         maxRadius: 75,
         growthDuration: 18 * 60 * 1000, // 18 minutes
         color: { r: 120, g: 200, b: 180 }, // Soft teal
@@ -79,7 +79,7 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
       {
         x: 0.1 + Math.random() * 0.1,
         y: 0.6 + Math.random() * 0.2,
-        baseRadius: 1.2,
+        baseRadius: 16, // Start visible immediately
         maxRadius: 35,
         growthDuration: 10 * 60 * 1000, // 10 minutes
         color: { r: 160, g: 140, b: 220 }, // Soft purple
@@ -94,7 +94,7 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
       {
         x: 0.75 + Math.random() * 0.15,
         y: 0.15 + Math.random() * 0.15,
-        baseRadius: 1.8,
+        baseRadius: 22, // Start visible immediately
         maxRadius: 55,
         growthDuration: 14 * 60 * 1000, // 14 minutes
         color: { r: 255, g: 180, b: 150 }, // Warm peach
@@ -110,7 +110,7 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
       {
         x: 0.5 + Math.random() * 0.3,
         y: 0.7 + Math.random() * 0.2,
-        baseRadius: 0.8,
+        baseRadius: 18, // Start visible immediately
         maxRadius: 40,
         growthDuration: 8 * 60 * 1000, // 8 minutes
         color: { r: 147, g: 197, b: 253 }, // Light blue
@@ -125,7 +125,7 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
       {
         x: 0.85 + Math.random() * 0.1,
         y: 0.45 + Math.random() * 0.25,
-        baseRadius: 1.5,
+        baseRadius: 24, // Start visible immediately
         maxRadius: 50,
         growthDuration: 16 * 60 * 1000, // 16 minutes
         color: { r: 255, g: 205, b: 86 }, // Golden yellow
