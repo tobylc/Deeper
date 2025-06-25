@@ -15,6 +15,7 @@ import InvitationSignup from "@/pages/invitation-signup";
 import Checkout from "@/pages/checkout";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
+import VisualEffectDemo from "@/components/visual-effect-demo";
 import { Component, ReactNode, useEffect } from "react";
 
 class ErrorBoundary extends Component<
@@ -79,6 +80,7 @@ function Router() {
       <Route path="/invitation/:params*" component={InvitationLanding} />
       <Route path="/invitation" component={InvitationLanding} />
       <Route path="/auth" component={Auth} />
+      <Route path="/visual-demo" component={VisualEffectDemo} />
       
       <Route path="/checkout/:tier" component={Checkout} />
       
