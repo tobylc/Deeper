@@ -97,8 +97,8 @@ export default function InvitationSignup() {
             inviter: invitation.inviterEmail,
             relationship: invitation.relationshipType
           });
-          // Use window.location.href to ensure proper navigation and auth state refresh
-          window.location.href = `/dashboard?${welcomeParams.toString()}`;
+          // Use setLocation for proper SPA navigation
+          setLocation(`/dashboard?${welcomeParams.toString()}`);
         }, 1500); // Increased delay to allow cache invalidation
       } else {
         const error = await response.json();

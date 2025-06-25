@@ -746,6 +746,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         inviterEmail: connection.inviterEmail,
         inviteeEmail: connection.inviteeEmail,
         relationshipType: connection.relationshipType,
+        inviterRole: connection.inviterRole,
+        inviteeRole: connection.inviteeRole,
         personalMessage: connection.personalMessage,
         createdAt: connection.createdAt
       });

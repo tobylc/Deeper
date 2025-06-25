@@ -152,7 +152,19 @@ export default function InvitationLanding() {
                 </h2>
               </div>
               <p className="text-lg text-slate-100 mb-6 font-inter leading-relaxed">
-                {getInviterName()} has invited you to begin a {getRelationshipDescription()} journey together on Deeper. 
+                {getInviterName()} has invited you to begin a{' '}
+                {connectionData?.inviterRole && connectionData?.inviteeRole ? (
+                  <span className="font-medium text-ocean">
+                    {getRoleDisplayInfo(
+                      connectionData.relationshipType,
+                      connectionData.inviterRole,
+                      connectionData.inviteeRole
+                    ).conversationContext}
+                  </span>
+                ) : (
+                  getRelationshipDescription()
+                )}{' '}
+                journey together on Deeper. 
                 This isn't a group chat or social network - it's a sacred space created exclusively for meaningful 
                 one-on-one conversations between you and {getInviterName()}.
               </p>
