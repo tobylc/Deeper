@@ -11,18 +11,10 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      console.log('[HypnoticOrbs] Canvas ref not found');
-      return;
-    }
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      console.log('[HypnoticOrbs] Canvas context not found');
-      return;
-    }
-
-    console.log('[HypnoticOrbs] Canvas initialized successfully');
+    if (!ctx) return;
 
     // Set canvas size
     const resizeCanvas = () => {
@@ -166,10 +158,6 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
       const currentTime = Date.now();
       const elapsed = currentTime - startTimeRef.current;
       
-      if (elapsed % 5000 < 16) { // Log every 5 seconds (approximately)
-        console.log('[HypnoticOrbs] Animation running, elapsed:', Math.round(elapsed / 1000), 'seconds');
-      }
-      
       const rect = canvas.getBoundingClientRect();
       const width = rect.width;
       const height = rect.height;
@@ -308,15 +296,16 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={`w-full h-full ${className}`}
-      style={{ 
-        background: 'transparent',
-        mixBlendMode: 'normal',
-        border: '1px solid red', // Temporary debug border
-        minHeight: '300px'
-      }}
-    />
+    <div className="w-full h-full bg-gray-50/60 border border-gray-200/40 rounded-lg shadow-sm relative overflow-hidden">
+      <canvas
+        ref={canvasRef}
+        className={`w-full h-full ${className}`}
+        style={{ 
+          background: 'transparent',
+          mixBlendMode: 'normal',
+          minHeight: '300px'
+        }}
+      />
+    </div>
   );
 }
