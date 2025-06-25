@@ -37,6 +37,7 @@ import {
 import { format, formatDistanceToNow } from "date-fns";
 import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell } from "recharts";
 import AdminAccessGuard from "@/components/admin-access-guard";
+import RetentionChart from "@/components/retention-chart";
 
 // Color palette for charts
 const COLORS = ['#4FACFE', '#D7A087', '#22D3EE', '#F59E0B', '#EF4444', '#10B981'];
@@ -678,7 +679,7 @@ export default function Admin() {
 
           <TabsContent value="analytics" className="space-y-6">
             <ActivityChart />
-            {/* Add more analytics components here */}
+            <RetentionChart />
           </TabsContent>
 
           <TabsContent value="system" className="space-y-6">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import AdminNavLink from "@/components/admin-nav-link";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
@@ -186,7 +187,7 @@ export default function Dashboard() {
                 Welcome, {user.firstName || user.email?.split('@')[0] || 'there'}
               </span>
               
-
+              <AdminNavLink />
 
               <Button 
                 className="btn-ocean px-6 py-2"
