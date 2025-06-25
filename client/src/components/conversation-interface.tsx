@@ -670,58 +670,11 @@ export default function ConversationInterface({
               </div>
             )}
 
-            {/* Waiting Message at Bottom */}
-            {!isMyTurn && (
-              <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-20">
-                <div className={cn(
-                  "text-center space-y-4 bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg",
-                  "border-2 transition-all duration-300",
-                  // Match conversation thread colors - current user gets blue, other user gets amber  
-                  "border-[#4FACFE]/60 shadow-[0_0_20px_rgba(79,172,254,0.3)]"
-                )}>
-                  <div className="flex items-center justify-center space-x-2 text-slate-600">
-                    <Clock className="w-5 h-5" />
-                    <span className="font-medium">Waiting for them to finish writing...</span>
-                  </div>
-                  <p className="text-sm text-slate-500 max-w-md">
-                    Take a moment to reflect while they craft their response.
-                    You'll be notified when it's your turn to continue the conversation.
-                  </p>
-                </div>
-              </div>
-            )}
+
           </div>
         )}
 
-        {/* Waiting state when not user's turn - positioned at bottom of messages */}
-        {!isMyTurn && (
-          <div className="mt-8 pt-8 border-t border-slate-200/40">
-            <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 border border-ocean/20 shadow-md rounded-sm max-w-md mx-auto"
-                 style={{
-                   background: `
-                     linear-gradient(135deg, 
-                       rgba(255,255,255,0.98) 0%, 
-                       rgba(239,246,255,0.96) 30%, 
-                       rgba(79,172,254,0.12) 70%, 
-                       rgba(79,172,254,0.15) 100%
-                     )
-                   `,
-                   filter: 'drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.08))',
-                   backdropFilter: 'blur(0.5px)'
-                 }}>
-              <div className="text-center space-y-3">
-                <div className="flex items-center justify-center space-x-2 text-slate-600">
-                  <Clock className="w-5 h-5" />
-                  <span className="font-medium">Waiting for them to finish writing...</span>
-                </div>
-                <p className="text-sm text-slate-500">
-                  Take a moment to reflect while they craft their response.
-                  You'll be notified when it's your turn to continue the conversation.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+
       </div>
 
       {/* Journal Writing Area - Fixed at Bottom */}

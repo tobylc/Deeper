@@ -612,7 +612,8 @@ Changelog:
   * Enhanced invitation flow with user existence checking to route existing users to login instead of signup
   * Added backend API endpoint for existing user invitation acceptance without account creation
   * Optimized conversation page layout with response text area positioned appropriately
-  * Production-ready conversation interface with stable component structure
+  * Eliminated duplicate waiting messages appearing in middle column during waiting states
+  * Production-ready conversation interface with stable component structure and clean UX
 - June 20, 2025. Vulnerable conversation question system for difficult-to-ask topics:
   * Completely redesigned question curation to focus on emotionally vulnerable, difficult-to-ask questions that foster authentic connection
   * Enhanced questions address fears, regrets, difficult emotions, unspoken truths, and conversations that are hard to bring up in person
