@@ -65,7 +65,7 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
           style={{
             width: `${40 + i * 8}px`,
             height: `${40 + i * 8}px`,
-            background: `radial-gradient(circle, ${i % 3 === 0 ? '#4FACFE' : i % 3 === 1 ? '#D7A087' : '#00D4FF'}40, transparent)`,
+            background: `radial-gradient(circle, ${i % 3 === 0 ? '#4FACFE' : i % 3 === 1 ? '#D7A087' : '#00D4FF'}80, transparent)`,
           }}
           animate={{
             x: [50 + i * 30, 80 + i * 30, 50 + i * 30],
@@ -86,7 +86,7 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
       {[...Array(15)].map((_, i) => (
         <motion.div
           key={`particle-${i}`}
-          className="absolute w-2 h-2 rounded-full bg-ocean/50"
+          className="absolute w-2 h-2 rounded-full bg-ocean/80"
           animate={{
             x: [Math.random() * 300, Math.random() * 300],
             y: [Math.random() * 200, Math.random() * 200],
@@ -106,7 +106,7 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
       {[...Array(4)].map((_, i) => (
         <motion.div
           key={`stream-${i}`}
-          className="absolute h-0.5 bg-gradient-to-r from-transparent via-ocean/30 to-transparent rounded-full"
+          className="absolute h-0.5 bg-gradient-to-r from-transparent via-ocean/70 to-transparent rounded-full"
           style={{
             width: '120px',
             left: `${20 + i * 20}%`,
@@ -204,7 +204,7 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
       {[...Array(6)].map((_, i) => (
         <motion.div
           key={`debris-${i}`}
-          className="absolute w-3 h-3 bg-amber/60 rounded shadow-sm"
+          className="absolute w-3 h-3 bg-amber/85 rounded shadow-sm"
           animate={{
             x: [100 + i * 30, 120 + i * 30, 100 + i * 30],
             y: [80 + i * 15, 60 + i * 15, 80 + i * 15],
@@ -297,7 +297,7 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
               Math.sin(i * 0.3) * (60 + i * 4) + 140,
               Math.sin(i * 0.3 + Math.PI) * (60 + i * 4) + 140
             ],
-            opacity: [0.4, 1, 0.4],
+            opacity: [0.7, 1, 0.7],
             scale: [0.8, 1.2, 0.8]
           }}
           transition={{
@@ -313,7 +313,7 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
       {[...Array(3)].map((_, armIndex) => (
         <motion.div
           key={`arm-${armIndex}`}
-          className="absolute w-1 bg-gradient-to-r from-transparent via-ocean/40 to-transparent origin-left rounded-full"
+          className="absolute w-1 bg-gradient-to-r from-transparent via-ocean/70 to-transparent origin-left rounded-full"
           style={{
             height: `${100 + armIndex * 15}px`,
             left: '50%',
@@ -338,13 +338,13 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
       {[...Array(12)].map((_, i) => (
         <motion.div
           key={`star-${i}`}
-          className="absolute w-1 h-1 bg-white rounded-full"
+          className="absolute w-1 h-1 bg-white/90 rounded-full"
           style={{
             left: `${Math.random() * 90 + 5}%`,
             top: `${Math.random() * 90 + 5}%`
           }}
           animate={{
-            opacity: [0.2, 1, 0.2],
+            opacity: [0.4, 1, 0.4],
             scale: [0.5, 1.5, 0.5]
           }}
           transition={{
@@ -366,15 +366,15 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
           key={i}
           className="absolute inset-0"
           style={{
-            background: `radial-gradient(ellipse 60% 40% at 50% 50%, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}${15 - i * 2}, transparent 70%)`,
+            background: `radial-gradient(ellipse 60% 40% at 50% 50%, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}${25 - i * 3}, transparent 70%)`,
           }}
           animate={{
             background: [
-              `radial-gradient(ellipse 60% 40% at 30% 40%, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}${15 - i * 2}, transparent 70%)`,
-              `radial-gradient(ellipse 60% 40% at 70% 60%, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}${15 - i * 2}, transparent 70%)`,
-              `radial-gradient(ellipse 60% 40% at 30% 40%, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}${15 - i * 2}, transparent 70%)`
+              `radial-gradient(ellipse 60% 40% at 30% 40%, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}${25 - i * 3}, transparent 70%)`,
+              `radial-gradient(ellipse 60% 40% at 70% 60%, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}${25 - i * 3}, transparent 70%)`,
+              `radial-gradient(ellipse 60% 40% at 30% 40%, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}${25 - i * 3}, transparent 70%)`
             ],
-            opacity: [0.4, 0.8, 0.4],
+            opacity: [0.6, 1, 0.6],
             scale: [0.9, 1.2, 0.9]
           }}
           transition={{
@@ -394,12 +394,12 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
           style={{
             width: `${20 + i * 3}px`,
             height: `${25 + i * 4}px`,
-            background: `radial-gradient(ellipse, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}60, transparent)`,
+            background: `radial-gradient(ellipse, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}85, transparent)`,
           }}
           animate={{
             x: [50 + i * 35, 80 + i * 35, 50 + i * 35],
             y: [30, 200, 30],
-            opacity: [0, 0.8, 0],
+            opacity: [0, 1, 0],
             scale: [0.8, 1.3, 0.5]
           }}
           transition={{
@@ -415,7 +415,7 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
       {[...Array(3)].map((_, i) => (
         <motion.div
           key={`ripple-${i}`}
-          className="absolute border-2 border-ocean/20 rounded-full"
+          className="absolute border-2 border-ocean/50 rounded-full"
           style={{
             left: '50%',
             top: '50%',
@@ -523,7 +523,7 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
           <motion.div
             className="absolute -inset-3 rounded-full bg-gradient-to-r from-yellow-200/20 via-transparent to-blue-200/20"
             animate={{
-              opacity: [0, 0.4, 0],
+              opacity: [0, 0.7, 0],
               scale: [0.8, 1.3, 0.8],
               rotate: [0, 180, 360]
             }}
@@ -541,7 +541,7 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
       {[...Array(8)].map((_, i) => (
         <motion.div
           key={`particle-${i}`}
-          className="absolute w-1.5 h-1.5 bg-blue-200/70 rounded-full shadow-sm"
+          className="absolute w-1.5 h-1.5 bg-blue-200 rounded-full shadow-sm"
           animate={{
             x: [Math.random() * 250 + 25, Math.random() * 250 + 25],
             y: [Math.random() * 180 + 40, Math.random() * 180 + 40],
@@ -603,7 +603,7 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
                 transform: 'rotate(15deg)'
               }}
               animate={{
-                opacity: [0.7, 1, 0.7]
+                opacity: [0.8, 1, 0.8]
               }}
               transition={{
                 duration: 6,
@@ -647,10 +647,10 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
           
           {/* Gentle energy field */}
           <motion.div
-            className={`absolute -inset-4 rounded-full ${i % 3 === 0 ? 'bg-ocean/15' : i % 3 === 1 ? 'bg-amber/15' : 'bg-purple-400/15'} blur-lg`}
+            className={`absolute -inset-4 rounded-full ${i % 3 === 0 ? 'bg-ocean/30' : i % 3 === 1 ? 'bg-amber/30' : 'bg-purple-400/30'} blur-lg`}
             animate={{
               scale: [0.6, 1.2, 0.6],
-              opacity: [0.2, 0.5, 0.2]
+              opacity: [0.4, 0.8, 0.4]
             }}
             transition={{
               duration: 8,
@@ -666,7 +666,7 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
       {[...Array(4)].map((_, i) => (
         <motion.div
           key={`connection-${i}`}
-          className="absolute h-px bg-gradient-to-r from-transparent via-blue-300/60 to-transparent rounded-full"
+          className="absolute h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent rounded-full"
           style={{
             width: `${60 + i * 20}px`,
             left: `${25 + i * 15}%`,
