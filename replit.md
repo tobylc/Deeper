@@ -599,6 +599,7 @@ Changelog:
   * Corrected database subscription status assignments throughout the entire user creation flow
   * Identified OAuth development environment issue - Google OAuth configuration requires current development domain to be added to authorized redirect URIs
   * Created OAUTH_SETUP_DEV.md with instructions for adding development domain to Google Cloud Console
+  * Fixed production OAuth configuration to use correct joindeeper.com callback URL instead of development domain
 - June 20, 2025. Vulnerable conversation question system for difficult-to-ask topics:
   * Completely redesigned question curation to focus on emotionally vulnerable, difficult-to-ask questions that foster authentic connection
   * Enhanced questions address fears, regrets, difficult emotions, unspoken truths, and conversations that are hard to bring up in person
