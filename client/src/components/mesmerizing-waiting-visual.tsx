@@ -730,7 +730,7 @@ export default function MesmerizingWaitingVisual({ otherUserName, visualType = '
                 className="w-1.5 h-1.5 bg-ocean rounded-full"
                 animate={{
                   scale: [1, 1.5, 1],
-                  opacity: [0.5, 1, 0.5]
+                  opacity: [0.6, 1, 0.6]
                 }}
                 transition={{
                   duration: 1,
