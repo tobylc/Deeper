@@ -695,7 +695,7 @@ export default function ConversationInterface({
         )}
       </div>
 
-      {/* Journal Writing Area */}
+      {/* Journal Writing Area - Fixed at Bottom */}
       {isMyTurn && (
         <div className="border-t border-amber-200/60 p-6 bg-gradient-to-br from-amber-50/60 via-yellow-50/40 to-orange-50/30 backdrop-blur-sm flex-shrink-0 relative">
           {/* Paper texture overlay */}
