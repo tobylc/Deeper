@@ -21,6 +21,11 @@ export default function Auth() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const { toast } = useToast();
 
+  // Check for invitation context from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const invitationId = urlParams.get('invitation');
+  const isExistingUser = urlParams.get('existing') === 'true';
+
   useEffect(() => {
     if (!isLoading && user) {
       setLocation("/dashboard");
@@ -47,10 +52,38 @@ export default function Auth() {
 
       if (response.ok) {
         const result = await response.json();
-        toast({
-          title: "Welcome back!",
-          description: "Successfully logged in to your account.",
-        });
+        
+        // If logging in with invitation context, accept the invitation
+        if (invitationId && isExistingUser) {
+          try {
+            const acceptResponse = await apiRequest("POST", "/api/connections/accept-existing", {
+              connectionId: invitationId
+            });
+            
+            if (acceptResponse.ok) {
+              toast({
+                title: "Welcome back!",
+                description: "Successfully logged in and accepted invitation.",
+              });
+            } else {
+              toast({
+                title: "Welcome back!",
+                description: "Logged in successfully. Please check your dashboard for pending invitations.",
+              });
+            }
+          } catch (error) {
+            console.error("Error accepting invitation:", error);
+            toast({
+              title: "Welcome back!",
+              description: "Logged in successfully. Please check your dashboard for pending invitations.",
+            });
+          }
+        } else {
+          toast({
+            title: "Welcome back!",
+            description: "Successfully logged in to your account.",
+          });
+        }
         
         // Invalidate auth cache and redirect to dashboard
         queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });

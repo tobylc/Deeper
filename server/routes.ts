@@ -758,6 +758,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Existing user invitation acceptance endpoint (requires auth)
+  app.post("/api/connections/accept-existing",
+    isAuthenticated,
+    rateLimit(10, 60 * 60 * 1000), // 10 attempts per hour
+    async (req: any, res) => {
+    try {
+      const { connectionId } = req.body;
+      const currentUser = req.user;
+
+      if (!connectionId) {
+        return res.status(400).json({ message: "Connection ID is required" });
+      }
+
+      // Get the connection details
+      const connection = await storage.getConnection(connectionId);
+      if (!connection) {
+        return res.status(404).json({ message: "Invalid invitation" });
+      }
+
+      if (connection.status !== 'pending') {
+        return res.status(400).json({ message: "Invitation is no longer valid" });
+      }
+
+      // Verify that the current user is the intended invitee
+      if (connection.inviteeEmail.toLowerCase() !== currentUser.email.toLowerCase()) {
+        return res.status(403).json({ message: "This invitation is not for your account" });
+      }
+
+      // Accept the connection
+      await storage.updateConnection(connectionId, { 
+        status: 'accepted',
+        acceptedAt: new Date()
+      });
+
+      // Send notification emails
+      try {
+        await notificationService.sendConnectionAcceptance(
+          connection.inviterEmail,
+          connection.inviteeEmail,
+          connection.relationshipType,
+          connection.inviterRole,
+          connection.inviteeRole
+        );
+      } catch (emailError) {
+        console.error("Failed to send acceptance notification:", emailError);
+        // Continue with success response even if email fails
+      }
+
+      // Log the analytics event
+      analytics.trackConnectionAccepted({
+        connectionId: connection.id!,
+        inviterEmail: connection.inviterEmail,
+        inviteeEmail: connection.inviteeEmail,
+        relationshipType: connection.relationshipType
+      });
+
+      res.json({
+        success: true,
+        message: "Invitation accepted successfully",
+        connection: {
+          id: connection.id,
+          relationshipType: connection.relationshipType,
+          inviterRole: connection.inviterRole,
+          inviteeRole: connection.inviteeRole
+        }
+      });
+
+    } catch (error: any) {
+      console.error("Accept existing invitation error:", error);
+      res.status(500).json({ 
+        message: "Failed to accept invitation",
+        error: process.env.NODE_ENV === 'development' ? error.message : "Internal server error"
+      });
+    }
+  });
+
   // Invitation acceptance endpoint (public - no auth required)
   app.post("/api/invitation/accept", 
     rateLimit(5, 60 * 60 * 1000), // 5 attempts per hour per IP

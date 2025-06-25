@@ -207,6 +207,7 @@ export default function InvitationLanding() {
                       setLocation(`/invitation/signup?id=${connectionId}`);
                     }
                   }}
+                  disabled={!connectionData} // Disable until invitation data is loaded
                 >
                   Accept Your Personal Invitation
                 </Button>
