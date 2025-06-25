@@ -251,7 +251,9 @@ export default function ConversationInterface({
             </div>
           </div>
         ) : (
-          <MesmerizingWaitingVisual otherUserName={otherParticipantEmail} />
+          <div className="min-h-[400px] flex items-center justify-center">
+            <MesmerizingWaitingVisual otherUserName={otherParticipantEmail} />
+          </div>
         )}
       </div>
     );
@@ -669,15 +671,10 @@ export default function ConversationInterface({
             )}
 
             {/* Mesmerizing Waiting Visual */}
-            {messages.length > 0 && messages[messages.length - 1]?.type === 'question' && 
-             messages[messages.length - 1]?.senderEmail !== currentUserEmail && !isMyTurn && (
-              <div className="mb-8">
+            {!isMyTurn && messages.length > 0 && (
+              <div className="mb-8 min-h-[300px] flex items-center justify-center">
                 <MesmerizingWaitingVisual 
-                  otherUserName={
-                    messages[messages.length - 1]?.senderEmail === participant1Email 
-                      ? participant1Email 
-                      : participant2Email
-                  } 
+                  otherUserName={otherParticipantEmail} 
                 />
               </div>
             )}

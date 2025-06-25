@@ -17,6 +17,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import ExchangeRequiredPopup from "@/components/exchange-required-popup";
+import MesmerizingWaitingVisual from "@/components/mesmerizing-waiting-visual";
 
 interface QuestionSuggestionsProps {
   relationshipType: string;
@@ -244,27 +245,12 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
 
   return (
     <div className="space-y-4">
-      {/* Show waiting state when it's not the user's turn */}
+      {/* Show mesmerizing waiting visual when it's not the user's turn */}
       {!isMyTurn ? (
-        <Card className="card-elevated border-amber/30 bg-amber/5 h-fit">
-          <CardContent className="p-4">
-            <div className="text-center space-y-3">
-              <div className="w-10 h-10 rounded-full bg-amber/20 flex items-center justify-center mx-auto">
-                <Clock className="w-5 h-5 text-amber" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground font-inter mb-2 text-sm">
-                  Waiting for Response
-                </h3>
-                <p className="text-xs text-slate-700 font-inter leading-relaxed">
-                  <UserDisplayName email={otherParticipant} /> is preparing their response.
-                  {userRole && otherUserRole ? (
-                    ` Take this moment to reflect on your ${getRoleDisplayInfo(relationshipType, userRole, otherUserRole).conversationContext}.`
-                  ) : (
-                    ' You\'ll receive an email notification when it\'s your turn.'
-                  )}
-                </p>
-              </div>
+        <Card className="card-elevated border-ocean/30 bg-gradient-to-br from-ocean/5 to-ocean/8 h-fit overflow-hidden">
+          <CardContent className="p-0">
+            <div className="h-[280px]">
+              <MesmerizingWaitingVisual otherUserName={otherParticipant} />
             </div>
           </CardContent>
         </Card>
