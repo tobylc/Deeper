@@ -82,9 +82,14 @@ export default function InvitationSignup() {
       if (response.ok) {
         const result = await response.json();
         
+        // Get role display for personalized toast
+        const roleDisplay = invitation.inviterRole && invitation.inviteeRole 
+          ? `${invitation.inviterRole}/${invitation.inviteeRole}`
+          : invitation.relationshipType;
+        
         toast({
           title: "Welcome to Deeper!",
-          description: `Connection established with ${getInviterName()}. Taking you to your dashboard...`,
+          description: `${roleDisplay} connection established with ${getInviterName()}. Taking you to your dashboard...`,
         });
         
         // Invalidate authentication cache to refresh user state
@@ -95,7 +100,9 @@ export default function InvitationSignup() {
           const welcomeParams = new URLSearchParams({
             welcome: 'true',
             inviter: invitation.inviterEmail,
-            relationship: invitation.relationshipType
+            relationship: invitation.relationshipType,
+            inviterRole: invitation.inviterRole || '',
+            inviteeRole: invitation.inviteeRole || ''
           });
           // Use setLocation for proper SPA navigation
           setLocation(`/dashboard?${welcomeParams.toString()}`);

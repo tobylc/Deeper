@@ -30,7 +30,7 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
-  const [welcomeData, setWelcomeData] = useState<{inviterName: string, relationshipType: string} | null>(null);
+  const [welcomeData, setWelcomeData] = useState<{inviterName: string, relationshipType: string, inviterRole?: string, inviteeRole?: string} | null>(null);
   const [showSubscriptionEnforcement, setShowSubscriptionEnforcement] = useState(false);
   const [enforcementAction, setEnforcementAction] = useState("");
 
@@ -65,6 +65,9 @@ export default function Dashboard() {
     
     // Show welcome popup for new invitees
     if (newInvitee === 'true' && inviterEmail && relationshipType && user) {
+      const inviterRole = urlParams.get('inviterRole');
+      const inviteeRole = urlParams.get('inviteeRole');
+      
       // Fetch the inviter's display name for the welcome popup
       fetch(`/api/users/display-name/${encodeURIComponent(inviterEmail)}`, {
         credentials: 'include'
@@ -72,13 +75,13 @@ export default function Dashboard() {
       .then(response => response.json())
       .then(data => {
         const inviterName = data.displayName || inviterEmail.split('@')[0];
-        setWelcomeData({ inviterName, relationshipType });
+        setWelcomeData({ inviterName, relationshipType, inviterRole, inviteeRole });
         setShowWelcomePopup(true);
       })
       .catch(() => {
         // Fallback to email username if API fails
         const inviterName = inviterEmail.split('@')[0];
-        setWelcomeData({ inviterName, relationshipType });
+        setWelcomeData({ inviterName, relationshipType, inviterRole, inviteeRole });
         setShowWelcomePopup(true);
       });
     }
