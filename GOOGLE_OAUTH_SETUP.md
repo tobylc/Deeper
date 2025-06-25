@@ -14,10 +14,13 @@ Google OAuth is returning a 403 "access denied" error because the redirect URI i
    - `https://cff6a38a-c3dc-4f52-b1fd-c79081e89cb6-00-1feemc48ewm22.janeway.replit.dev/api/auth/google/callback` (current development URL)
    - `http://localhost:5000/api/auth/google/callback` (local development)
 
-## Current Callback URL
-The application is now configured to use: `https://cff6a38a-c3dc-4f52-b1fd-c79081e89cb6-00-1feemc48ewm22.janeway.replit.dev/api/auth/google/callback` (development)
+## Current Development URL Needs Authorization
+**URGENT: Add this exact URL to Google OAuth:**
+```
+https://cff6a38a-c3dc-4f52-b1fd-c79081e89cb6-00-1feemc48ewm22.janeway.replit.dev/api/auth/google/callback
+```
 
-For production: `https://joindeeper.com/api/auth/google/callback`
+Production URL (already working): `https://joindeeper.com/api/auth/google/callback`
 
 ## Testing
 After updating the Google Console configuration:
