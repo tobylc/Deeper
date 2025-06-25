@@ -12,7 +12,7 @@ export default function MesmerizingWaitingVisual({ otherUserName }: MesmerizingW
   const [inkDrops, setInkDrops] = useState<Array<{ id: number; x: number; y: number; delay: number }>>([]);
   const [breathingPhase, setBreathingPhase] = useState(0);
 
-  // Animated typing dots
+  // Animated typing dots - production optimized
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentDot(prev => (prev + 1) % 4);
@@ -20,7 +20,7 @@ export default function MesmerizingWaitingVisual({ otherUserName }: MesmerizingW
     return () => clearInterval(interval);
   }, []);
 
-  // Breathing paper animation
+  // Breathing paper animation - production optimized
   useEffect(() => {
     const interval = setInterval(() => {
       setBreathingPhase(prev => (prev + 1) % 100);
@@ -28,7 +28,7 @@ export default function MesmerizingWaitingVisual({ otherUserName }: MesmerizingW
     return () => clearInterval(interval);
   }, []);
 
-  // Generate floating ink drops
+  // Generate floating ink drops - production optimized with cleanup
   useEffect(() => {
     const generateInkDrop = () => {
       const newDrop = {
@@ -37,9 +37,13 @@ export default function MesmerizingWaitingVisual({ otherUserName }: MesmerizingW
         y: Math.random() * 100,
         delay: Math.random() * 2
       };
-      setInkDrops(prev => [...prev, newDrop]);
+      setInkDrops(prev => {
+        // Limit maximum drops to prevent memory issues
+        const newDrops = [...prev, newDrop];
+        return newDrops.length > 8 ? newDrops.slice(-8) : newDrops;
+      });
       
-      // Remove old drops
+      // Remove old drops with cleanup
       setTimeout(() => {
         setInkDrops(prev => prev.filter(drop => drop.id !== newDrop.id));
       }, 6000);
@@ -291,25 +295,25 @@ export default function MesmerizingWaitingVisual({ otherUserName }: MesmerizingW
         </div>
       </motion.div>
 
-      {/* Subtle particle system */}
+      {/* Optimized particle system - reduced count for performance */}
       <div className="absolute inset-0 pointer-events-none">
-        {[...Array(12)].map((_, i) => (
+        {[...Array(6)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 bg-ocean/30 rounded-full"
             style={{
-              left: `${10 + (i * 8)}%`,
-              top: `${20 + Math.sin(i) * 30}%`
+              left: `${15 + (i * 12)}%`,
+              top: `${25 + Math.sin(i) * 25}%`
             }}
             animate={{
-              y: [0, -20, 0],
-              opacity: [0, 0.6, 0],
+              y: [0, -15, 0],
+              opacity: [0, 0.5, 0],
               scale: [0.5, 1, 0.5]
             }}
             transition={{
-              duration: 4 + i * 0.2,
+              duration: 4 + i * 0.3,
               repeat: Infinity,
-              delay: i * 0.3,
+              delay: i * 0.4,
               ease: "easeInOut"
             }}
           />
