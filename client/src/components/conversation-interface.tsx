@@ -10,7 +10,7 @@ import VoiceRecorder from "@/components/voice-recorder";
 import VoiceMessageDisplay from "@/components/voice-message-display";
 import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
 import TranscriptionProgress from "@/components/transcription-progress";
-import MesmerizingWaitingVisual from "@/components/mesmerizing-waiting-visual";
+import ProductionWaitingVisual from "@/components/production-waiting-visual";
 import type { Message, User, Connection } from "@shared/schema";
 import { UserDisplayName } from "@/hooks/useUserDisplayName";
 import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
@@ -252,7 +252,7 @@ export default function ConversationInterface({
           </div>
         ) : (
           <div className="min-h-[400px] flex items-center justify-center">
-            <MesmerizingWaitingVisual otherUserName={otherParticipantEmail} />
+            <ProductionWaitingVisual />
           </div>
         )}
       </div>
