@@ -676,10 +676,8 @@ export default function ConversationInterface({
                 <div className={cn(
                   "text-center space-y-4 bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg",
                   "border-2 transition-all duration-300",
-                  // Role-based glowing border - inviter gets ocean blue, invitee gets amber
-                  connection?.inviterEmail === currentUserEmail
-                    ? "border-[#4FACFE]/60 shadow-[0_0_20px_rgba(79,172,254,0.3)] glow-blue"
-                    : "border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.3)] glow-amber"
+                  // Match conversation thread colors - current user gets blue, other user gets amber  
+                  "border-[#4FACFE]/60 shadow-[0_0_20px_rgba(79,172,254,0.3)]"
                 )}>
                   <div className="flex items-center justify-center space-x-2 text-slate-600">
                     <Clock className="w-5 h-5" />
