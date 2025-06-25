@@ -673,10 +673,17 @@ export default function ConversationInterface({
             {/* Waiting Message at Bottom */}
             {!isMyTurn && (
               <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-20">
-                <div className="text-center space-y-4 bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50 shadow-lg">
+                <div className={cn(
+                  "text-center space-y-4 bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg",
+                  "border-2 transition-all duration-300",
+                  // Role-based glowing border - inviter gets ocean blue, invitee gets amber
+                  connection?.inviterEmail === currentUserEmail
+                    ? "border-[#4FACFE]/60 shadow-[0_0_20px_rgba(79,172,254,0.3)] glow-blue"
+                    : "border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.3)] glow-amber"
+                )}>
                   <div className="flex items-center justify-center space-x-2 text-slate-600">
                     <Clock className="w-5 h-5" />
-                    <span className="font-medium">Waiting for tl re to finish writing...</span>
+                    <span className="font-medium">Waiting for them to finish writing...</span>
                   </div>
                   <p className="text-sm text-slate-500 max-w-md">
                     Take a moment to reflect while they craft their response.

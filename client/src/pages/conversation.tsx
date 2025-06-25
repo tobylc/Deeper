@@ -574,7 +574,7 @@ export default function ConversationPage() {
               isMyTurn={isMyTurn}
               relationshipType={conversation.relationshipType}
               connection={connection}
-              className="relative z-10"
+
               newMessage={newMessage}
               setNewMessage={(message: string) => {
                 setNewMessage(message);
