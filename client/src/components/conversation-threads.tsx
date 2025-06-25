@@ -12,6 +12,7 @@ interface ConversationThreadsProps {
   onThreadSelect: (conversationId: number) => void;
   selectedConversationId?: number;
   isMyTurn: boolean;
+  isInviter: boolean;
 }
 
 interface Conversation {
@@ -38,22 +39,29 @@ function StackedConversation({
   isSelected, 
   onClick, 
   currentUserEmail, 
-  isMyTurn 
+  isMyTurn,
+  isInviter 
 }: { 
   conversation: Conversation;
   isSelected: boolean;
   onClick: () => void;
   currentUserEmail: string;
   isMyTurn: boolean;
+  isInviter: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const shouldStack = conversation.messageCount >= 4;
+  
+  // Role-based glowing effect styles
+  const glowStyles = isInviter 
+    ? 'shadow-[0_0_20px_rgba(79,172,254,0.3)] border-[#4FACFE]/40' 
+    : 'shadow-[0_0_20px_rgba(215,160,135,0.3)] border-amber/40';
   
   return (
     <Card 
       className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
         isSelected ? 'ring-2 ring-ocean border-ocean/30' : 'border-slate-200/60'
-      } ${shouldStack ? 'relative' : ''}`}
+      } ${shouldStack ? 'relative' : ''} ${glowStyles}`}
       onClick={onClick}
     >
       {shouldStack && !isExpanded && (
@@ -128,7 +136,8 @@ export default function ConversationThreads({
   relationshipType,
   onThreadSelect,
   selectedConversationId,
-  isMyTurn
+  isMyTurn,
+  isInviter
 }: ConversationThreadsProps) {
   // Fetch real conversations from API
   const { data: conversations = [], isLoading } = useQuery({
@@ -250,6 +259,7 @@ export default function ConversationThreads({
               }}
               currentUserEmail={currentUserEmail}
               isMyTurn={isMyTurn}
+              isInviter={isInviter}
             />
           ))
         )}
