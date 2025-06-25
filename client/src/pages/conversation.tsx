@@ -19,6 +19,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
 import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
+import { HypnoticOrbs } from "@/components/hypnotic-orbs";
 import type { Conversation, Message, Connection, User } from "@shared/schema";
 
 export default function ConversationPage() {
@@ -560,7 +561,11 @@ export default function ConversationPage() {
           </div>
 
           {/* Main Conversation */}
-          <div className={`lg:col-span-2 ${showThreadsView ? 'hidden lg:block' : 'block'}`}>
+          <div className={`lg:col-span-2 ${showThreadsView ? 'hidden lg:block' : 'block'} relative`}>
+            {/* Hypnotic Orbs Background Effect */}
+            {!isMyTurn && (
+              <HypnoticOrbs className="absolute inset-0 z-0" />
+            )}
             <ConversationInterface 
               messages={messages}
               currentUserEmail={user.email || ''}
@@ -569,6 +574,7 @@ export default function ConversationPage() {
               isMyTurn={isMyTurn}
               relationshipType={conversation.relationshipType}
               connection={connection}
+              className="relative z-10"
               newMessage={newMessage}
               setNewMessage={(message: string) => {
                 setNewMessage(message);

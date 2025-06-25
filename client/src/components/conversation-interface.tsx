@@ -252,8 +252,7 @@ export default function ConversationInterface({
           </div>
         ) : (
           <div className="min-h-[400px] relative flex flex-col items-center justify-center">
-            <HypnoticOrbs className="absolute inset-0" />
-            <div className="relative z-10 text-center space-y-4 bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/50 shadow-lg">
+            <div className="text-center space-y-4 bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/50 shadow-lg">
               <div className="flex items-center justify-center space-x-2 text-slate-600">
                 <Clock className="w-5 h-5" />
                 <span className="font-medium">Waiting for their response</span>
@@ -680,12 +679,7 @@ export default function ConversationInterface({
               </div>
             )}
 
-            {/* Hypnotic Orbs Waiting Visual */}
-            {!isMyTurn && messages.length > 0 && (
-              <div className="mb-8 min-h-[300px] relative">
-                <HypnoticOrbs className="absolute inset-0" />
-              </div>
-            )}
+
           </div>
         )}
       </div>

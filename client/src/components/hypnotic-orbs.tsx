@@ -296,16 +296,18 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
   }, []);
 
   return (
-    <div className="w-full h-full bg-gray-50/60 border border-gray-200/40 rounded-lg shadow-sm relative overflow-hidden">
-      <canvas
-        ref={canvasRef}
-        className={`w-full h-full ${className}`}
-        style={{ 
-          background: 'transparent',
-          mixBlendMode: 'normal',
-          minHeight: '300px'
-        }}
-      />
-    </div>
+    <canvas
+      ref={canvasRef}
+      className={`w-full h-full ${className}`}
+      style={{ 
+        background: 'transparent',
+        mixBlendMode: 'normal',
+        minHeight: '300px',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        pointerEvents: 'none'
+      }}
+    />
   );
 }
