@@ -835,5 +835,160 @@ export default function ConversationInterface({
         </div>
       )}
     </div>
+
+    {/* Fixed Input Area at Bottom - Only visible when it's user's turn */}
+    {isMyTurn && (
+      <div className="flex-shrink-0 border-t border-slate-200/60 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm p-4">
+        {/* Message Mode Toggle */}
+        <div className="flex items-center justify-center space-x-2 mb-4">
+          <Button
+            onClick={() => setMessageMode('text')}
+            variant={messageMode === 'text' ? 'default' : 'outline'}
+            size="sm"
+            className={cn(
+              "transition-all duration-200",
+              messageMode === 'text' 
+                ? "bg-ocean text-white shadow-ocean/20" 
+                : "text-slate-600 border-slate-300 hover:bg-slate-50"
+            )}
+          >
+            <Type className="w-4 h-4 mr-2" />
+            Write Text
+          </Button>
+          <Button
+            onClick={() => setMessageMode('voice')}
+            variant={messageMode === 'voice' ? 'default' : 'outline'}
+            size="sm"
+            className={cn(
+              "transition-all duration-200",
+              messageMode === 'voice' 
+                ? "bg-white text-[#4FACFE] border-2 border-[#4FACFE] shadow-lg hover:bg-slate-50" 
+                : "text-[#4FACFE] border-slate-300 hover:bg-slate-50 hover:border-[#4FACFE]/50"
+            )}
+          >
+            <Mic className="w-4 h-4 mr-2" />
+            Record Voice
+          </Button>
+        </div>
+
+        {/* Input Surface */}
+        <div className="relative">
+          {messageMode === 'text' ? (
+            /* Text Writing Surface */
+            <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 border border-ocean/20 shadow-md rounded-sm"
+                 style={{
+                   background: `
+                     linear-gradient(135deg, 
+                       rgba(255,255,255,0.98) 0%, 
+                       rgba(239,246,255,0.96) 30%, 
+                       rgba(79,172,254,0.08) 70%, 
+                       rgba(79,172,254,0.12) 100%
+                     )
+                   `,
+                   filter: 'drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.06))',
+                   backdropFilter: 'blur(0.5px)'
+                 }}>
+              {/* Subtle paper texture */}
+              <div className="absolute inset-0 opacity-15 pointer-events-none">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
+              </div>
+              
+              {/* Red margin line */}
+              <div className="absolute top-0 bottom-0 w-px bg-red-400/40 left-8" />
+              
+              {/* Very subtle ruled lines */}
+              <div className="absolute inset-0 opacity-25 pointer-events-none" 
+                   style={{
+                     backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(156,163,175,0.12) 23px, rgba(156,163,175,0.12) 24px)',
+                   }} />
+
+              <div className="flex space-x-4">
+                <div className="flex-1 pl-4">
+                  <Textarea
+                    value={newMessage}
+                    onChange={(e) => {
+                      setNewMessage(e.target.value);
+                      // Start timer on first text input (similar to voice recorder)
+                      if (!hasStartedResponse && e.target.value.trim() && onTimerStart) {
+                        onTimerStart();
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (canSendNow()) {
+                          onSendMessage();
+                        } else {
+                          setShowThoughtfulResponsePopup(true);
+                        }
+                      }
+                    }}
+                    placeholder={
+                      messages.length >= 2
+                        ? "Continue your thoughts..."
+                        : nextMessageType === 'question' 
+                          ? "What would you like to explore together?"
+                          : "Express what's in your heart..."
+                    }
+                    className="min-h-[120px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-500 focus:ring-0 font-handwriting text-base leading-relaxed p-0"
+                    disabled={isSending}
+                  />
+                </div>
+                <div className="flex flex-col items-center justify-between py-2">
+                  <Button
+                    onClick={() => {
+                      if (canSendNow()) {
+                        onSendMessage();
+                      } else {
+                        setShowThoughtfulResponsePopup(true);
+                      }
+                    }}
+                    disabled={!newMessage.trim() || isSending}
+                    size="sm"
+                    className={cn(
+                      "w-12 h-12 rounded-full shadow-lg transition-all duration-200",
+                      "bg-gradient-to-br from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean",
+                      "hover:shadow-xl hover:scale-105 active:scale-95",
+                      !newMessage.trim() || isSending 
+                        ? "opacity-50 cursor-not-allowed" 
+                        : "cursor-pointer"
+                    )}
+                  >
+                    {isSending ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Send className="h-5 w-5" />
+                    )}
+                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-slate-600 font-handwriting">Share</span>
+                    {hasStartedResponse && !canSendNow() && (
+                      <span className="text-xs text-slate-500 font-mono">
+                        {formatTime(getRemainingTime())}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Voice Recording Surface */
+            <VoiceRecorder
+              onSendVoiceMessage={(audioBlob, duration) => {
+                sendVoiceMessageMutation.mutate({ audioBlob, duration });
+              }}
+              onRecordingStart={onRecordingStart}
+              disabled={isSending || sendVoiceMessageMutation.isPending}
+              canSendMessage={true}
+              hasStartedResponse={hasStartedResponse}
+              responseStartTime={responseStartTime}
+              onTimerStart={onTimerStart}
+            />
+          )}
+        </div>
+      </div>
+    )}
+  </div>
   );
 }
