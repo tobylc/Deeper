@@ -15,28 +15,6 @@ export default function InvitationLanding() {
   const [relationshipType, setRelationshipType] = useState<string>("");
   const [connectionId, setConnectionId] = useState<string>("");
 
-  // Fetch the inviter's display name using their email
-  const { data: inviterName } = useQuery<string>({
-    queryKey: ['/api/users/display-name', inviterEmail],
-    queryFn: async () => {
-      const response = await fetch(`/api/users/display-name/${encodeURIComponent(inviterEmail)}`);
-      const data = await response.json();
-      return data.displayName;
-    },
-    enabled: !!inviterEmail,
-  });
-
-  // Fetch connection details to get specific roles
-  const { data: connectionData } = useQuery({
-    queryKey: ['/api/invitation', connectionId],
-    queryFn: async () => {
-      const response = await fetch(`/api/invitation/${connectionId}`);
-      if (!response.ok) throw new Error('Failed to fetch connection details');
-      return response.json();
-    },
-    enabled: !!connectionId,
-  });
-
   useEffect(() => {
     // Extract invitation details from URL parameters (both query and path formats)
     let inviter = '';
@@ -65,6 +43,47 @@ export default function InvitationLanding() {
     setRelationshipType(relationship);
     setConnectionId(id);
   }, []);
+
+  // Fetch connection details to get specific roles
+  const { data: connectionData } = useQuery({
+    queryKey: ['/api/invitation', connectionId],
+    queryFn: async () => {
+      const response = await fetch(`/api/invitation/${connectionId}`);
+      if (!response.ok) throw new Error('Failed to fetch connection details');
+      return response.json();
+    },
+    enabled: !!connectionId,
+  });
+
+  // Fetch the inviter's display name using their email
+  const { data: inviterName } = useQuery<string>({
+    queryKey: ['/api/users/display-name', inviterEmail],
+    queryFn: async () => {
+      const response = await fetch(`/api/users/display-name/${encodeURIComponent(inviterEmail)}`);
+      const data = await response.json();
+      return data.displayName;
+    },
+    enabled: !!inviterEmail,
+  });
+
+  // Check if invitee email already has an account
+  const { data: existingUser } = useQuery({
+    queryKey: ['/api/users/by-email', connectionData?.inviteeEmail],
+    queryFn: async () => {
+      if (!connectionData?.inviteeEmail) return null;
+      
+      try {
+        const response = await fetch(`/api/users/by-email/${encodeURIComponent(connectionData.inviteeEmail)}`);
+        if (response.ok) {
+          return await response.json();
+        }
+        return null;
+      } catch (error) {
+        return null;
+      }
+    },
+    enabled: !!connectionData?.inviteeEmail,
+  });
 
   const getInviterName = () => {
     return inviterName || (inviterEmail ? inviterEmail.split('@')[0] : 'someone special');
@@ -180,7 +199,13 @@ export default function InvitationLanding() {
                   size="lg" 
                   className="btn-ocean px-12 py-4 text-lg font-medium rounded-2xl"
                   onClick={() => {
-                    setLocation(`/invitation/signup?id=${connectionId}`);
+                    if (existingUser) {
+                      // User already has an account, redirect to login with invitation context
+                      setLocation(`/auth?invitation=${connectionId}&existing=true`);
+                    } else {
+                      // New user, proceed to signup
+                      setLocation(`/invitation/signup?id=${connectionId}`);
+                    }
                   }}
                 >
                   Accept Your Personal Invitation
