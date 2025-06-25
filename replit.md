@@ -588,6 +588,15 @@ Changelog:
   * Resolved webhook delivery issues causing manual intervention requirements for completed payments
   * Users now automatically upgrade from free to Advanced tier (3 connections) immediately upon $4.95 payment completion
   * Production-ready automatic subscription processing eliminates need for manual payment verification
+- June 25, 2025. Complete subscription status logic correction and invitation flow fixes:
+  * Fixed critical database subscription logic - inviters now correctly show "trial" tier with "active" status
+  * Fixed invitees to properly show "free" tier with "forever" status and unlimited connections (999)
+  * Created separate createInviterUser method for OAuth signups to ensure proper trial status assignment
+  * Updated invitation acceptance logic to assign correct subscription tiers based on user type
+  * Fixed invitation page to display specific role combinations (Father/Son) instead of generic relationship types
+  * Fixed 404 error after invitee signup by replacing window.location.href with proper SPA navigation
+  * Enhanced invitation API endpoint to include inviterRole and inviteeRole fields for personalized display
+  * Corrected database subscription status assignments throughout the entire user creation flow
 - June 20, 2025. Vulnerable conversation question system for difficult-to-ask topics:
   * Completely redesigned question curation to focus on emotionally vulnerable, difficult-to-ask questions that foster authentic connection
   * Enhanced questions address fears, regrets, difficult emotions, unspoken truths, and conversations that are hard to bring up in person
