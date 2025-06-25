@@ -17,7 +17,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import ExchangeRequiredPopup from "@/components/exchange-required-popup";
-import ProductionWaitingVisual from "@/components/production-waiting-visual";
+import MesmerizingWaitingVisual from "@/components/mesmerizing-waiting-visual";
 
 interface QuestionSuggestionsProps {
   relationshipType: string;
@@ -250,7 +250,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         <Card className="card-elevated border-ocean/30 bg-gradient-to-br from-ocean/5 to-ocean/8 h-fit overflow-hidden">
           <CardContent className="p-0">
             <div className="h-[280px]">
-              <ProductionWaitingVisual />
+              <MesmerizingWaitingVisual otherUserName={otherParticipant} />
             </div>
           </CardContent>
         </Card>

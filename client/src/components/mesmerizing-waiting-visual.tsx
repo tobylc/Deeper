@@ -5,745 +5,319 @@ import { UserDisplayName } from "@/hooks/useUserDisplayName";
 
 interface MesmerizingWaitingVisualProps {
   otherUserName: string;
-  visualType?: 'flowing-orbs' | 'building-blocks' | 'particle-galaxy' | 'liquid-waves' | 'floating-islands' | 'crystal-growth';
 }
 
-export default function MesmerizingWaitingVisual({ otherUserName, visualType = 'flowing-orbs' }: MesmerizingWaitingVisualProps) {
-  const [phase, setPhase] = useState(0);
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; size: number; speed: number; color: string }>>([]);
-  const [blocks, setBlocks] = useState<Array<{ id: number; x: number; y: number; height: number; delay: number }>>([]);
-  const [crystals, setCrystals] = useState<Array<{ id: number; x: number; y: number; size: number; rotation: number; delay: number }>>([]);
+export default function MesmerizingWaitingVisual({ otherUserName }: MesmerizingWaitingVisualProps) {
+  const [currentDot, setCurrentDot] = useState(0);
+  const [inkDrops, setInkDrops] = useState<Array<{ id: number; x: number; y: number; delay: number }>>([]);
+  const [breathingPhase, setBreathingPhase] = useState(0);
 
+  // Animated typing dots - production optimized
   useEffect(() => {
     const interval = setInterval(() => {
-      setPhase(prev => prev + 0.02);
-    }, 50);
+      setCurrentDot(prev => (prev + 1) % 4);
+    }, 800);
     return () => clearInterval(interval);
   }, []);
 
-  // Initialize elements based on visual type
+  // Breathing paper animation - production optimized
   useEffect(() => {
-    if (visualType === 'particle-galaxy') {
-      const newParticles = Array.from({ length: 25 }, (_, i) => ({
-        id: i,
+    const interval = setInterval(() => {
+      setBreathingPhase(prev => (prev + 1) % 100);
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Generate floating ink drops - production optimized with cleanup
+  useEffect(() => {
+    const generateInkDrop = () => {
+      const newDrop = {
+        id: Date.now() + Math.random(),
         x: Math.random() * 100,
         y: Math.random() * 100,
-        size: Math.random() * 4 + 2,
-        speed: Math.random() * 0.5 + 0.1,
-        color: Math.random() > 0.5 ? '#4FACFE' : '#D7A087'
-      }));
-      setParticles(newParticles);
-    } else if (visualType === 'building-blocks') {
-      const newBlocks = Array.from({ length: 15 }, (_, i) => ({
-        id: i,
-        x: (i % 5) * 20,
-        y: Math.floor(i / 5) * 33 + 30,
-        height: 0,
-        delay: i * 0.2
-      }));
-      setBlocks(newBlocks);
-    } else if (visualType === 'crystal-growth') {
-      const newCrystals = Array.from({ length: 12 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 80 + 10,
-        y: Math.random() * 80 + 10,
-        size: 0,
-        rotation: Math.random() * 360,
-        delay: i * 0.4
-      }));
-      setCrystals(newCrystals);
-    }
-  }, [visualType]);
-
-  const FlowingOrbs = () => (
-    <div className="absolute inset-0 overflow-hidden">
-      {/* Large flowing orbs */}
-      {[...Array(8)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full"
-          style={{
-            width: `${40 + i * 8}px`,
-            height: `${40 + i * 8}px`,
-            background: `radial-gradient(circle, ${i % 3 === 0 ? '#4FACFE' : i % 3 === 1 ? '#D7A087' : '#00D4FF'}80, transparent)`,
-          }}
-          animate={{
-            x: [50 + i * 30, 80 + i * 30, 50 + i * 30],
-            y: [60 + i * 20, 120 + i * 15, 60 + i * 20],
-            scale: [0.8, 1.2, 0.8],
-            opacity: [0.3, 0.7, 0.3]
-          }}
-          transition={{
-            duration: 12 + i * 2,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: i * 0.8
-          }}
-        />
-      ))}
+        delay: Math.random() * 2
+      };
+      setInkDrops(prev => {
+        // Limit maximum drops to prevent memory issues
+        const newDrops = [...prev, newDrop];
+        return newDrops.length > 8 ? newDrops.slice(-8) : newDrops;
+      });
       
-      {/* Gentle floating particles */}
-      {[...Array(15)].map((_, i) => (
-        <motion.div
-          key={`particle-${i}`}
-          className="absolute w-2 h-2 rounded-full bg-ocean/80"
-          animate={{
-            x: [Math.random() * 300, Math.random() * 300],
-            y: [Math.random() * 200, Math.random() * 200],
-            scale: [0.5, 1.5, 0.5],
-            opacity: [0.2, 0.8, 0.2]
-          }}
-          transition={{
-            duration: 8 + i * 0.5,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: i * 0.3
-          }}
-        />
-      ))}
-      
-      {/* Slow connecting energy streams */}
-      {[...Array(4)].map((_, i) => (
-        <motion.div
-          key={`stream-${i}`}
-          className="absolute h-0.5 bg-gradient-to-r from-transparent via-ocean/70 to-transparent rounded-full"
-          style={{
-            width: '120px',
-            left: `${20 + i * 20}%`,
-            top: `${30 + i * 15}%`,
-          }}
-          animate={{
-            opacity: [0, 0.6, 0],
-            scaleX: [0.3, 1, 0.3],
-            rotate: [0, 180, 360]
-          }}
-          transition={{
-            duration: 6 + i,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: i * 1.5
-          }}
-        />
-      ))}
-    </div>
-  );
+      // Remove old drops with cleanup
+      setTimeout(() => {
+        setInkDrops(prev => prev.filter(drop => drop.id !== newDrop.id));
+      }, 6000);
+    };
 
-  const BuildingBlocks = () => (
-    <div className="absolute inset-0 flex items-end justify-center">
-      <div className="flex items-end space-x-2 px-8">
-        {blocks.map((block, i) => (
+    const interval = setInterval(generateInkDrop, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const breathingScale = 1 + Math.sin(breathingPhase * 0.1) * 0.02;
+  const breathingRotation = Math.sin(breathingPhase * 0.05) * 1;
+
+  return (
+    <div className="relative h-full w-full flex items-center justify-center overflow-hidden">
+      {/* Animated Background Gradient */}
+      <motion.div
+        className="absolute inset-0 opacity-30"
+        animate={{
+          background: [
+            "linear-gradient(45deg, #4FACFE 0%, #00D4FF 50%, #4FACFE 100%)",
+            "linear-gradient(45deg, #00D4FF 0%, #4FACFE 50%, #00D4FF 100%)",
+            "linear-gradient(45deg, #4FACFE 0%, #00D4FF 50%, #4FACFE 100%)"
+          ]
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+
+      {/* Floating Ink Drops */}
+      <AnimatePresence>
+        {inkDrops.map((drop) => (
           <motion.div
-            key={block.id}
-            className="relative"
-            animate={{
-              y: Math.sin(phase + i) * 3
+            key={drop.id}
+            className="absolute w-2 h-2 bg-ocean/40 rounded-full"
+            initial={{ 
+              x: `${drop.x}%`, 
+              y: `${drop.y}%`,
+              scale: 0,
+              opacity: 0
+            }}
+            animate={{ 
+              y: `${drop.y - 30}%`,
+              scale: [0, 1, 0.8, 0],
+              opacity: [0, 0.6, 0.4, 0],
+              rotate: [0, 180, 360]
             }}
             transition={{
-              duration: 2,
-              ease: "easeInOut",
-              repeat: Infinity,
-              repeatType: "reverse"
+              duration: 6,
+              delay: drop.delay,
+              ease: "easeOut"
             }}
-          >
-            {/* Main building block */}
+          />
+        ))}
+      </AnimatePresence>
+
+      {/* Main Waiting Paper */}
+      <motion.div
+        className="relative bg-gradient-to-br from-slate-50 to-slate-100 p-12 rounded-3xl shadow-2xl border border-slate-200/50"
+        style={{
+          background: `
+            linear-gradient(to right, #fef7cd 0%, #fef7cd 20px, transparent 20px),
+            linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)
+          `,
+          backgroundSize: '100% 25px, 100% 100%'
+        }}
+        animate={{
+          scale: breathingScale,
+          rotate: breathingRotation,
+          y: Math.sin(breathingPhase * 0.08) * 5
+        }}
+        transition={{ ease: "easeInOut" }}
+      >
+        {/* Decorative paper holes */}
+        <div className="absolute left-4 top-0 bottom-0 flex flex-col justify-evenly">
+          {[...Array(6)].map((_, i) => (
             <motion.div
-              className="w-8 bg-gradient-to-t from-ocean to-ocean/60 rounded-t-xl shadow-lg border border-ocean/20"
+              key={i}
+              className="w-4 h-4 bg-white border-2 border-slate-300 rounded-full shadow-inner"
               animate={{
-                height: [
-                  20,
-                  40 + (i % 4) * 20,
-                  60 + (i % 3) * 15,
-                  35 + (i % 5) * 10
-                ]
-              }}
-              transition={{
-                duration: 8 + i * 0.5,
-                ease: "easeInOut",
-                repeat: Infinity,
-                repeatType: "reverse",
-                delay: i * 0.3
-              }}
-            />
-            
-            {/* Block glow effect */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-t from-amber/20 to-transparent rounded-t-xl"
-              animate={{
-                opacity: [0, 0.6, 0]
+                scale: [1, 1.1, 1],
+                borderColor: ["#cbd5e1", "#4FACFE", "#cbd5e1"]
               }}
               transition={{
                 duration: 3,
-                delay: i * 0.2,
-                repeat: Infinity,
-                ease: "easeInOut"
+                delay: i * 0.5,
+                repeat: Infinity
               }}
             />
-            
-            {/* Window details */}
-            <div className="absolute inset-x-1 top-2 space-y-1">
-              {[...Array(Math.min(3, Math.floor((40 + (i % 4) * 20) / 15)))].map((_, windowIndex) => (
+          ))}
+        </div>
+
+        {/* Waiting Content */}
+        <div className="ml-8 max-w-md">
+          {/* Animated Title */}
+          <motion.h3 
+            className="text-2xl font-bold text-slate-700 mb-4 font-serif"
+            animate={{
+              color: ["#475569", "#4FACFE", "#475569"]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            Waiting for <UserDisplayName email={otherUserName} />
+          </motion.h3>
+
+          {/* Animated typing indicator */}
+          <div className="flex items-center space-x-2 mb-6">
+            <span className="text-slate-600 font-medium">to finish writing</span>
+            <div className="flex space-x-1">
+              {[0, 1, 2].map((index) => (
                 <motion.div
-                  key={windowIndex}
-                  className="w-2 h-1 bg-yellow-200/60 rounded-sm"
+                  key={index}
+                  className="w-2 h-2 bg-ocean rounded-full"
                   animate={{
-                    opacity: [0.3, 0.8, 0.3]
+                    scale: currentDot === index ? [1, 1.5, 1] : 1,
+                    opacity: currentDot === index ? [0.5, 1, 0.5] : 0.5
                   }}
                   transition={{
-                    duration: 2,
-                    delay: windowIndex * 0.5 + i * 0.1,
-                    repeat: Infinity
+                    duration: 0.6,
+                    ease: "easeInOut"
                   }}
                 />
               ))}
             </div>
-          </motion.div>
-        ))}
-      </div>
-      
-      {/* Slowly floating construction elements */}
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={`debris-${i}`}
-          className="absolute w-3 h-3 bg-amber/85 rounded shadow-sm"
-          animate={{
-            x: [100 + i * 30, 120 + i * 30, 100 + i * 30],
-            y: [80 + i * 15, 60 + i * 15, 80 + i * 15],
-            rotate: [0, 90, 0]
-          }}
-          transition={{
-            duration: 6 + i,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: i * 0.8
-          }}
-        />
-      ))}
-      
-      {/* Construction crane */}
-      <motion.div
-        className="absolute right-8 bottom-0"
-        animate={{
-          rotate: [-2, 2, -2]
-        }}
-        transition={{
-          duration: 8,
-          ease: "easeInOut",
-          repeat: Infinity
-        }}
-      >
-        <div className="w-1 h-24 bg-yellow-600 rounded-full"></div>
-        <div className="absolute top-4 -left-8 w-16 h-1 bg-yellow-600 rounded-full origin-left"></div>
-        <motion.div
-          className="absolute top-4 right-0 w-2 h-8 bg-amber/80 rounded"
-          animate={{
-            y: [0, -10, 0]
-          }}
-          transition={{
-            duration: 4,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: 1
-          }}
-        />
-      </motion.div>
-    </div>
-  );
-
-  const ParticleGalaxy = () => (
-    <div className="absolute inset-0">
-      {/* Central pulsing core */}
-      <motion.div
-        className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
-        animate={{
-          scale: [1, 1.4, 1],
-        }}
-        transition={{
-          duration: 4,
-          ease: "easeInOut",
-          repeat: Infinity
-        }}
-      >
-        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-ocean via-amber to-ocean shadow-2xl" />
-        <motion.div 
-          className="absolute inset-0 w-12 h-12 rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent"
-          animate={{
-            rotate: [0, 360]
-          }}
-          transition={{
-            duration: 8,
-            ease: "linear",
-            repeat: Infinity
-          }}
-        />
-      </motion.div>
-      
-      {/* Slowly orbiting particles */}
-      {particles.map((particle, i) => (
-        <motion.div
-          key={particle.id}
-          className="absolute rounded-full shadow-lg"
-          style={{
-            width: `${particle.size}px`,
-            height: `${particle.size}px`,
-            backgroundColor: particle.color,
-            boxShadow: `0 0 ${particle.size * 3}px ${particle.color}60`
-          }}
-          animate={{
-            x: [
-              Math.cos(i * 0.3) * (80 + i * 6) + 150,
-              Math.cos(i * 0.3 + Math.PI) * (80 + i * 6) + 150
-            ],
-            y: [
-              Math.sin(i * 0.3) * (60 + i * 4) + 140,
-              Math.sin(i * 0.3 + Math.PI) * (60 + i * 4) + 140
-            ],
-            opacity: [0.7, 1, 0.7],
-            scale: [0.8, 1.2, 0.8]
-          }}
-          transition={{
-            duration: 15 + i * 0.5,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: i * 0.2
-          }}
-        />
-      ))}
-      
-      {/* Gentle spiral arms */}
-      {[...Array(3)].map((_, armIndex) => (
-        <motion.div
-          key={`arm-${armIndex}`}
-          className="absolute w-1 bg-gradient-to-r from-transparent via-ocean/70 to-transparent origin-left rounded-full"
-          style={{
-            height: `${100 + armIndex * 15}px`,
-            left: '50%',
-            top: '50%',
-            transformOrigin: '0 0'
-          }}
-          animate={{
-            rotate: [armIndex * 120, armIndex * 120 + 360],
-            opacity: [0.3, 0.7, 0.3],
-            scaleY: [0.8, 1.1, 0.8]
-          }}
-          transition={{
-            duration: 20 + armIndex * 5,
-            ease: "linear",
-            repeat: Infinity,
-            delay: armIndex * 2
-          }}
-        />
-      ))}
-      
-      {/* Distant twinkling stars */}
-      {[...Array(12)].map((_, i) => (
-        <motion.div
-          key={`star-${i}`}
-          className="absolute w-1 h-1 bg-white/90 rounded-full"
-          style={{
-            left: `${Math.random() * 90 + 5}%`,
-            top: `${Math.random() * 90 + 5}%`
-          }}
-          animate={{
-            opacity: [0.4, 1, 0.4],
-            scale: [0.5, 1.5, 0.5]
-          }}
-          transition={{
-            duration: 3 + Math.random() * 3,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: Math.random() * 3
-          }}
-        />
-      ))}
-    </div>
-  );
-
-  const LiquidWaves = () => (
-    <div className="absolute inset-0 overflow-hidden">
-      {/* Flowing liquid layers */}
-      {[...Array(5)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(ellipse 60% 40% at 50% 50%, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}${25 - i * 3}, transparent 70%)`,
-          }}
-          animate={{
-            background: [
-              `radial-gradient(ellipse 60% 40% at 30% 40%, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}${25 - i * 3}, transparent 70%)`,
-              `radial-gradient(ellipse 60% 40% at 70% 60%, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}${25 - i * 3}, transparent 70%)`,
-              `radial-gradient(ellipse 60% 40% at 30% 40%, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}${25 - i * 3}, transparent 70%)`
-            ],
-            opacity: [0.6, 1, 0.6],
-            scale: [0.9, 1.2, 0.9]
-          }}
-          transition={{
-            duration: 8 + i * 2,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: i * 1.5
-          }}
-        />
-      ))}
-      
-      {/* Gentle liquid droplets */}
-      {[...Array(8)].map((_, i) => (
-        <motion.div
-          key={`droplet-${i}`}
-          className="absolute rounded-full"
-          style={{
-            width: `${20 + i * 3}px`,
-            height: `${25 + i * 4}px`,
-            background: `radial-gradient(ellipse, ${i % 2 === 0 ? '#4FACFE' : '#D7A087'}85, transparent)`,
-          }}
-          animate={{
-            x: [50 + i * 35, 80 + i * 35, 50 + i * 35],
-            y: [30, 200, 30],
-            opacity: [0, 1, 0],
-            scale: [0.8, 1.3, 0.5]
-          }}
-          transition={{
-            duration: 6 + i * 0.8,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: i * 0.7
-          }}
-        />
-      ))}
-      
-      {/* Expanding ripples */}
-      {[...Array(3)].map((_, i) => (
-        <motion.div
-          key={`ripple-${i}`}
-          className="absolute border-2 border-ocean/50 rounded-full"
-          style={{
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%)'
-          }}
-          animate={{
-            width: [0, 150, 0],
-            height: [0, 150, 0],
-            opacity: [0, 0.6, 0],
-            borderWidth: [4, 1, 0]
-          }}
-          transition={{
-            duration: 5,
-            delay: i * 2,
-            repeat: Infinity,
-            ease: "easeOut"
-          }}
-        />
-      ))}
-    </div>
-  );
-
-  const FloatingIslands = () => (
-    <div className="absolute inset-0">
-      {/* Gracefully floating islands */}
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute"
-          animate={{
-            x: [40 + i * 40, 60 + i * 40, 40 + i * 40],
-            y: [60 + i * 25, 80 + i * 25, 60 + i * 25],
-            rotate: [-5, 5, -5]
-          }}
-          transition={{
-            duration: 12 + i * 2,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: i * 1.5
-          }}
-        >
-          {/* Floating island shadow */}
-          <motion.div 
-            className="w-20 h-8 bg-black/15 rounded-full blur-md absolute top-10"
-            style={{ transform: 'perspective(100px) rotateX(60deg)' }}
-            animate={{
-              opacity: [0.1, 0.3, 0.1],
-              scale: [0.8, 1.1, 0.8]
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              delay: i * 0.5
-            }}
-          />
-          
-          {/* Island base */}
-          <motion.div 
-            className={`w-18 h-8 rounded-full shadow-xl ${i % 3 === 0 ? 'bg-gradient-to-b from-amber/80 to-amber/95' : i % 3 === 1 ? 'bg-gradient-to-b from-green-400/80 to-green-600/95' : 'bg-gradient-to-b from-stone-400/80 to-stone-600/95'}`}
-            style={{ transform: 'perspective(120px) rotateX(25deg)' }}
-            animate={{
-              scale: [0.95, 1.05, 0.95]
-            }}
-            transition={{
-              duration: 6,
-              ease: "easeInOut",
-              repeat: Infinity,
-              delay: i * 0.8
-            }}
-          />
-          
-          {/* Island vegetation */}
-          <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 flex space-x-1">
-            <motion.div 
-              className="w-2 h-8 bg-green-500 rounded-full shadow-sm"
-              animate={{
-                height: [24, 32, 24],
-                opacity: [0.8, 1, 0.8],
-                rotate: [-2, 2, -2]
-              }}
-              transition={{
-                duration: 4,
-                delay: i * 0.4,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-            <motion.div 
-              className="w-1.5 h-6 bg-green-600 rounded-full shadow-sm"
-              animate={{
-                height: [16, 24, 16],
-                opacity: [0.7, 0.9, 0.7],
-                rotate: [2, -2, 2]
-              }}
-              transition={{
-                duration: 4.5,
-                delay: i * 0.4 + 0.5,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
           </div>
-          
-          {/* Gentle magical aura */}
-          <motion.div
-            className="absolute -inset-3 rounded-full bg-gradient-to-r from-yellow-200/20 via-transparent to-blue-200/20"
-            animate={{
-              opacity: [0, 0.7, 0],
-              scale: [0.8, 1.3, 0.8],
-              rotate: [0, 180, 360]
-            }}
-            transition={{
-              duration: 8,
-              delay: i * 0.3,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-        </motion.div>
-      ))}
-      
-      {/* Gentle floating particles */}
-      {[...Array(8)].map((_, i) => (
-        <motion.div
-          key={`particle-${i}`}
-          className="absolute w-1.5 h-1.5 bg-blue-200 rounded-full shadow-sm"
-          animate={{
-            x: [Math.random() * 250 + 25, Math.random() * 250 + 25],
-            y: [Math.random() * 180 + 40, Math.random() * 180 + 40],
-            opacity: [0.2, 0.8, 0.2],
-            scale: [0.5, 1.2, 0.5]
-          }}
-          transition={{
-            duration: 10 + i * 0.8,
-            ease: "easeInOut",
-            repeat: Infinity,
-            delay: i * 0.5
-          }}
-        />
-      ))}
-    </div>
-  );
 
-  const CrystalGrowth = () => (
-    <div className="absolute inset-0">
-      {/* Slowly growing crystals */}
-      {crystals.map((crystal, i) => (
-        <motion.div
-          key={crystal.id}
-          className="absolute"
-          style={{
-            left: `${crystal.x}%`,
-            top: `${crystal.y}%`,
-          }}
-          animate={{
-            rotate: [crystal.rotation, crystal.rotation + 360],
-            scale: [0.8, 1.1, 0.8]
-          }}
-          transition={{
-            duration: 20 + i * 2,
-            ease: "linear",
-            repeat: Infinity,
-            delay: i * 1.5
-          }}
-        >
-          {/* Crystal formation growth */}
+          {/* Reflection text with shimmer effect */}
           <motion.div
-            className="relative"
+            className="text-slate-600 text-sm leading-relaxed space-y-2 relative"
             animate={{
-              scale: [0, 1, 1.1, 1]
+              opacity: [0.7, 1, 0.7]
             }}
             transition={{
-              duration: 8,
-              delay: crystal.delay,
+              duration: 3,
               repeat: Infinity,
-              repeatType: "mirror",
               ease: "easeInOut"
             }}
           >
-            {/* Main crystal structure */}
-            <motion.div 
-              className={`w-8 h-12 ${i % 3 === 0 ? 'bg-gradient-to-t from-ocean/90 to-ocean/50' : i % 3 === 1 ? 'bg-gradient-to-t from-amber/90 to-amber/50' : 'bg-gradient-to-t from-purple-400/90 to-purple-200/50'} shadow-xl border border-white/20`}
-              style={{ 
-                clipPath: 'polygon(50% 0%, 80% 35%, 100% 100%, 0% 100%, 20% 35%)',
-                transform: 'rotate(15deg)'
-              }}
-              animate={{
-                opacity: [0.8, 1, 0.8]
-              }}
-              transition={{
-                duration: 6,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-            
-            {/* Crystal facets */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent"
-              style={{ 
-                clipPath: 'polygon(50% 0%, 80% 35%, 50% 60%)',
-                transform: 'rotate(15deg)'
-              }}
-              animate={{
-                opacity: [0.3, 0.8, 0.3]
-              }}
-              transition={{
-                duration: 4,
-                delay: i * 0.3,
-                repeat: Infinity
-              }}
-            />
-            
-            {/* Shine effect */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/80 to-transparent"
-              style={{ transform: 'rotate(15deg)' }}
-              animate={{
-                x: ['-120%', '120%']
-              }}
-              transition={{
-                duration: 5,
-                delay: i * 0.5,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
+            <p className="relative overflow-hidden">
+              Take a moment to reflect while they craft their response.
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                animate={{
+                  x: ["-100%", "100%"]
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1
+                }}
+              />
+            </p>
+            <p className="relative overflow-hidden">
+              You'll be notified when it's your turn to continue the conversation.
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                animate={{
+                  x: ["-100%", "100%"]
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 2
+                }}
+              />
+            </p>
           </motion.div>
-          
-          {/* Gentle energy field */}
+
+          {/* Animated pen illustration */}
           <motion.div
-            className={`absolute -inset-4 rounded-full ${i % 3 === 0 ? 'bg-ocean/30' : i % 3 === 1 ? 'bg-amber/30' : 'bg-purple-400/30'} blur-lg`}
+            className="mt-8 flex items-center justify-center"
             animate={{
-              scale: [0.6, 1.2, 0.6],
-              opacity: [0.4, 0.8, 0.4]
+              rotate: [0, 5, -5, 0],
+              x: [0, 10, -10, 0]
             }}
             transition={{
-              duration: 8,
-              delay: i * 0.6,
+              duration: 4,
               repeat: Infinity,
               ease: "easeInOut"
             }}
-          />
-        </motion.div>
-      ))}
-      
-      {/* Slow energy connections */}
-      {[...Array(4)].map((_, i) => (
-        <motion.div
-          key={`connection-${i}`}
-          className="absolute h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent rounded-full"
-          style={{
-            width: `${60 + i * 20}px`,
-            left: `${25 + i * 15}%`,
-            top: `${40 + Math.sin(i) * 30}%`,
-          }}
-          animate={{
-            opacity: [0, 0.7, 0],
-            scaleX: [0.3, 1, 0.3],
-            rotate: [0, 90, 180]
-          }}
-          transition={{
-            duration: 6,
-            delay: i * 1.2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-      ))}
-    </div>
-  );
-
-  const renderVisual = () => {
-    switch (visualType) {
-      case 'building-blocks':
-        return <BuildingBlocks />;
-      case 'particle-galaxy':
-        return <ParticleGalaxy />;
-      case 'liquid-waves':
-        return <LiquidWaves />;
-      case 'floating-islands':
-        return <FloatingIslands />;
-      case 'crystal-growth':
-        return <CrystalGrowth />;
-      default:
-        return <FlowingOrbs />;
-    }
-  };
-
-  return (
-    <div className="relative h-full w-full bg-gradient-to-br from-slate-50 via-white to-ocean/5 rounded-2xl overflow-hidden">
-      {/* Visual Effect */}
-      {renderVisual()}
-      
-      {/* Minimal waiting indicator */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
-        <motion.div
-          className="flex items-center space-x-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full border border-ocean/20 shadow-lg"
-          animate={{
-            opacity: [0.8, 1, 0.8],
-            y: [0, -2, 0]
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity
-          }}
-        >
-          <div className="flex space-x-1">
-            {[0, 1, 2].map((i) => (
+          >
+            <motion.div
+              className="relative"
+              animate={{
+                scale: [1, 1.05, 1]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              {/* Pen body */}
+              <div className="w-24 h-3 bg-gradient-to-r from-amber-600 to-amber-500 rounded-full shadow-lg" />
+              
+              {/* Pen tip */}
+              <div className="absolute -right-1 top-0 bottom-0 w-4 bg-gradient-to-r from-slate-400 to-slate-500 rounded-r-full" />
+              
+              {/* Ink flow */}
               <motion.div
-                key={i}
-                className="w-1.5 h-1.5 bg-ocean rounded-full"
+                className="absolute -right-2 top-1/2 w-1 h-1 bg-ocean rounded-full"
                 animate={{
-                  scale: [1, 1.5, 1],
-                  opacity: [0.6, 1, 0.6]
+                  scale: [0, 1, 0],
+                  opacity: [0, 1, 0]
                 }}
                 transition={{
-                  duration: 1,
-                  delay: i * 0.2,
-                  repeat: Infinity
+                  duration: 1.5,
+                  repeat: Infinity,
+                  delay: 1
                 }}
               />
-            ))}
-          </div>
-          <span className="text-xs text-slate-600 font-medium">
-            <UserDisplayName email={otherUserName} /> is writing
-          </span>
-        </motion.div>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Floating thoughts bubbles */}
+        <div className="absolute -top-6 -right-6">
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-8 h-8 bg-white/80 rounded-full border border-ocean/20 shadow-lg"
+              style={{
+                right: i * 15,
+                top: i * 10
+              }}
+              animate={{
+                y: [0, -10, 0],
+                scale: [1, 1.1, 1],
+                opacity: [0.6, 1, 0.6]
+              }}
+              transition={{
+                duration: 3,
+                delay: i * 0.8,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              <div className="absolute inset-2 bg-ocean/20 rounded-full" />
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Optimized particle system - reduced count for performance */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-ocean/30 rounded-full"
+            style={{
+              left: `${15 + (i * 12)}%`,
+              top: `${25 + Math.sin(i) * 25}%`
+            }}
+            animate={{
+              y: [0, -15, 0],
+              opacity: [0, 0.5, 0],
+              scale: [0.5, 1, 0.5]
+            }}
+            transition={{
+              duration: 4 + i * 0.3,
+              repeat: Infinity,
+              delay: i * 0.4,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
       </div>
     </div>
   );
