@@ -11,10 +11,18 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.log('[HypnoticOrbs] Canvas ref not found');
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.log('[HypnoticOrbs] Canvas context not found');
+      return;
+    }
+
+    console.log('[HypnoticOrbs] Canvas initialized successfully');
 
     // Set canvas size
     const resizeCanvas = () => {
@@ -157,6 +165,10 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
     const animate = () => {
       const currentTime = Date.now();
       const elapsed = currentTime - startTimeRef.current;
+      
+      if (elapsed % 5000 < 16) { // Log every 5 seconds (approximately)
+        console.log('[HypnoticOrbs] Animation running, elapsed:', Math.round(elapsed / 1000), 'seconds');
+      }
       
       const rect = canvas.getBoundingClientRect();
       const width = rect.width;
@@ -301,7 +313,9 @@ export function HypnoticOrbs({ className = "" }: HypnoticOrbsProps) {
       className={`w-full h-full ${className}`}
       style={{ 
         background: 'transparent',
-        mixBlendMode: 'normal'
+        mixBlendMode: 'normal',
+        border: '1px solid red', // Temporary debug border
+        minHeight: '300px'
       }}
     />
   );
