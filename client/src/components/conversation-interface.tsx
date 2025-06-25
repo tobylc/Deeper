@@ -529,54 +529,8 @@ export default function ConversationInterface({
   );
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      {/* Conversation Header */}
-      <div className="border-b border-slate-200/60 p-4 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="flex -space-x-2">
-              <ProfileAvatar
-                email={participant1Email}
-                firstName={currentUserEmail === participant1Email ? currentUser?.firstName ?? undefined : otherUser?.firstName ?? undefined}
-                lastName={currentUserEmail === participant1Email ? currentUser?.lastName ?? undefined : otherUser?.lastName ?? undefined}
-                profileImageUrl={currentUserEmail === participant1Email ? currentUser?.profileImageUrl ?? undefined : otherUser?.profileImageUrl ?? undefined}
-                size="sm"
-                className="border-2 border-white shadow-lg z-10"
-              />
-              <ProfileAvatar
-                email={participant2Email}
-                firstName={currentUserEmail === participant2Email ? currentUser?.firstName ?? undefined : otherUser?.firstName ?? undefined}
-                lastName={currentUserEmail === participant2Email ? currentUser?.lastName ?? undefined : otherUser?.lastName ?? undefined}
-                profileImageUrl={currentUserEmail === participant2Email ? currentUser?.profileImageUrl ?? undefined : otherUser?.profileImageUrl ?? undefined}
-                size="sm"
-                className="border-2 border-white shadow-lg"
-              />
-            </div>
-            <div>
-              <h3 className="font-semibold text-slate-800 text-sm">
-                {relationshipType} Conversation
-              </h3>
-              <p className="text-xs text-slate-500">
-                {messages.length} exchanges • Deeper connection
-              </p>
-            </div>
-          </div>
-          
-          <Badge 
-            variant={isMyTurn ? "default" : "outline"} 
-            className={cn(
-              "shadow-sm font-medium px-3 py-1 text-xs",
-              isMyTurn 
-                ? "bg-gradient-to-r from-ocean to-ocean/80 text-white border-0 shadow-ocean/20" 
-                : "bg-gradient-to-r from-amber/10 to-amber/5 border-amber/30 text-amber-800"
-            )}
-          >
-            {isMyTurn ? "Your turn" : "Their turn"}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Messages Container - Journal Workspace */}
+    <div className="h-full flex flex-col">
+      {/* Messages Container - Journal Workspace (flex-1 to take remaining space) */}
       <div className="flex-1 overflow-y-auto p-8 min-h-0 relative bg-gradient-to-br from-amber-50/40 via-yellow-50/30 to-orange-50/20">
         {/* Wood desk texture background */}
         <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(ellipse_at_center,_rgba(139,69,19,0.4)_0%,_transparent_70%)]" />
