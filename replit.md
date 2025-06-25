@@ -597,6 +597,8 @@ Changelog:
   * Fixed 404 error after invitee signup by replacing window.location.href with proper SPA navigation
   * Enhanced invitation API endpoint to include inviterRole and inviteeRole fields for personalized display
   * Corrected database subscription status assignments throughout the entire user creation flow
+  * Identified OAuth development environment issue - Google OAuth configuration requires current development domain to be added to authorized redirect URIs
+  * Created OAUTH_SETUP_DEV.md with instructions for adding development domain to Google Cloud Console
 - June 20, 2025. Vulnerable conversation question system for difficult-to-ask topics:
   * Completely redesigned question curation to focus on emotionally vulnerable, difficult-to-ask questions that foster authentic connection
   * Enhanced questions address fears, regrets, difficult emotions, unspoken truths, and conversations that are hard to bring up in person
