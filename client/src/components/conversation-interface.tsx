@@ -1,24 +1,46 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, ArrowRight, Sparkles, Clock, Send, Plus, ChevronDown, Mic, Type } from "lucide-react";
-import DeeperLogo from "@/components/deeper-logo";
-import QuotesIcon from "@/components/quotes-icon";
-import VoiceRecorder from "@/components/voice-recorder";
-import VoiceMessageDisplay from "@/components/voice-message-display";
-import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
-import TranscriptionProgress from "@/components/transcription-progress";
-import { HypnoticOrbs } from "@/components/hypnotic-orbs";
-import type { Message, User, Connection } from "@shared/schema";
-import { UserDisplayName } from "@/hooks/useUserDisplayName";
-import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
-import ProfileAvatar from "@/components/profile-avatar";
-import { cn } from "@/lib/utils";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
-import { apiRequest } from "@/lib/queryClient";
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Send, Type, Mic, ArrowRight, Clock } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { UserDisplayName } from '@/hooks/useUserDisplayName';
+import ProfileAvatar from '@/components/profile-avatar';
+import VoiceRecorder from '@/components/voice-recorder';
+import VoiceMessageDisplay from '@/components/voice-message-display';
+import TranscriptionProgress from '@/components/transcription-progress';
+import ThoughtfulResponsePopup from '@/components/thoughtful-response-popup';
+
+interface Message {
+  id: number;
+  senderEmail: string;
+  content: string;
+  type: string;
+  createdAt: string | Date | null;
+  messageFormat?: string;
+  audioFileUrl?: string | null;
+  transcription?: string | null;
+  audioDuration?: number | null;
+  conversationId?: number;
+}
+
+interface User {
+  id: number;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  profileImageUrl?: string | null;
+}
+
+interface Connection {
+  id: number;
+  inviterEmail: string;
+  inviteeEmail: string;
+  relationshipType: string;
+  inviterRole?: string;
+  inviteeRole?: string;
+}
 
 interface ConversationInterfaceProps {
   messages: Message[];
@@ -42,9 +64,9 @@ interface ConversationInterfaceProps {
 }
 
 export default function ConversationInterface({ 
-  messages, 
-  currentUserEmail, 
-  participant1Email, 
+  messages,
+  currentUserEmail,
+  participant1Email,
   participant2Email,
   isMyTurn,
   relationshipType,
@@ -61,7 +83,6 @@ export default function ConversationInterface({
   responseStartTime = null,
   onTimerStart
 }: ConversationInterfaceProps) {
-  const [showFullHistory, setShowFullHistory] = useState(false);
   const [messageMode, setMessageMode] = useState<'text' | 'voice'>('text');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
@@ -97,440 +118,9 @@ export default function ConversationInterface({
     return getRemainingTime() <= 0;
   };
 
-  // Voice message mutation with transcription progress
-  const sendVoiceMessageMutation = useMutation({
-    mutationFn: async ({ audioBlob, duration }: { audioBlob: Blob; duration: number }) => {
-      console.log('Sending voice message:', {
-        blobSize: audioBlob.size,
-        blobType: audioBlob.type,
-        duration,
-        conversationId
-      });
-
-      // Show transcription progress indicator
-      setShowTranscriptionProgress(true);
-
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'voice-message.webm');
-      formData.append('senderEmail', currentUserEmail);
-      formData.append('type', nextMessageType);
-      formData.append('duration', duration.toString());
-
-      return fetch(`/api/conversations/${conversationId}/voice-messages`, {
-        method: 'POST',
-        body: formData,
-      }).then(async res => {
-        if (!res.ok) {
-          const error = await res.json();
-          console.error('Voice message send failed:', error);
-          throw new Error(error.message || 'Failed to send voice message');
-        }
-        const response = await res.json();
-        console.log('Voice message sent successfully:', response);
-        return response;
-      });
-    },
-    onSuccess: (data) => {
-      console.log('Voice message mutation successful:', data);
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
-      // Hide transcription progress after success
-      setTimeout(() => setShowTranscriptionProgress(false), 500);
-    },
-    onError: (error) => {
-      console.error('Voice message mutation error:', error);
-      // Hide transcription progress on error
-      setShowTranscriptionProgress(false);
-    }
-  });
-
-  // Fetch user data for profile avatars
-  const { data: currentUser } = useQuery<User>({
-    queryKey: [`/api/users/by-email/${currentUserEmail}`],
-    enabled: !!currentUserEmail,
-  });
-
-  const otherParticipantEmail = currentUserEmail === participant1Email ? participant2Email : participant1Email;
-  
-  const { data: otherUser } = useQuery<User>({
-    queryKey: [`/api/users/by-email/${otherParticipantEmail}`],
-    enabled: !!otherParticipantEmail,
-  });
-
-  const getParticipantName = (email: string) => {
-    if (email === currentUserEmail) return "You";
-    return <UserDisplayName email={email} />;
-  };
-
-  const getParticipantData = (email: string) => {
-    if (email === currentUserEmail) return currentUser;
-    return otherUser;
-  };
-
-  // Sample questions based on relationship type for empty state
-  const getExampleQuestions = (relationshipType: string): string[] => {
-    const examples = {
-      "Parent-Child": [
-        "What's one family tradition you hope to continue?",
-        "When did you feel most proud of me recently?",
-        "What was your biggest worry as a teenager?"
-      ],
-      "Romantic Partners": [
-        "What's something new you'd like us to try together?",
-        "When do you feel most loved by me?",
-        "What's your happiest memory of us?"
-      ],
-      "Friends": [
-        "What's the best advice you've ever received?",
-        "What adventure would you want us to go on?",
-        "How have you changed in the past year?"
-      ],
-      "Siblings": [
-        "What's your favorite childhood memory of us?",
-        "How do you think we've influenced each other?",
-        "What family trait do you see in yourself?"
-      ]
-    };
-    
-    return examples[relationshipType as keyof typeof examples] || examples["Friends"];
-  };
-
-  const EmptyState = () => {
-    const exampleQuestions = getExampleQuestions(relationshipType);
-    
-    return (
-      <div className="flex flex-col items-center justify-center h-full py-8 px-6">
-        <div className="relative mb-6">
-          <div className="absolute inset-0 bg-gradient-to-r from-ocean/20 to-amber/20 rounded-full blur-xl"></div>
-          <div className="relative bg-gradient-to-br from-ocean to-amber p-4 rounded-2xl shadow-xl">
-            <Sparkles className="h-8 w-8 text-white animate-pulse" />
-          </div>
-        </div>
-        
-        {isMyTurn ? (
-          <div className="text-center space-y-6 max-w-lg w-full">
-            <h3 className="text-xl font-bold bg-gradient-to-r from-ocean to-amber bg-clip-text text-transparent">
-              Begin Your Journey
-            </h3>
-            <p className="text-slate-600 leading-relaxed">
-              {(() => {
-                if (connection) {
-                  const roleInfo = getRoleDisplayInfo(
-                    connection.relationshipType, 
-                    connection.inviterRole, 
-                    connection.inviteeRole
-                  );
-                  return `You're about to start a meaningful ${roleInfo.conversationContext} conversation. Ask the first question to begin this deeper connection.`;
-                }
-                return `You're about to start a meaningful ${relationshipType.toLowerCase()} conversation. Ask the first question to begin this deeper connection.`;
-              })()}
-            </p>
-            
-            {/* Example Questions */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-center space-x-2 text-sm text-amber">
-                <QuotesIcon size="sm" />
-                <span className="font-medium">Try one of these conversation starters:</span>
-              </div>
-              <div className="space-y-2">
-                {exampleQuestions.map((question, index) => (
-                  <button
-                    key={index}
-                    onClick={() => onQuestionSelect(question)}
-                    className="w-full p-3 text-left bg-white border border-slate-200 hover:border-ocean/30 hover:bg-ocean/5 rounded-xl transition-all duration-200 text-sm text-slate-700 hover:text-slate-900 shadow-sm hover:shadow-md"
-                  >
-                    {question}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-center space-x-2 text-xs text-slate-500">
-              <QuotesIcon size="xs" />
-              <span>Every great conversation starts with curiosity</span>
-            </div>
-          </div>
-        ) : (
-          <div className="min-h-[400px] relative">
-            {/* Empty space for orbs to fill */}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const JournalEntry = ({ message, index }: { message: Message; index: number }) => {
-    const isFromCurrentUser = message.senderEmail === currentUserEmail;
-    const userData = getParticipantData(message.senderEmail);
-    const isQuestion = message.type === 'question';
-    const isFirstMessage = index === 0;
-    const isLastMessage = index === messages.length - 1;
-    
-    // After first question-response pair, all subsequent messages are "Follow up"
-    const isFollowUp = messages.length >= 2 && index >= 2;
-    const messageTypeLabel = isFollowUp ? "Follow up" : (isQuestion ? "Question" : "Response");
-    
-    // Horizontal paper with realistic shadows
-    const paperShadow = index % 3 === 0 ? 'shadow-xl' : index % 3 === 1 ? 'shadow-lg' : 'shadow-md';
-    
-    // Generate unique tattered edge shapes for each paper
-    const tatteredEdges = [
-      "polygon(2% 0%, 98% 3%, 99% 8%, 100% 15%, 97% 22%, 100% 30%, 98% 40%, 100% 50%, 97% 60%, 99% 70%, 100% 85%, 95% 92%, 98% 100%, 5% 100%, 0% 95%, 3% 88%, 0% 78%, 2% 70%, 0% 60%, 3% 50%, 0% 40%, 2% 30%, 0% 20%, 3% 10%, 0% 5%)",
-      "polygon(0% 2%, 5% 0%, 15% 3%, 25% 0%, 35% 2%, 45% 0%, 55% 3%, 65% 0%, 75% 2%, 85% 0%, 95% 3%, 100% 8%, 98% 18%, 100% 28%, 97% 38%, 100% 48%, 98% 58%, 100% 68%, 97% 78%, 100% 88%, 95% 97%, 85% 100%, 75% 98%, 65% 100%, 55% 97%, 45% 100%, 35% 98%, 25% 100%, 15% 97%, 5% 100%, 0% 92%)",
-      "polygon(3% 0%, 10% 2%, 18% 0%, 28% 3%, 38% 0%, 48% 2%, 58% 0%, 68% 3%, 78% 0%, 88% 2%, 97% 0%, 100% 7%, 98% 17%, 100% 27%, 97% 37%, 100% 47%, 98% 57%, 100% 67%, 97% 77%, 100% 87%, 97% 97%, 88% 100%, 78% 98%, 68% 100%, 58% 97%, 48% 100%, 38% 98%, 28% 100%, 18% 97%, 10% 100%, 3% 98%, 0% 87%)",
-      "polygon(0% 5%, 8% 0%, 18% 4%, 28% 0%, 38% 3%, 48% 0%, 58% 4%, 68% 0%, 78% 3%, 88% 0%, 98% 4%, 100% 12%, 97% 22%, 100% 32%, 96% 42%, 100% 52%, 97% 62%, 100% 72%, 96% 82%, 100% 92%, 92% 100%, 82% 96%, 72% 100%, 62% 97%, 52% 100%, 42% 96%, 32% 100%, 22% 97%, 12% 100%, 2% 96%, 0% 85%)",
-      "polygon(4% 0%, 14% 3%, 24% 0%, 34% 4%, 44% 0%, 54% 3%, 64% 0%, 74% 4%, 84% 0%, 94% 3%, 100% 9%, 96% 19%, 100% 29%, 97% 39%, 100% 49%, 96% 59%, 100% 69%, 97% 79%, 100% 89%, 94% 97%, 84% 100%, 74% 96%, 64% 100%, 54% 97%, 44% 100%, 34% 96%, 24% 100%, 14% 97%, 4% 100%, 0% 91%)",
-      "polygon(1% 3%, 11% 0%, 21% 4%, 31% 0%, 41% 3%, 51% 0%, 61% 4%, 71% 0%, 81% 3%, 91% 0%, 99% 3%, 100% 13%, 97% 23%, 100% 33%, 96% 43%, 100% 53%, 97% 63%, 100% 73%, 96% 83%, 100% 93%, 91% 100%, 81% 97%, 71% 100%, 61% 96%, 51% 100%, 41% 97%, 31% 100%, 21% 96%, 11% 100%, 1% 97%, 0% 83%)"
-    ];
-    const clipPath = tatteredEdges[index % tatteredEdges.length];
-    
-    return (
-      <div className={cn(
-        "group mb-8 relative",
-        isFromCurrentUser ? "ml-12" : "mr-12"
-      )}>
-        {/* Hyper-realistic Paper Sheet with User Color Differentiation */}
-        <div className={cn(
-          "relative p-8 rounded-sm border",
-          paperShadow,
-          isFromCurrentUser ? [
-            "bg-gradient-to-br from-white via-blue-50/20 to-ocean/5",
-            "border-ocean/20 shadow-ocean/10"
-          ] : [
-            "bg-gradient-to-br from-white via-amber-50/20 to-amber/5", 
-            "border-amber/20 shadow-amber/10"
-          ]
-        )}
-        style={{
-          background: isFromCurrentUser ? `
-            linear-gradient(135deg, 
-              rgba(255,255,255,0.98) 0%, 
-              rgba(239,246,255,0.96) 30%, 
-              rgba(79,172,254,0.08) 70%, 
-              rgba(79,172,254,0.12) 100%
-            )
-          ` : `
-            linear-gradient(135deg, 
-              rgba(255,255,255,0.98) 0%, 
-              rgba(255,251,235,0.96) 30%, 
-              rgba(215,160,135,0.08) 70%, 
-              rgba(215,160,135,0.12) 100%
-            )
-          `,
-          filter: 'drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.08))',
-          backdropFilter: 'blur(0.5px)'
-        }}>
-          {/* Subtle paper texture */}
-          <div className="absolute inset-0 opacity-15 pointer-events-none">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
-          </div>
-          
-          {/* Very subtle ruled lines */}
-          <div className="absolute inset-0 opacity-25 pointer-events-none" 
-               style={{
-                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, rgba(156,163,175,0.15) 27px, rgba(156,163,175,0.15) 28px)',
-               }} />
-          
-          {/* Subtle left margin line */}
-          <div className="absolute top-0 bottom-0 left-16 w-px bg-gradient-to-b from-transparent via-red-200/30 to-transparent opacity-40" />
-
-          {/* Clean Header */}
-          <div className="flex items-start justify-between mb-6 relative z-10 pl-20">
-            <div className="flex items-center space-x-3">
-              <ProfileAvatar
-                email={message.senderEmail}
-                firstName={userData?.firstName ?? undefined}
-                lastName={userData?.lastName ?? undefined}
-                profileImageUrl={userData?.profileImageUrl ?? undefined}
-                size="sm"
-                className="shadow-sm border border-gray-200"
-              />
-              <div>
-                <div className="text-sm font-medium text-gray-800">
-                  <UserDisplayName email={message.senderEmail} />
-                </div>
-                <div className="text-xs text-gray-500">
-                  {formatDistanceToNow(new Date(message.createdAt!), { addSuffix: true })}
-                </div>
-              </div>
-            </div>
-            
-            {/* Clean message type badge */}
-            <div className={cn(
-              "px-3 py-1 text-xs font-medium rounded-full",
-              isFollowUp
-                ? "text-gray-600 bg-gray-100 border border-gray-200"
-                : isQuestion 
-                  ? "text-blue-700 bg-blue-50 border border-blue-200" 
-                  : "text-amber-700 bg-amber-50 border border-amber-200"
-            )}>
-              {isFollowUp ? "Follow up" : isQuestion ? "Question" : "Response"}
-            </div>
-          </div>
-
-          {/* Content - Handle both text and voice messages */}
-          <div className="relative z-10 pl-20 pr-6">
-            {message.messageFormat === 'voice' ? (
-              <VoiceMessageDisplay 
-                message={message}
-                isCurrentUser={isFromCurrentUser}
-              />
-            ) : (
-              <div className="text-gray-900 leading-relaxed text-base whitespace-pre-wrap">
-                {message.content}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const StackedPapers = ({ messages }: { messages: Message[] }) => (
-    <div className="mb-6 relative">
-      {/* Paper stack with slight offsets to show depth */}
-      <div className="relative">
-        {/* Background papers showing depth */}
-        {[...Array(Math.min(messages.length, 3))].map((_, i) => (
-          <div
-            key={`stack-${i}`}
-            className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/30 to-amber-50/10 border border-gray-200/40 rounded-sm shadow-md"
-            style={{
-              transform: `translateX(${i * 2}px) translateY(${i * 2}px) rotate(${i * 0.5}deg)`,
-              zIndex: 10 - i,
-              background: `
-                linear-gradient(135deg, 
-                  rgba(255,255,255,0.95) 0%, 
-                  rgba(248,250,252,0.93) 30%, 
-                  rgba(255,251,235,0.91) 70%, 
-                  rgba(255,251,235,0.89) 100%
-                )
-              `,
-              filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.05))',
-            }}
-          />
-        ))}
-        
-        {/* Top visible paper with message count - clickable */}
-        <div
-          className="relative bg-gradient-to-br from-white via-gray-50/20 to-amber-50/10 border border-gray-200/40 rounded-sm shadow-lg p-4 cursor-pointer hover:shadow-xl transition-all duration-200 hover:scale-[1.02]"
-          style={{
-            transform: `translateX(${Math.min(messages.length, 3) * 2}px) translateY(${Math.min(messages.length, 3) * 2}px)`,
-            zIndex: 15,
-            background: `
-              linear-gradient(135deg, 
-                rgba(255,255,255,0.98) 0%, 
-                rgba(248,250,252,0.96) 30%, 
-                rgba(255,251,235,0.94) 70%, 
-                rgba(255,251,235,0.92) 100%
-              )
-            `,
-            filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.08))',
-            backdropFilter: 'blur(0.5px)'
-          }}
-          onClick={() => setShowFullHistory(!showFullHistory)}
-        >
-          {/* Subtle paper texture */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.01)_0%,_transparent_50%)]"></div>
-          </div>
-          
-          {/* Very subtle ruled lines */}
-          <div className="absolute inset-0 opacity-15 pointer-events-none" 
-               style={{
-                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 20px, rgba(156,163,175,0.08) 20px, rgba(156,163,175,0.08) 21px)',
-               }} />
-          
-          <div className="relative z-10 text-center">
-            <div className="text-sm text-gray-600 font-serif italic">
-              {messages.length} earlier {messages.length === 1 ? 'exchange' : 'exchanges'}
-            </div>
-            <div className="text-xs text-gray-500 mt-1 flex items-center justify-center space-x-1">
-              <span>{showFullHistory ? 'Click to collapse' : 'Click to expand'} conversation history</span>
-              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${showFullHistory ? 'rotate-180' : ''}`} />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const TypingIndicator = () => (
-    <div className="group mb-8 relative mr-12">
-      {/* Hyper-realistic Paper Sheet - typing variant with amber theme for other user */}
-      <div className="relative bg-gradient-to-br from-white via-amber-50/20 to-amber/5 p-8 rounded-sm border border-amber/20 shadow-lg shadow-amber/10"
-           style={{
-             background: `
-               linear-gradient(135deg, 
-                 rgba(255,255,255,0.98) 0%, 
-                 rgba(255,251,235,0.96) 30%, 
-                 rgba(215,160,135,0.08) 70%, 
-                 rgba(215,160,135,0.12) 100%
-               )
-             `,
-             filter: 'drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.08))',
-             backdropFilter: 'blur(0.5px)'
-           }}>
-        {/* Subtle paper texture */}
-        <div className="absolute inset-0 opacity-15 pointer-events-none">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
-        </div>
-        
-        {/* Very subtle ruled lines */}
-        <div className="absolute inset-0 opacity-25 pointer-events-none" 
-             style={{
-               backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, rgba(156,163,175,0.15) 27px, rgba(156,163,175,0.15) 28px)',
-             }} />
-        
-        {/* Subtle left margin line */}
-        <div className="absolute top-0 bottom-0 left-16 w-px bg-gradient-to-b from-transparent via-red-200/30 to-transparent opacity-40" />
-
-        {/* Clean Header */}
-        <div className="flex items-start justify-between mb-6 relative z-10 pl-20">
-          <div className="flex items-center space-x-3">
-            <ProfileAvatar
-              email={otherParticipantEmail}
-              firstName={otherUser?.firstName ?? undefined}
-              lastName={otherUser?.lastName ?? undefined}
-              profileImageUrl={otherUser?.profileImageUrl ?? undefined}
-              size="sm"
-              className="shadow-sm border border-gray-200"
-            />
-            <div>
-              <div className="text-sm font-medium text-gray-800">
-                <UserDisplayName email={otherParticipantEmail} />
-              </div>
-              <div className="text-xs text-gray-500">
-                writing...
-              </div>
-            </div>
-          </div>
-          
-          {/* Clean thinking badge */}
-          <div className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-full">
-            Thinking
-          </div>
-        </div>
-
-        {/* Animated writing content */}
-        <div className="relative z-10 pl-20 pr-6">
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
-            <span className="text-sm text-gray-500 ml-2">composing thoughts...</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="h-full flex flex-col">
-      {/* Messages Container - Journal Workspace (flex-1 to take remaining space) */}
+      {/* Messages Container - flex-1 to take remaining space */}
       <div className="flex-1 overflow-y-auto p-8 min-h-0 relative bg-gradient-to-br from-amber-50/40 via-yellow-50/30 to-orange-50/20">
         {/* Wood desk texture background */}
         <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(ellipse_at_center,_rgba(139,69,19,0.4)_0%,_transparent_70%)]" />
@@ -542,453 +132,196 @@ export default function ConversationInterface({
              }} />
 
         {messages.length === 0 ? (
-          <EmptyState />
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center max-w-md space-y-6">
+              <div className="mb-8">
+                <h3 className="text-2xl font-serif text-slate-800 mb-3">
+                  Begin Your Journey
+                </h3>
+                <p className="text-slate-600 leading-relaxed">
+                  Start a meaningful conversation by asking a thoughtful question or sharing what's on your heart.
+                </p>
+              </div>
+            </div>
+          </div>
         ) : (
           <div className="space-y-6 relative z-10">
-            {/* Restack Button - appears when conversation is expanded */}
-            {messages.length >= 4 && showFullHistory && (
-              <div className="flex justify-center mb-4">
-                <button
-                  onClick={() => setShowFullHistory(false)}
-                  className="bg-gradient-to-br from-white via-gray-50/20 to-amber-50/10 border border-gray-200/40 rounded-sm shadow-lg px-4 py-2 hover:shadow-xl transition-all duration-200 hover:scale-[1.02] cursor-pointer"
-                  style={{
-                    background: `
-                      linear-gradient(135deg, 
-                        rgba(255,255,255,0.98) 0%, 
-                        rgba(248,250,252,0.96) 30%, 
-                        rgba(255,251,235,0.94) 70%, 
-                        rgba(255,251,235,0.92) 100%
-                      )
-                    `,
-                    filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.08))',
-                    backdropFilter: 'blur(0.5px)'
-                  }}
-                >
-                  {/* Subtle paper texture */}
-                  <div className="absolute inset-0 opacity-10 pointer-events-none">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.01)_0%,_transparent_50%)]"></div>
+            {messages.map((message, index) => (
+              <div key={message.id} className="relative">
+                <div className="text-gray-800 leading-relaxed font-serif text-base whitespace-pre-wrap bg-white p-4 rounded-lg shadow-sm">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-600">
+                      {message.senderEmail === currentUserEmail ? 'You' : <UserDisplayName email={message.senderEmail} />}
+                    </span>
+                    <Badge variant="secondary" className="text-xs">
+                      {message.type}
+                    </Badge>
                   </div>
-                  
-                  {/* Very subtle ruled lines */}
-                  <div className="absolute inset-0 opacity-15 pointer-events-none" 
-                       style={{
-                         backgroundImage: 'repeating-linear-gradient(transparent, transparent 20px, rgba(156,163,175,0.08) 20px, rgba(156,163,175,0.08) 21px)',
-                       }} />
-                  
-                  <div className="relative z-10 text-center flex items-center space-x-2">
-                    <ArrowRight className="w-4 h-4 text-gray-600 rotate-90" />
-                    <span className="text-sm text-gray-700 font-serif">Restack papers</span>
-                    <ArrowRight className="w-4 h-4 text-gray-600 rotate-90" />
-                  </div>
-                </button>
+                  {message.content}
+                </div>
               </div>
-            )}
-
-            {/* Show stacked papers when 4+ messages and not expanded */}
-            {messages.length >= 4 && !showFullHistory && (
-              <StackedPapers messages={messages.slice(0, -2)} />
-            )}
-            
-            {/* Show messages based on state */}
-            {(() => {
-              if (messages.length < 4) {
-                // Show all messages if less than 4
-                return messages.map((message, index) => (
-                  <JournalEntry key={message.id} message={message} index={index} />
-                ));
-              } else if (showFullHistory) {
-                // Show all messages when expanded
-                return messages.map((message, index) => (
-                  <JournalEntry key={message.id} message={message} index={index} />
-                ));
-              } else {
-                // Show only latest 2 when collapsed
-                return messages.slice(-2).map((message, index) => (
-                  <JournalEntry 
-                    key={message.id} 
-                    message={message} 
-                    index={messages.length - 2 + index} 
-                  />
-                ));
-              }
-            })()}
-            
-            {/* Transcription Progress Indicator */}
-            {showTranscriptionProgress && (
-              <div className="flex justify-center">
-                <TranscriptionProgress 
-                  isVisible={showTranscriptionProgress}
-                  onComplete={() => setShowTranscriptionProgress(false)}
-                />
-              </div>
-            )}
-
-
+            ))}
           </div>
         )}
 
-
-      </div>
-
-      {/* Journal Writing Area - Fixed at Bottom */}
-      {isMyTurn && (
-        <div className="border-t border-amber-200/60 p-6 bg-gradient-to-br from-amber-50/60 via-yellow-50/40 to-orange-50/30 backdrop-blur-sm flex-shrink-0 relative">
-          {/* Paper texture overlay */}
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,_rgba(139,69,19,0.1)_0%,_transparent_50%)] pointer-events-none" />
-          
-          {/* Subtle ruled lines effect */}
-          <div className="absolute inset-0 opacity-5 pointer-events-none" 
-               style={{
-                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 24px, rgba(139,69,19,0.3) 24px, rgba(139,69,19,0.3) 25px)',
-               }} />
-
-          <div className="space-y-4 relative z-10">
-            {/* Writing prompt */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className={cn(
-                  "px-4 py-2.5 text-sm font-medium transform -rotate-1 relative shadow-lg",
-                  "bg-gradient-to-r border-2 rounded-xl transition-all duration-200",
-                  messages.length >= 2
-                    ? "from-slate-50 to-slate-100 text-slate-700 border-slate-200"
-                    : nextMessageType === 'question' 
-                      ? "from-[#4FACFE]/10 to-blue-50 text-[#1B2137] border-[#4FACFE]/30" 
-                      : "from-amber-50 to-orange-50 text-amber-800 border-amber-300",
-                  "hover:shadow-xl hover:scale-105"
-                )}>
-                  <span className="relative z-10">
-                    {messages.length >= 2 ? "Continue writing..." : nextMessageType === 'question' ? "Ask a question..." : "Share your thoughts..."}
-                  </span>
-                </div>
-                
-                <div className="text-sm text-slate-700 font-serif leading-relaxed">
-                  {messages.length >= 2
-                    ? "Let your thoughts flow naturally onto the page"
-                    : nextMessageType === 'question' 
-                      ? "What would you like to explore together?"
-                      : "Express what's in your heart"
-                  }
-                </div>
-              </div>
-            </div>
-
-            {/* Message Mode Toggle */}
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <Button
-                onClick={() => setMessageMode('text')}
-                variant={messageMode === 'text' ? 'default' : 'outline'}
-                size="sm"
-                className={cn(
-                  "transition-all duration-200",
-                  messageMode === 'text' 
-                    ? "bg-ocean text-white shadow-ocean/20" 
-                    : "text-slate-600 border-slate-300 hover:bg-slate-50"
-                )}
-              >
-                <Type className="w-4 h-4 mr-2" />
-                Write Text
-              </Button>
-              <Button
-                onClick={() => setMessageMode('voice')}
-                variant={messageMode === 'voice' ? 'default' : 'outline'}
-                size="sm"
-                className={cn(
-                  "transition-all duration-200",
-                  messageMode === 'voice' 
-                    ? "bg-white text-[#4FACFE] border-2 border-[#4FACFE] shadow-lg hover:bg-slate-50" 
-                    : "text-[#4FACFE] border-slate-300 hover:bg-slate-50 hover:border-[#4FACFE]/50"
-                )}
-              >
-                <Mic className="w-4 h-4 mr-2" />
-                Record Voice
-              </Button>
-            </div>
-
-            {/* Input Surface */}
-            <div className="relative">
-              {messageMode === 'text' ? (
-                /* Text Writing Surface */
-                <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 border border-ocean/20 shadow-md rounded-sm"
-                     style={{
-                       background: `
-                         linear-gradient(135deg, 
-                           rgba(255,255,255,0.98) 0%, 
-                           rgba(239,246,255,0.96) 30%, 
-                           rgba(79,172,254,0.08) 70%, 
-                           rgba(79,172,254,0.12) 100%
-                         )
-                       `,
-                       filter: 'drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.06))',
-                       backdropFilter: 'blur(0.5px)'
-                     }}>
-                  {/* Subtle paper texture */}
-                  <div className="absolute inset-0 opacity-15 pointer-events-none">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
-                  </div>
-                  
-                  {/* Red margin line */}
-                  <div className="absolute top-0 bottom-0 w-px bg-red-400/40 left-8" />
-                  
-                  {/* Very subtle ruled lines */}
-                  <div className="absolute inset-0 opacity-25 pointer-events-none" 
-                       style={{
-                         backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(156,163,175,0.12) 23px, rgba(156,163,175,0.12) 24px)',
-                       }} />
-
-                  <div className="flex space-x-4">
-                    <div className="flex-1 pl-4">
-                      <Textarea
-                        value={newMessage}
-                        onChange={(e) => {
-                          setNewMessage(e.target.value);
-                          // Start timer on first text input (similar to voice recorder)
-                          if (!hasStartedResponse && e.target.value.trim() && onTimerStart) {
-                            onTimerStart();
-                          }
-                        }}
-                        placeholder={
-                          messages.length >= 2
-                            ? "Continue writing your thoughts here..."
-                            : nextMessageType === 'question' 
-                              ? "Write your question here... or choose from suggestions →" 
-                              : "Write your response here..."
-                        }
-                        className="min-h-[80px] resize-none bg-transparent border-0 focus:ring-0 text-slate-700 font-serif text-base leading-6 placeholder:text-slate-400/70 placeholder:italic"
-                        style={{ backgroundImage: 'none' }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            if (newMessage.trim() && !isSending) {
-                              if (hasStartedResponse && !canSendNow()) {
-                                setShowThoughtfulResponsePopup(true);
-                              } else {
-                                onSendMessage();
-                              }
-                            }
-                          }
-                        }}
-                        maxLength={500}
-                      />
-                      
-                      {/* Writing stats */}
-                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-ocean/20">
-                        <div className="text-xs text-slate-500 italic">
-                          {newMessage.length} characters written
-                        </div>
-                        <div className="text-xs text-slate-400 italic">
-                          Press Enter to share • Shift+Enter for new line
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Send button styled as ink well */}
-                    <div className="flex flex-col items-center space-y-2">
-                      <Button
-                        onClick={() => {
-                          if (hasStartedResponse && !canSendNow()) {
-                            setShowThoughtfulResponsePopup(true);
-                          } else {
-                            onSendMessage();
-                          }
-                        }}
-                        disabled={!newMessage.trim() || isSending}
-                        className={cn(
-                          "w-16 h-16 rounded-full bg-gradient-to-br from-blue-800 to-blue-900 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-blue/25 transition-all duration-200 border-2 border-blue-700",
-                          (!newMessage.trim() || isSending) && "opacity-50 cursor-not-allowed"
-                        )}
-                      >
-                        {isSending ? (
-                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                          <Send className="h-5 w-5" />
-                        )}
-                      </Button>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-slate-600 font-handwriting">Share</span>
-                        {hasStartedResponse && !canSendNow() && (
-                          <span className="text-xs text-slate-500 font-mono">
-                            {formatTime(getRemainingTime())}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                /* Voice Recording Surface */
-                <VoiceRecorder
-                  onSendVoiceMessage={(audioBlob, duration) => {
-                    sendVoiceMessageMutation.mutate({ audioBlob, duration });
-                  }}
-                  onRecordingStart={onRecordingStart}
-                  disabled={isSending || sendVoiceMessageMutation.isPending}
-                  canSendMessage={true}
-                  hasStartedResponse={hasStartedResponse}
-                  responseStartTime={responseStartTime}
-                  onTimerStart={onTimerStart}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-      </div>
-
-      {/* Fixed Input Area at Bottom - Only visible when it's user's turn */}
-      {isMyTurn && (
-      <div className="flex-shrink-0 border-t border-slate-200/60 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm p-4">
-        {/* Message Mode Toggle */}
-        <div className="flex items-center justify-center space-x-2 mb-4">
-          <Button
-            onClick={() => setMessageMode('text')}
-            variant={messageMode === 'text' ? 'default' : 'outline'}
-            size="sm"
-            className={cn(
-              "transition-all duration-200",
-              messageMode === 'text' 
-                ? "bg-ocean text-white shadow-ocean/20" 
-                : "text-slate-600 border-slate-300 hover:bg-slate-50"
-            )}
-          >
-            <Type className="w-4 h-4 mr-2" />
-            Write Text
-          </Button>
-          <Button
-            onClick={() => setMessageMode('voice')}
-            variant={messageMode === 'voice' ? 'default' : 'outline'}
-            size="sm"
-            className={cn(
-              "transition-all duration-200",
-              messageMode === 'voice' 
-                ? "bg-white text-[#4FACFE] border-2 border-[#4FACFE] shadow-lg hover:bg-slate-50" 
-                : "text-[#4FACFE] border-slate-300 hover:bg-slate-50 hover:border-[#4FACFE]/50"
-            )}
-          >
-            <Mic className="w-4 h-4 mr-2" />
-            Record Voice
-          </Button>
-        </div>
-
-        {/* Input Surface */}
-        <div className="relative">
-          {messageMode === 'text' ? (
-            /* Text Writing Surface */
-            <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 border border-ocean/20 shadow-md rounded-sm"
+        {/* Glowing waiting state for non-turn users */}
+        {!isMyTurn && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+            <div className="relative bg-gradient-to-br from-white via-amber-50/20 to-amber/5 p-4 rounded-sm border border-amber/20 shadow-md shadow-amber/10"
                  style={{
                    background: `
                      linear-gradient(135deg, 
                        rgba(255,255,255,0.98) 0%, 
-                       rgba(239,246,255,0.96) 30%, 
-                       rgba(79,172,254,0.08) 70%, 
-                       rgba(79,172,254,0.12) 100%
+                       rgba(255,251,235,0.96) 30%, 
+                       rgba(215,160,135,0.08) 70%, 
+                       rgba(215,160,135,0.12) 100%
                      )
                    `,
-                   filter: 'drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.06))',
+                   filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.06))',
                    backdropFilter: 'blur(0.5px)'
                  }}>
-              {/* Subtle paper texture */}
-              <div className="absolute inset-0 opacity-15 pointer-events-none">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
+              <div className="text-center">
+                <p className="text-sm font-medium text-slate-700 mb-1">Their turn to write</p>
+                <p className="text-xs text-slate-600">Waiting for their thoughtful response...</p>
               </div>
-              
-              {/* Red margin line */}
-              <div className="absolute top-0 bottom-0 w-px bg-red-400/40 left-8" />
-              
-              {/* Very subtle ruled lines */}
-              <div className="absolute inset-0 opacity-25 pointer-events-none" 
-                   style={{
-                     backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, rgba(156,163,175,0.12) 23px, rgba(156,163,175,0.12) 24px)',
-                   }} />
+            </div>
+          </div>
+        )}
+      </div>
 
-              <div className="flex space-x-4">
-                <div className="flex-1 pl-4">
-                  <Textarea
-                    value={newMessage}
-                    onChange={(e) => {
-                      setNewMessage(e.target.value);
-                      // Start timer on first text input (similar to voice recorder)
-                      if (!hasStartedResponse && e.target.value.trim() && onTimerStart) {
-                        onTimerStart();
+      {/* Fixed Input Area at Bottom - Only visible when it's user's turn */}
+      {isMyTurn && (
+        <div className="flex-shrink-0 border-t border-slate-200/60 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm p-4">
+          {/* Message Mode Toggle */}
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <Button
+              onClick={() => setMessageMode('text')}
+              variant={messageMode === 'text' ? 'default' : 'outline'}
+              size="sm"
+              className={cn(
+                "transition-all duration-200",
+                messageMode === 'text' 
+                  ? "bg-ocean text-white shadow-ocean/20" 
+                  : "text-slate-600 border-slate-300 hover:bg-slate-50"
+              )}
+            >
+              <Type className="w-4 h-4 mr-2" />
+              Write Text
+            </Button>
+            <Button
+              onClick={() => setMessageMode('voice')}
+              variant={messageMode === 'voice' ? 'default' : 'outline'}
+              size="sm"
+              className={cn(
+                "transition-all duration-200",
+                messageMode === 'voice' 
+                  ? "bg-white text-[#4FACFE] border-2 border-[#4FACFE] shadow-lg hover:bg-slate-50" 
+                  : "text-[#4FACFE] border-slate-300 hover:bg-slate-50 hover:border-[#4FACFE]/50"
+              )}
+            >
+              <Mic className="w-4 h-4 mr-2" />
+              Record Voice
+            </Button>
+          </div>
+
+          {/* Input Surface */}
+          <div className="relative">
+            {messageMode === 'text' ? (
+              /* Text Writing Surface */
+              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 border border-ocean/20 shadow-md rounded-sm">
+                <div className="flex space-x-4">
+                  <div className="flex-1">
+                    <Textarea
+                      value={newMessage}
+                      onChange={(e) => {
+                        setNewMessage(e.target.value);
+                        if (!hasStartedResponse && e.target.value.trim() && onTimerStart) {
+                          onTimerStart();
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          if (canSendNow()) {
+                            onSendMessage();
+                          } else {
+                            setShowThoughtfulResponsePopup(true);
+                          }
+                        }
+                      }}
+                      placeholder={
+                        messages.length >= 2
+                          ? "Continue your thoughts..."
+                          : nextMessageType === 'question' 
+                            ? "What would you like to explore together?"
+                            : "Express what's in your heart..."
                       }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
+                      className="min-h-[120px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-500 focus:ring-0 text-base leading-relaxed p-0"
+                      disabled={isSending}
+                    />
+                  </div>
+                  <div className="flex flex-col items-center justify-between py-2">
+                    <Button
+                      onClick={() => {
                         if (canSendNow()) {
                           onSendMessage();
                         } else {
                           setShowThoughtfulResponsePopup(true);
                         }
-                      }
-                    }}
-                    placeholder={
-                      messages.length >= 2
-                        ? "Continue your thoughts..."
-                        : nextMessageType === 'question' 
-                          ? "What would you like to explore together?"
-                          : "Express what's in your heart..."
-                    }
-                    className="min-h-[120px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-500 focus:ring-0 font-handwriting text-base leading-relaxed p-0"
-                    disabled={isSending}
-                  />
-                </div>
-                <div className="flex flex-col items-center justify-between py-2">
-                  <Button
-                    onClick={() => {
-                      if (canSendNow()) {
-                        onSendMessage();
-                      } else {
-                        setShowThoughtfulResponsePopup(true);
-                      }
-                    }}
-                    disabled={!newMessage.trim() || isSending}
-                    size="sm"
-                    className={cn(
-                      "w-12 h-12 rounded-full shadow-lg transition-all duration-200",
-                      "bg-gradient-to-br from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean",
-                      "hover:shadow-xl hover:scale-105 active:scale-95",
-                      !newMessage.trim() || isSending 
-                        ? "opacity-50 cursor-not-allowed" 
-                        : "cursor-pointer"
-                    )}
-                  >
-                    {isSending ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <Send className="h-5 w-5" />
-                    )}
-                  </Button>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs text-slate-600 font-handwriting">Share</span>
-                    {hasStartedResponse && !canSendNow() && (
-                      <span className="text-xs text-slate-500 font-mono">
-                        {formatTime(getRemainingTime())}
-                      </span>
-                    )}
+                      }}
+                      disabled={!newMessage.trim() || isSending}
+                      size="sm"
+                      className={cn(
+                        "w-12 h-12 rounded-full shadow-lg transition-all duration-200",
+                        "bg-gradient-to-br from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean",
+                        "hover:shadow-xl hover:scale-105 active:scale-95",
+                        !newMessage.trim() || isSending 
+                          ? "opacity-50 cursor-not-allowed" 
+                          : "cursor-pointer"
+                      )}
+                    >
+                      {isSending ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Send className="h-5 w-5" />
+                      )}
+                    </Button>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-slate-600">Share</span>
+                      {hasStartedResponse && !canSendNow() && (
+                        <span className="text-xs text-slate-500 font-mono">
+                          {formatTime(getRemainingTime())}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            /* Voice Recording Surface */
-            <VoiceRecorder
-              onSendVoiceMessage={(audioBlob, duration) => {
-                sendVoiceMessageMutation.mutate({ audioBlob, duration });
-              }}
-              onRecordingStart={onRecordingStart}
-              disabled={isSending || sendVoiceMessageMutation.isPending}
-              canSendMessage={true}
-              hasStartedResponse={hasStartedResponse}
-              responseStartTime={responseStartTime}
-              onTimerStart={onTimerStart}
-            />
-          )}
+            ) : (
+              /* Voice Recording Surface */
+              <VoiceRecorder
+                onSendVoiceMessage={() => {}}
+                onRecordingStart={onRecordingStart}
+                disabled={isSending}
+                canSendMessage={true}
+                hasStartedResponse={hasStartedResponse}
+                responseStartTime={responseStartTime}
+                onTimerStart={onTimerStart}
+              />
+            )}
+          </div>
         </div>
-      </div>
-    )}
+      )}
+
+      {/* Thoughtful Response Popup */}
+      {showThoughtfulResponsePopup && (
+        <ThoughtfulResponsePopup
+          isOpen={showThoughtfulResponsePopup}
+          onProceed={onSendMessage}
+          onClose={() => setShowThoughtfulResponsePopup(false)}
+          remainingSeconds={Math.floor(getRemainingTime())}
+        />
+      )}
     </div>
   );
 }

@@ -622,6 +622,14 @@ Changelog:
   * Enhanced invitation flow routing for existing users to login instead of signup
   * Application now production-ready with proper text input positioning and stable conversation interface
   * Complete conversation page layout optimization ensuring text area remains fixed at bottom during scrolling
+- June 25, 2025. Role-based visual effects and waiting state restoration for production deployment:
+  * Added role-specific glowing effects for conversation thread bubbles: ocean blue for inviter users, amber for invitee users
+  * Restored missing glowing waiting state text bubble at bottom of middle column for users waiting for responses
+  * Removed shadow boundary on right column where hypnotic orbs mesmerizing effect is displayed for clean visual experience
+  * Enhanced ConversationThreads component with isInviter prop to determine appropriate visual styling
+  * Updated conversation interface with parchment-style waiting notifications matching journal aesthetic
+  * Removed card shadows and borders from question suggestions right column to allow seamless orb visualization
+  * Production-ready application with complete role-based visual differentiation and restored waiting state elements
 - June 20, 2025. Vulnerable conversation question system for difficult-to-ask topics:
   * Completely redesigned question curation to focus on emotionally vulnerable, difficult-to-ask questions that foster authentic connection
   * Enhanced questions address fears, regrets, difficult emotions, unspoken truths, and conversations that are hard to bring up in person

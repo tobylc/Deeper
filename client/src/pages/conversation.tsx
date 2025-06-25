@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Send, Users, Clock, MessageCircle, Grid3X3 } from "lucide-react";
-import ConversationInterface from "@/components/conversation-interface-backup";
+import ConversationInterface from "@/components/conversation-interface";
 import ConversationThreads from "@/components/conversation-threads";
 import QuestionSuggestions from "@/components/question-suggestions";
 import ProfileAvatar from "@/components/profile-avatar";
