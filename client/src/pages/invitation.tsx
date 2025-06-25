@@ -7,6 +7,7 @@ import { Shield, MessageCircle, Users, Sparkles, CheckCircle } from "lucide-reac
 import DeeperLogo from "@/components/deeper-logo";
 import QuotesIcon from "@/components/quotes-icon";
 import { Link } from "wouter";
+import { getRoleDisplayInfo } from "@shared/role-display-utils";
 
 export default function InvitationLanding() {
   const [, setLocation] = useLocation();
@@ -23,6 +24,17 @@ export default function InvitationLanding() {
       return data.displayName;
     },
     enabled: !!inviterEmail,
+  });
+
+  // Fetch connection details to get specific roles
+  const { data: connectionData } = useQuery({
+    queryKey: ['/api/invitation', connectionId],
+    queryFn: async () => {
+      const response = await fetch(`/api/invitation/${connectionId}`);
+      if (!response.ok) throw new Error('Failed to fetch connection details');
+      return response.json();
+    },
+    enabled: !!connectionId,
   });
 
   useEffect(() => {
@@ -59,6 +71,17 @@ export default function InvitationLanding() {
   };
 
   const getRelationshipDescription = () => {
+    // If we have connection data with specific roles, use them
+    if (connectionData?.inviterRole && connectionData?.inviteeRole) {
+      const roleInfo = getRoleDisplayInfo(
+        connectionData.relationshipType,
+        connectionData.inviterRole,
+        connectionData.inviteeRole
+      );
+      return roleInfo.conversationContext;
+    }
+
+    // Fallback to generic descriptions
     switch (relationshipType.toLowerCase()) {
       case 'parent-child':
         return 'parent-child';
@@ -73,6 +96,21 @@ export default function InvitationLanding() {
       default:
         return 'meaningful';
     }
+  };
+
+  const getRoleDisplayText = () => {
+    // If we have connection data with specific roles, use them
+    if (connectionData?.inviterRole && connectionData?.inviteeRole) {
+      const roleInfo = getRoleDisplayInfo(
+        connectionData.relationshipType,
+        connectionData.inviterRole,
+        connectionData.inviteeRole
+      );
+      return roleInfo.relationshipDisplay;
+    }
+
+    // Fallback to relationship type
+    return relationshipType || 'Connection';
   };
 
   return (
@@ -118,6 +156,13 @@ export default function InvitationLanding() {
                 This isn't a group chat or social network - it's a sacred space created exclusively for meaningful 
                 one-on-one conversations between you and {getInviterName()}.
               </p>
+              {connectionData?.inviterRole && connectionData?.inviteeRole && (
+                <div className="mb-4">
+                  <span className="inline-block bg-ocean/20 text-ocean px-3 py-1 rounded-full text-sm font-medium">
+                    {getRoleDisplayText()}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-center">
                 <Button 
                   size="lg" 
