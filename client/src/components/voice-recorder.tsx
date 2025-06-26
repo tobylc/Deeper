@@ -537,12 +537,21 @@ export default function VoiceRecorder({
               <div className="flex items-center space-x-2">
                 {/* 10-Minute Countdown Timer */}
                 {(() => {
-                  // Check if this is the inviter's first question - don't show timer for this case
+                  // Never show timer for empty conversations (inviter's first question)
+                  if (messages.length === 0) {
+                    return null;
+                  }
+                  
+                  // Never show timer for inviter's first question in any conversation
                   const isInviterFirstQuestion = messages.length === 0 && 
                                                  connection?.inviterEmail === currentUserEmail &&
                                                  nextMessageType === 'question';
                   
-                  return hasStartedResponse && !canSendNow() && !isInviterFirstQuestion && (
+                  if (isInviterFirstQuestion) {
+                    return null;
+                  }
+                  
+                  return hasStartedResponse && !canSendNow() && (
                     <div className="flex items-center space-x-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
                       <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
                       <span>{formatTime(getRemainingTime())}</span>
