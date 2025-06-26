@@ -934,6 +934,14 @@ Changelog:
   * Updated ConversationInterface placeholder text to reflect current message type requirements
   * Complete production-ready enforcement ensures proper turn-based dialogue throughout all conversation threads
   * System now maintains strict question-response pattern across initial conversations and all subsequent threads
+- June 26, 2025. Critical React error #310 resolution and hypnotic orbs cleanup:
+  * Fixed React error #310 causing conversation page crashes by removing problematic useMemo hooks with circular dependencies
+  * Replaced useMemo hooks with direct function calls to eliminate dependency issues and ensure stable component rendering
+  * Removed mesmerizing orbs effect from right column (question suggestions area) while preserving in center column for waiting users
+  * Right column now displays clean waiting state with clock icon instead of hypnotic orbs during non-turn periods
+  * Updated browserslist database to latest version (1.0.30001726) for improved browser compatibility
+  * Production-ready conversation page now loads reliably without "something went wrong" errors
+  * Maintained all conversation functionality while ensuring stable React component lifecycle management
 - June 23, 2025. Critical subscription security fix and immediate discount activation system:
   * Fixed critical security vulnerability where subscription tiers were updated before payment verification
   * Enhanced subscription upgrade endpoint to only update tier after successful Stripe payment confirmation

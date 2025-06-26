@@ -395,7 +395,7 @@ export default function ConversationPage() {
     : false;
 
   // Production-ready validation: EVERY question requires a response before new questions
-  const lastQuestionNeedsResponse = useMemo(() => {
+  const checkLastQuestionNeedsResponse = () => {
     try {
       if (!messages || !Array.isArray(messages) || messages.length === 0) return false;
       
@@ -420,7 +420,9 @@ export default function ConversationPage() {
       console.error('[CONVERSATION] Error checking last question response:', error);
       return false;
     }
-  }, [messages?.length]);
+  };
+
+  const lastQuestionNeedsResponse = checkLastQuestionNeedsResponse();
 
   // Check if there has been at least one complete question-response exchange in this thread
   const hasCompleteExchange = messages && Array.isArray(messages) && messages.length >= 2 && 
@@ -428,7 +430,7 @@ export default function ConversationPage() {
     messages.some(msg => msg && msg.type === 'response');
 
   // Production-ready right column validation with comprehensive error handling
-  const canUseRightColumn = useMemo(() => {
+  const checkCanUseRightColumn = () => {
     try {
       // Safety checks for required data
       if (!conversation || !user?.email || !messages || !Array.isArray(messages)) return false;
@@ -445,10 +447,12 @@ export default function ConversationPage() {
       console.error('[CONVERSATION] Error validating right column access:', error);
       return false; // Safe default
     }
-  }, [conversation?.id, user?.email, messages?.length, isMyTurn, lastQuestionNeedsResponse]);
+  };
+
+  const canUseRightColumn = checkCanUseRightColumn();
   
   // Enhanced validation for new thread creation
-  const canCreateNewThread = useMemo(() => {
+  const checkCanCreateNewThread = () => {
     try {
       // Safety checks for required data
       if (!conversation || !user?.email || !messages || !Array.isArray(messages)) return false;
@@ -464,7 +468,9 @@ export default function ConversationPage() {
       console.error('[CONVERSATION] Error validating new thread creation:', error);
       return false;
     }
-  }, [conversation?.id, user?.email, messages?.length, hasCompleteExchange, lastQuestionNeedsResponse]);
+  };
+
+  const canCreateNewThread = checkCanCreateNewThread();
 
 
 
