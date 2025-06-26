@@ -313,12 +313,18 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
 
   return (
     <div className="space-y-4">
-      {/* Show hypnotic orbs waiting visual when it's not the user's turn */}
+      {/* Show waiting state when it's not the user's turn */}
       {!isMyTurn ? (
-        <div className="bg-transparent h-fit overflow-hidden border-0 shadow-none">
-          <div className="p-0">
-            <div className="h-[280px] relative">
-              <HypnoticOrbs className="absolute inset-0" />
+        <div className="bg-white border border-slate-200/60 shadow-sm rounded-lg">
+          <div className="p-6 text-center">
+            <div className="flex flex-col items-center space-y-3">
+              <Clock className="w-8 h-8 text-slate-400" />
+              <div>
+                <h3 className="text-sm font-medium text-slate-700">Their Turn</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Take time to reflect while they craft their thoughtful response
+                </p>
+              </div>
             </div>
           </div>
         </div>

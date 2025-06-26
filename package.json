@@ -53,6 +53,7 @@
     "@types/passport-facebook": "^3.0.3",
     "@types/passport-google-oauth20": "^2.0.16",
     "bcrypt": "^6.0.0",
+    "caniuse-lite": "^1.0.30001726",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
