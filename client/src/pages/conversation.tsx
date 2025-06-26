@@ -760,7 +760,7 @@ export default function ConversationPage() {
           onClose={() => setShowOnboardingPopup(false)}
           onComplete={() => markOnboardingCompleteMutation.mutate()}
           userRole={conversation.participant1Email === user?.email ? 'questioner' : 'responder'}
-          otherParticipant={otherParticipant || ''}
+          otherParticipant={otherParticipant}
           relationshipType={conversation.relationshipType}
           inviterRole={connection?.inviterRole}
           inviteeRole={connection?.inviteeRole}

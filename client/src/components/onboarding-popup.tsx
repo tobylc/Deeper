@@ -121,7 +121,13 @@ export default function OnboardingPopup({
                       <div>
                         <h5 className="font-semibold text-white">Their Turn to Respond</h5>
                         <p className="text-sm text-slate-200">
-                          <UserDisplayName email={otherParticipant} /> will receive an email notification and share their thoughtful response.
+                          {otherParticipant ? (
+                            <>
+                              <UserDisplayName email={otherParticipant} /> will receive an email notification and share their thoughtful response.
+                            </>
+                          ) : (
+                            <>Your conversation partner will receive an email notification and share their thoughtful response.</>
+                          )}
                         </p>
                       </div>
                     </CardContent>
@@ -153,7 +159,13 @@ export default function OnboardingPopup({
                       <div>
                         <h5 className="font-semibold text-white">Question Asked</h5>
                         <p className="text-sm text-slate-200">
-                          <UserDisplayName email={otherParticipant} /> has shared a thoughtful question for you to explore.
+                          {otherParticipant ? (
+                            <>
+                              <UserDisplayName email={otherParticipant} /> has shared a thoughtful question for you to explore.
+                            </>
+                          ) : (
+                            <>Your conversation partner has shared a thoughtful question for you to explore.</>
+                          )}
                         </p>
                       </div>
                     </CardContent>
