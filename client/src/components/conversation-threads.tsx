@@ -52,16 +52,16 @@ function StackedConversation({
   const [isExpanded, setIsExpanded] = useState(false);
   const shouldStack = conversation.messageCount >= 4;
   
-  // Role-based glowing effect styles
+  // Role-based glowing effect styles - maximum visibility
   const glowStyles = isInviter 
-    ? 'shadow-[0_0_25px_rgba(79,172,254,0.5)] border-[#4FACFE]/60 ring-2 ring-[#4FACFE]/30 hover:shadow-[0_0_35px_rgba(79,172,254,0.7)]' 
-    : 'shadow-[0_0_25px_rgba(215,160,135,0.5)] border-[#D7A087]/60 ring-2 ring-[#D7A087]/30 hover:shadow-[0_0_35px_rgba(215,160,135,0.7)]';
+    ? 'shadow-[0_0_60px_rgba(79,172,254,1),0_0_100px_rgba(79,172,254,0.7),0_0_150px_rgba(79,172,254,0.4)] border-4 border-[#4FACFE] ring-8 ring-[#4FACFE]/60 hover:shadow-[0_0_80px_rgba(79,172,254,1),0_0_120px_rgba(79,172,254,0.8)] bg-gradient-to-br from-[#4FACFE]/20 via-[#4FACFE]/10 to-transparent backdrop-blur-sm' 
+    : 'shadow-[0_0_60px_rgba(215,160,135,1),0_0_100px_rgba(215,160,135,0.7),0_0_150px_rgba(215,160,135,0.4)] border-4 border-[#D7A087] ring-8 ring-[#D7A087]/60 hover:shadow-[0_0_80px_rgba(215,160,135,1),0_0_120px_rgba(215,160,135,0.8)] bg-gradient-to-br from-[#D7A087]/20 via-[#D7A087]/10 to-transparent backdrop-blur-sm';
   
   return (
     <Card 
-      className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
-        isSelected ? 'ring-2 ring-ocean border-ocean/30' : 'border-slate-200/60'
-      } ${shouldStack ? 'relative' : ''} ${glowStyles}`}
+      className={`cursor-pointer transition-all duration-300 ${shouldStack ? 'relative' : ''} ${glowStyles} ${
+        isSelected ? 'ring-2 ring-ocean border-ocean/30' : ''
+      }`}
       onClick={onClick}
     >
       {shouldStack && !isExpanded && (

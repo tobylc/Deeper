@@ -148,7 +148,17 @@ export default function ConversationInterface({
           <div className="space-y-6 relative z-10">
             {messages.map((message, index) => (
               <div key={message.id} className="relative">
-                <div className="text-gray-800 leading-relaxed font-serif text-base whitespace-pre-wrap bg-white p-4 rounded-lg shadow-sm">
+                <div className={cn(
+                  "text-gray-800 leading-relaxed font-serif text-base whitespace-pre-wrap bg-white p-4 rounded-lg shadow-sm",
+                  // Role-based glowing effects for message bubbles
+                  message.senderEmail === currentUserEmail
+                    ? (connection?.inviterEmail === currentUserEmail
+                        ? "shadow-[0_0_30px_rgba(79,172,254,0.6),0_0_50px_rgba(79,172,254,0.3)] border-2 border-[#4FACFE]/50 ring-2 ring-[#4FACFE]/30 bg-gradient-to-br from-[#4FACFE]/5 to-white"
+                        : "shadow-[0_0_30px_rgba(215,160,135,0.6),0_0_50px_rgba(215,160,135,0.3)] border-2 border-[#D7A087]/50 ring-2 ring-[#D7A087]/30 bg-gradient-to-br from-[#D7A087]/5 to-white")
+                    : (connection?.inviterEmail !== currentUserEmail
+                        ? "shadow-[0_0_30px_rgba(79,172,254,0.6),0_0_50px_rgba(79,172,254,0.3)] border-2 border-[#4FACFE]/50 ring-2 ring-[#4FACFE]/30 bg-gradient-to-br from-[#4FACFE]/5 to-white"
+                        : "shadow-[0_0_30px_rgba(215,160,135,0.6),0_0_50px_rgba(215,160,135,0.3)] border-2 border-[#D7A087]/50 ring-2 ring-[#D7A087]/30 bg-gradient-to-br from-[#D7A087]/5 to-white")
+                )}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-600">
                       {message.senderEmail === currentUserEmail ? 'You' : <UserDisplayName email={message.senderEmail} />}

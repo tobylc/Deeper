@@ -832,12 +832,14 @@ Changelog:
   * Enhanced handleSendAttempt logic to skip timer validation for empty conversations (inviter's first question)
   * Production-ready implementation ensures no timer display for inviter's first question while maintaining 10-minute thoughtful response requirement for all subsequent messages
   * Optimized code maintains role-based visual styling and turn-based conversation logic without performance overhead
-- June 26, 2025. Enhanced role-based glowing effects for conversation thread bubbles:
-  * Implemented distinct visual identity for conversation threads with role-based glowing effects
-  * Inviters receive ocean blue glow: 25px shadow with #4FACFE color, enhanced borders and ring effects
-  * Invitees receive amber glow: 25px shadow with #D7A087 color, enhanced borders and ring effects
-  * Added hover effects that intensify glow to 35px radius with increased opacity for interactive feedback
-  * Production-ready implementation maintains visual hierarchy and role distinction throughout conversation threading interface
+- June 26, 2025. Maximum visibility role-based glowing effects system implementation:
+  * Enhanced conversation thread bubbles with highly visible glowing effects: 60px shadow radius with triple-layer glow effects
+  * Inviters receive intense ocean blue glow: #4FACFE with 100px outer glow, 4px borders, 8px ring effects, and gradient backgrounds
+  * Invitees receive intense amber glow: #D7A087 with 100px outer glow, 4px borders, 8px ring effects, and gradient backgrounds
+  * Added role-based glowing effects to message bubbles themselves for maximum visual distinction throughout conversations
+  * Message bubbles now display 30px shadow radius with borders, rings, and gradient backgrounds based on sender's role
+  * Hover effects intensify glow to 80px radius with maximum opacity for enhanced interaction feedback
+  * Production-ready implementation with backdrop blur and comprehensive visual hierarchy maintaining role distinction across all conversation elements
 - June 23, 2025. Critical subscription security fix and immediate discount activation system:
   * Fixed critical security vulnerability where subscription tiers were updated before payment verification
   * Enhanced subscription upgrade endpoint to only update tier after successful Stripe payment confirmation
