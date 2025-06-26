@@ -91,15 +91,10 @@ const ConversationInterface = memo(function ConversationInterface({
 
   // Check if this is inviter's first question to bypass timer completely
   const isInviterFirstQuestion = useCallback(() => {
-    try {
-      if (!messages || !connection || !currentUserEmail) return false;
-      return messages.length === 0 && 
-             connection.inviterEmail === currentUserEmail &&
-             nextMessageType === 'question';
-    } catch (error) {
-      console.error('[CONVERSATION_INTERFACE] Error checking inviter first question:', error);
-      return false;
-    }
+    // Simple, reliable check for inviter's first question
+    return messages?.length === 0 && 
+           connection?.inviterEmail === currentUserEmail &&
+           nextMessageType === 'question';
   }, [messages, connection, currentUserEmail, nextMessageType]);
 
   // Handle voice message sending with AI transcription
@@ -192,23 +187,24 @@ const ConversationInterface = memo(function ConversationInterface({
 
   // Production-ready message sending validation with comprehensive error handling
   const canSendNow = useCallback(() => {
-    try {
-      // Skip timer completely for inviter's first question
-      if (isInviterFirstQuestion()) return true;
-      
-      // Skip timer for empty conversations (inviter's first question)
-      if (!messages || messages.length === 0) return true;
-      
-      // Skip timer if user hasn't started responding yet
-      if (!hasStartedResponse) return true;
-      
-      // Check if 10 minutes have passed
-      const remainingTime = getRemainingTime();
-      return remainingTime <= 0;
-    } catch (error) {
-      console.error('[CONVERSATION_INTERFACE] Error validating send capability:', error);
-      return false; // Safe default - prevent sending if validation fails
+    // PRIORITY: Always allow inviter's first question without any timer
+    if (isInviterFirstQuestion()) {
+      return true;
     }
+    
+    // Allow sending if no messages exist (empty conversation)
+    if (!messages || messages.length === 0) {
+      return true;
+    }
+    
+    // Allow sending if user hasn't started the response timer yet
+    if (!hasStartedResponse) {
+      return true;
+    }
+    
+    // Check if 10 minutes have passed since response started
+    const remainingTime = getRemainingTime();
+    return remainingTime <= 0;
   }, [isInviterFirstQuestion, messages, hasStartedResponse, getRemainingTime]);
 
   return (
@@ -263,11 +259,12 @@ const ConversationInterface = memo(function ConversationInterface({
                   
                   {/* Voice message display */}
                   {message.messageFormat === 'voice' && message.audioFileUrl ? (
-                    <VoiceMessageDisplay
-                      audioUrl={message.audioFileUrl}
-                      transcription={message.transcription || undefined}
-                      duration={message.audioDuration || 0}
-                    />
+                    <div className="voice-message-placeholder bg-blue-50 p-3 rounded">
+                      <p className="text-sm text-blue-600">🎵 Voice Message</p>
+                      {message.transcription && (
+                        <p className="text-xs text-gray-600 mt-1">{message.transcription}</p>
+                      )}
+                    </div>
                   ) : (
                     message.content
                   )}
@@ -453,7 +450,7 @@ const ConversationInterface = memo(function ConversationInterface({
 
       {/* Transcription Progress */}
       {showTranscriptionProgress && (
-        <TranscriptionProgress />
+        <TranscriptionProgress isVisible={showTranscriptionProgress} />
       )}
     </div>
   );
