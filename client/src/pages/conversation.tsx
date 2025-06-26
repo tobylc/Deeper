@@ -498,13 +498,19 @@ export default function ConversationPage() {
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
     
-    // Check if this is the inviter's first question - skip timer for this case
+    // NEVER show timer popup for inviter's first question
     const isInviterFirstQuestion = messages.length === 0 && 
                                    connection?.inviterEmail === user?.email &&
                                    nextMessageType === 'question';
     
-    // Check if enough time has passed for thoughtful response (skip for inviter's first question)
-    if (!isInviterFirstQuestion && hasStartedResponse && !checkResponseTime()) {
+    if (isInviterFirstQuestion) {
+      // Skip all timer logic and send immediately for inviter's first question
+      proceedWithSending(newMessage);
+      return;
+    }
+    
+    // Check if enough time has passed for thoughtful response (only for non-first questions)
+    if (hasStartedResponse && !checkResponseTime()) {
       setPendingMessage(newMessage);
       setShowThoughtfulResponsePopup(true);
       return;
@@ -538,12 +544,17 @@ export default function ConversationPage() {
   };
 
   const handleRecordingStart = () => {
-    // Only start timer if this is not the inviter's first question
+    // NEVER start timer for inviter's first question
     const isInviterFirstQuestion = messages.length === 0 && 
                                    connection?.inviterEmail === user?.email &&
                                    nextMessageType === 'question';
     
-    if (!isInviterFirstQuestion && !hasStartedResponse && !responseStartTime) {
+    if (isInviterFirstQuestion) {
+      // Completely skip timer for inviter's first question
+      return;
+    }
+    
+    if (!hasStartedResponse && !responseStartTime) {
       setHasStartedResponse(true);
       setResponseStartTime(new Date());
     }
@@ -703,16 +714,20 @@ export default function ConversationPage() {
               newMessage={newMessage}
               setNewMessage={(message: string) => {
                 setNewMessage(message);
-                // Start timer when user begins typing (but not for inviter's first question)
+                // NEVER start timer for inviter's first question - check this first
+                const isInviterFirstQuestion = messages.length === 0 && 
+                                               connection?.inviterEmail === user?.email &&
+                                               nextMessageType === 'question';
+                
+                if (isInviterFirstQuestion) {
+                  // Skip all timer logic for inviter's first question
+                  return;
+                }
+                
+                // Start timer when user begins typing (only for non-first questions)
                 if (message.trim() && !hasStartedResponse) {
-                  const isInviterFirstQuestion = messages.length === 0 && 
-                                                 connection?.inviterEmail === user?.email &&
-                                                 nextMessageType === 'question';
-                  
-                  if (!isInviterFirstQuestion) {
-                    setHasStartedResponse(true);
-                    setResponseStartTime(new Date());
-                  }
+                  setHasStartedResponse(true);
+                  setResponseStartTime(new Date());
                 } else if (!message.trim() && hasStartedResponse) {
                   setHasStartedResponse(false);
                   setResponseStartTime(null);
@@ -727,15 +742,18 @@ export default function ConversationPage() {
               hasStartedResponse={hasStartedResponse}
               responseStartTime={responseStartTime}
               onTimerStart={() => {
-                // Check if this is the inviter's first question - skip timer for this case
+                // NEVER start timer for inviter's first question
                 const isInviterFirstQuestion = messages.length === 0 && 
                                                connection?.inviterEmail === user?.email &&
                                                nextMessageType === 'question';
                 
-                if (!isInviterFirstQuestion) {
-                  setHasStartedResponse(true);
-                  setResponseStartTime(new Date());
+                if (isInviterFirstQuestion) {
+                  // Completely skip timer for inviter's first question
+                  return;
                 }
+                
+                setHasStartedResponse(true);
+                setResponseStartTime(new Date());
               }}
             />
           </div>
