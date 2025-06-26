@@ -2511,22 +2511,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ message: "First message must be a question" });
         }
       } else {
-        // Alternate between question and response
-        const expectedType = lastMessage.type === 'question' ? 'response' : 'question';
-        if (messageData.type !== expectedType) {
-          return res.status(400).json({ message: `Expected ${expectedType}, got ${messageData.type}` });
-        }
-
-        // Additional validation: For new questions (not first), ensure user has provided at least one response
-        if (messageData.type === 'question' && existingMessages.length > 0) {
-          const userResponses = existingMessages.filter(msg => 
-            msg.type === 'response' && msg.senderEmail === messageData.senderEmail
-          );
-          
-          if (userResponses.length === 0) {
-            return res.status(400).json({ 
-              message: "You must provide at least one response before asking a new question" 
-            });
+        // After initial exchange (2+ messages), allow natural conversation flow
+        if (existingMessages.length >= 2) {
+          // Allow any message type after initial question-response exchange
+          // Users can send follow-ups, new questions, or responses naturally
+        } else {
+          // For the first two messages, enforce question-response pattern
+          const expectedType = lastMessage.type === 'question' ? 'response' : 'question';
+          if (messageData.type !== expectedType) {
+            return res.status(400).json({ message: `Expected ${expectedType}, got ${messageData.type}` });
           }
         }
       }
@@ -3372,10 +3365,23 @@ Format each as a complete question they can use to begin this important conversa
         }
       }
       
-      // Only allow new questions if user has provided at least one response OR if this is their very first conversation
-      if (!hasProvidedResponse && existingConversations.length > 0) {
+      // Allow new question threads after initial exchange
+      // Check if there's at least one complete question-response exchange in any conversation
+      let hasCompleteExchange = false;
+      for (const conv of existingConversations) {
+        const messages = await storage.getMessagesByConversationId(conv.id);
+        const hasQuestion = messages.some(msg => msg.type === 'question');
+        const hasResponse = messages.some(msg => msg.type === 'response');
+        if (hasQuestion && hasResponse) {
+          hasCompleteExchange = true;
+          break;
+        }
+      }
+      
+      // Only require complete exchange for new thread creation (not first conversation)
+      if (!hasCompleteExchange && existingConversations.length > 0) {
         return res.status(400).json({ 
-          message: "You must provide at least one response before asking a new question" 
+          message: "Complete at least one question-response exchange before starting new conversation threads" 
         });
       }
       

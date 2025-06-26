@@ -345,8 +345,11 @@ export default function ConversationPage() {
   
   // Determine if the next message should be a question or response
   const lastMessage = messages[messages.length - 1];
+  
+  // After initial exchange (2+ messages), allow flexible message types
   const nextMessageType: 'question' | 'response' = 
-    !lastMessage || lastMessage.type === 'response' ? 'question' : 'response';
+    messages.length >= 2 ? 'question' : // Allow questions after initial exchange
+    (!lastMessage || lastMessage.type === 'response' ? 'question' : 'response');
 
   // Check if user has provided at least one response to allow new questions
   const hasProvidedResponse = messages.some(msg => 
@@ -358,11 +361,8 @@ export default function ConversationPage() {
     messages.some(msg => msg.type === 'question') && 
     messages.some(msg => msg.type === 'response');
 
-  // Allow right column actions (including first question) if:
-  // 1. It's user's turn AND
-  // 2. Next message type is 'question'
-  // The exchange requirement popup will be handled by the backend API for new thread creation only
-  const canUseRightColumn = isMyTurn && nextMessageType === 'question';
+  // Allow right column actions if it's user's turn (after initial exchange, always allow questions)
+  const canUseRightColumn = isMyTurn;
   
   // Separate flag for determining if new conversation threads are allowed
   // This is only used for the "New Question" dialog, not for the first question
