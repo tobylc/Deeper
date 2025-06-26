@@ -184,60 +184,71 @@
     box-shadow: 0 4px 12px hsla(215, 85%, 60%, 0.3);
   }
 
-  /* Floating waiting text animations - optimized for production */
-  @keyframes gentleFloat {
+  /* Intrigue floating waiting text animations - optimized for production */
+  @keyframes intrigueFloat {
     0%, 100% {
-      transform: translate3d(0px, 0px, 0px) rotate(0deg);
+      transform: translate3d(0px, 0px, 0px) rotate(0deg) scale(1);
     }
-    25% {
-      transform: translate3d(8px, -15px, 0px) rotate(0.5deg);
+    20% {
+      transform: translate3d(3px, -2px, 0px) rotate(0.2deg) scale(1.005);
     }
-    50% {
-      transform: translate3d(-5px, -8px, 0px) rotate(-0.3deg);
+    40% {
+      transform: translate3d(-2px, -1px, 0px) rotate(-0.15deg) scale(0.998);
     }
-    75% {
-      transform: translate3d(12px, -20px, 0px) rotate(0.8deg);
+    60% {
+      transform: translate3d(4px, -3px, 0px) rotate(0.25deg) scale(1.008);
+    }
+    80% {
+      transform: translate3d(-1px, -2px, 0px) rotate(-0.1deg) scale(1.002);
     }
   }
 
-  @keyframes fadeGlow {
+  @keyframes intriguePulse {
     0%, 100% {
+      text-shadow: 0 0 15px rgba(71, 85, 105, 0.2);
+      opacity: 0.75;
+    }
+    30% {
+      text-shadow: 0 0 25px rgba(71, 85, 105, 0.35), 0 0 35px rgba(71, 85, 105, 0.2);
+      opacity: 0.85;
+    }
+    70% {
       text-shadow: 0 0 20px rgba(71, 85, 105, 0.3);
-      opacity: 0.8;
-    }
-    50% {
-      text-shadow: 0 0 40px rgba(71, 85, 105, 0.5), 0 0 60px rgba(71, 85, 105, 0.3);
-      opacity: 0.95;
-    }
-  }
-
-  @keyframes subtleGlow {
-    0%, 100% {
-      text-shadow: 0 0 15px rgba(100, 116, 139, 0.2);
-      opacity: 0.7;
-    }
-    50% {
-      text-shadow: 0 0 30px rgba(100, 116, 139, 0.4);
       opacity: 0.9;
     }
   }
 
-  .gentle-float {
-    animation: gentleFloat 8s ease-in-out infinite, fadeGlow 6s ease-in-out infinite;
+  @keyframes subtleIntrigue {
+    0%, 100% {
+      text-shadow: 0 0 12px rgba(100, 116, 139, 0.15);
+      opacity: 0.65;
+    }
+    25% {
+      text-shadow: 0 0 18px rgba(100, 116, 139, 0.25);
+      opacity: 0.75;
+    }
+    75% {
+      text-shadow: 0 0 22px rgba(100, 116, 139, 0.3);
+      opacity: 0.8;
+    }
+  }
+
+  .intrigue-float {
+    animation: intrigueFloat 12s ease-in-out infinite, intriguePulse 8s ease-in-out infinite;
     will-change: transform, opacity;
     backface-visibility: hidden;
   }
 
-  .gentle-float-delayed {
-    animation: gentleFloat 10s ease-in-out infinite 2s, subtleGlow 8s ease-in-out infinite 1s;
+  .intrigue-float-delayed {
+    animation: intrigueFloat 14s ease-in-out infinite 3s, subtleIntrigue 10s ease-in-out infinite 2s;
     will-change: transform, opacity;
     backface-visibility: hidden;
   }
 
   /* Reduce motion for accessibility */
   @media (prefers-reduced-motion: reduce) {
-    .gentle-float,
-    .gentle-float-delayed {
+    .intrigue-float,
+    .intrigue-float-delayed {
       animation: none;
     }
   }

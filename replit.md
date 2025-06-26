@@ -840,15 +840,15 @@ Changelog:
   * Message bubbles now display 30px shadow radius with borders, rings, and gradient backgrounds based on sender's role
   * Hover effects intensify glow to 80px radius with maximum opacity for enhanced interaction feedback
   * Production-ready implementation with backdrop blur and comprehensive visual hierarchy maintaining role distinction across all conversation elements
-- June 26, 2025. Production-ready floating animated waiting text integration with hypnotic orbs mesmerizing effect:
-  * Removed amber waiting text box from bottom of conversation interface for cleaner visual experience
+- June 26, 2025. Production-ready floating animated waiting text with intrigue movement at bottom of center column:
+  * Repositioned floating waiting text from center to bottom of conversation column for improved UX
   * Created production-optimized FloatingWaitingText component with React.memo for performance optimization
-  * Implemented custom CSS animations using translate3d for hardware acceleration and improved performance
-  * Added accessibility features: ARIA labels, screen reader support, role="status", and prefers-reduced-motion support
-  * Large responsive serif typography (4xl to 7xl) with text shadows and opacity animations creating mesmerizing waiting experience
-  * Text appears centered over hypnotic orbs with "Their turn to write" and "Waiting for their thoughtful response..." messages
-  * Performance optimizations: will-change properties, backface-visibility hidden, and hardware-accelerated transforms
-  * Enhanced waiting state becomes part of the mesmerizing visual experience with full accessibility compliance
+  * Implemented intrigue movement animations: subtle scaling (1.005x), micro-rotations (0.25deg), and gentle translations
+  * Added sophisticated pulse effects with text-shadow variations and opacity changes for engaging visual intrigue
+  * Large responsive serif typography (4xl to 7xl) positioned at bottom with "Their turn to write" messaging
+  * Performance optimizations: translate3d hardware acceleration, will-change properties, and backface-visibility hidden
+  * Full accessibility compliance: ARIA labels, screen reader support, role="status", and prefers-reduced-motion support
+  * Enhanced waiting state with slow, captivating movement cycles (12-14 seconds) that add mystique without distraction
   * Production-ready TypeScript interfaces with comprehensive JSDoc documentation and proper error handling
 - June 23, 2025. Critical subscription security fix and immediate discount activation system:
   * Fixed critical security vulnerability where subscription tiers were updated before payment verification
