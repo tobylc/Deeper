@@ -154,14 +154,25 @@ export default function ConversationPage() {
     enabled: !!otherParticipant,
   });
 
-  const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
+  const { data: messages = [], isLoading: messagesLoading, error: messagesError } = useQuery<Message[]>({
     queryKey: [`/api/conversations/${selectedConversationId || id}/messages`],
     queryFn: async () => {
       const conversationId = selectedConversationId || id;
-      const response = await apiRequest('GET', `/api/conversations/${conversationId}/messages`);
-      return response.json();
+      try {
+        const response = await apiRequest('GET', `/api/conversations/${conversationId}/messages`);
+        if (!response.ok) {
+          throw new Error(`Failed to load messages: ${response.status}`);
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error('Messages loading error:', error);
+        return [];
+      }
     },
     enabled: !!(selectedConversationId || id) && !!user,
+    retry: 3,
+    retryDelay: 1000,
   });
 
   // Check notification preference status for this conversation
@@ -303,8 +314,8 @@ export default function ConversationPage() {
     );
   }
 
-  if (conversationError) {
-    console.error('Conversation error:', conversationError);
+  if (conversationError || messagesError) {
+    console.error('Conversation error:', conversationError || messagesError);
     return (
       <div className="min-h-screen bg-gradient-radial from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="bg-[#1B2137]/90 backdrop-blur-md p-8 rounded-2xl shadow-lg text-center border border-[#4FACFE]/30">
@@ -346,12 +357,12 @@ export default function ConversationPage() {
   // Production-ready message type validation: EVERY question requires a response
   const getNextMessageType = (): 'question' | 'response' => {
     try {
-      if (!messages || messages.length === 0) return 'question'; // First message is always a question
+      if (!messages || !Array.isArray(messages) || messages.length === 0) return 'question';
       
       // Find the most recent question in the conversation
       let lastQuestionIndex = -1;
       for (let i = messages.length - 1; i >= 0; i--) {
-        if (messages[i].type === 'question') {
+        if (messages[i] && messages[i].type === 'question') {
           lastQuestionIndex = i;
           break;
         }
@@ -360,19 +371,17 @@ export default function ConversationPage() {
       // If there's a question without a response, only allow responses
       if (lastQuestionIndex !== -1) {
         const messagesAfterLastQuestion = messages.slice(lastQuestionIndex + 1);
-        const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg.type === 'response');
+        const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg && msg.type === 'response');
         
-        // If the last question hasn't been responded to, only allow responses
         if (!hasResponseToLastQuestion) {
           return 'response';
         }
       }
       
-      // If all questions have been answered, user can ask new questions
       return 'question';
     } catch (error) {
       console.error('[CONVERSATION] Error determining next message type:', error);
-      return 'response'; // Safe default
+      return 'question'; // Safe default
     }
   };
 
