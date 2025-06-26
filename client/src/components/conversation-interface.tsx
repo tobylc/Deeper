@@ -242,12 +242,8 @@ export default function ConversationInterface({
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
-                          // Check if this is the inviter's first question - skip timer validation for this case
-                          const isInviterFirstQuestion = messages.length === 0 && 
-                                                         connection?.inviterEmail === currentUserEmail &&
-                                                         nextMessageType === 'question';
-                          
-                          if (canSendNow() || isInviterFirstQuestion) {
+                          // Skip timer validation for empty conversations (inviter's first question)
+                          if (canSendNow() || messages.length === 0) {
                             onSendMessage();
                           } else {
                             setShowThoughtfulResponsePopup(true);
@@ -268,12 +264,8 @@ export default function ConversationInterface({
                   <div className="flex flex-col items-center justify-between py-2">
                     <Button
                       onClick={() => {
-                        // Check if this is the inviter's first question - skip timer validation for this case
-                        const isInviterFirstQuestion = messages.length === 0 && 
-                                                       connection?.inviterEmail === currentUserEmail &&
-                                                       nextMessageType === 'question';
-                        
-                        if (canSendNow() || isInviterFirstQuestion) {
+                        // Skip timer validation for empty conversations (inviter's first question)
+                        if (canSendNow() || messages.length === 0) {
                           onSendMessage();
                         } else {
                           setShowThoughtfulResponsePopup(true);
@@ -298,28 +290,11 @@ export default function ConversationInterface({
                     </Button>
                     <div className="flex items-center space-x-2">
                       <span className="text-xs text-slate-600">Share</span>
-                      {(() => {
-                        // Check if this is the inviter's first question - don't show timer for this case
-                        const isInviterFirstQuestion = messages.length === 0 && 
-                                                       connection?.inviterEmail === currentUserEmail &&
-                                                       nextMessageType === 'question';
-                        
-                        // Never show timer for empty conversations (inviter's first question)
-                        if (messages.length === 0) {
-                          return null;
-                        }
-                        
-                        // Never show timer for inviter's first question in any conversation
-                        if (isInviterFirstQuestion) {
-                          return null;
-                        }
-                        
-                        return hasStartedResponse && !canSendNow() && (
-                          <span className="text-xs text-slate-500 font-mono">
-                            {formatTime(getRemainingTime())}
-                          </span>
-                        );
-                      })()}
+                      {messages.length > 0 && hasStartedResponse && !canSendNow() && (
+                        <span className="text-xs text-slate-500 font-mono">
+                          {formatTime(getRemainingTime())}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
