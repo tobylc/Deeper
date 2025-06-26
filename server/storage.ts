@@ -45,6 +45,7 @@ export interface IStorage {
   getInitiatedConnectionsCount(email: string): Promise<number>;
   createConnection(connection: InsertConnection): Promise<Connection>;
   updateConnectionStatus(id: number, status: string, acceptedAt?: Date): Promise<Connection | undefined>;
+  isUserInvitee(email: string): Promise<boolean>;
 
   // Conversations
   getConversation(id: number): Promise<Conversation | undefined>;
@@ -241,6 +242,14 @@ export class DatabaseStorage implements IStorage {
       .from(connections)
       .where(eq(connections.inviterEmail, email));
     return result[0]?.count || 0;
+  }
+
+  async isUserInvitee(email: string): Promise<boolean> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(connections)
+      .where(eq(connections.inviteeEmail, email));
+    return (result[0]?.count || 0) > 0;
   }
 
   async createConnection(insertConnection: InsertConnection): Promise<Connection> {

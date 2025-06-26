@@ -2285,8 +2285,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const subscriptionStatus = currentUser.subscriptionStatus || 'inactive';
       const subscriptionExpiresAt = currentUser.subscriptionExpiresAt;
 
-      // Enforce trial expiration for conversation creation
-      if (subscriptionTier === 'free' || (subscriptionStatus === 'trialing' && subscriptionExpiresAt && subscriptionExpiresAt < now)) {
+      // Check if user is an invitee (should have permanent free access)
+      const isInviteeUser = await storage.isUserInvitee(currentUser.email!);
+      
+      // Enforce trial expiration for conversation creation (but not for invitee users)
+      if (!isInviteeUser && (subscriptionTier === 'free' || (subscriptionStatus === 'trialing' && subscriptionExpiresAt && subscriptionExpiresAt < now))) {
         return res.status(403).json({ 
           type: 'TRIAL_EXPIRED',
           message: "Your free trial has expired. Please upgrade to continue using Deeper.",
@@ -2483,8 +2486,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const subscriptionStatus = senderUser.subscriptionStatus || 'inactive';
       const subscriptionExpiresAt = senderUser.subscriptionExpiresAt;
 
-      // Enforce trial expiration for messaging
-      if (subscriptionTier === 'free' || (subscriptionStatus === 'trialing' && subscriptionExpiresAt && subscriptionExpiresAt < now)) {
+      // Check if user is an invitee (should have permanent free access)
+      const isInviteeUser = await storage.isUserInvitee(senderUser.email!);
+      
+      // Enforce trial expiration for messaging (but not for invitee users)
+      if (!isInviteeUser && (subscriptionTier === 'free' || (subscriptionStatus === 'trialing' && subscriptionExpiresAt && subscriptionExpiresAt < now))) {
         return res.status(403).json({ 
           type: 'TRIAL_EXPIRED',
           message: "Your free trial has expired. Please upgrade to continue conversations.",
