@@ -41,6 +41,14 @@ export default function ConversationPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Check if user was invited by someone else (is an invitee)
+  const { data: connections = [] } = useQuery<Connection[]>({
+    queryKey: [`/api/connections/${user?.email}`],
+    enabled: !!user?.email,
+  });
+
+  const isInviteeUser = connections.some(c => c.inviteeEmail === user?.email);
+
   useEffect(() => {
     if (!user) {
       setLocation("/auth");

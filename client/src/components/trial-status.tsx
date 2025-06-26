@@ -87,34 +87,22 @@ export function TrialStatus() {
   }
 
   if (isExpiredTrial || effectiveTrialStatus.isExpired) {
-    // For invitee users, show free status without "trial expired" message
+    // For invitee users, show free status without any upgrade options
     if (isInviteeUser) {
       return (
-        <>
-          <div className="mt-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-slate-600">Current Plan</span>
-              </div>
-              <Badge variant="secondary" className="bg-slate-200 text-slate-700">
-                free
-              </Badge>
+        <div className="mt-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-slate-600">Current Plan</span>
             </div>
-            <Button 
-              size="sm" 
-              className="mt-3 w-full bg-gradient-to-r from-ocean to-teal text-white hover:from-ocean/90 hover:to-teal/90"
-              onClick={() => setShowTrialExpiredPopup(true)}
-            >
-              <Crown className="w-3 h-3 mr-1" />
-              Upgrade Now
-            </Button>
+            <Badge variant="secondary" className="bg-slate-200 text-slate-700">
+              free forever
+            </Badge>
           </div>
-          
-          <TrialExpirationPopup 
-            isOpen={showTrialExpiredPopup} 
-            onClose={() => setShowTrialExpiredPopup(false)} 
-          />
-        </>
+          <div className="mt-2 text-xs text-slate-500">
+            You have permanent access through your connection
+          </div>
+        </div>
       );
     }
 

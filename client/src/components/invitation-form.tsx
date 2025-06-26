@@ -6,11 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, CheckCircle, AlertTriangle } from "lucide-react";
 import TrialExpirationPopup from "@/components/trial-expiration-popup";
 import { relationshipRoles, getRolesForRelationship, getValidRolePairs } from "@shared/relationship-roles";
+import type { Connection } from "@shared/schema";
 
 interface InvitationFormProps {
   onClose: () => void;
@@ -29,6 +31,14 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
     inviteeRole: "",
     personalMessage: "",
   });
+
+  // Check if user was invited by someone else (is an invitee)
+  const { data: connections = [] } = useQuery<Connection[]>({
+    queryKey: [`/api/connections/${user?.email}`],
+    enabled: !!user?.email,
+  });
+
+  const isInviteeUser = connections.some(c => c.inviteeEmail === user?.email);
 
   const relationshipTypes = [
     "Parent-Child",
@@ -117,7 +127,7 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
         });
       } else if (error.status === 403 || error.response?.status === 403) {
         const errorData = error.response?.data || error;
-        if (errorData.type === 'TRIAL_EXPIRED') {
+        if (errorData.type === 'TRIAL_EXPIRED' && !isInviteeUser) {
           setShowTrialExpirationPopup(true);
         } else if (errorData.type === 'SUBSCRIPTION_LIMIT') {
           toast({

@@ -8,7 +8,6 @@ import type { Connection } from "@shared/schema";
 
 export function InviteeUpgradeBanner() {
   const { user } = useAuth();
-  const [showTrialExpiredPopup, setShowTrialExpiredPopup] = useState(false);
 
   // Check if user was invited by someone else (is an invitee)
   const { data: connections = [] } = useQuery<Connection[]>({
@@ -18,38 +17,11 @@ export function InviteeUpgradeBanner() {
 
   const isInviteeUser = connections.some(c => c.inviteeEmail === user?.email);
   
-  // Only show banner for invitee users
+  // Invitees should never see upgrade banners - they have permanent free access
   if (!isInviteeUser || !user) {
     return null;
   }
 
-  return (
-    <>
-      <div className="mb-6 p-4 bg-gradient-to-r from-ocean to-teal rounded-2xl text-white shadow-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <Crown className="w-5 h-5" />
-              <span className="font-semibold">Upgrade Now</span>
-            </div>
-            <p className="text-white/90 text-sm">
-              To begin sending invites to other people you desire to go Deeper with
-            </p>
-          </div>
-          <Button
-            onClick={() => setShowTrialExpiredPopup(true)}
-            className="bg-white text-ocean hover:bg-white/90 font-semibold px-6 py-2 ml-4"
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Upgrade Now
-          </Button>
-        </div>
-      </div>
-
-      <TrialExpirationPopup 
-        isOpen={showTrialExpiredPopup} 
-        onClose={() => setShowTrialExpiredPopup(false)} 
-      />
-    </>
-  );
+  // Return null for all invitee users - no upgrade prompts
+  return null;
 }
