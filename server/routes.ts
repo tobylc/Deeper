@@ -12,6 +12,10 @@ import { finalDb } from "./db-final";
 import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "@shared/schema";
 import { getRolesForRelationship, isValidRolePair } from "@shared/relationship-roles";
 import { z } from "zod";
+
+// Type conversion utility for null to undefined
+const nullToUndefined = <T>(value: T | null): T | undefined => value === null ? undefined : value;
+
 import { 
   rateLimit, 
   validateEmail, 
@@ -158,8 +162,8 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       subscriptionTier: newTier || 'free',
       subscriptionStatus: status,
       maxConnections: benefits.maxConnections,
-      stripeCustomerId: user.stripeCustomerId || undefined,
-      stripeSubscriptionId: user.stripeSubscriptionId || undefined,
+      stripeCustomerId: nullToUndefined(user.stripeCustomerId),
+      stripeSubscriptionId: nullToUndefined(user.stripeSubscriptionId),
       subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
     });
   } else {
@@ -168,8 +172,8 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       subscriptionTier: user.subscriptionTier || 'free',
       subscriptionStatus: status,
       maxConnections: user.maxConnections || 1,
-      stripeCustomerId: user.stripeCustomerId || undefined,
-      stripeSubscriptionId: user.stripeSubscriptionId || undefined,
+      stripeCustomerId: nullToUndefined(user.stripeCustomerId),
+      stripeSubscriptionId: nullToUndefined(user.stripeSubscriptionId),
       subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
     });
   }
@@ -181,15 +185,16 @@ async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent) {
     if (paymentIntent.amount === 495) {
       // Find the subscription associated with this payment
       const invoices = await stripe.invoices.list({
-        payment_intent: paymentIntent.id,
-        limit: 1
+        limit: 100
       });
       
-      if (invoices.data.length > 0) {
-        const invoice = invoices.data[0];
-        if (invoice.subscription) {
-          await handleDiscountPaymentUpgrade(invoice.subscription as string);
-        }
+      // Find invoice by payment intent metadata
+      const matchingInvoice = invoices.data.find(invoice => 
+        (invoice as any).payment_intent === paymentIntent.id
+      );
+      
+      if (matchingInvoice && (matchingInvoice as any).subscription) {
+        await handleDiscountPaymentUpgrade((matchingInvoice as any).subscription as string);
       }
     }
   } catch (error) {
