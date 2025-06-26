@@ -420,7 +420,7 @@ export default function ConversationPage() {
       console.error('[CONVERSATION] Error checking last question response:', error);
       return false;
     }
-  }, [messages]);
+  }, [messages?.length]);
 
   // Check if there has been at least one complete question-response exchange in this thread
   const hasCompleteExchange = messages && Array.isArray(messages) && messages.length >= 2 && 
@@ -445,7 +445,7 @@ export default function ConversationPage() {
       console.error('[CONVERSATION] Error validating right column access:', error);
       return false; // Safe default
     }
-  }, [conversation, user?.email, messages, isMyTurn, lastQuestionNeedsResponse]);
+  }, [conversation?.id, user?.email, messages?.length, isMyTurn, lastQuestionNeedsResponse]);
   
   // Enhanced validation for new thread creation
   const canCreateNewThread = useMemo(() => {
@@ -464,7 +464,7 @@ export default function ConversationPage() {
       console.error('[CONVERSATION] Error validating new thread creation:', error);
       return false;
     }
-  }, [conversation, user?.email, messages, hasCompleteExchange, lastQuestionNeedsResponse]);
+  }, [conversation?.id, user?.email, messages?.length, hasCompleteExchange, lastQuestionNeedsResponse]);
 
 
 
