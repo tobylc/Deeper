@@ -151,7 +151,7 @@ export default function ConversationPage() {
       const response = await apiRequest('GET', `/api/users/by-email/${otherParticipant}`);
       return response.json();
     },
-    enabled: !!otherParticipant,
+    enabled: !!otherParticipant && typeof otherParticipant === 'string',
   });
 
   const { data: messages = [], isLoading: messagesLoading, error: messagesError } = useQuery<Message[]>({
@@ -607,7 +607,7 @@ export default function ConversationPage() {
                   className="border-2 border-white shadow-md z-10"
                 />
                 <ProfileAvatar
-                  email={otherParticipant}
+                  email={otherParticipant || ''}
                   firstName={otherUserData?.firstName}
                   lastName={otherUserData?.lastName}
                   profileImageUrl={otherUserData?.profileImageUrl}
@@ -666,7 +666,7 @@ export default function ConversationPage() {
               <ConversationThreads
                 connectionId={conversation.connectionId}
                 currentUserEmail={user.email || ''}
-                otherParticipantEmail={otherParticipant}
+                otherParticipantEmail={otherParticipant || ''}
                 relationshipType={conversation.relationshipType}
                 onThreadSelect={handleThreadSelect}
                 selectedConversationId={selectedConversationId || parseInt(id!)}
@@ -742,7 +742,7 @@ export default function ConversationPage() {
               otherUserRole={otherUserRole || ''}
               onQuestionSelect={handleQuestionSelect}
               isMyTurn={isMyTurn}
-              otherParticipant={otherParticipant}
+              otherParticipant={otherParticipant || ''}
               connectionId={conversation.connectionId}
               onNewThreadCreated={handleNewThreadCreated}
               canUseRightColumn={canUseRightColumn}
@@ -760,7 +760,7 @@ export default function ConversationPage() {
           onClose={() => setShowOnboardingPopup(false)}
           onComplete={() => markOnboardingCompleteMutation.mutate()}
           userRole={conversation.participant1Email === user?.email ? 'questioner' : 'responder'}
-          otherParticipant={otherParticipant}
+          otherParticipant={otherParticipant || ''}
           relationshipType={conversation.relationshipType}
           inviterRole={connection?.inviterRole}
           inviteeRole={connection?.inviteeRole}

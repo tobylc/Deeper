@@ -10,7 +10,7 @@ interface OnboardingPopupProps {
   isOpen: boolean;
   onClose: () => void;
   userRole: 'questioner' | 'responder';
-  otherParticipant: string;
+  otherParticipant: string | null;
   relationshipType: string;
   inviterRole?: string;
   inviteeRole?: string;
@@ -78,9 +78,13 @@ export default function OnboardingPopup({
                 <p className="text-slate-200 leading-relaxed">
                   Deeper uses a unique <strong className="text-white">turn-based conversation system</strong> designed to create 
                   more thoughtful, meaningful exchanges between you and{" "}
-                  <span className="text-[#4FACFE] font-medium">
-                    <UserDisplayName email={otherParticipant} />
-                  </span>.
+                  {otherParticipant ? (
+                    <span className="text-[#4FACFE] font-medium">
+                      <UserDisplayName email={otherParticipant} />
+                    </span>
+                  ) : (
+                    <span className="text-[#4FACFE] font-medium">your conversation partner</span>
+                  )}.
                 </p>
               </div>
             </CardContent>
