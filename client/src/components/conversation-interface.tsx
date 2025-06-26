@@ -174,29 +174,7 @@ export default function ConversationInterface({
           </div>
         )}
 
-        {/* Glowing waiting state for non-turn users */}
-        {!isMyTurn && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
-            <div className="relative bg-gradient-to-br from-white via-amber-50/20 to-amber/5 p-4 rounded-sm border border-amber/20 shadow-md shadow-amber/10"
-                 style={{
-                   background: `
-                     linear-gradient(135deg, 
-                       rgba(255,255,255,0.98) 0%, 
-                       rgba(255,251,235,0.96) 30%, 
-                       rgba(215,160,135,0.08) 70%, 
-                       rgba(215,160,135,0.12) 100%
-                     )
-                   `,
-                   filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.06))',
-                   backdropFilter: 'blur(0.5px)'
-                 }}>
-              <div className="text-center">
-                <p className="text-sm font-medium text-slate-700 mb-1">Their turn to write</p>
-                <p className="text-xs text-slate-600">Waiting for their thoughtful response...</p>
-              </div>
-            </div>
-          </div>
-        )}
+
       </div>
 
       {/* Fixed Input Area at Bottom - Only visible when it's user's turn */}

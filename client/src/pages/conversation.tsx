@@ -571,9 +571,12 @@ export default function ConversationPage() {
 
           {/* Main Conversation */}
           <div className={`lg:col-span-2 ${showThreadsView ? 'hidden lg:block' : 'block'} flex flex-col h-[calc(100vh-8rem)]`}>
-            {/* Hypnotic Orbs Background Effect */}
+            {/* Hypnotic Orbs Background Effect with Floating Text */}
             {!isMyTurn && (
-              <HypnoticOrbs className="absolute inset-0 z-0" />
+              <>
+                <HypnoticOrbs className="absolute inset-0 z-0" />
+                <FloatingWaitingText className="absolute inset-0 z-30" />
+              </>
             )}
             <ConversationInterface 
               messages={messages}

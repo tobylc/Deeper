@@ -184,6 +184,52 @@
     box-shadow: 0 4px 12px hsla(215, 85%, 60%, 0.3);
   }
 
+  /* Floating waiting text animations */
+  @keyframes gentleFloat {
+    0%, 100% {
+      transform: translateY(0px) translateX(0px) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-15px) translateX(8px) rotate(0.5deg);
+    }
+    50% {
+      transform: translateY(-8px) translateX(-5px) rotate(-0.3deg);
+    }
+    75% {
+      transform: translateY(-20px) translateX(12px) rotate(0.8deg);
+    }
+  }
+
+  @keyframes fadeGlow {
+    0%, 100% {
+      text-shadow: 0 0 20px rgba(71, 85, 105, 0.3);
+      opacity: 0.8;
+    }
+    50% {
+      text-shadow: 0 0 40px rgba(71, 85, 105, 0.5), 0 0 60px rgba(71, 85, 105, 0.3);
+      opacity: 0.95;
+    }
+  }
+
+  @keyframes subtleGlow {
+    0%, 100% {
+      text-shadow: 0 0 15px rgba(100, 116, 139, 0.2);
+      opacity: 0.7;
+    }
+    50% {
+      text-shadow: 0 0 30px rgba(100, 116, 139, 0.4);
+      opacity: 0.9;
+    }
+  }
+
+  .gentle-float {
+    animation: gentleFloat 8s ease-in-out infinite, fadeGlow 6s ease-in-out infinite;
+  }
+
+  .gentle-float-delayed {
+    animation: gentleFloat 10s ease-in-out infinite 2s, subtleGlow 8s ease-in-out infinite 1s;
+  }
+
   /* Gradient backgrounds */
   .gradient-warm {
     background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--light-gray)) 100%);
