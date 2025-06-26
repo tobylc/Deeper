@@ -134,15 +134,23 @@ const ConversationInterface = memo(function ConversationInterface({
     }
   }, []);
 
+  // Production-ready message sending validation with comprehensive error handling
   const canSendNow = useCallback(() => {
     try {
+      // Skip timer for empty conversations (inviter's first question)
+      if (!messages || messages.length === 0) return true;
+      
+      // Skip timer if user hasn't started responding yet
       if (!hasStartedResponse) return true;
-      return getRemainingTime() <= 0;
+      
+      // Check if 10 minutes have passed
+      const remainingTime = getRemainingTime();
+      return remainingTime <= 0;
     } catch (error) {
-      console.error('Error checking send availability:', error);
-      return true; // Allow sending on error to prevent blocking
+      console.error('[CONVERSATION_INTERFACE] Error validating send capability:', error);
+      return false; // Safe default - prevent sending if validation fails
     }
-  }, [hasStartedResponse, getRemainingTime]);
+  }, [messages, hasStartedResponse, getRemainingTime]);
 
   return (
     <div className="h-full flex flex-col">

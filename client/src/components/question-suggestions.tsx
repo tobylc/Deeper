@@ -91,35 +91,100 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
     }
   });
 
+  // Production-ready new thread creation with comprehensive error handling
   const handleCreateNewThread = () => {
-    if (!newQuestionText.trim() || !isMyTurn) return;
-    
-    // Check if we can create new threads
-    if (!canCreateNewThread) {
-      setShowExchangeRequiredPopup(true);
-      return;
+    try {
+      // Validate basic requirements
+      if (!newQuestionText.trim() || !isMyTurn) {
+        console.error('[QUESTION_SUGGESTIONS] Invalid thread creation attempt:', {
+          hasQuestion: !!newQuestionText.trim(),
+          isMyTurn
+        });
+        return;
+      }
+      
+      // Check if we can create new threads
+      if (!canCreateNewThread) {
+        setShowExchangeRequiredPopup(true);
+        return;
+      }
+      
+      // Validate required data for thread creation
+      if (!user?.email || !otherParticipant || !connectionId) {
+        console.error('[QUESTION_SUGGESTIONS] Missing required data for thread creation:', {
+          hasUser: !!user?.email,
+          hasOtherParticipant: !!otherParticipant,
+          hasConnectionId: !!connectionId
+        });
+        toast({
+          title: "Unable to create thread",
+          description: "Missing required information. Please refresh and try again.",
+        });
+        return;
+      }
+      
+      createThreadMutation.mutate(newQuestionText.trim());
+    } catch (error) {
+      console.error('[QUESTION_SUGGESTIONS] Error in handleCreateNewThread:', error);
+      toast({
+        title: "Unable to create thread",
+        description: "An unexpected error occurred. Please try again.",
+      });
     }
-    
-    createThreadMutation.mutate(newQuestionText.trim());
   };
 
-  // Handle all question selections from right column (curated, AI, custom)
+  // Production-ready question selection with comprehensive error handling
   const handleQuestionSelect = (question: string) => {
-    // Always allow question suggestions if it's the user's turn and next message is a question
-    if (!canUseRightColumn) {
-      // Show beautiful popup instead of ugly toast
-      setShowExchangeRequiredPopup(true);
-      return;
-    }
-    
-    // If we can create new threads (i.e., there's been a complete exchange), create a new thread
-    // Otherwise, just populate the question into the current conversation
-    if (canCreateNewThread) {
-      // Create new conversation thread with the selected question
-      createThreadMutation.mutate(question);
-    } else {
-      // For the first question in a conversation, just populate it into the input
-      onQuestionSelect(question);
+    try {
+      // Validate question content
+      if (!question || !question.trim()) {
+        console.error('[QUESTION_SUGGESTIONS] Empty question selected');
+        return;
+      }
+      
+      // Check if user can use right column
+      if (!canUseRightColumn) {
+        setShowExchangeRequiredPopup(true);
+        return;
+      }
+      
+      // Validate required callback function
+      if (!onQuestionSelect && !canCreateNewThread) {
+        console.error('[QUESTION_SUGGESTIONS] Missing onQuestionSelect callback');
+        toast({
+          title: "Unable to select question",
+          description: "Please refresh the page and try again.",
+        });
+        return;
+      }
+      
+      // If we can create new threads, create a new thread with the question
+      if (canCreateNewThread) {
+        // Validate thread creation requirements
+        if (!user?.email || !otherParticipant || !connectionId) {
+          console.error('[QUESTION_SUGGESTIONS] Missing data for thread creation via question select:', {
+            hasUser: !!user?.email,
+            hasOtherParticipant: !!otherParticipant,
+            hasConnectionId: !!connectionId
+          });
+          toast({
+            title: "Unable to create thread",
+            description: "Missing required information. Please refresh and try again.",
+          });
+          return;
+        }
+        
+        createThreadMutation.mutate(question.trim());
+      } else {
+        // For the first question in a conversation, populate it into the input
+        onQuestionSelect(question.trim());
+      }
+    } catch (error) {
+      console.error('[QUESTION_SUGGESTIONS] Error in handleQuestionSelect:', error);
+      toast({
+        title: "Unable to select question",
+        description: "An unexpected error occurred. Please try again.",
+      });
     }
   };
   

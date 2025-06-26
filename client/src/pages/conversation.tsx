@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -362,7 +362,7 @@ export default function ConversationPage() {
     messages.some(msg => msg.type === 'response');
 
   // Production-ready right column validation with comprehensive error handling
-  const canUseRightColumn = React.useMemo(() => {
+  const canUseRightColumn = useMemo(() => {
     try {
       // Basic turn validation
       if (!isMyTurn) return false;
