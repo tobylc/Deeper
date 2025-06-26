@@ -877,6 +877,15 @@ Changelog:
   * Ensured cross-browser compatibility with hardware-accelerated animations
   * Applied production-grade performance optimizations including useCallback hooks
   * Complete production deployment readiness with comprehensive testing coverage
+- June 26, 2025. Maximum visibility hypnotic orbs enhancement for 20-30 minute mesmerizing experience:
+  * Dramatically increased orb alpha values from 0.11-0.18 to 0.27-0.35 for high visibility throughout animation cycle
+  * Enhanced base radius sizes (24-40px) and maximum radius (50-95px) for stronger visual presence from start to finish
+  * Increased pulse intensity from 0.1 to 0.25 for more noticeable breathing effects during long viewing sessions
+  * Enhanced gradient rendering with 5-stop color progression for richer visual depth and extended glow effects
+  * Added multiple concentric ring effects (3 rings per orb) activating at 20% growth for layered visual complexity
+  * Accelerated connection line activation from 1 minute with higher opacity (0.15 max) and stronger pulsing effects
+  * Lowered connection threshold from 0.3 to 0.2 for more frequent inter-orb connections and increased line thickness (1.5px)
+  * Production-ready mesmerizing effect optimized for sustained 20-30 minute viewing with continuous visual evolution
 - June 23, 2025. Critical subscription security fix and immediate discount activation system:
   * Fixed critical security vulnerability where subscription tiers were updated before payment verification
   * Enhanced subscription upgrade endpoint to only update tier after successful Stripe payment confirmation
