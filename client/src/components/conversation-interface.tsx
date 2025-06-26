@@ -184,10 +184,10 @@ export default function ConversationInterface({
           <div className="flex items-center justify-center space-x-2 pt-4 mb-4 px-4">
             <Button
               onClick={() => setMessageMode('text')}
-              variant={messageMode === 'text' ? 'default' : 'ghost'}
+              variant="ghost"
               size="sm"
               className={cn(
-                "transition-all duration-200 border-0",
+                "transition-all duration-200 border-none shadow-none outline-none ring-0 focus:ring-0 focus:outline-none",
                 messageMode === 'text' 
                   ? "bg-ocean text-white shadow-ocean/20" 
                   : "text-slate-600 hover:bg-slate-50"
@@ -198,10 +198,10 @@ export default function ConversationInterface({
             </Button>
             <Button
               onClick={() => setMessageMode('voice')}
-              variant={messageMode === 'voice' ? 'default' : 'ghost'}
+              variant="ghost"
               size="sm"
               className={cn(
-                "transition-all duration-200 border-0",
+                "transition-all duration-200 border-none shadow-none outline-none ring-0 focus:ring-0 focus:outline-none",
                 messageMode === 'voice' 
                   ? "bg-white text-[#4FACFE] shadow-lg hover:bg-slate-50" 
                   : "text-[#4FACFE] hover:bg-slate-50"
@@ -216,7 +216,7 @@ export default function ConversationInterface({
           <div className="relative">
             {messageMode === 'text' ? (
               /* Text Writing Surface */
-              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 pb-6 border border-ocean/20 shadow-md rounded-t-sm">
+              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 pb-0 border border-ocean/20 shadow-md rounded-t-sm">
                 <div className="flex space-x-4">
                   <div className="flex-1">
                     <Textarea
