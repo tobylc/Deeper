@@ -54,13 +54,13 @@ interface ConversationInterfaceProps {
   setNewMessage: (message: string) => void;
   onSendMessage: () => void;
   onQuestionSelect: (question: string) => void;
-  onRecordingStart: () => void;
+  onRecordingStart?: () => void;
   isSending: boolean;
   nextMessageType: 'question' | 'response';
+  conversationId: number;
   hasStartedResponse?: boolean;
   responseStartTime?: Date | null;
   onTimerStart?: () => void;
-  conversationId?: number;
 }
 
 const ConversationInterface = memo(function ConversationInterface({ 
@@ -88,19 +88,6 @@ const ConversationInterface = memo(function ConversationInterface({
   const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
   const [showTranscriptionProgress, setShowTranscriptionProgress] = useState(false);
   const queryClient = useQueryClient();
-
-  // Check if this is inviter's first question to bypass timer completely
-  const isInviterFirstQuestion = useCallback(() => {
-    try {
-      if (!messages || !connection || !currentUserEmail) return false;
-      return messages.length === 0 && 
-             connection.inviterEmail === currentUserEmail &&
-             nextMessageType === 'question';
-    } catch (error) {
-      console.error('[CONVERSATION_INTERFACE] Error checking inviter first question:', error);
-      return false;
-    }
-  }, [messages, connection, currentUserEmail, nextMessageType]);
 
   // Handle voice message sending with AI transcription
   const handleVoiceMessageSend = useCallback(async (audioBlob: Blob, duration: number) => {
@@ -190,6 +177,19 @@ const ConversationInterface = memo(function ConversationInterface({
     }
   }, []);
 
+  // Check if this is inviter's first question to bypass timer completely
+  const isInviterFirstQuestion = useCallback(() => {
+    try {
+      if (!messages || !connection || !currentUserEmail) return false;
+      return messages.length === 0 && 
+             connection.inviterEmail === currentUserEmail &&
+             nextMessageType === 'question';
+    } catch (error) {
+      console.error('[CONVERSATION_INTERFACE] Error checking inviter first question:', error);
+      return false;
+    }
+  }, [messages, connection, currentUserEmail, nextMessageType]);
+
   // Production-ready message sending validation with comprehensive error handling
   const canSendNow = useCallback(() => {
     try {
@@ -260,22 +260,14 @@ const ConversationInterface = memo(function ConversationInterface({
                       {message.type}
                     </Badge>
                   </div>
-                  
-                  {/* Voice message display */}
-                  {message.messageFormat === 'voice' && message.audioFileUrl ? (
-                    <VoiceMessageDisplay
-                      audioUrl={message.audioFileUrl}
-                      transcription={message.transcription || undefined}
-                      duration={message.audioDuration || 0}
-                    />
-                  ) : (
-                    message.content
-                  )}
+                  {message.content}
                 </div>
               </div>
             ))}
           </div>
         )}
+
+
       </div>
 
       {/* Fixed Input Area at Bottom - Only visible when it's user's turn */}
@@ -424,7 +416,10 @@ const ConversationInterface = memo(function ConversationInterface({
             ) : (
               /* Voice Recording Surface */
               <VoiceRecorder
-                onSendVoiceMessage={handleVoiceMessageSend}
+                onSendVoiceMessage={(audioBlob, duration) => {
+                  // Send voice message with AI transcription
+                  handleVoiceMessageSend(audioBlob, duration);
+                }}
                 onRecordingStart={onRecordingStart}
                 disabled={isSending}
                 canSendMessage={true}
@@ -449,11 +444,6 @@ const ConversationInterface = memo(function ConversationInterface({
           onClose={() => setShowThoughtfulResponsePopup(false)}
           remainingSeconds={Math.floor(getRemainingTime())}
         />
-      )}
-
-      {/* Transcription Progress */}
-      {showTranscriptionProgress && (
-        <TranscriptionProgress />
       )}
     </div>
   );
