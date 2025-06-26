@@ -260,7 +260,7 @@ const ConversationInterface = memo(function ConversationInterface({
           <div className="relative">
             {messageMode === 'text' ? (
               /* Text Writing Surface */
-              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 pb-0 border border-ocean/20 shadow-md rounded-t-sm">
+              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 pb-4 border border-ocean/20 shadow-md rounded-t-sm">
                 <div className="flex space-x-4">
                   <div className="flex-1">
                     <Textarea
