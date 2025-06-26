@@ -379,19 +379,19 @@ export default function ConversationPage() {
   const nextMessageType = getNextMessageType();
 
   // Check if user has provided at least one response to allow new questions
-  const hasProvidedResponse = messages.some(msg => 
-    msg.type === 'response' && msg.senderEmail === user?.email
-  );
+  const hasProvidedResponse = messages && Array.isArray(messages) 
+    ? messages.some(msg => msg && msg.type === 'response' && msg.senderEmail === user?.email)
+    : false;
 
   // Production-ready validation: EVERY question requires a response before new questions
   const lastQuestionNeedsResponse = useMemo(() => {
     try {
-      if (!messages || messages.length === 0) return false;
+      if (!messages || !Array.isArray(messages) || messages.length === 0) return false;
       
       // Find the most recent question in current conversation
       let lastQuestionIndex = -1;
       for (let i = messages.length - 1; i >= 0; i--) {
-        if (messages[i].type === 'question') {
+        if (messages[i] && messages[i].type === 'question') {
           lastQuestionIndex = i;
           break;
         }
@@ -400,7 +400,7 @@ export default function ConversationPage() {
       // If there's a question, check if it has a response
       if (lastQuestionIndex !== -1) {
         const messagesAfterLastQuestion = messages.slice(lastQuestionIndex + 1);
-        const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg.type === 'response');
+        const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg && msg.type === 'response');
         return !hasResponseToLastQuestion;
       }
       
@@ -412,9 +412,9 @@ export default function ConversationPage() {
   }, [messages]);
 
   // Check if there has been at least one complete question-response exchange in this thread
-  const hasCompleteExchange = messages.length >= 2 && 
-    messages.some(msg => msg.type === 'question') && 
-    messages.some(msg => msg.type === 'response');
+  const hasCompleteExchange = messages && Array.isArray(messages) && messages.length >= 2 && 
+    messages.some(msg => msg && msg.type === 'question') && 
+    messages.some(msg => msg && msg.type === 'response');
 
   // Production-ready right column validation with comprehensive error handling
   const canUseRightColumn = useMemo(() => {
