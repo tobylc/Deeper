@@ -179,7 +179,7 @@ export default function ConversationInterface({
 
       {/* Fixed Input Area at Bottom - Only visible when it's user's turn */}
       {isMyTurn && (
-        <div className="flex-shrink-0 border-t border-slate-200/60 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm p-4">
+        <div className="flex-shrink-0 border-t border-slate-200/60 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm pt-4 px-4">
           {/* Message Mode Toggle */}
           <div className="flex items-center justify-center space-x-2 mb-4">
             <Button
@@ -216,7 +216,7 @@ export default function ConversationInterface({
           <div className="relative">
             {messageMode === 'text' ? (
               /* Text Writing Surface */
-              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 border border-ocean/20 shadow-md rounded-sm">
+              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 pb-4 border border-ocean/20 shadow-md rounded-t-sm rounded-b-none">
                 <div className="flex space-x-4">
                   <div className="flex-1">
                     <Textarea

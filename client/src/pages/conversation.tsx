@@ -571,7 +571,7 @@ export default function ConversationPage() {
           </div>
 
           {/* Main Conversation */}
-          <div className={`lg:col-span-2 ${showThreadsView ? 'hidden lg:block' : 'block'} flex flex-col h-[calc(100vh-8rem)]`}>
+          <div className={`lg:col-span-2 ${showThreadsView ? 'hidden lg:block' : 'block'} flex flex-col h-[calc(100vh-8rem)] overflow-hidden`}>
             {/* Hypnotic Orbs Background Effect with Floating Text */}
             {!isMyTurn && (
               <>
