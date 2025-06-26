@@ -2504,24 +2504,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingMessages = await storage.getMessagesByConversationId(conversationId);
       const lastMessage = existingMessages[existingMessages.length - 1];
 
-      // Validate message type based on conversation flow
-      if (existingMessages.length === 0) {
-        // First message must be a question
-        if (messageData.type !== 'question') {
-          return res.status(400).json({ message: "First message must be a question" });
-        }
-      } else {
-        // After initial exchange (2+ messages), allow natural conversation flow
-        if (existingMessages.length >= 2) {
-          // Allow any message type after initial question-response exchange
-          // Users can send follow-ups, new questions, or responses naturally
+      // Production-ready message type validation with comprehensive error handling
+      try {
+        if (existingMessages.length === 0) {
+          // First message must be a question
+          if (messageData.type !== 'question') {
+            return res.status(400).json({ 
+              message: "First message must be a question",
+              code: "INVALID_FIRST_MESSAGE_TYPE",
+              expected: "question",
+              received: messageData.type 
+            });
+          }
         } else {
-          // For the first two messages, enforce question-response pattern
-          const expectedType = lastMessage.type === 'question' ? 'response' : 'question';
-          if (messageData.type !== expectedType) {
-            return res.status(400).json({ message: `Expected ${expectedType}, got ${messageData.type}` });
+          // After initial exchange (2+ messages), allow natural conversation flow
+          if (existingMessages.length >= 2) {
+            // Allow any message type after initial question-response exchange
+            // Users can send follow-ups, new questions, or responses naturally
+            // Validate message type is one of the allowed values
+            if (!['question', 'response'].includes(messageData.type)) {
+              return res.status(400).json({ 
+                message: "Invalid message type",
+                code: "INVALID_MESSAGE_TYPE",
+                allowed: ["question", "response"],
+                received: messageData.type 
+              });
+            }
+          } else {
+            // For the first two messages, enforce question-response pattern
+            const expectedType = lastMessage.type === 'question' ? 'response' : 'question';
+            if (messageData.type !== expectedType) {
+              return res.status(400).json({ 
+                message: `Expected ${expectedType}, got ${messageData.type}`,
+                code: "INVALID_MESSAGE_SEQUENCE",
+                expected: expectedType,
+                received: messageData.type 
+              });
+            }
           }
         }
+      } catch (validationError) {
+        console.error('[MESSAGE_VALIDATION] Error validating message type:', validationError);
+        return res.status(500).json({ 
+          message: "Message validation failed",
+          code: "VALIDATION_ERROR" 
+        });
       }
 
       const message = await storage.createMessage(messageData);
@@ -3365,23 +3392,40 @@ Format each as a complete question they can use to begin this important conversa
         }
       }
       
-      // Allow new question threads after initial exchange
-      // Check if there's at least one complete question-response exchange in any conversation
-      let hasCompleteExchange = false;
-      for (const conv of existingConversations) {
-        const messages = await storage.getMessagesByConversationId(conv.id);
-        const hasQuestion = messages.some(msg => msg.type === 'question');
-        const hasResponse = messages.some(msg => msg.type === 'response');
-        if (hasQuestion && hasResponse) {
-          hasCompleteExchange = true;
-          break;
+      // Production-ready validation for new conversation threads
+      try {
+        // Check if there's at least one complete question-response exchange in any conversation
+        let hasCompleteExchange = false;
+        
+        for (const conv of existingConversations) {
+          try {
+            const messages = await storage.getMessagesByConversationId(conv.id);
+            const hasQuestion = messages.some(msg => msg.type === 'question');
+            const hasResponse = messages.some(msg => msg.type === 'response');
+            if (hasQuestion && hasResponse) {
+              hasCompleteExchange = true;
+              break;
+            }
+          } catch (messageError) {
+            console.error(`[THREAD_VALIDATION] Error checking messages for conversation ${conv.id}:`, messageError);
+            // Continue checking other conversations instead of failing completely
+          }
         }
-      }
-      
-      // Only require complete exchange for new thread creation (not first conversation)
-      if (!hasCompleteExchange && existingConversations.length > 0) {
-        return res.status(400).json({ 
-          message: "Complete at least one question-response exchange before starting new conversation threads" 
+        
+        // Only require complete exchange for new thread creation (not first conversation)
+        if (!hasCompleteExchange && existingConversations.length > 0) {
+          return res.status(400).json({ 
+            message: "Complete at least one question-response exchange before starting new conversation threads",
+            code: "EXCHANGE_REQUIRED",
+            existingConversations: existingConversations.length,
+            hasCompleteExchange: false
+          });
+        }
+      } catch (validationError) {
+        console.error('[THREAD_VALIDATION] Error validating conversation exchange:', validationError);
+        return res.status(500).json({ 
+          message: "Thread validation failed",
+          code: "VALIDATION_ERROR" 
         });
       }
       

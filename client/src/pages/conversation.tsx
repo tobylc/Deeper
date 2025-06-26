@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -361,8 +361,20 @@ export default function ConversationPage() {
     messages.some(msg => msg.type === 'question') && 
     messages.some(msg => msg.type === 'response');
 
-  // Allow right column actions if it's user's turn (after initial exchange, always allow questions)
-  const canUseRightColumn = isMyTurn;
+  // Production-ready right column validation with comprehensive error handling
+  const canUseRightColumn = React.useMemo(() => {
+    try {
+      // Basic turn validation
+      if (!isMyTurn) return false;
+      
+      // Allow right column usage when it's user's turn
+      // After initial exchange (2+ messages), users can ask new questions or continue conversations
+      return true;
+    } catch (error) {
+      console.error('[CONVERSATION] Error validating right column access:', error);
+      return false; // Safe default
+    }
+  }, [isMyTurn]);
   
   // Separate flag for determining if new conversation threads are allowed
   // This is only used for the "New Question" dialog, not for the first question
