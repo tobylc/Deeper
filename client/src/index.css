@@ -189,60 +189,51 @@
     0%, 100% {
       transform: translate3d(0px, 0px, 0px) rotate(0deg) scale(1);
     }
-    20% {
-      transform: translate3d(3px, -2px, 0px) rotate(0.2deg) scale(1.005);
+    25% {
+      transform: translate3d(8px, -5px, 0px) rotate(0.8deg) scale(1.02);
     }
-    40% {
-      transform: translate3d(-2px, -1px, 0px) rotate(-0.15deg) scale(0.998);
+    50% {
+      transform: translate3d(-6px, -3px, 0px) rotate(-0.6deg) scale(0.98);
     }
-    60% {
-      transform: translate3d(4px, -3px, 0px) rotate(0.25deg) scale(1.008);
-    }
-    80% {
-      transform: translate3d(-1px, -2px, 0px) rotate(-0.1deg) scale(1.002);
+    75% {
+      transform: translate3d(12px, -8px, 0px) rotate(1.2deg) scale(1.03);
     }
   }
 
   @keyframes intriguePulse {
     0%, 100% {
-      text-shadow: 0 0 15px rgba(71, 85, 105, 0.2);
-      opacity: 0.75;
-    }
-    30% {
-      text-shadow: 0 0 25px rgba(71, 85, 105, 0.35), 0 0 35px rgba(71, 85, 105, 0.2);
-      opacity: 0.85;
-    }
-    70% {
       text-shadow: 0 0 20px rgba(71, 85, 105, 0.3);
-      opacity: 0.9;
+      opacity: 0.8;
+    }
+    50% {
+      text-shadow: 0 0 40px rgba(71, 85, 105, 0.6), 0 0 60px rgba(71, 85, 105, 0.4);
+      opacity: 1;
     }
   }
 
   @keyframes subtleIntrigue {
     0%, 100% {
-      text-shadow: 0 0 12px rgba(100, 116, 139, 0.15);
-      opacity: 0.65;
-    }
-    25% {
       text-shadow: 0 0 18px rgba(100, 116, 139, 0.25);
-      opacity: 0.75;
+      opacity: 0.7;
     }
-    75% {
-      text-shadow: 0 0 22px rgba(100, 116, 139, 0.3);
-      opacity: 0.8;
+    50% {
+      text-shadow: 0 0 35px rgba(100, 116, 139, 0.5);
+      opacity: 0.9;
     }
   }
 
   .intrigue-float {
-    animation: intrigueFloat 12s ease-in-out infinite, intriguePulse 8s ease-in-out infinite;
-    will-change: transform, opacity;
+    animation: intrigueFloat 8s ease-in-out infinite, intriguePulse 6s ease-in-out infinite;
+    will-change: transform, opacity, text-shadow;
     backface-visibility: hidden;
+    transform-origin: center center;
   }
 
   .intrigue-float-delayed {
-    animation: intrigueFloat 14s ease-in-out infinite 3s, subtleIntrigue 10s ease-in-out infinite 2s;
-    will-change: transform, opacity;
+    animation: intrigueFloat 10s ease-in-out infinite 2s, subtleIntrigue 7s ease-in-out infinite 1s;
+    will-change: transform, opacity, text-shadow;
     backface-visibility: hidden;
+    transform-origin: center center;
   }
 
   /* Reduce motion for accessibility */

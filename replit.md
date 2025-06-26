@@ -856,6 +856,13 @@ Changelog:
   * Updated text writing surface with rounded-top corners and no bottom rounding for flush bottom edge
   * Optimized flex layout to ensure input area sits directly at bottom edge without gaps
   * Enhanced user experience with input area positioned exactly where users expect at screen bottom
+- June 26, 2025. Production-ready intrigue movement animation system for waiting text:
+  * Fixed animation issues by implementing inline styles with direct CSS animation references
+  * Enhanced intrigue animations with more visible movement: 8px translations, 1.2deg rotations, 3% scaling
+  * Optimized animation timing: 8-second float cycles with 6-second pulse effects for engaging visual intrigue
+  * Added hardware acceleration with translate3d, will-change properties, and backface-visibility optimization
+  * Implemented dual animation system: intrigueFloat for movement, intriguePulse/subtleIntrigue for glow effects
+  * Production-ready implementation ensures animations work consistently across all browsers and devices
 - June 23, 2025. Critical subscription security fix and immediate discount activation system:
   * Fixed critical security vulnerability where subscription tiers were updated before payment verification
   * Enhanced subscription upgrade endpoint to only update tier after successful Stripe payment confirmation
