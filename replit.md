@@ -832,6 +832,12 @@ Changelog:
   * Enhanced handleSendAttempt logic to skip timer validation for empty conversations (inviter's first question)
   * Production-ready implementation ensures no timer display for inviter's first question while maintaining 10-minute thoughtful response requirement for all subsequent messages
   * Optimized code maintains role-based visual styling and turn-based conversation logic without performance overhead
+- June 26, 2025. Enhanced role-based glowing effects for conversation thread bubbles:
+  * Implemented distinct visual identity for conversation threads with role-based glowing effects
+  * Inviters receive ocean blue glow: 25px shadow with #4FACFE color, enhanced borders and ring effects
+  * Invitees receive amber glow: 25px shadow with #D7A087 color, enhanced borders and ring effects
+  * Added hover effects that intensify glow to 35px radius with increased opacity for interactive feedback
+  * Production-ready implementation maintains visual hierarchy and role distinction throughout conversation threading interface
 - June 23, 2025. Critical subscription security fix and immediate discount activation system:
   * Fixed critical security vulnerability where subscription tiers were updated before payment verification
   * Enhanced subscription upgrade endpoint to only update tier after successful Stripe payment confirmation

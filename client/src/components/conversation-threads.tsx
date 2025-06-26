@@ -54,8 +54,8 @@ function StackedConversation({
   
   // Role-based glowing effect styles
   const glowStyles = isInviter 
-    ? 'shadow-[0_0_20px_rgba(79,172,254,0.3)] border-[#4FACFE]/40' 
-    : 'shadow-[0_0_20px_rgba(215,160,135,0.3)] border-amber/40';
+    ? 'shadow-[0_0_25px_rgba(79,172,254,0.5)] border-[#4FACFE]/60 ring-2 ring-[#4FACFE]/30 hover:shadow-[0_0_35px_rgba(79,172,254,0.7)]' 
+    : 'shadow-[0_0_25px_rgba(215,160,135,0.5)] border-[#D7A087]/60 ring-2 ring-[#D7A087]/30 hover:shadow-[0_0_35px_rgba(215,160,135,0.7)]';
   
   return (
     <Card 
