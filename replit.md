@@ -863,6 +863,12 @@ Changelog:
   * Added hardware acceleration with translate3d, will-change properties, and backface-visibility optimization
   * Implemented dual animation system: intrigueFloat for movement, intriguePulse/subtleIntrigue for glow effects
   * Production-ready implementation ensures animations work consistently across all browsers and devices
+- June 26, 2025. Standard conversation page layout optimization with borderless buttons:
+  * Removed outer borders from "Write Text" and "Record Voice" buttons above input area
+  * Changed button variants from outline to ghost to eliminate border styling
+  * Maintained inner border around text input box for proper visual definition
+  * Positioned input text area flush at bottom of center column with no gaps or padding
+  * Created standard layout for "my turn" conversation page applicable to all users
 - June 23, 2025. Critical subscription security fix and immediate discount activation system:
   * Fixed critical security vulnerability where subscription tiers were updated before payment verification
   * Enhanced subscription upgrade endpoint to only update tier after successful Stripe payment confirmation

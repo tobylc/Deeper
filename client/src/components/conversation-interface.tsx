@@ -179,18 +179,18 @@ export default function ConversationInterface({
 
       {/* Fixed Input Area at Bottom - Only visible when it's user's turn */}
       {isMyTurn && (
-        <div className="flex-shrink-0 border-t border-slate-200/60 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm pt-4 px-4">
+        <div className="flex-shrink-0 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm">
           {/* Message Mode Toggle */}
-          <div className="flex items-center justify-center space-x-2 mb-4">
+          <div className="flex items-center justify-center space-x-2 pt-4 mb-4 px-4">
             <Button
               onClick={() => setMessageMode('text')}
-              variant={messageMode === 'text' ? 'default' : 'outline'}
+              variant={messageMode === 'text' ? 'default' : 'ghost'}
               size="sm"
               className={cn(
-                "transition-all duration-200",
+                "transition-all duration-200 border-0",
                 messageMode === 'text' 
                   ? "bg-ocean text-white shadow-ocean/20" 
-                  : "text-slate-600 border-slate-300 hover:bg-slate-50"
+                  : "text-slate-600 hover:bg-slate-50"
               )}
             >
               <Type className="w-4 h-4 mr-2" />
@@ -198,13 +198,13 @@ export default function ConversationInterface({
             </Button>
             <Button
               onClick={() => setMessageMode('voice')}
-              variant={messageMode === 'voice' ? 'default' : 'outline'}
+              variant={messageMode === 'voice' ? 'default' : 'ghost'}
               size="sm"
               className={cn(
-                "transition-all duration-200",
+                "transition-all duration-200 border-0",
                 messageMode === 'voice' 
-                  ? "bg-white text-[#4FACFE] border-2 border-[#4FACFE] shadow-lg hover:bg-slate-50" 
-                  : "text-[#4FACFE] border-slate-300 hover:bg-slate-50 hover:border-[#4FACFE]/50"
+                  ? "bg-white text-[#4FACFE] shadow-lg hover:bg-slate-50" 
+                  : "text-[#4FACFE] hover:bg-slate-50"
               )}
             >
               <Mic className="w-4 h-4 mr-2" />
@@ -216,7 +216,7 @@ export default function ConversationInterface({
           <div className="relative">
             {messageMode === 'text' ? (
               /* Text Writing Surface */
-              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 pb-4 border border-ocean/20 shadow-md rounded-t-sm rounded-b-none">
+              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 pb-6 border border-ocean/20 shadow-md rounded-t-sm">
                 <div className="flex space-x-4">
                   <div className="flex-1">
                     <Textarea
