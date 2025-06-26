@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
 import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
 import { HypnoticOrbs } from "@/components/hypnotic-orbs";
+import FloatingWaitingText from "@/components/floating-waiting-text";
 import type { Conversation, Message, Connection, User } from "@shared/schema";
 
 export default function ConversationPage() {

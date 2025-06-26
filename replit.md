@@ -840,6 +840,14 @@ Changelog:
   * Message bubbles now display 30px shadow radius with borders, rings, and gradient backgrounds based on sender's role
   * Hover effects intensify glow to 80px radius with maximum opacity for enhanced interaction feedback
   * Production-ready implementation with backdrop blur and comprehensive visual hierarchy maintaining role distinction across all conversation elements
+- June 26, 2025. Beautiful floating animated waiting text integration with hypnotic orbs mesmerizing effect:
+  * Removed amber waiting text box from bottom of conversation interface for cleaner visual experience
+  * Created FloatingWaitingText component with large, beautifully animated text that gently floats and moves over hypnotic orbs
+  * Implemented custom CSS animations: gentleFloat (8s cycle with rotation and translation), fadeGlow, and subtleGlow effects
+  * Large serif typography (5xl to 7xl) with text shadows and opacity animations creating mesmerizing waiting experience
+  * Text appears centered over hypnotic orbs with "Their turn to write" and "Waiting for their thoughtful response..." messages
+  * Gentle rotation, translation, and glow effects create seamless integration with abstract orb visualizations
+  * Enhanced waiting state becomes part of the mesmerizing visual experience rather than distracting UI element
 - June 23, 2025. Critical subscription security fix and immediate discount activation system:
   * Fixed critical security vulnerability where subscription tiers were updated before payment verification
   * Enhanced subscription upgrade endpoint to only update tier after successful Stripe payment confirmation
