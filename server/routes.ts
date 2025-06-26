@@ -804,12 +804,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Log the analytics event
-      analytics.track('connection_accepted', {
-        connectionId: connection.id!,
-        inviterEmail: connection.inviterEmail,
-        inviteeEmail: connection.inviteeEmail,
-        relationshipType: connection.relationshipType
-      });
+      try {
+        analytics.track('connection_accepted' as any);
+      } catch (analyticsError) {
+        console.error("Analytics tracking failed:", analyticsError);
+      }
 
       res.json({
         success: true,
@@ -1731,8 +1730,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         case 'invoice.payment_succeeded':
           const successInvoice = event.data.object as Stripe.Invoice;
-          if (successInvoice.amount_paid === 495 && successInvoice.subscription) {
-            await handleDiscountPaymentUpgrade(successInvoice.subscription as string);
+          if (successInvoice.amount_paid === 495 && (successInvoice as any).subscription) {
+            await handleDiscountPaymentUpgrade((successInvoice as any).subscription as string);
           }
           break;
 
@@ -1927,8 +1926,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           subscriptionTier: 'advanced',
           subscriptionStatus: 'active',
           maxConnections: 3,
-          stripeCustomerId: user.stripeCustomerId,
-          stripeSubscriptionId: user.stripeSubscriptionId,
+          stripeCustomerId: nullToUndefined(user.stripeCustomerId),
+          stripeSubscriptionId: nullToUndefined(user.stripeSubscriptionId),
           subscriptionExpiresAt: undefined
         });
 
@@ -1969,9 +1968,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           subscriptionTier: 'free',
           subscriptionStatus: 'active',
           maxConnections: 1,
-          stripeCustomerId: user.stripeCustomerId,
-          stripeSubscriptionId: user.stripeSubscriptionId,
-          subscriptionExpiresAt: user.subscriptionExpiresAt
+          stripeCustomerId: nullToUndefined(user.stripeCustomerId),
+          stripeSubscriptionId: nullToUndefined(user.stripeSubscriptionId),
+          subscriptionExpiresAt: nullToUndefined(user.subscriptionExpiresAt)
         });
 
         res.json({ 
