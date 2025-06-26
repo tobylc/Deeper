@@ -226,7 +226,7 @@ async function handleDiscountPaymentUpgrade(subscriptionId: string) {
       subscriptionTier: 'advanced',
       subscriptionStatus: 'active', 
       maxConnections: 3,
-      stripeCustomerId: user.stripeCustomerId,
+      stripeCustomerId: nullToUndefined(user.stripeCustomerId),
       stripeSubscriptionId: subscriptionId,
       subscriptionExpiresAt: undefined
     });
@@ -793,27 +793,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Accept the connection
-      await storage.updateConnection(connectionId, { 
-        status: 'accepted',
-        acceptedAt: new Date()
-      });
+      await storage.updateConnectionStatus(connectionId, 'accepted');
 
       // Send notification emails
       try {
-        await notificationService.sendConnectionAcceptance(
-          connection.inviterEmail,
-          connection.inviteeEmail,
-          connection.relationshipType,
-          connection.inviterRole,
-          connection.inviteeRole
-        );
+        await notificationService.sendConnectionAccepted(connection);
       } catch (emailError) {
         console.error("Failed to send acceptance notification:", emailError);
         // Continue with success response even if email fails
       }
 
       // Log the analytics event
-      analytics.trackConnectionAccepted({
+      analytics.track('connection_accepted', {
         connectionId: connection.id!,
         inviterEmail: connection.inviterEmail,
         inviteeEmail: connection.inviteeEmail,
