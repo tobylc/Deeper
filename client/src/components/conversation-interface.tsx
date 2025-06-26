@@ -182,12 +182,11 @@ export default function ConversationInterface({
         <div className="flex-shrink-0 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm">
           {/* Message Mode Toggle */}
           <div className="flex items-center justify-center space-x-2 pt-4 mb-4 px-4">
-            <Button
+            <button
               onClick={() => setMessageMode('text')}
-              variant="ghost"
-              size="sm"
               className={cn(
-                "transition-all duration-200 border-none shadow-none outline-none ring-0 focus:ring-0 focus:outline-none",
+                "inline-flex items-center justify-center gap-2 h-9 rounded-md px-3 text-sm font-medium transition-all duration-200",
+                "border-0 outline-0 ring-0 shadow-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0",
                 messageMode === 'text' 
                   ? "bg-ocean text-white shadow-ocean/20" 
                   : "text-slate-600 hover:bg-slate-50"
@@ -195,13 +194,12 @@ export default function ConversationInterface({
             >
               <Type className="w-4 h-4 mr-2" />
               Write Text
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={() => setMessageMode('voice')}
-              variant="ghost"
-              size="sm"
               className={cn(
-                "transition-all duration-200 border-none shadow-none outline-none ring-0 focus:ring-0 focus:outline-none",
+                "inline-flex items-center justify-center gap-2 h-9 rounded-md px-3 text-sm font-medium transition-all duration-200",
+                "border-0 outline-0 ring-0 shadow-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0",
                 messageMode === 'voice' 
                   ? "bg-white text-[#4FACFE] shadow-lg hover:bg-slate-50" 
                   : "text-[#4FACFE] hover:bg-slate-50"
