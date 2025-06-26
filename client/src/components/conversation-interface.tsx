@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -63,7 +63,7 @@ interface ConversationInterfaceProps {
   onTimerStart?: () => void;
 }
 
-export default function ConversationInterface({ 
+const ConversationInterface = memo(function ConversationInterface({ 
   messages,
   currentUserEmail,
   participant1Email,
@@ -89,34 +89,60 @@ export default function ConversationInterface({
   const [showTranscriptionProgress, setShowTranscriptionProgress] = useState(false);
   const queryClient = useQueryClient();
 
-  // Real-time countdown timer synchronization for text input
+  // Real-time countdown timer synchronization for text input with error handling
   useEffect(() => {
-    if (hasStartedResponse && responseStartTime) {
-      const interval = setInterval(() => {
-        setCurrentTime(new Date());
-      }, 1000);
-      return () => clearInterval(interval);
+    let interval: NodeJS.Timeout | null = null;
+    
+    try {
+      if (hasStartedResponse && responseStartTime) {
+        interval = setInterval(() => {
+          setCurrentTime(new Date());
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error setting up timer interval:', error);
     }
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [hasStartedResponse, responseStartTime]);
 
-  // Calculate remaining time for thoughtful response timer
-  const getRemainingTime = () => {
-    if (!hasStartedResponse || !responseStartTime) return 600; // 10 minutes in seconds
-    const elapsed = (currentTime.getTime() - responseStartTime.getTime()) / 1000;
-    return Math.max(0, 600 - elapsed);
-  };
+  // Calculate remaining time for thoughtful response timer with error handling
+  const getRemainingTime = useCallback(() => {
+    try {
+      if (!hasStartedResponse || !responseStartTime) return 600; // 10 minutes in seconds
+      const elapsed = (currentTime.getTime() - responseStartTime.getTime()) / 1000;
+      return Math.max(0, 600 - elapsed);
+    } catch (error) {
+      console.error('Error calculating remaining time:', error);
+      return 600; // Default to full time on error
+    }
+  }, [hasStartedResponse, responseStartTime, currentTime]);
 
-  const formatTime = (seconds: number) => {
-    const totalSeconds = Math.max(0, Math.floor(seconds));
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  const formatTime = useCallback((seconds: number) => {
+    try {
+      const totalSeconds = Math.max(0, Math.floor(seconds));
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    } catch (error) {
+      console.error('Error formatting time:', error);
+      return '10:00'; // Default display
+    }
+  }, []);
 
-  const canSendNow = () => {
-    if (!hasStartedResponse) return true;
-    return getRemainingTime() <= 0;
-  };
+  const canSendNow = useCallback(() => {
+    try {
+      if (!hasStartedResponse) return true;
+      return getRemainingTime() <= 0;
+    } catch (error) {
+      console.error('Error checking send availability:', error);
+      return true; // Allow sending on error to prevent blocking
+    }
+  }, [hasStartedResponse, getRemainingTime]);
 
   return (
     <div className="h-full flex flex-col">
@@ -183,27 +209,47 @@ export default function ConversationInterface({
           {/* Message Mode Toggle */}
           <div className="flex items-center justify-center space-x-2 pt-4 mb-4 px-4">
             <button
-              onClick={() => setMessageMode('text')}
+              onClick={() => {
+                try {
+                  setMessageMode('text');
+                } catch (error) {
+                  console.error('Error switching to text mode:', error);
+                }
+              }}
+              aria-pressed={messageMode === 'text'}
+              aria-label="Switch to text message mode"
               className={cn(
                 "inline-flex items-center justify-center gap-2 h-9 rounded-md px-3 text-sm font-medium transition-all duration-200",
                 "border-0 outline-0 ring-0 shadow-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0",
+                "disabled:pointer-events-none disabled:opacity-50",
                 messageMode === 'text' 
                   ? "bg-ocean text-white shadow-ocean/20" 
                   : "text-slate-600 hover:bg-slate-50"
               )}
+              disabled={isSending}
             >
-              <Type className="w-4 h-4 mr-2" />
+              <Type className="w-4 h-4 mr-2" aria-hidden="true" />
               Write Text
             </button>
             <button
-              onClick={() => setMessageMode('voice')}
+              onClick={() => {
+                try {
+                  setMessageMode('voice');
+                } catch (error) {
+                  console.error('Error switching to voice mode:', error);
+                }
+              }}
+              aria-pressed={messageMode === 'voice'}
+              aria-label="Switch to voice message mode"
               className={cn(
                 "inline-flex items-center justify-center gap-2 h-9 rounded-md px-3 text-sm font-medium transition-all duration-200",
                 "border-0 outline-0 ring-0 shadow-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0",
+                "disabled:pointer-events-none disabled:opacity-50",
                 messageMode === 'voice' 
                   ? "bg-white text-[#4FACFE] shadow-lg hover:bg-slate-50" 
                   : "text-[#4FACFE] hover:bg-slate-50"
               )}
+              disabled={isSending}
             >
               <Mic className="w-4 h-4 mr-2" />
               Record Voice
@@ -220,20 +266,28 @@ export default function ConversationInterface({
                     <Textarea
                       value={newMessage}
                       onChange={(e) => {
-                        setNewMessage(e.target.value);
-                        if (!hasStartedResponse && e.target.value.trim() && onTimerStart) {
-                          onTimerStart();
+                        try {
+                          setNewMessage(e.target.value);
+                          if (!hasStartedResponse && e.target.value.trim() && onTimerStart) {
+                            onTimerStart();
+                          }
+                        } catch (error) {
+                          console.error('Error handling message input:', error);
                         }
                       }}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          // Skip timer validation for empty conversations (inviter's first question)
-                          if (canSendNow() || messages.length === 0) {
-                            onSendMessage();
-                          } else {
-                            setShowThoughtfulResponsePopup(true);
+                        try {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            // Skip timer validation for empty conversations (inviter's first question)
+                            if (canSendNow() || messages.length === 0) {
+                              onSendMessage();
+                            } else {
+                              setShowThoughtfulResponsePopup(true);
+                            }
                           }
+                        } catch (error) {
+                          console.error('Error handling key press:', error);
                         }
                       }}
                       placeholder={
@@ -245,24 +299,32 @@ export default function ConversationInterface({
                       }
                       className="min-h-[120px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-500 focus:ring-0 text-base leading-relaxed p-0"
                       disabled={isSending}
+                      aria-label="Message composition area"
+                      aria-describedby="message-help"
                     />
                   </div>
                   <div className="flex flex-col items-center justify-between py-2">
                     <Button
                       onClick={() => {
-                        // Skip timer validation for empty conversations (inviter's first question)
-                        if (canSendNow() || messages.length === 0) {
-                          onSendMessage();
-                        } else {
-                          setShowThoughtfulResponsePopup(true);
+                        try {
+                          // Skip timer validation for empty conversations (inviter's first question)
+                          if (canSendNow() || messages.length === 0) {
+                            onSendMessage();
+                          } else {
+                            setShowThoughtfulResponsePopup(true);
+                          }
+                        } catch (error) {
+                          console.error('Error sending message:', error);
                         }
                       }}
                       disabled={!newMessage.trim() || isSending}
                       size="sm"
+                      aria-label={isSending ? "Sending message..." : "Send message"}
                       className={cn(
                         "w-12 h-12 rounded-full shadow-lg transition-all duration-200",
                         "bg-gradient-to-br from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean",
                         "hover:shadow-xl hover:scale-105 active:scale-95",
+                        "focus:outline-none focus:ring-2 focus:ring-ocean/50 focus:ring-offset-2",
                         !newMessage.trim() || isSending 
                           ? "opacity-50 cursor-not-allowed" 
                           : "cursor-pointer"
@@ -316,4 +378,6 @@ export default function ConversationInterface({
       )}
     </div>
   );
-}
+});
+
+export default ConversationInterface;
