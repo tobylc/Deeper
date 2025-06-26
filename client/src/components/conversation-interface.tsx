@@ -299,11 +299,9 @@ const ConversationInterface = memo(function ConversationInterface({
                         }
                       }}
                       placeholder={
-                        messages.length >= 2
-                          ? "Continue your thoughts..."
-                          : nextMessageType === 'question' 
-                            ? "What would you like to explore together?"
-                            : "Express what's in your heart..."
+                        nextMessageType === 'question' 
+                          ? "What would you like to explore together?"
+                          : "Express what's in your heart..."
                       }
                       className="min-h-[120px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-500 focus:ring-0 text-base leading-relaxed p-0"
                       disabled={isSending}
