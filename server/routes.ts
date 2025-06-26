@@ -2548,7 +2548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           senderEmail: messageData.senderEmail,
           conversationId,
           relationshipType: conversation.relationshipType,
-          messageType: messageData.type
+          messageType: (messageData.type === 'question' || messageData.type === 'response') ? messageData.type : 'question'
         });
       } catch (error) {
         console.error('[NOTIFICATION] Failed to send turn notification:', error);
@@ -2567,7 +2567,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             conversationId,
             senderEmail: messageData.senderEmail,
             senderName,
-            messageType: messageData.type,
+            messageType: (messageData.type === 'question' || messageData.type === 'response') ? messageData.type : 'question',
             relationshipType: conversation.relationshipType
           });
           
@@ -2589,7 +2589,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: messageData.senderEmail,
         metadata: { 
           conversationId,
-          messageType: messageData.type,
+          messageType: (messageData.type === 'question' || messageData.type === 'response') ? messageData.type : 'question',
           relationshipType: conversation.relationshipType
         }
       });
