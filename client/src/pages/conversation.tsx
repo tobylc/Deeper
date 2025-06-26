@@ -263,8 +263,8 @@ export default function ConversationPage() {
         errorData = { message: error.message };
       }
       
-      // Show beautiful trial expiration popup for trial expired errors
-      if (errorData.type === "TRIAL_EXPIRED" || (errorData.message && errorData.message.includes("trial has expired"))) {
+      // Show beautiful trial expiration popup for trial expired errors (but not for invitee users)
+      if ((errorData.type === "TRIAL_EXPIRED" || (errorData.message && errorData.message.includes("trial has expired"))) && !isInviteeUser) {
         setShowTrialExpirationPopup(true);
         return;
       }

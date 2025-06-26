@@ -877,6 +877,13 @@ Changelog:
   * Ensured cross-browser compatibility with hardware-accelerated animations
   * Applied production-grade performance optimizations including useCallback hooks
   * Complete production deployment readiness with comprehensive testing coverage
+- June 26, 2025. Critical invitee user trial expiration popup elimination:
+  * Fixed invitation form to prevent trial expiration popups for invitee users through isInviteeUser filtering
+  * Enhanced conversation page sendMessage mutation to exclude invitees from trial expiration popup triggers
+  * Added comprehensive invitee user detection across all components that could show trial expiration popups
+  * Invitee users now have permanent free access without inappropriate upgrade prompts or trial limitations
+  * Maintained production-ready error handling while ensuring invitees never see trial expiration scenarios
+  * Complete invitee user experience protection ensuring they only see relevant messaging for their permanent free status
 - June 26, 2025. Conversation interface production-ready optimization completed:
   * Removed light border around button container by eliminating background gradient styling
   * Positioned text input area flush at bottom of center column with pb-0 padding
