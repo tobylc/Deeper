@@ -14,6 +14,10 @@ interface VoiceRecorderProps {
   hasStartedResponse?: boolean;
   responseStartTime?: Date | null;
   onTimerStart?: () => void;
+  messages?: any[];
+  connection?: any;
+  currentUserEmail?: string;
+  nextMessageType?: 'question' | 'response';
 }
 
 export default function VoiceRecorder({ 
@@ -24,7 +28,11 @@ export default function VoiceRecorder({
   canSendMessage = true,
   hasStartedResponse = false,
   responseStartTime = null,
-  onTimerStart
+  onTimerStart,
+  messages = [],
+  connection,
+  currentUserEmail,
+  nextMessageType
 }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);

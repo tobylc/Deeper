@@ -242,7 +242,12 @@ export default function ConversationInterface({
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
-                          if (canSendNow()) {
+                          // Check if this is the inviter's first question - skip timer validation for this case
+                          const isInviterFirstQuestion = messages.length === 0 && 
+                                                         connection?.inviterEmail === currentUserEmail &&
+                                                         nextMessageType === 'question';
+                          
+                          if (canSendNow() || isInviterFirstQuestion) {
                             onSendMessage();
                           } else {
                             setShowThoughtfulResponsePopup(true);
@@ -263,7 +268,12 @@ export default function ConversationInterface({
                   <div className="flex flex-col items-center justify-between py-2">
                     <Button
                       onClick={() => {
-                        if (canSendNow()) {
+                        // Check if this is the inviter's first question - skip timer validation for this case
+                        const isInviterFirstQuestion = messages.length === 0 && 
+                                                       connection?.inviterEmail === currentUserEmail &&
+                                                       nextMessageType === 'question';
+                        
+                        if (canSendNow() || isInviterFirstQuestion) {
                           onSendMessage();
                         } else {
                           setShowThoughtfulResponsePopup(true);
@@ -288,11 +298,18 @@ export default function ConversationInterface({
                     </Button>
                     <div className="flex items-center space-x-2">
                       <span className="text-xs text-slate-600">Share</span>
-                      {hasStartedResponse && !canSendNow() && (
-                        <span className="text-xs text-slate-500 font-mono">
-                          {formatTime(getRemainingTime())}
-                        </span>
-                      )}
+                      {(() => {
+                        // Check if this is the inviter's first question - don't show timer for this case
+                        const isInviterFirstQuestion = messages.length === 0 && 
+                                                       connection?.inviterEmail === currentUserEmail &&
+                                                       nextMessageType === 'question';
+                        
+                        return hasStartedResponse && !canSendNow() && !isInviterFirstQuestion && (
+                          <span className="text-xs text-slate-500 font-mono">
+                            {formatTime(getRemainingTime())}
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -307,6 +324,10 @@ export default function ConversationInterface({
                 hasStartedResponse={hasStartedResponse}
                 responseStartTime={responseStartTime}
                 onTimerStart={onTimerStart}
+                messages={messages}
+                connection={connection}
+                currentUserEmail={currentUserEmail}
+                nextMessageType={nextMessageType}
               />
             )}
           </div>
