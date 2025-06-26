@@ -104,7 +104,17 @@ export default function VoiceRecorder({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Check if this is inviter's first question to bypass timer completely
+  const isInviterFirstQuestion = () => {
+    if (!messages || !connection || !currentUserEmail) return false;
+    return messages.length === 0 && 
+           connection.inviterEmail === currentUserEmail &&
+           nextMessageType === 'question';
+  };
+
   const canSendNow = () => {
+    // Skip timer completely for inviter's first question
+    if (isInviterFirstQuestion()) return true;
     if (!hasStartedResponse) return true;
     return getRemainingTime() <= 0;
   };
@@ -219,8 +229,8 @@ export default function VoiceRecorder({
         onRecordingStart();
       }
       
-      // Start thoughtful response timer if not already started
-      if (!hasStartedResponse && onTimerStart) {
+      // Start thoughtful response timer if not already started (skip for inviter's first question)
+      if (!isInviterFirstQuestion() && !hasStartedResponse && onTimerStart) {
         onTimerStart();
       }
       
@@ -366,8 +376,8 @@ export default function VoiceRecorder({
   };
 
   const handleSendAttempt = () => {
-    // Skip timer validation for empty conversations (inviter's first question)
-    if (!canSendNow() && messages.length > 0) {
+    // Skip timer validation for inviter's first question
+    if (!canSendNow()) {
       setShowThoughtfulResponseTimer(true);
       return;
     }

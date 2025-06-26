@@ -89,6 +89,49 @@ const ConversationInterface = memo(function ConversationInterface({
   const [showTranscriptionProgress, setShowTranscriptionProgress] = useState(false);
   const queryClient = useQueryClient();
 
+  // Handle voice message sending with AI transcription
+  const handleVoiceMessageSend = useCallback(async (audioBlob: Blob, duration: number) => {
+    try {
+      if (!conversationId || !currentUserEmail || !nextMessageType) {
+        console.error('Missing required data for voice message sending');
+        return;
+      }
+
+      setShowTranscriptionProgress(true);
+      
+      // Create FormData for multipart upload
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'voice-message.webm');
+      formData.append('senderEmail', currentUserEmail);
+      formData.append('type', nextMessageType);
+      formData.append('duration', duration.toString());
+
+      // Send voice message to backend for AI transcription
+      const response = await fetch(`/api/conversations/${conversationId}/voice-messages`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include', // Include auth cookies
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to send voice message: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      // Invalidate queries to refresh conversation data
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${currentUserEmail}`] });
+      
+      setShowTranscriptionProgress(false);
+      
+    } catch (error) {
+      console.error('Error sending voice message:', error);
+      setShowTranscriptionProgress(false);
+    }
+  }, [conversationId, currentUserEmail, nextMessageType, queryClient]);
+
   // Real-time countdown timer synchronization for text input with error handling
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -373,7 +416,10 @@ const ConversationInterface = memo(function ConversationInterface({
             ) : (
               /* Voice Recording Surface */
               <VoiceRecorder
-                onSendVoiceMessage={() => {}}
+                onSendVoiceMessage={(audioBlob, duration) => {
+                  // Send voice message with AI transcription
+                  handleVoiceMessageSend(audioBlob, duration);
+                }}
                 onRecordingStart={onRecordingStart}
                 disabled={isSending}
                 canSendMessage={true}
