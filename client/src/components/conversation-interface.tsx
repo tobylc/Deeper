@@ -134,9 +134,25 @@ const ConversationInterface = memo(function ConversationInterface({
     }
   }, []);
 
+  // Check if this is inviter's first question to bypass timer completely
+  const isInviterFirstQuestion = useCallback(() => {
+    try {
+      if (!messages || !connection || !currentUserEmail) return false;
+      return messages.length === 0 && 
+             connection.inviterEmail === currentUserEmail &&
+             nextMessageType === 'question';
+    } catch (error) {
+      console.error('[CONVERSATION_INTERFACE] Error checking inviter first question:', error);
+      return false;
+    }
+  }, [messages, connection, currentUserEmail, nextMessageType]);
+
   // Production-ready message sending validation with comprehensive error handling
   const canSendNow = useCallback(() => {
     try {
+      // Skip timer completely for inviter's first question
+      if (isInviterFirstQuestion()) return true;
+      
       // Skip timer for empty conversations (inviter's first question)
       if (!messages || messages.length === 0) return true;
       
@@ -150,7 +166,7 @@ const ConversationInterface = memo(function ConversationInterface({
       console.error('[CONVERSATION_INTERFACE] Error validating send capability:', error);
       return false; // Safe default - prevent sending if validation fails
     }
-  }, [messages, hasStartedResponse, getRemainingTime]);
+  }, [isInviterFirstQuestion, messages, hasStartedResponse, getRemainingTime]);
 
   return (
     <div className="h-full flex flex-col">
@@ -276,7 +292,8 @@ const ConversationInterface = memo(function ConversationInterface({
                       onChange={(e) => {
                         try {
                           setNewMessage(e.target.value);
-                          if (!hasStartedResponse && e.target.value.trim() && onTimerStart) {
+                          // Only start timer if this is not inviter's first question
+                          if (!isInviterFirstQuestion() && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
                             onTimerStart();
                           }
                         } catch (error) {
@@ -287,8 +304,8 @@ const ConversationInterface = memo(function ConversationInterface({
                         try {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
-                            // Skip timer validation for empty conversations (inviter's first question)
-                            if (canSendNow() || messages.length === 0) {
+                            // Skip timer validation for inviter's first question
+                            if (canSendNow()) {
                               onSendMessage();
                             } else {
                               setShowThoughtfulResponsePopup(true);
@@ -313,8 +330,8 @@ const ConversationInterface = memo(function ConversationInterface({
                     <Button
                       onClick={() => {
                         try {
-                          // Skip timer validation for empty conversations (inviter's first question)
-                          if (canSendNow() || messages.length === 0) {
+                          // Skip timer validation for inviter's first question
+                          if (canSendNow()) {
                             onSendMessage();
                           } else {
                             setShowThoughtfulResponsePopup(true);
@@ -344,7 +361,7 @@ const ConversationInterface = memo(function ConversationInterface({
                     </Button>
                     <div className="flex items-center space-x-2">
                       <span className="text-xs text-slate-600">Share</span>
-                      {messages.length > 0 && hasStartedResponse && !canSendNow() && (
+                      {!isInviterFirstQuestion() && hasStartedResponse && !canSendNow() && (
                         <span className="text-xs text-slate-500 font-mono">
                           {formatTime(getRemainingTime())}
                         </span>
