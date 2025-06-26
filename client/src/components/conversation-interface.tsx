@@ -179,7 +179,7 @@ export default function ConversationInterface({
 
       {/* Fixed Input Area at Bottom - Only visible when it's user's turn */}
       {isMyTurn && (
-        <div className="flex-shrink-0 bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm">
+        <div className="flex-shrink-0">
           {/* Message Mode Toggle */}
           <div className="flex items-center justify-center space-x-2 pt-4 mb-4 px-4">
             <button
@@ -207,7 +207,7 @@ export default function ConversationInterface({
             >
               <Mic className="w-4 h-4 mr-2" />
               Record Voice
-            </Button>
+            </button>
           </div>
 
           {/* Input Surface */}
