@@ -116,10 +116,11 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
         if (paymentIntent.status === 'succeeded' && paymentIntent.amount_received === 495) {
           console.log(`[WEBHOOK] Upgrading user ${userId} to Advanced tier`);
           
-          const tierBenefits = {
+          const tierBenefits: Record<string, { maxConnections: number }> = {
             basic: { maxConnections: 1 },
             advanced: { maxConnections: 3 },
-            unlimited: { maxConnections: 999 }
+            unlimited: { maxConnections: 999 },
+            free: { maxConnections: 0 }
           };
 
           const benefits = tierBenefits[newTier] || tierBenefits.advanced;
@@ -128,7 +129,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
             subscriptionTier: newTier || 'advanced',
             subscriptionStatus: 'active',
             maxConnections: benefits.maxConnections,
-            stripeCustomerId: user.stripeCustomerId,
+            stripeCustomerId: user.stripeCustomerId ?? undefined,
             stripeSubscriptionId: subscription.id,
             subscriptionExpiresAt: undefined
           });
@@ -157,8 +158,8 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       subscriptionTier: newTier || 'free',
       subscriptionStatus: status,
       maxConnections: benefits.maxConnections,
-      stripeCustomerId: user.stripeCustomerId,
-      stripeSubscriptionId: user.stripeSubscriptionId,
+      stripeCustomerId: user.stripeCustomerId || undefined,
+      stripeSubscriptionId: user.stripeSubscriptionId || undefined,
       subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
     });
   } else {
@@ -167,8 +168,8 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       subscriptionTier: user.subscriptionTier || 'free',
       subscriptionStatus: status,
       maxConnections: user.maxConnections || 1,
-      stripeCustomerId: user.stripeCustomerId,
-      stripeSubscriptionId: user.stripeSubscriptionId,
+      stripeCustomerId: user.stripeCustomerId || undefined,
+      stripeSubscriptionId: user.stripeSubscriptionId || undefined,
       subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
     });
   }
