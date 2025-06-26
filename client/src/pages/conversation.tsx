@@ -105,7 +105,7 @@ export default function ConversationPage() {
     ? (conversation.participant1Email === user.email 
         ? conversation.participant2Email 
         : conversation.participant1Email)
-    : '';
+    : null;
 
   // Get connection info for threading
   const { data: connection } = useQuery<Connection>({
@@ -350,9 +350,11 @@ export default function ConversationPage() {
 
   // Correct turn logic: inviter (participant1) always starts the conversation
   // For empty conversations, inviter should always have the first turn
-  const isMyTurn = messages.length === 0 
-    ? conversation.participant1Email === user.email // Inviter gets first turn in empty conversation
-    : conversation.currentTurn === user.email;
+  const isMyTurn = conversation && user?.email && messages && Array.isArray(messages)
+    ? (messages.length === 0 
+        ? conversation.participant1Email === user.email // Inviter gets first turn in empty conversation
+        : conversation.currentTurn === user.email)
+    : false;
   
   // Production-ready message type validation: EVERY question requires a response
   const getNextMessageType = (): 'question' | 'response' => {
@@ -428,6 +430,9 @@ export default function ConversationPage() {
   // Production-ready right column validation with comprehensive error handling
   const canUseRightColumn = useMemo(() => {
     try {
+      // Safety checks for required data
+      if (!conversation || !user?.email || !messages || !Array.isArray(messages)) return false;
+      
       // Basic turn validation
       if (!isMyTurn) return false;
       
@@ -440,11 +445,14 @@ export default function ConversationPage() {
       console.error('[CONVERSATION] Error validating right column access:', error);
       return false; // Safe default
     }
-  }, [isMyTurn, lastQuestionNeedsResponse]);
+  }, [conversation, user?.email, messages, isMyTurn, lastQuestionNeedsResponse]);
   
   // Enhanced validation for new thread creation
   const canCreateNewThread = useMemo(() => {
     try {
+      // Safety checks for required data
+      if (!conversation || !user?.email || !messages || !Array.isArray(messages)) return false;
+      
       // Must have complete exchange in current conversation
       if (!hasCompleteExchange) return false;
       
@@ -456,7 +464,7 @@ export default function ConversationPage() {
       console.error('[CONVERSATION] Error validating new thread creation:', error);
       return false;
     }
-  }, [hasCompleteExchange, lastQuestionNeedsResponse]);
+  }, [conversation, user?.email, messages, hasCompleteExchange, lastQuestionNeedsResponse]);
 
 
 
