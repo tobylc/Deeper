@@ -158,8 +158,8 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         return;
       }
       
-      // If we can create new threads, create a new thread with the question
-      if (canCreateNewThread) {
+      // Enhanced validation: Check if this should be a new thread or populated into current conversation
+      if (canCreateNewThread && nextMessageType === 'question') {
         // Validate thread creation requirements
         if (!user?.email || !otherParticipant || !connectionId) {
           console.error('[QUESTION_SUGGESTIONS] Missing data for thread creation via question select:', {
@@ -175,9 +175,12 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         }
         
         createThreadMutation.mutate(question.trim());
-      } else {
+      } else if (nextMessageType === 'question') {
         // For the first question in a conversation, populate it into the input
         onQuestionSelect(question.trim());
+      } else {
+        // If next message type is 'response', show exchange required popup
+        setShowExchangeRequiredPopup(true);
       }
     } catch (error) {
       console.error('[QUESTION_SUGGESTIONS] Error in handleQuestionSelect:', error);

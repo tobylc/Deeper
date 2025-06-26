@@ -343,18 +343,73 @@ export default function ConversationPage() {
     ? conversation.participant1Email === user.email // Inviter gets first turn in empty conversation
     : conversation.currentTurn === user.email;
   
-  // Determine if the next message should be a question or response
-  const lastMessage = messages[messages.length - 1];
-  
-  // After initial exchange (2+ messages), allow flexible message types
-  const nextMessageType: 'question' | 'response' = 
-    messages.length >= 2 ? 'question' : // Allow questions after initial exchange
-    (!lastMessage || lastMessage.type === 'response' ? 'question' : 'response');
+  // Production-ready message type validation: EVERY question requires a response
+  const getNextMessageType = (): 'question' | 'response' => {
+    try {
+      if (!messages || messages.length === 0) return 'question'; // First message is always a question
+      
+      // Find the most recent question in the conversation
+      let lastQuestionIndex = -1;
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].type === 'question') {
+          lastQuestionIndex = i;
+          break;
+        }
+      }
+      
+      // If there's a question without a response, only allow responses
+      if (lastQuestionIndex !== -1) {
+        const messagesAfterLastQuestion = messages.slice(lastQuestionIndex + 1);
+        const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg.type === 'response');
+        
+        // If the last question hasn't been responded to, only allow responses
+        if (!hasResponseToLastQuestion) {
+          return 'response';
+        }
+      }
+      
+      // If all questions have been answered, user can ask new questions
+      return 'question';
+    } catch (error) {
+      console.error('[CONVERSATION] Error determining next message type:', error);
+      return 'response'; // Safe default
+    }
+  };
+
+  const nextMessageType = getNextMessageType();
 
   // Check if user has provided at least one response to allow new questions
   const hasProvidedResponse = messages.some(msg => 
     msg.type === 'response' && msg.senderEmail === user?.email
   );
+
+  // Production-ready validation: EVERY question requires a response before new questions
+  const lastQuestionNeedsResponse = useMemo(() => {
+    try {
+      if (!messages || messages.length === 0) return false;
+      
+      // Find the most recent question in current conversation
+      let lastQuestionIndex = -1;
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].type === 'question') {
+          lastQuestionIndex = i;
+          break;
+        }
+      }
+      
+      // If there's a question, check if it has a response
+      if (lastQuestionIndex !== -1) {
+        const messagesAfterLastQuestion = messages.slice(lastQuestionIndex + 1);
+        const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg.type === 'response');
+        return !hasResponseToLastQuestion;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('[CONVERSATION] Error checking last question response:', error);
+      return false;
+    }
+  }, [messages]);
 
   // Check if there has been at least one complete question-response exchange in this thread
   const hasCompleteExchange = messages.length >= 2 && 
@@ -367,18 +422,32 @@ export default function ConversationPage() {
       // Basic turn validation
       if (!isMyTurn) return false;
       
-      // Allow right column usage when it's user's turn
-      // After initial exchange (2+ messages), users can ask new questions or continue conversations
+      // Block right column if current conversation has unanswered question
+      if (lastQuestionNeedsResponse) return false;
+      
+      // Allow right column usage when it's user's turn and no unanswered questions
       return true;
     } catch (error) {
       console.error('[CONVERSATION] Error validating right column access:', error);
       return false; // Safe default
     }
-  }, [isMyTurn]);
+  }, [isMyTurn, lastQuestionNeedsResponse]);
   
-  // Separate flag for determining if new conversation threads are allowed
-  // This is only used for the "New Question" dialog, not for the first question
-  const canCreateNewThread = hasCompleteExchange;
+  // Enhanced validation for new thread creation
+  const canCreateNewThread = useMemo(() => {
+    try {
+      // Must have complete exchange in current conversation
+      if (!hasCompleteExchange) return false;
+      
+      // Must not have unanswered questions in current conversation
+      if (lastQuestionNeedsResponse) return false;
+      
+      return true;
+    } catch (error) {
+      console.error('[CONVERSATION] Error validating new thread creation:', error);
+      return false;
+    }
+  }, [hasCompleteExchange, lastQuestionNeedsResponse]);
 
 
 

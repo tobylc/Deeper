@@ -2517,30 +2517,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
         } else {
-          // After initial exchange (2+ messages), allow natural conversation flow
-          if (existingMessages.length >= 2) {
-            // Allow any message type after initial question-response exchange
-            // Users can send follow-ups, new questions, or responses naturally
-            // Validate message type is one of the allowed values
-            if (!['question', 'response'].includes(messageData.type)) {
+          // Production-ready question-response validation: EVERY question requires a response before new questions
+          // Find the most recent question in the conversation
+          let lastQuestionIndex = -1;
+          for (let i = existingMessages.length - 1; i >= 0; i--) {
+            if (existingMessages[i].type === 'question') {
+              lastQuestionIndex = i;
+              break;
+            }
+          }
+          
+          // If there's a question without a response, only allow responses
+          if (lastQuestionIndex !== -1) {
+            const messagesAfterLastQuestion = existingMessages.slice(lastQuestionIndex + 1);
+            const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg.type === 'response');
+            
+            // If the last question hasn't been responded to, only allow responses
+            if (!hasResponseToLastQuestion && messageData.type === 'question') {
               return res.status(400).json({ 
-                message: "Invalid message type",
-                code: "INVALID_MESSAGE_TYPE",
-                allowed: ["question", "response"],
-                received: messageData.type 
+                message: "The previous question must be answered before asking a new question",
+                code: "QUESTION_REQUIRES_RESPONSE",
+                lastQuestionIndex: lastQuestionIndex,
+                hasResponse: false
               });
             }
-          } else {
-            // For the first two messages, enforce question-response pattern
-            const expectedType = lastMessage.type === 'question' ? 'response' : 'question';
-            if (messageData.type !== expectedType) {
-              return res.status(400).json({ 
-                message: `Expected ${expectedType}, got ${messageData.type}`,
-                code: "INVALID_MESSAGE_SEQUENCE",
-                expected: expectedType,
-                received: messageData.type 
-              });
-            }
+          }
+          
+          // Validate message type is one of the allowed values
+          if (!['question', 'response'].includes(messageData.type)) {
+            return res.status(400).json({ 
+              message: "Invalid message type",
+              code: "INVALID_MESSAGE_TYPE",
+              allowed: ["question", "response"],
+              received: messageData.type 
+            });
           }
         }
       } catch (validationError) {
@@ -3394,32 +3404,81 @@ Format each as a complete question they can use to begin this important conversa
       
       // Production-ready validation for new conversation threads
       try {
-        // Check if there's at least one complete question-response exchange in any conversation
-        let hasCompleteExchange = false;
+        // Enhanced validation: EVERY question requires a response before new questions can be asked
+        // Check ALL conversations to ensure no unanswered questions exist
+        let hasUnansweredQuestion = false;
+        let unansweredQuestionDetails = null;
         
         for (const conv of existingConversations) {
           try {
             const messages = await storage.getMessagesByConversationId(conv.id);
-            const hasQuestion = messages.some(msg => msg.type === 'question');
-            const hasResponse = messages.some(msg => msg.type === 'response');
-            if (hasQuestion && hasResponse) {
-              hasCompleteExchange = true;
-              break;
+            
+            // Find the most recent question in this conversation
+            let lastQuestionIndex = -1;
+            for (let i = messages.length - 1; i >= 0; i--) {
+              if (messages[i].type === 'question') {
+                lastQuestionIndex = i;
+                break;
+              }
+            }
+            
+            // If there's a question, check if it has a response
+            if (lastQuestionIndex !== -1) {
+              const messagesAfterLastQuestion = messages.slice(lastQuestionIndex + 1);
+              const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg.type === 'response');
+              
+              if (!hasResponseToLastQuestion) {
+                hasUnansweredQuestion = true;
+                unansweredQuestionDetails = {
+                  conversationId: conv.id,
+                  questionIndex: lastQuestionIndex,
+                  question: messages[lastQuestionIndex].content?.substring(0, 50) + '...'
+                };
+                break;
+              }
             }
           } catch (messageError) {
             console.error(`[THREAD_VALIDATION] Error checking messages for conversation ${conv.id}:`, messageError);
-            // Continue checking other conversations instead of failing completely
           }
         }
         
-        // Only require complete exchange for new thread creation (not first conversation)
-        if (!hasCompleteExchange && existingConversations.length > 0) {
+        // Block new thread creation if any question is unanswered
+        if (hasUnansweredQuestion) {
           return res.status(400).json({ 
-            message: "Complete at least one question-response exchange before starting new conversation threads",
-            code: "EXCHANGE_REQUIRED",
-            existingConversations: existingConversations.length,
-            hasCompleteExchange: false
+            message: "Please answer the previous question before starting a new conversation thread",
+            code: "QUESTION_REQUIRES_RESPONSE",
+            unansweredQuestion: unansweredQuestionDetails
           });
+        }
+        
+        // For first conversation, no validation needed
+        if (existingConversations.length === 0) {
+          // Allow first thread creation
+        } else {
+          // For subsequent threads, ensure at least one complete exchange exists somewhere
+          let hasAnyCompleteExchange = false;
+          
+          for (const conv of existingConversations) {
+            try {
+              const messages = await storage.getMessagesByConversationId(conv.id);
+              const hasQuestion = messages.some(msg => msg.type === 'question');
+              const hasResponse = messages.some(msg => msg.type === 'response');
+              if (hasQuestion && hasResponse) {
+                hasAnyCompleteExchange = true;
+                break;
+              }
+            } catch (messageError) {
+              console.error(`[THREAD_VALIDATION] Error checking complete exchange for conversation ${conv.id}:`, messageError);
+            }
+          }
+          
+          if (!hasAnyCompleteExchange) {
+            return res.status(400).json({ 
+              message: "Complete at least one question-response exchange before starting new conversation threads",
+              code: "EXCHANGE_REQUIRED",
+              existingConversations: existingConversations.length
+            });
+          }
         }
       } catch (validationError) {
         console.error('[THREAD_VALIDATION] Error validating conversation exchange:', validationError);
