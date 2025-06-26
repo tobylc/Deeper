@@ -329,7 +329,10 @@ export default function ConversationPage() {
   }
 
   // Correct turn logic: inviter (participant1) always starts the conversation
-  const isMyTurn = conversation.currentTurn === user.email;
+  // For empty conversations, inviter should always have the first turn
+  const isMyTurn = messages.length === 0 
+    ? conversation.participant1Email === user.email // Inviter gets first turn in empty conversation
+    : conversation.currentTurn === user.email;
   
   // Determine if the next message should be a question or response
   const lastMessage = messages[messages.length - 1];
@@ -608,8 +611,15 @@ export default function ConversationPage() {
               hasStartedResponse={hasStartedResponse}
               responseStartTime={responseStartTime}
               onTimerStart={() => {
-                setHasStartedResponse(true);
-                setResponseStartTime(new Date());
+                // Check if this is the inviter's first question - skip timer for this case
+                const isInviterFirstQuestion = messages.length === 0 && 
+                                               connection?.inviterEmail === user?.email &&
+                                               nextMessageType === 'question';
+                
+                if (!isInviterFirstQuestion) {
+                  setHasStartedResponse(true);
+                  setResponseStartTime(new Date());
+                }
               }}
             />
           </div>
