@@ -366,7 +366,12 @@ export default function VoiceRecorder({
   };
 
   const handleSendAttempt = () => {
-    if (!canSendNow()) {
+    // Check if this is the inviter's first question - skip timer validation for this case
+    const isInviterFirstQuestion = messages.length === 0 && 
+                                   connection?.inviterEmail === currentUserEmail &&
+                                   nextMessageType === 'question';
+    
+    if (!canSendNow() && !isInviterFirstQuestion) {
       setShowThoughtfulResponseTimer(true);
       return;
     }
@@ -531,21 +536,35 @@ export default function VoiceRecorder({
               
               <div className="flex items-center space-x-2">
                 {/* 10-Minute Countdown Timer */}
-                {hasStartedResponse && !canSendNow() && (
-                  <div className="flex items-center space-x-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-                    <span>{formatTime(getRemainingTime())}</span>
-                  </div>
-                )}
+                {(() => {
+                  // Check if this is the inviter's first question - don't show timer for this case
+                  const isInviterFirstQuestion = messages.length === 0 && 
+                                                 connection?.inviterEmail === currentUserEmail &&
+                                                 nextMessageType === 'question';
+                  
+                  return hasStartedResponse && !canSendNow() && !isInviterFirstQuestion && (
+                    <div className="flex items-center space-x-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                      <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+                      <span>{formatTime(getRemainingTime())}</span>
+                    </div>
+                  );
+                })()}
                 
                 <Button
                   onClick={handleSendAttempt}
                   disabled={!canSendMessage}
                   className={cn(
                     "px-3 py-1 transition-all duration-200",
-                    canSendNow() 
-                      ? "bg-gradient-to-r from-[#4FACFE] to-[#3B82F6] text-white hover:from-[#4FACFE]/90 hover:to-[#3B82F6]/90 shadow-lg" 
-                      : "bg-slate-300 text-slate-500 cursor-pointer hover:bg-slate-400"
+                    (() => {
+                      // Check if this is the inviter's first question - allow immediate sending
+                      const isInviterFirstQuestion = messages.length === 0 && 
+                                                     connection?.inviterEmail === currentUserEmail &&
+                                                     nextMessageType === 'question';
+                      
+                      return (canSendNow() || isInviterFirstQuestion)
+                        ? "bg-gradient-to-r from-[#4FACFE] to-[#3B82F6] text-white hover:from-[#4FACFE]/90 hover:to-[#3B82F6]/90 shadow-lg" 
+                        : "bg-slate-300 text-slate-500 cursor-pointer hover:bg-slate-400";
+                    })()
                   )}
                 >
                   <Send className="w-3 h-3 mr-1" />
