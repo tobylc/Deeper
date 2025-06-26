@@ -304,6 +304,19 @@ export default function ConversationInterface({
                                                        connection?.inviterEmail === currentUserEmail &&
                                                        nextMessageType === 'question';
                         
+                        // Debug logging - check all timer bypass conditions
+                        console.log('Timer Debug - Complete Analysis:', {
+                          messagesLength: messages.length,
+                          inviterEmail: connection?.inviterEmail,
+                          currentUserEmail,
+                          nextMessageType,
+                          isInviterFirstQuestion,
+                          hasStartedResponse,
+                          canSendNow: canSendNow(),
+                          shouldShowTimer: hasStartedResponse && !canSendNow() && !isInviterFirstQuestion,
+                          connection: connection
+                        });
+                        
                         return hasStartedResponse && !canSendNow() && !isInviterFirstQuestion && (
                           <span className="text-xs text-slate-500 font-mono">
                             {formatTime(getRemainingTime())}
