@@ -36,7 +36,7 @@ const FloatingWaitingText = memo<FloatingWaitingTextProps>(function FloatingWait
           style={{
             animation: 'intrigueFloat 8s ease-in-out infinite, intriguePulse 6s ease-in-out infinite',
             willChange: 'transform, opacity, text-shadow',
-            backfaceVisibility: 'hidden',
+            backfaceVisibility: 'hidden' as const,
             transformOrigin: 'center center'
           }}
           aria-hidden="true"
@@ -49,7 +49,7 @@ const FloatingWaitingText = memo<FloatingWaitingTextProps>(function FloatingWait
           style={{
             animation: 'intrigueFloat 10s ease-in-out infinite 2s, subtleIntrigue 7s ease-in-out infinite 1s',
             willChange: 'transform, opacity, text-shadow',
-            backfaceVisibility: 'hidden',
+            backfaceVisibility: 'hidden' as const,
             transformOrigin: 'center center'
           }}
           aria-hidden="true"

@@ -241,6 +241,8 @@
     .intrigue-float,
     .intrigue-float-delayed {
       animation: none;
+      transform: none;
+      text-shadow: 0 0 10px rgba(71, 85, 105, 0.2);
     }
   }
 
