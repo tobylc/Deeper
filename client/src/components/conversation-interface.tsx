@@ -304,20 +304,41 @@ export default function ConversationInterface({
                                                        connection?.inviterEmail === currentUserEmail &&
                                                        nextMessageType === 'question';
                         
-                        // Debug logging - check all timer bypass conditions
-                        console.log('Timer Debug - Complete Analysis:', {
+                        // Critical debug: Log every single value to identify the issue
+                        console.log('🔍 DETAILED TIMER DEBUG:', {
+                          messages_array: messages,
                           messagesLength: messages.length,
+                          connection_object: connection,
                           inviterEmail: connection?.inviterEmail,
-                          currentUserEmail,
-                          nextMessageType,
-                          isInviterFirstQuestion,
-                          hasStartedResponse,
-                          canSendNow: canSendNow(),
-                          shouldShowTimer: hasStartedResponse && !canSendNow() && !isInviterFirstQuestion,
-                          connection: connection
+                          currentUserEmail: currentUserEmail,
+                          emails_match: connection?.inviterEmail === currentUserEmail,
+                          nextMessageType: nextMessageType,
+                          is_question_type: nextMessageType === 'question',
+                          isInviterFirstQuestion: isInviterFirstQuestion,
+                          hasStartedResponse: hasStartedResponse,
+                          canSendNow_result: canSendNow(),
+                          FINAL_willShowTimer: hasStartedResponse && !canSendNow() && !isInviterFirstQuestion
                         });
                         
-                        return hasStartedResponse && !canSendNow() && !isInviterFirstQuestion && (
+                        // FORCE BYPASS: Never show timer for empty conversations or when inviter is asking first question
+                        const shouldNeverShowTimer = messages.length === 0 || (
+                          messages.length === 0 && 
+                          connection?.inviterEmail === currentUserEmail &&
+                          nextMessageType === 'question'
+                        );
+                        
+                        if (shouldNeverShowTimer) {
+                          console.log('🚫 FORCE BYPASSING TIMER: Empty conversation or inviter first question');
+                          return null;
+                        }
+                        
+                        // For inviter's first question, never show timer regardless of hasStartedResponse
+                        if (isInviterFirstQuestion) {
+                          console.log('BYPASSING TIMER: Inviter first question detected');
+                          return null;
+                        }
+                        
+                        return hasStartedResponse && !canSendNow() && (
                           <span className="text-xs text-slate-500 font-mono">
                             {formatTime(getRemainingTime())}
                           </span>
