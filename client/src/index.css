@@ -184,19 +184,19 @@
     box-shadow: 0 4px 12px hsla(215, 85%, 60%, 0.3);
   }
 
-  /* Floating waiting text animations */
+  /* Floating waiting text animations - optimized for production */
   @keyframes gentleFloat {
     0%, 100% {
-      transform: translateY(0px) translateX(0px) rotate(0deg);
+      transform: translate3d(0px, 0px, 0px) rotate(0deg);
     }
     25% {
-      transform: translateY(-15px) translateX(8px) rotate(0.5deg);
+      transform: translate3d(8px, -15px, 0px) rotate(0.5deg);
     }
     50% {
-      transform: translateY(-8px) translateX(-5px) rotate(-0.3deg);
+      transform: translate3d(-5px, -8px, 0px) rotate(-0.3deg);
     }
     75% {
-      transform: translateY(-20px) translateX(12px) rotate(0.8deg);
+      transform: translate3d(12px, -20px, 0px) rotate(0.8deg);
     }
   }
 
@@ -224,10 +224,22 @@
 
   .gentle-float {
     animation: gentleFloat 8s ease-in-out infinite, fadeGlow 6s ease-in-out infinite;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
   }
 
   .gentle-float-delayed {
     animation: gentleFloat 10s ease-in-out infinite 2s, subtleGlow 8s ease-in-out infinite 1s;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .gentle-float,
+    .gentle-float-delayed {
+      animation: none;
+    }
   }
 
   /* Gradient backgrounds */
