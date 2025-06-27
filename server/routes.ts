@@ -2223,7 +2223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Conversation threading endpoints
+  // Conversation threading endpoints - returns conversations with sync metadata
   app.get("/api/connections/:connectionId/conversations", isAuthenticated, async (req: any, res) => {
     try {
       const connectionId = parseInt(req.params.connectionId);
@@ -2243,7 +2243,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const conversations = await storage.getConversationsByConnection(connectionId);
-      res.json(conversations);
+      
+      // Determine active conversation (most recently active)
+      const sortedConversations = conversations.sort((a, b) => {
+        const aTime = new Date(a.lastActivityAt || a.createdAt || 0).getTime();
+        const bTime = new Date(b.lastActivityAt || b.createdAt || 0).getTime();
+        return bTime - aTime;
+      });
+      
+      const activeConversationId = sortedConversations.length > 0 ? sortedConversations[0].id : null;
+      
+      res.json({
+        conversations: conversations,
+        activeConversationId: activeConversationId,
+        previousConversations: conversations.filter(conv => conv.id !== activeConversationId)
+      });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch conversations" });
     }
@@ -2372,6 +2386,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('[API] Error checking thread reopen permission:', error);
       res.status(500).json({ message: "Failed to check thread reopen permission" });
+    }
+  });
+
+  // Switch active conversation thread without consuming turn
+  app.post("/api/conversations/:conversationId/switch-active", isAuthenticated, async (req: any, res) => {
+    try {
+      const conversationId = parseInt(req.params.conversationId);
+      const { connectionId } = req.body;
+      
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Get the conversation to switch to
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      // Verify user has access to this conversation
+      if (conversation.participant1Email !== currentUser.email && conversation.participant2Email !== currentUser.email) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Update conversation activity timestamp to make it the most recent
+      await storage.updateConversationActivity(conversationId);
+
+      // Send real-time WebSocket notifications to both participants about thread switch
+      try {
+        const { getWebSocketManager } = await import('./websocket');
+        const wsManager = getWebSocketManager();
+        if (wsManager) {
+          // Notify both participants that thread was switched
+          wsManager.notifyConversationUpdate(conversation.participant1Email, {
+            conversationId: conversationId,
+            connectionId: connectionId,
+            action: 'thread_switched',
+            activeConversationId: conversationId
+          });
+          
+          if (conversation.participant1Email !== conversation.participant2Email) {
+            wsManager.notifyConversationUpdate(conversation.participant2Email, {
+              conversationId: conversationId,
+              connectionId: connectionId,
+              action: 'thread_switched',
+              activeConversationId: conversationId
+            });
+          }
+        }
+      } catch (error) {
+        console.error('[WEBSOCKET] Failed to send thread switch notification:', error);
+      }
+
+      res.json({ 
+        success: true, 
+        activeConversationId: conversationId,
+        message: "Thread switched successfully - does not consume turn"
+      });
+    } catch (error) {
+      console.error('[API] Error switching active thread:', error);
+      res.status(500).json({ message: "Failed to switch active thread" });
     }
   });
 
