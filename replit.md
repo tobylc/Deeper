@@ -938,6 +938,15 @@ Changelog:
   * Enhanced conversation page routing with proper URL updates when switching between conversation threads
   * Both users now see identical synchronized conversation states with single conversation focus
   * Complete single-conversation display system ensuring clean, focused conversation experience without multiple overlapping threads
+- June 27, 2025. Critical database consolidation and cache-busting fixes completed:
+  * Performed retroactive database cleanup to consolidate duplicate conversations into single thread
+  * Consolidated all messages from conversation 89 into conversation 90 for unified display
+  * Removed orphaned conversation records that were causing multiple questions to display simultaneously
+  * Implemented aggressive cache invalidation with queryClient.clear(), invalidateQueries(), and refetchQueries()
+  * Added cache-busting parameters to voice message audio URLs with timestamp and random values
+  * Enhanced voice message URL construction with proper path normalization and cache prevention
+  * Database now has single conversation thread per connection ensuring proper single conversation display
+  * Complete resolution of both multiple conversation display and voice message audio playback issues
 - June 27, 2025. Strict turn-based thread reopening system implemented:
   * Only users whose turn it is can reopen previous conversation threads
   * Waiting users see WaitingTurnPopup when attempting to reopen threads or perform turn-based actions

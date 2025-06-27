@@ -56,14 +56,16 @@ export default function ConversationPage() {
     }
   }, [user, setLocation]);
 
-  // Initialize selected conversation ID from URL and clear cache
+  // Initialize selected conversation ID from URL and force complete refresh
   useEffect(() => {
     if (id && !selectedConversationId) {
       console.log("Setting conversation ID from URL:", id);
       setSelectedConversationId(parseInt(id));
       
-      // CRITICAL: Clear all query cache to prevent multiple conversations displaying
+      // CRITICAL: Force complete cache invalidation and refresh
       queryClient.clear();
+      queryClient.invalidateQueries();
+      queryClient.refetchQueries();
     }
   }, [id, selectedConversationId, queryClient]);
 
