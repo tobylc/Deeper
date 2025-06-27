@@ -877,6 +877,13 @@ Changelog:
   * Ensured cross-browser compatibility with hardware-accelerated animations
   * Applied production-grade performance optimizations including useCallback hooks
   * Complete production deployment readiness with comprehensive testing coverage
+- June 27, 2025. Critical timer logic fixes and floating text size reduction:
+  * Fixed critical timer popup bug where inviter's first questions triggered 10-minute timer
+  * Enhanced all timer trigger points with comprehensive safeguards bypassing timer for inviter's first questions
+  * Updated setNewMessage, onTimerStart, handleRecordingStart, and handleSendMessage callbacks
+  * Timer logic now has multiple early return statements ensuring inviter's first questions send immediately
+  * Reduced floating waiting text size by 50% as requested - main heading from text-4xl-7xl to text-2xl-4xl, subtitle from text-xl-4xl to text-lg-2xl
+  * Complete timer bypass system ensures smooth conversation initiation without timer interference
 - June 26, 2025. Critical invitee user trial expiration popup elimination:
   * Fixed invitation form to prevent trial expiration popups for invitee users through isInviteeUser filtering
   * Enhanced conversation page sendMessage mutation to exclude invitees from trial expiration popup triggers

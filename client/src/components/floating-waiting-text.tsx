@@ -32,7 +32,7 @@ const FloatingWaitingText = memo<FloatingWaitingTextProps>(function FloatingWait
       {/* Main waiting text - floating and gently moving */}
       <div className="text-center max-w-4xl px-4">
         <h2 
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif text-slate-700/80 mb-4 sm:mb-6 select-none"
+          className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-serif text-slate-700/80 mb-2 sm:mb-3 select-none"
           style={{
             animation: 'intrigueFloat 8s ease-in-out infinite, intriguePulse 6s ease-in-out infinite',
             willChange: 'transform, opacity, text-shadow',
@@ -45,7 +45,7 @@ const FloatingWaitingText = memo<FloatingWaitingTextProps>(function FloatingWait
         </h2>
         
         <p 
-          className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light text-slate-600/70 select-none"
+          className="text-lg sm:text-xl md:text-xl lg:text-2xl font-light text-slate-600/70 select-none"
           style={{
             animation: 'intrigueFloat 10s ease-in-out infinite 2s, subtleIntrigue 7s ease-in-out infinite 1s',
             willChange: 'transform, opacity, text-shadow',
