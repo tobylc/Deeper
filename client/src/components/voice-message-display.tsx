@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Play, Pause, Volume2 } from "lucide-react";
@@ -14,9 +14,44 @@ interface VoiceMessageDisplayProps {
 export default function VoiceMessageDisplay({ message, isCurrentUser, className }: VoiceMessageDisplayProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading state
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Handle initial audio loading state
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !message.audioFileUrl) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Check if audio is already loaded
+    if (audio.readyState >= 2) { // HAVE_CURRENT_DATA or higher
+      setIsLoading(false);
+      return;
+    }
+
+    // Set up event listeners for loading
+    const handleCanPlay = () => {
+      setIsLoading(false);
+      setError(null);
+    };
+
+    const handleError = () => {
+      setIsLoading(false);
+      setError('Unable to load audio file');
+    };
+
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('error', handleError);
+
+    // Cleanup
+    return () => {
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('error', handleError);
+    };
+  }, [message.audioFileUrl]);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -109,12 +144,10 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
   };
 
   const handleLoadStart = () => {
-
     setIsLoading(true);
   };
 
-  const handleCanPlay = () => {
-
+  const handleCanPlayEvent = () => {
     setIsLoading(false);
     setError(null);
   };
@@ -200,7 +233,7 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           onEnded={handleEnded}
           onError={handleLoadError}
           onLoadStart={handleLoadStart}
-          onCanPlay={handleCanPlay}
+          onCanPlay={handleCanPlayEvent}
           preload="metadata"
           crossOrigin="anonymous"
           onLoadedMetadata={() => console.log('Audio metadata loaded')}
