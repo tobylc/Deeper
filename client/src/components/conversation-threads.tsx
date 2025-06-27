@@ -41,7 +41,8 @@ function StackedConversation({
   onClick, 
   currentUserEmail, 
   isMyTurn,
-  isInviter 
+  isInviter,
+  canReopenThread
 }: { 
   conversation: Conversation;
   isSelected: boolean;
@@ -49,6 +50,7 @@ function StackedConversation({
   currentUserEmail: string;
   isMyTurn: boolean;
   isInviter: boolean;
+  canReopenThread: (conv: Conversation) => boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const shouldStack = conversation.messageCount >= 4;
@@ -103,7 +105,12 @@ function StackedConversation({
                   e.stopPropagation();
                   onClick();
                 }}
-                className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400"
+                disabled={!canReopenThread(conversation)}
+                className={`text-xs px-2 py-1 h-6 ${
+                  canReopenThread(conversation) 
+                    ? 'border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400' 
+                    : 'border-slate-200 text-slate-400 cursor-not-allowed'
+                }`}
               >
                 <RotateCcw className="w-3 h-3 mr-1" />
                 Reopen Thread
@@ -162,6 +169,32 @@ export default function ConversationThreads({
     queryFn: () => fetch(`/api/connections/${connectionId}/conversations/message-counts`).then(res => res.json()),
     enabled: !!connectionId
   });
+
+  // Check if current active conversation has unanswered question
+  const { data: currentConversationMessages = [] } = useQuery({
+    queryKey: [`/api/conversations/${selectedConversationId}/messages`],
+    queryFn: () => fetch(`/api/conversations/${selectedConversationId}/messages`).then(res => res.json()),
+    enabled: !!selectedConversationId
+  });
+
+  // Function to check if user can reopen a thread
+  const canReopenThread = (conversation: Conversation): boolean => {
+    // Must be user's turn
+    if (!isMyTurn) return false;
+
+    // Check if current conversation has unanswered question
+    if (currentConversationMessages.length > 0) {
+      const lastMessage = currentConversationMessages[currentConversationMessages.length - 1];
+      if (lastMessage?.type === 'question' && lastMessage?.senderEmail !== currentUserEmail) {
+        // Other user asked a question, must respond before reopening threads
+        return false;
+      }
+    }
+
+    // Check if the thread to reopen has at least one complete exchange
+    const threadMessageCount = messageCounts[conversation.id] || 0;
+    return threadMessageCount >= 2; // At least question + response
+  };
 
   // Filter out the currently active conversation and sort remaining conversations
   const sortedConversations = conversations
@@ -227,14 +260,15 @@ export default function ConversationThreads({
               conversation={conversation}
               isSelected={false} // Never selected since active conversation is hidden
               onClick={() => {
-                // Only allow thread selection when it's user's turn
-                if (isMyTurn) {
+                // Only allow thread selection when validation passes
+                if (canReopenThread(conversation)) {
                   onThreadSelect(conversation.id);
                 }
               }}
               currentUserEmail={currentUserEmail}
               isMyTurn={isMyTurn}
               isInviter={isInviter}
+              canReopenThread={canReopenThread}
             />
           ))
         )}

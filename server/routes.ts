@@ -2273,6 +2273,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check if a user can reopen a specific conversation thread
+  app.get("/api/conversations/:conversationId/can-reopen", isAuthenticated, async (req: any, res) => {
+    try {
+      const conversationId = parseInt(req.params.conversationId);
+      const currentConversationId = parseInt(req.query.currentConversationId as string);
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+
+      if (!currentUser) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Get the conversation to reopen
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      // Check if it's the user's turn in the connection
+      const isMyTurn = conversation.currentTurn === currentUser.email;
+      if (!isMyTurn) {
+        return res.json({ canReopen: false, reason: "Not your turn" });
+      }
+
+      // Check if current active conversation has unanswered question
+      if (currentConversationId && currentConversationId !== conversationId) {
+        const currentMessages = await storage.getMessages(currentConversationId);
+        if (currentMessages.length > 0) {
+          const lastMessage = currentMessages[currentMessages.length - 1];
+          if (lastMessage.type === 'question' && lastMessage.senderEmail !== currentUser.email) {
+            return res.json({ 
+              canReopen: false, 
+              reason: "Must respond to current question before reopening threads" 
+            });
+          }
+        }
+      }
+
+      // Check if the thread has at least one complete exchange
+      const messages = await storage.getMessages(conversationId);
+      const hasQuestion = messages.some(msg => msg.type === 'question');
+      const hasResponse = messages.some(msg => msg.type === 'response');
+      
+      if (!hasQuestion || !hasResponse) {
+        return res.json({ 
+          canReopen: false, 
+          reason: "Thread needs at least one complete question-response exchange" 
+        });
+      }
+
+      res.json({ canReopen: true });
+    } catch (error) {
+      console.error('[API] Error checking thread reopen permission:', error);
+      res.status(500).json({ message: "Failed to check thread reopen permission" });
+    }
+  });
+
   // Endpoint to get or create the single conversation for a connection
   app.post("/api/connections/:connectionId/conversations", isAuthenticated, async (req: any, res) => {
     try {
