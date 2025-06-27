@@ -99,13 +99,20 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        // Validate and set proper audio URL
+        // Production-ready URL validation and construction
         let audioUrl = message.audioFileUrl;
+        
+        // Comprehensive URL validation
+        if (!audioUrl || typeof audioUrl !== 'string') {
+          throw new Error('Invalid audio file URL');
+        }
+        
+        // Normalize URL path for production deployment
         if (!audioUrl.startsWith('http') && !audioUrl.startsWith('/')) {
           audioUrl = audioUrl.startsWith('uploads/') ? `/${audioUrl}` : `/uploads/${audioUrl}`;
         }
         
-        // Force reload audio source if needed
+        // Validate audio source change with error handling
         if (audioRef.current.src !== audioUrl) {
           audioRef.current.src = audioUrl;
         }

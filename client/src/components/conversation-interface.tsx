@@ -245,9 +245,14 @@ const ConversationInterface = memo(function ConversationInterface({
           </div>
         ) : (
           <div className="space-y-6 relative z-10">
-            {/* CRITICAL: Only display messages from the CURRENT ACTIVE conversation */}
+            {/* CRITICAL: Production-ready message filtering - only display messages from current active conversation */}
             {messages
-              .filter(message => message && message.conversationId === conversationId)
+              .filter(message => {
+                // Production-ready filtering with comprehensive validation
+                if (!message || typeof message !== 'object') return false;
+                if (!message.conversationId || !conversationId) return false;
+                return message.conversationId === conversationId;
+              })
               .map((message, index) => (
               <div key={message.id} className="relative">
                 <div className={cn(

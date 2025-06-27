@@ -225,20 +225,30 @@ export default function ConversationThreads({
     enabled: !!connectionId
   });
 
-  // CRITICAL: Filter out the currently active conversation - use activeConversationId for synchronization
+  // CRITICAL: Production-ready conversation filtering with comprehensive validation
   const currentActiveId = activeConversationId || selectedConversationId;
-  const sortedConversations = conversations
-    .filter((conv: Conversation) => conv.id !== currentActiveId) // Hide active conversation from left column
-    .map((conv: Conversation) => ({
-      ...conv,
-      messageCount: messageCounts[conv.id] || 0,
-      lastMessageAt: conv.lastActivityAt
-    }))
-    .sort((a: Conversation, b: Conversation) => {
-      if (a.isMainThread && !b.isMainThread) return -1;
-      if (!a.isMainThread && b.isMainThread) return 1;
-      return new Date(b.lastActivityAt || 0).getTime() - new Date(a.lastActivityAt || 0).getTime();
-    });
+  const sortedConversations = Array.isArray(conversations) 
+    ? conversations
+        .filter((conv: Conversation) => {
+          // Production-ready filtering with null checks and type validation
+          if (!conv || typeof conv !== 'object') return false;
+          if (!conv.id || typeof conv.id !== 'number') return false;
+          return conv.id !== currentActiveId; // Hide active conversation from left column
+        })
+        .map((conv: Conversation) => ({
+          ...conv,
+          messageCount: messageCounts[conv.id] || 0,
+          lastMessageAt: conv.lastActivityAt
+        }))
+        .sort((a: Conversation, b: Conversation) => {
+          // Production-ready sorting with null safety
+          if (a.isMainThread && !b.isMainThread) return -1;
+          if (!a.isMainThread && b.isMainThread) return 1;
+          const aTime = a.lastActivityAt ? new Date(a.lastActivityAt).getTime() : 0;
+          const bTime = b.lastActivityAt ? new Date(b.lastActivityAt).getTime() : 0;
+          return bTime - aTime;
+        })
+    : [];
 
   if (isLoading) {
     return (

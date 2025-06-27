@@ -95,7 +95,9 @@ export default function ConversationPage() {
         }
         return response.json();
       } catch (error) {
-        console.error('Conversation loading error:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Conversation loading error:', error);
+        }
         throw error;
       }
     },
