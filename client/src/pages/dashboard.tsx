@@ -579,15 +579,16 @@ export default function Dashboard() {
                                 
                                 const conversation = await response.json();
                                 console.log("Created conversation:", conversation);
+                                console.log("Conversation ID for redirect:", conversation.id);
                                 
                                 if (conversation && conversation.id) {
-                                  // Refresh conversations data and wait for it
+                                  // Force clear all cache to prevent stale data
+                                  queryClient.clear();
                                   await queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user.email}`] });
                                   
-                                  // Add a small delay to ensure the conversation is fully created
-                                  setTimeout(() => {
-                                    setLocation(`/conversation/${conversation.id}`);
-                                  }, 500);
+                                  // Immediate redirect without delay to prevent dashboard refresh
+                                  console.log("Redirecting to conversation page:", `/conversation/${conversation.id}`);
+                                  setLocation(`/conversation/${conversation.id}`);
                                 } else {
                                   console.error("No conversation ID in response:", conversation);
                                   toast({
