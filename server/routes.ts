@@ -2298,11 +2298,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (currentMessages.length > 0) {
           const lastMessage = currentMessages[currentMessages.length - 1];
           
-          // Check if there's an unanswered question from either user
-          if (lastMessage.type === 'question') {
+          // Check if there's an unanswered question from the OTHER user that needs a response
+          if (lastMessage.type === 'question' && lastMessage.senderEmail !== currentUser.email) {
             return res.json({ 
               canReopen: false, 
-              reason: "Must complete the current question-response exchange before reopening previous threads" 
+              reason: "respond_to_question",
+              message: "Must respond to the current question before reopening previous threads" 
             });
           }
           
@@ -2313,7 +2314,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (hasCurrentQuestion && !hasCurrentResponse) {
             return res.json({ 
               canReopen: false, 
-              reason: "Must respond to the current question before reopening previous threads" 
+              reason: "respond_to_question",
+              message: "Must respond to the current question before reopening previous threads" 
             });
           }
         }

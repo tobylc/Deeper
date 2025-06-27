@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, Users, Clock, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
 import { WaitingTurnPopup } from './waiting-turn-popup';
+import { RespondFirstPopup } from './respond-first-popup';
 import { useUserDisplayName } from '@/hooks/useUserDisplayName';
 
 interface ConversationThreadsProps {
@@ -47,7 +48,8 @@ function StackedConversation({
   isMyTurn,
   isInviter,
   selectedConversationId,
-  onWaitingClick
+  onWaitingClick,
+  onRespondFirstClick
 }: { 
   conversation: Conversation;
   isSelected: boolean;
@@ -57,6 +59,7 @@ function StackedConversation({
   isInviter: boolean;
   selectedConversationId?: number;
   onWaitingClick: () => void;
+  onRespondFirstClick: () => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const shouldStack = conversation.messageCount >= 4;
@@ -123,8 +126,10 @@ function StackedConversation({
                     
                     if (data.canReopen) {
                       onClick(); // Reopen the thread - this does NOT count as a turn
+                    } else if (data.reason === 'respond_to_question') {
+                      onRespondFirstClick(); // Show specific popup for unanswered questions
                     } else {
-                      onWaitingClick(); // Show waiting popup with reason
+                      onWaitingClick(); // Show generic waiting popup for other reasons
                     }
                   } catch (error) {
                     console.error('Error checking thread reopen permission:', error);
@@ -178,6 +183,7 @@ export default function ConversationThreads({
   isInviter
 }: ConversationThreadsProps) {
   const [showWaitingPopup, setShowWaitingPopup] = useState(false);
+  const [showRespondFirstPopup, setShowRespondFirstPopup] = useState(false);
   const { data: otherParticipantName } = useUserDisplayName(otherParticipantEmail);
 
   // Fetch real conversations from API
@@ -268,6 +274,7 @@ export default function ConversationThreads({
               isInviter={isInviter}
               selectedConversationId={selectedConversationId}
               onWaitingClick={() => setShowWaitingPopup(true)}
+              onRespondFirstClick={() => setShowRespondFirstPopup(true)}
             />
           ))
         )}
@@ -277,6 +284,13 @@ export default function ConversationThreads({
       <WaitingTurnPopup
         isOpen={showWaitingPopup}
         onClose={() => setShowWaitingPopup(false)}
+        otherParticipantName={otherParticipantName || 'the other person'}
+      />
+      
+      {/* Respond First Popup */}
+      <RespondFirstPopup
+        isOpen={showRespondFirstPopup}
+        onClose={() => setShowRespondFirstPopup(false)}
         otherParticipantName={otherParticipantName || 'the other person'}
       />
     </div>
