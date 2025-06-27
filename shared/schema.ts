@@ -108,37 +108,16 @@ export const emails = pgTable("emails", {
 });
 
 // Schemas
-export const insertUserSchema = createInsertSchema(users).pick({
-  id: true,
-  email: true,
-  firstName: true,
-  lastName: true,
-  passwordHash: true,
-  googleId: true,
-  profileImageUrl: true,
-  phoneNumber: true,
-  phoneVerified: true,
-  notificationPreference: true,
-  subscriptionTier: true,
-  subscriptionStatus: true,
-  maxConnections: true,
-  stripeCustomerId: true,
-  stripeSubscriptionId: true,
-  subscriptionExpiresAt: true,
-  hasSeenOnboarding: true,
-  conversationNotificationPrefs: true,
+export const insertUserSchema = createInsertSchema(users).omit({
+  createdAt: true,
+  updatedAt: true,
 });
 
-export const insertConnectionSchema = createInsertSchema(connections).pick({
-  inviterEmail: true,
-  inviteeEmail: true,
-  relationshipType: true,
-  inviterRole: true,
-  inviteeRole: true,
-  personalMessage: true,
-  inviterSubscriptionTier: true,
-}).extend({
-  personalMessage: z.string().optional(),
+export const insertConnectionSchema = createInsertSchema(connections).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+  acceptedAt: true,
 });
 
 export const insertConversationSchema = createInsertSchema(conversations).pick({
@@ -160,14 +139,9 @@ export const insertMessageSchema = createInsertSchema(messages).pick({
   audioDuration: true,
 });
 
-export const insertEmailSchema = createInsertSchema(emails).pick({
-  toEmail: true,
-  fromEmail: true,
-  subject: true,
-  htmlContent: true,
-  textContent: true,
-  emailType: true,
-  connectionId: true,
+export const insertEmailSchema = createInsertSchema(emails).omit({
+  id: true,
+  createdAt: true,
 });
 
 // Verification codes table for production-ready phone verification
