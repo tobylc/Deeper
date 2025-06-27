@@ -269,27 +269,28 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           </div>
         </div>
 
-        {/* Audio Element with Production-Ready URL Handling */}
+        {/* Audio Element with Cache-Busting URL Construction */}
         <audio
           ref={audioRef}
           src={(() => {
-            // Production-ready URL construction for audio playback
+            // CRITICAL: Force fresh audio loading with cache-busting
             if (!message.audioFileUrl) return '';
             let url = message.audioFileUrl;
             
-            // Handle relative paths properly
+            // Normalize URL path construction
             if (!url.startsWith('http') && !url.startsWith('/')) {
               url = url.startsWith('uploads/') ? `/${url}` : `/uploads/${url}`;
             }
             
-            // Fix double uploads path
-            if (url.startsWith('/uploads/uploads/')) {
+            // Fix potential double uploads path
+            if (url.includes('/uploads/uploads/')) {
               url = url.replace('/uploads/uploads/', '/uploads/');
             }
             
-            // Add timestamp to prevent caching issues
+            // CRITICAL: Add cache-busting timestamp to force reload
             const separator = url.includes('?') ? '&' : '?';
-            return `${url}${separator}t=${Date.now()}`;
+            const timestamp = Date.now();
+            return `${url}${separator}v=${timestamp}&cache=${Math.random()}`;
           })()}
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleEnded}

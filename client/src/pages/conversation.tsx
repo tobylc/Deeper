@@ -56,13 +56,16 @@ export default function ConversationPage() {
     }
   }, [user, setLocation]);
 
-  // Initialize selected conversation ID from URL
+  // Initialize selected conversation ID from URL and clear cache
   useEffect(() => {
     if (id && !selectedConversationId) {
       console.log("Setting conversation ID from URL:", id);
       setSelectedConversationId(parseInt(id));
+      
+      // CRITICAL: Clear all query cache to prevent multiple conversations displaying
+      queryClient.clear();
     }
-  }, [id, selectedConversationId]);
+  }, [id, selectedConversationId, queryClient]);
 
   // Listen for WebSocket conversation thread creation events
   useEffect(() => {
@@ -172,16 +175,17 @@ export default function ConversationPage() {
           throw new Error(`Failed to load messages: ${response.status}`);
         }
         const data = await response.json();
-        // CRITICAL: Single conversation display - filter to show ONLY current active conversation
-        // This prevents multiple conversations from displaying simultaneously in center column
+        
+        // CRITICAL: Backend already filters by conversationId, but add client-side validation
         const currentConvId = typeof conversationId === 'string' ? parseInt(conversationId) : conversationId;
-        const filteredMessages = Array.isArray(data) ? data.filter(msg => {
+        const validatedMessages = Array.isArray(data) ? data.filter(msg => {
           if (!msg || typeof msg !== 'object') return false;
           if (!msg.conversationId) return false;
           const msgConvId = typeof msg.conversationId === 'string' ? parseInt(msg.conversationId) : msg.conversationId;
           return msgConvId === currentConvId;
         }) : [];
-        return filteredMessages;
+        
+        return validatedMessages;
       } catch (error) {
         console.error('Messages loading error:', error);
         return [];
@@ -190,6 +194,9 @@ export default function ConversationPage() {
     enabled: !!(selectedConversationId || id) && !!user,
     retry: 3,
     retryDelay: 1000,
+    // CRITICAL: Prevent stale cache from showing multiple conversations
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // Check notification preference status for this conversation
@@ -593,6 +600,9 @@ export default function ConversationPage() {
       });
 
       if (response.ok) {
+        // CRITICAL: Clear cache before switching to prevent multiple conversations
+        queryClient.clear();
+        
         setSelectedConversationId(conversationId);
         setNewMessage(""); // Clear message when switching threads
         setShowThreadsView(false); // Hide threads view on mobile after selection
