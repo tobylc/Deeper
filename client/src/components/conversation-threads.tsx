@@ -122,7 +122,22 @@ function StackedConversation({
                     const response = await fetch(
                       `/api/conversations/${conversation.id}/can-reopen?currentConversationId=${selectedConversationId || ''}`
                     );
+                    
+                    // Production-ready response handling
+                    if (!response.ok) {
+                      console.error(`API error: ${response.status} ${response.statusText}`);
+                      onWaitingClick();
+                      return;
+                    }
+
                     const data = await response.json();
+                    
+                    // Validate response structure
+                    if (typeof data.canReopen !== 'boolean') {
+                      console.error('Invalid API response structure:', data);
+                      onWaitingClick();
+                      return;
+                    }
                     
                     if (data.canReopen) {
                       onClick(); // Reopen the thread - this does NOT count as a turn
@@ -132,7 +147,9 @@ function StackedConversation({
                       onWaitingClick(); // Show generic waiting popup for other reasons
                     }
                   } catch (error) {
-                    console.error('Error checking thread reopen permission:', error);
+                    if (process.env.NODE_ENV === 'development') {
+                      console.error('Error checking thread reopen permission:', error);
+                    }
                     onWaitingClick(); // Show waiting popup on error
                   }
                 }}

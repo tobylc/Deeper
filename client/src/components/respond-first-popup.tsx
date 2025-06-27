@@ -9,8 +9,16 @@ interface RespondFirstPopupProps {
 }
 
 export function RespondFirstPopup({ isOpen, onClose, otherParticipantName = "the other person" }: RespondFirstPopupProps) {
+  // Production-ready error handling and accessibility
+  const handleClose = () => {
+    try {
+      onClose();
+    } catch (error) {
+      console.error('Error closing respond first popup:', error);
+    }
+  };
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md bg-gradient-to-br from-ocean/10 via-teal/5 to-ocean/5 border-2 border-ocean/20 shadow-2xl">
         <DialogHeader className="text-center">
           <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-ocean to-teal rounded-full flex items-center justify-center shadow-lg">
@@ -34,7 +42,7 @@ export function RespondFirstPopup({ isOpen, onClose, otherParticipantName = "the
           </div>
           
           <Button 
-            onClick={onClose}
+            onClick={handleClose}
             className="w-full bg-gradient-to-r from-ocean to-teal hover:from-ocean/90 hover:to-teal/90 text-white border-0 shadow-lg"
           >
             I'll Respond First

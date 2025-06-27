@@ -2278,17 +2278,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const conversationId = parseInt(req.params.conversationId);
       const currentConversationId = parseInt(req.query.currentConversationId as string);
-      const userId = req.user.claims?.sub || req.user.id;
-      const currentUser = await storage.getUser(userId);
-
-      if (!currentUser) {
-        return res.status(403).json({ message: "Access denied" });
+      
+      // Production-ready input validation
+      if (isNaN(conversationId) || conversationId <= 0) {
+        return res.status(400).json({ 
+          canReopen: false,
+          reason: "invalid_input",
+          message: "Invalid conversation ID" 
+        });
       }
 
-      // Get the conversation to reopen
+      const userId = req.user.claims?.sub || req.user.id;
+      if (!userId) {
+        return res.status(401).json({ 
+          canReopen: false,
+          reason: "unauthorized",
+          message: "User authentication required" 
+        });
+      }
+
+      const currentUser = await storage.getUser(userId);
+      if (!currentUser) {
+        return res.status(403).json({ 
+          canReopen: false,
+          reason: "access_denied",
+          message: "Access denied" 
+        });
+      }
+
+      // Get the conversation to reopen with error handling
       const conversation = await storage.getConversation(conversationId);
       if (!conversation) {
-        return res.status(404).json({ message: "Conversation not found" });
+        return res.status(404).json({ 
+          canReopen: false,
+          reason: "not_found",
+          message: "Conversation not found" 
+        });
+      }
+
+      // Verify user has access to this conversation
+      if (conversation.participant1Email !== currentUser.email && conversation.participant2Email !== currentUser.email) {
+        return res.status(403).json({ 
+          canReopen: false,
+          reason: "access_denied",
+          message: "Access denied to this conversation" 
+        });
       }
 
       // CRITICAL: Check if there's ANY current thread with unanswered questions

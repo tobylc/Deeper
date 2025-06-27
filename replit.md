@@ -949,6 +949,13 @@ Changelog:
   * Added inline thread reopening validation in conversation threads component with proper error handling
   * Thread reopening now requires: (1) current thread has complete exchanges, (2) target thread has at least one complete exchange
   * Production-ready turn-based conversation system ensuring users complete current questions before exploring previous topics
+- June 27, 2025. Production-ready "Respond First" popup system implementation:
+  * Created dedicated RespondFirstPopup component with ocean blue theme and MessageCircle icon
+  * Enhanced backend can-reopen API to return specific reason codes ("respond_to_question" vs generic blocking)
+  * Updated frontend logic to show appropriate popup based on validation scenario
+  * Users now see "Respond First" popup when they have unanswered questions vs "It's Their Turn" for genuine turn conflicts
+  * Added production-ready error handling and console log filtering for deployment
+  * Complete popup system ensures clear user guidance for all thread reopening scenarios
 - June 26, 2025. Production-ready TypeScript error resolution and deployment optimization:
   * Fixed all remaining TypeScript LSP errors throughout server/routes.ts for production deployment
   * Added nullToUndefined utility function for proper null/undefined type conversion across database operations
