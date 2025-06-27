@@ -52,85 +52,18 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   const { user } = useAuth();
   const { toast } = useToast();
   
-  // Thread creation mutation using specialized endpoint with flow validation
-  const createThreadMutation = useMutation({
-    mutationFn: async (question: string) => {
-      if (!user?.email) {
-        throw new Error("User not authenticated");
-      }
-      
-      // Use the specialized endpoint that creates conversation thread with question and enforces flow restrictions
-      const response = await apiRequest("POST", `/api/connections/${connectionId}/conversations/with-question`, {
-        question: question.trim(),
-        participant1Email: user.email,
-        participant2Email: otherParticipant,
-        relationshipType: relationshipType
-      });
-      
-      return response.json();
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: [`/api/connections/${connectionId}/conversations`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversation.id}/messages`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
-      setShowNewQuestionDialog(false);
-      setNewQuestionText("");
-      onNewThreadCreated(data.conversation.id);
-    },
-    onError: (error: any) => {
-      console.error("Create thread error:", error);
-      // Check if it's an exchange requirement error
-      if (error.message && error.message.includes("provide at least one response")) {
-        setShowExchangeRequiredPopup(true);
-      } else {
-        toast({
-          title: "Unable to create thread",
-          description: error.message || "Please try again in a moment",
-        });
-      }
-    }
-  });
+  // Removed automatic thread creation - all questions should populate text input for user editing
 
-  // Production-ready new thread creation with comprehensive error handling
+  // Handle custom question text by populating it into the main input for editing
   const handleCreateNewThread = () => {
-    try {
-      // Validate basic requirements
-      if (!newQuestionText.trim() || !isMyTurn) {
-        console.error('[QUESTION_SUGGESTIONS] Invalid thread creation attempt:', {
-          hasQuestion: !!newQuestionText.trim(),
-          isMyTurn
-        });
-        return;
-      }
-      
-      // Check if we can create new threads
-      if (!canCreateNewThread) {
-        setShowExchangeRequiredPopup(true);
-        return;
-      }
-      
-      // Validate required data for thread creation
-      if (!user?.email || !otherParticipant || !connectionId) {
-        console.error('[QUESTION_SUGGESTIONS] Missing required data for thread creation:', {
-          hasUser: !!user?.email,
-          hasOtherParticipant: !!otherParticipant,
-          hasConnectionId: !!connectionId
-        });
-        toast({
-          title: "Unable to create thread",
-          description: "Missing required information. Please refresh and try again.",
-        });
-        return;
-      }
-      
-      createThreadMutation.mutate(newQuestionText.trim());
-    } catch (error) {
-      console.error('[QUESTION_SUGGESTIONS] Error in handleCreateNewThread:', error);
-      toast({
-        title: "Unable to create thread",
-        description: "An unexpected error occurred. Please try again.",
-      });
+    if (!newQuestionText.trim()) {
+      return;
     }
+    
+    // Populate the custom question into the main input for user editing
+    onQuestionSelect(newQuestionText.trim());
+    setNewQuestionText("");
+    setShowNewQuestionDialog(false);
   };
 
   // Production-ready question selection with comprehensive error handling
@@ -158,28 +91,12 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         return;
       }
       
-      // Enhanced validation: Check if this should be a new thread or populated into current conversation
-      if (canCreateNewThread && nextMessageType === 'question') {
-        // Validate thread creation requirements
-        if (!user?.email || !otherParticipant || !connectionId) {
-          console.error('[QUESTION_SUGGESTIONS] Missing data for thread creation via question select:', {
-            hasUser: !!user?.email,
-            hasOtherParticipant: !!otherParticipant,
-            hasConnectionId: !!connectionId
-          });
-          toast({
-            title: "Unable to create thread",
-            description: "Missing required information. Please refresh and try again.",
-          });
-          return;
-        }
-        
-        createThreadMutation.mutate(question.trim());
-      } else if (nextMessageType === 'question') {
-        // For the first question in a conversation, populate it into the input
+      // ALWAYS populate question into text input for user to edit - NEVER automatically send
+      if (nextMessageType === 'question' && isMyTurn) {
+        // Populate question into input for user editing
         onQuestionSelect(question.trim());
       } else {
-        // If next message type is 'response', show exchange required popup
+        // If not user's turn or not question type, show appropriate popup
         setShowExchangeRequiredPopup(true);
       }
     } catch (error) {
