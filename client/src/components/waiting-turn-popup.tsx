@@ -13,7 +13,7 @@ export function WaitingTurnPopup({ isOpen, onClose, otherParticipantName = "the 
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 border-2 border-amber-200/50 shadow-2xl">
         <DialogHeader className="text-center">
-          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-ocean to-teal rounded-full flex items-center justify-center shadow-lg">
             <Clock className="w-8 h-8 text-white" />
           </div>
           <DialogTitle className="text-xl font-semibold text-amber-900 mb-2">

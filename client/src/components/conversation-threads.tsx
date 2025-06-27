@@ -36,6 +36,57 @@ interface Conversation {
   createdAt: Date | null;
 }
 
+// Helper component for thread reopening with validation
+function ReopenThreadButton({ 
+  conversationId, 
+  selectedConversationId, 
+  onClick, 
+  onWaitingClick 
+}: { 
+  conversationId: number;
+  selectedConversationId?: number;
+  onClick: () => void;
+  onWaitingClick: () => void;
+}) {
+  const [isChecking, setIsChecking] = useState(false);
+  
+  const handleReopenClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsChecking(true);
+    
+    try {
+      const response = await fetch(
+        `/api/conversations/${conversationId}/can-reopen?currentConversationId=${selectedConversationId || ''}`
+      );
+      const data = await response.json();
+      
+      if (data.canReopen) {
+        onClick(); // Reopen the thread - this does NOT count as a turn
+      } else {
+        onWaitingClick(); // Show waiting popup with reason
+      }
+    } catch (error) {
+      console.error('Error checking thread reopen permission:', error);
+      onWaitingClick(); // Show waiting popup on error
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={handleReopenClick}
+      disabled={isChecking}
+      className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400"
+    >
+      <RotateCcw className="w-3 h-3 mr-1" />
+      {isChecking ? 'Checking...' : 'Reopen Thread'}
+    </Button>
+  );
+}
+
 // Helper component for stacked conversation display
 function StackedConversation({ 
   conversation, 
@@ -108,22 +159,12 @@ function StackedConversation({
             
             {/* Reopen Thread Button */}
             <div className="mt-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (isMyTurn) {
-                    onClick();
-                  } else {
-                    onWaitingClick();
-                  }
-                }}
-                className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400"
-              >
-                <RotateCcw className="w-3 h-3 mr-1" />
-                Reopen Thread
-              </Button>
+              <ReopenThreadButton 
+                conversationId={conversation.id}
+                selectedConversationId={selectedConversationId}
+                onClick={onClick}
+                onWaitingClick={onWaitingClick}
+              />
             </div>
           </div>
           

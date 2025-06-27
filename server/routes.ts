@@ -2291,27 +2291,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Conversation not found" });
       }
 
-      // Check if it's the user's turn in the connection
-      const isMyTurn = conversation.currentTurn === currentUser.email;
-      if (!isMyTurn) {
-        return res.json({ canReopen: false, reason: "Not your turn" });
-      }
-
-      // Check if current active conversation has unanswered question
+      // CRITICAL: Check if there's ANY current thread with unanswered questions
+      // Users can only reopen threads when ALL current threads have complete question-response pairs
       if (currentConversationId && currentConversationId !== conversationId) {
         const currentMessages = await storage.getMessages(currentConversationId);
         if (currentMessages.length > 0) {
           const lastMessage = currentMessages[currentMessages.length - 1];
-          if (lastMessage.type === 'question' && lastMessage.senderEmail !== currentUser.email) {
+          
+          // Check if there's an unanswered question from either user
+          if (lastMessage.type === 'question') {
             return res.json({ 
               canReopen: false, 
-              reason: "Must respond to current question before reopening threads" 
+              reason: "Must complete the current question-response exchange before reopening previous threads" 
+            });
+          }
+          
+          // Additional check: ensure there's been at least one complete exchange in current thread
+          const hasCurrentQuestion = currentMessages.some(msg => msg.type === 'question');
+          const hasCurrentResponse = currentMessages.some(msg => msg.type === 'response');
+          
+          if (hasCurrentQuestion && !hasCurrentResponse) {
+            return res.json({ 
+              canReopen: false, 
+              reason: "Must respond to the current question before reopening previous threads" 
             });
           }
         }
       }
 
-      // Check if the thread has at least one complete exchange
+      // Check if the thread to reopen has at least one complete exchange
       const messages = await storage.getMessages(conversationId);
       const hasQuestion = messages.some(msg => msg.type === 'question');
       const hasResponse = messages.some(msg => msg.type === 'response');
@@ -2319,10 +2327,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!hasQuestion || !hasResponse) {
         return res.json({ 
           canReopen: false, 
-          reason: "Thread needs at least one complete question-response exchange" 
+          reason: "Thread needs at least one complete question-response exchange before it can be reopened" 
         });
       }
 
+      // Thread can be reopened - this does NOT consume the user's turn
       res.json({ canReopen: true });
     } catch (error) {
       console.error('[API] Error checking thread reopen permission:', error);
