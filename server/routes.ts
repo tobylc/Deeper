@@ -2153,7 +2153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Conversation creation endpoint for dashboard
+  // Conversation creation endpoint for dashboard - ensures only ONE conversation per connection
   app.post("/api/conversations", isAuthenticated, async (req: any, res) => {
     try {
       const { participant1Email, participant2Email, relationshipType, currentTurn, connectionId } = req.body;
@@ -2167,6 +2167,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify user is authorized to create this conversation
       if (currentUser.email !== participant1Email && currentUser.email !== participant2Email) {
         return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Check if a conversation already exists for this connection
+      const existingConversations = await storage.getConversationsByConnection(connectionId);
+      if (existingConversations.length > 0) {
+        // Return the existing conversation instead of creating a new one
+        const existingConversation = existingConversations[0];
+        return res.json(existingConversation);
       }
       
       const conversationData = {
@@ -2264,34 +2272,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DEPRECATED: This endpoint should not create new conversations - redirect to use existing conversation
   app.post("/api/connections/:connectionId/conversations", isAuthenticated, async (req: any, res) => {
     try {
       const connectionId = parseInt(req.params.connectionId);
-      const { topic, title, participant1Email, participant2Email, relationshipType, isMainThread } = req.body;
       const userId = req.user.claims?.sub || req.user.id;
       const currentUser = await storage.getUser(userId);
       
       if (!currentUser) {
         return res.status(403).json({ message: "Access denied" });
-      }
-
-      // Check subscription status and trial expiration for conversation creation
-      const now = new Date();
-      const subscriptionTier = currentUser.subscriptionTier || 'free';
-      const subscriptionStatus = currentUser.subscriptionStatus || 'inactive';
-      const subscriptionExpiresAt = currentUser.subscriptionExpiresAt;
-
-      // Check if user is an invitee (should have permanent free access)
-      const isInviteeUser = await storage.isUserInvitee(currentUser.email!);
-      
-      // Enforce trial expiration for conversation creation (but not for invitee users)
-      if (!isInviteeUser && (subscriptionTier === 'free' || (subscriptionStatus === 'trialing' && subscriptionExpiresAt && subscriptionExpiresAt < now))) {
-        return res.status(403).json({ 
-          type: 'TRIAL_EXPIRED',
-          message: "Your free trial has expired. Please upgrade to continue using Deeper.",
-          subscriptionTier,
-          subscriptionStatus
-        });
       }
       
       // Verify user is part of this connection
@@ -2301,17 +2290,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
            connection.inviteeEmail !== currentUser.email)) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
+      // Check if a conversation already exists for this connection
+      const existingConversations = await storage.getConversationsByConnection(connectionId);
+      if (existingConversations.length > 0) {
+        // Return the existing conversation instead of creating a new one
+        const existingConversation = existingConversations[0];
+        return res.json(existingConversation);
+      }
+
+      // If no conversation exists, create the single conversation for this connection
       const conversationData = {
         connectionId,
-        participant1Email,
-        participant2Email,
-        relationshipType,
-        currentTurn: participant1Email, // Inviter always gets first turn
+        participant1Email: connection.inviterEmail,
+        participant2Email: connection.inviteeEmail,
+        relationshipType: connection.relationshipType,
+        currentTurn: connection.inviterEmail, // Inviter always gets first turn
         status: 'active',
-        title: title || topic,
-        topic,
-        isMainThread: isMainThread || false
+        isMainThread: true
       };
       
       const conversation = await storage.createConversation(conversationData);

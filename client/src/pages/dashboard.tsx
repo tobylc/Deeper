@@ -75,13 +75,13 @@ export default function Dashboard() {
       .then(response => response.json())
       .then(data => {
         const inviterName = data.displayName || inviterEmail.split('@')[0];
-        setWelcomeData({ inviterName, relationshipType, inviterRole, inviteeRole });
+        setWelcomeData({ inviterName, relationshipType, inviterRole: inviterRole || undefined, inviteeRole: inviteeRole || undefined });
         setShowWelcomePopup(true);
       })
       .catch(() => {
         // Fallback to email username if API fails
         const inviterName = inviterEmail.split('@')[0];
-        setWelcomeData({ inviterName, relationshipType, inviterRole, inviteeRole });
+        setWelcomeData({ inviterName, relationshipType, inviterRole: inviterRole || undefined, inviteeRole: inviteeRole || undefined });
         setShowWelcomePopup(true);
       });
     }
@@ -759,8 +759,8 @@ export default function Dashboard() {
         <InviteeWelcomePopup
           inviterName={welcomeData.inviterName}
           relationshipType={welcomeData.relationshipType}
-          inviterRole={welcomeData.inviterRole}
-          inviteeRole={welcomeData.inviteeRole}
+          inviterRole={welcomeData.inviterRole ?? undefined}
+          inviteeRole={welcomeData.inviteeRole ?? undefined}
           onClose={() => setShowWelcomePopup(false)}
         />
       )}
