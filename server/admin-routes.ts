@@ -195,17 +195,7 @@ export function setupAdminRoutes(app: Express) {
       const search = req.query.search as string || '';
       const offset = (page - 1) * limit;
 
-      let query = db.select().from(users);
-      
-      if (search) {
-        query = query.where(sql`
-          ${users.email} ILIKE ${`%${search}%`} OR 
-          ${users.firstName} ILIKE ${`%${search}%`} OR 
-          ${users.lastName} ILIKE ${`%${search}%`}
-        `);
-      }
-
-      const userList = await query
+      const userList = await db.select().from(users)
         .orderBy(desc(users.createdAt))
         .limit(limit)
         .offset(offset);
@@ -239,12 +229,12 @@ export function setupAdminRoutes(app: Express) {
 
       // Get user's connections
       const userConnections = await db.select().from(connections)
-        .where(sql`${connections.inviterEmail} = ${user[0].email} OR ${connections.inviteeEmail} = ${user[0].email}`)
+        .where(eq(connections.inviterEmail, user[0].email))
         .orderBy(desc(connections.createdAt));
 
-      // Get user's conversations
+      // Get user's conversations  
       const userConversations = await db.select().from(conversations)
-        .where(sql`${conversations.participant1Email} = ${user[0].email} OR ${conversations.participant2Email} = ${user[0].email}`)
+        .where(eq(conversations.participant1Email, user[0].email))
         .orderBy(desc(conversations.lastActivityAt));
 
       // Get user's messages
@@ -303,16 +293,16 @@ export function setupAdminRoutes(app: Express) {
       const status = req.query.status as string;
       const offset = (page - 1) * limit;
 
-      let query = db.select().from(connections);
-      
-      if (status) {
-        query = query.where(eq(connections.status, status));
-      }
-
-      const connectionList = await query
-        .orderBy(desc(connections.createdAt))
-        .limit(limit)
-        .offset(offset);
+      const connectionList = status 
+        ? await db.select().from(connections)
+            .where(eq(connections.status, status))
+            .orderBy(desc(connections.createdAt))
+            .limit(limit)
+            .offset(offset)
+        : await db.select().from(connections)
+            .orderBy(desc(connections.createdAt))
+            .limit(limit)
+            .offset(offset);
 
       const totalCount = await db.select({ count: count() }).from(connections);
 

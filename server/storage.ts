@@ -356,6 +356,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createEmail(insertEmail: InsertEmail): Promise<Email> {
+    if (!insertEmail || Object.keys(insertEmail).length === 0) {
+      throw new Error('Email data is required');
+    }
     const [email] = await db
       .insert(emails)
       .values(insertEmail)
