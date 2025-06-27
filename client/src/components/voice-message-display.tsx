@@ -99,9 +99,15 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
+        // Validate and set proper audio URL
+        let audioUrl = message.audioFileUrl;
+        if (!audioUrl.startsWith('http') && !audioUrl.startsWith('/')) {
+          audioUrl = audioUrl.startsWith('uploads/') ? `/${audioUrl}` : `/uploads/${audioUrl}`;
+        }
+        
         // Force reload audio source if needed
-        if (audioRef.current.src !== message.audioFileUrl) {
-          audioRef.current.src = message.audioFileUrl;
+        if (audioRef.current.src !== audioUrl) {
+          audioRef.current.src = audioUrl;
         }
 
         // Check if audio is loaded

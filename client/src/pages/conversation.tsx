@@ -82,7 +82,7 @@ export default function ConversationPage() {
   }, []);
 
   // Real-time WebSocket integration for conversation synchronization
-  useWebSocket(user?.email || '');
+  useWebSocket();
 
   const { data: conversation, isLoading: conversationLoading, error: conversationError } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${selectedConversationId || id}`],
@@ -171,7 +171,7 @@ export default function ConversationPage() {
         // CRITICAL: Filter to show only messages from the CURRENT ACTIVE conversation
         // This ensures only ONE conversation displays in center column
         const filteredMessages = Array.isArray(data) ? data.filter(msg => 
-          msg && msg.conversationId === parseInt(String(conversationId))
+          msg && msg.conversationId === (typeof conversationId === 'string' ? parseInt(conversationId) : conversationId)
         ) : [];
         return filteredMessages;
       } catch (error) {
