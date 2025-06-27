@@ -81,7 +81,7 @@ function StackedConversation({
     
     checkPermission();
   }, [isMyTurn, conversation.id, selectedConversationId, currentUserEmail]);
-  
+
   // Role-based glowing effect styles - maximum visibility
   const glowStyles = isInviter 
     ? 'shadow-[0_0_60px_rgba(79,172,254,1),0_0_100px_rgba(79,172,254,0.7),0_0_150px_rgba(79,172,254,0.4)] border-4 border-[#4FACFE] ring-8 ring-[#4FACFE]/60 hover:shadow-[0_0_80px_rgba(79,172,254,1),0_0_120px_rgba(79,172,254,0.8)] bg-gradient-to-br from-[#4FACFE]/20 via-[#4FACFE]/10 to-transparent backdrop-blur-sm' 
@@ -130,7 +130,7 @@ function StackedConversation({
                 variant="outline"
                 onClick={async (e) => {
                   e.stopPropagation();
-                  if (canReopen) {
+                  if (canReopen && !isCheckingPermission) {
                     onClick();
                   }
                 }}
@@ -199,8 +199,6 @@ export default function ConversationThreads({
     enabled: !!connectionId
   });
 
-
-
   // Filter out the currently active conversation and sort remaining conversations
   const sortedConversations = conversations
     .filter((conv: Conversation) => conv.id !== selectedConversationId) // Hide currently active conversation
@@ -237,8 +235,6 @@ export default function ConversationThreads({
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-sm font-semibold text-slate-800">Previous Conversations</h3>
         </div>
-        
-
       </div>
 
       {/* Conversations List */}

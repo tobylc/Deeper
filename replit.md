@@ -898,14 +898,17 @@ Changelog:
   * Added automatic page refresh after voice message processing completes successfully
   * Enhanced user experience with clear visual feedback throughout entire voice message pipeline
   * Processing modal shows contextual messages for each stage with OpenAI Whisper transcription details
-- June 27, 2025. Conversation threads turn logic cleanup and navigation enhancement:
+- June 27, 2025. Turn-based thread reopening system implementation:
   * Removed redundant "Waiting for their response..." text from left column Previous Conversations section
   * Eliminated all turn indicator badges from previous conversation threads in left column
   * Added "Reopen Thread" button to each previous conversation with rotate icon for clear navigation
+  * Implemented comprehensive turn-based thread reopening validation with new API endpoint /api/conversations/:id/can-reopen
+  * Users must respond to current unanswered questions before reopening previous threads
+  * Thread reopening requires at least one complete question-response exchange in the target thread
+  * Reopening a thread does NOT count as the user's turn - allows follow-up within reopened thread which counts as their turn
+  * Button shows "Checking..." state during permission validation and disables when conditions aren't met
   * Maintained single clear turn indicator per connection in main conversation header only
-  * Left column shows conversation thread navigation: title, message count, date, reopen button, and expansion controls
-  * Turn logic synchronized between both users with clear "Your turn" vs "Their turn" display in main header only
-  * Previous conversations display clean navigation interface with explicit thread reopening functionality
+  * Complete turn-based conversation system ensuring proper dialogue flow across multiple conversation threads
 - June 26, 2025. Critical invitee user trial expiration popup elimination:
   * Fixed invitation form to prevent trial expiration popups for invitee users through isInviteeUser filtering
   * Enhanced conversation page sendMessage mutation to exclude invitees from trial expiration popup triggers
