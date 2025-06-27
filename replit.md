@@ -900,6 +900,14 @@ Changelog:
   * Verified all secret keys are properly configured: Stripe, OpenAI, session management, and Twilio
   * Confirmed database connectivity and production infrastructure readiness
   * Application now fully optimized for production deployment with minimal logging overhead
+- June 27, 2025. Strict turn-based thread reopening system implemented:
+  * Only users whose turn it is can reopen previous conversation threads
+  * Waiting users see WaitingTurnPopup when attempting to reopen threads or perform turn-based actions
+  * Removed complex permission checking logic in favor of simple isMyTurn validation
+  * Created elegant waiting popup with amber theme explaining turn-based communication system
+  * Thread selection throughout conversation page now properly enforces turn-based restrictions
+  * Waiting users cannot disrupt conversation flow - must wait for other participant to take their turn
+  * Complete turn-based validation ensures thoughtful conversation pacing without interruptions
 - June 27, 2025. Voice message processing visual enhancement:
   * Added comprehensive processing visual overlay showing detailed progress during voice message sending
   * Enhanced TranscriptionProgress component with 5 distinct stages: uploading, processing, transcribing, sending, complete
