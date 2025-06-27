@@ -68,7 +68,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         body: JSON.stringify({
           connectionId,
           question: newQuestionText.trim(),
-          senderEmail: currentUserEmail,
+          senderEmail: user?.email,
           type: 'question'
         })
       });

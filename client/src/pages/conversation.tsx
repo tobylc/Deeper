@@ -19,6 +19,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
 import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import { HypnoticOrbs } from "@/components/hypnotic-orbs";
 import FloatingWaitingText from "@/components/floating-waiting-text";
 import type { Conversation, Message, Connection, User } from "@shared/schema";
@@ -81,32 +82,7 @@ export default function ConversationPage() {
   }, []);
 
   // Real-time WebSocket integration for conversation synchronization
-  useWebSocket(user?.email || '', {
-    onConversationUpdate: (data) => {
-      // CRITICAL: Handle thread switching synchronization between both users
-      if (data.action === 'thread_switched' && data.conversationId) {
-        // Automatically switch to the thread that was selected by the other user
-        setSelectedConversationId(data.conversationId);
-        setLocation(`/conversation/${data.conversationId}`);
-        
-        // Refresh conversation threads to update active conversation
-        queryClient.invalidateQueries({ queryKey: [`/api/connections/${connection?.id}/conversations`] });
-      }
-      
-      // Refresh conversation data when messages are sent or received
-      if (data.action === 'message_sent' || data.action === 'conversation_created') {
-        queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
-        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${selectedConversationId}/messages`] });
-        queryClient.invalidateQueries({ queryKey: [`/api/connections/${connection?.id}/conversations`] });
-      }
-    },
-    onNewMessage: (data) => {
-      // Handle new message notifications and refresh conversation threads
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/connections/${connection?.id}/conversations`] });
-    }
-  });
+  useWebSocket(user?.email || '');
 
   const { data: conversation, isLoading: conversationLoading, error: conversationError } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${selectedConversationId || id}`],
