@@ -57,34 +57,7 @@ function StackedConversation({
   onWaitingClick: () => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [canReopen, setCanReopen] = useState(false);
-  const [isCheckingPermission, setIsCheckingPermission] = useState(false);
   const shouldStack = conversation.messageCount >= 4;
-
-  // Check reopen permission when component mounts or turn changes
-  useEffect(() => {
-    const checkPermission = async () => {
-      if (!isMyTurn) {
-        setCanReopen(false);
-        return;
-      }
-
-      setIsCheckingPermission(true);
-      try {
-        const response = await fetch(
-          `/api/conversations/${conversation.id}/can-reopen?currentConversationId=${selectedConversationId}&userEmail=${currentUserEmail}`
-        );
-        const data = await response.json();
-        setCanReopen(data.canReopen);
-      } catch (error) {
-        console.error('Error checking thread reopen permission:', error);
-        setCanReopen(false);
-      }
-      setIsCheckingPermission(false);
-    };
-    
-    checkPermission();
-  }, [isMyTurn, conversation.id, selectedConversationId, currentUserEmail]);
 
   // Role-based glowing effect styles - maximum visibility
   const glowStyles = isInviter 
@@ -96,7 +69,13 @@ function StackedConversation({
       className={`cursor-pointer transition-all duration-300 ${shouldStack ? 'relative' : ''} ${glowStyles} ${
         isSelected ? 'ring-2 ring-ocean border-ocean/30' : ''
       }`}
-      onClick={onClick}
+      onClick={() => {
+        if (isMyTurn) {
+          onClick();
+        } else {
+          onWaitingClick();
+        }
+      }}
     >
       {shouldStack && !isExpanded && (
         <>
@@ -132,21 +111,18 @@ function StackedConversation({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.stopPropagation();
-                  if (canReopen && !isCheckingPermission) {
+                  if (isMyTurn) {
                     onClick();
+                  } else {
+                    onWaitingClick();
                   }
                 }}
-                disabled={!canReopen || isCheckingPermission}
-                className={`text-xs px-2 py-1 h-6 ${
-                  canReopen && !isCheckingPermission
-                    ? 'border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400' 
-                    : 'border-slate-200 text-slate-400 cursor-not-allowed'
-                }`}
+                className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400"
               >
                 <RotateCcw className="w-3 h-3 mr-1" />
-                {isCheckingPermission ? 'Checking...' : 'Reopen Thread'}
+                Reopen Thread
               </Button>
             </div>
           </div>
@@ -267,18 +243,30 @@ export default function ConversationThreads({
               key={conversation.id}
               conversation={conversation}
               isSelected={false} // Never selected since active conversation is hidden
-              onClick={async () => {
-                // Thread reopening will be handled by the button's internal validation
-                onThreadSelect(conversation.id);
+              onClick={() => {
+                // Only allow thread selection if it's the user's turn
+                if (isMyTurn) {
+                  onThreadSelect(conversation.id);
+                } else {
+                  setShowWaitingPopup(true);
+                }
               }}
               currentUserEmail={currentUserEmail}
               isMyTurn={isMyTurn}
               isInviter={isInviter}
               selectedConversationId={selectedConversationId}
+              onWaitingClick={() => setShowWaitingPopup(true)}
             />
           ))
         )}
       </div>
+      
+      {/* Waiting Turn Popup */}
+      <WaitingTurnPopup
+        isOpen={showWaitingPopup}
+        onClose={() => setShowWaitingPopup(false)}
+        otherParticipantName={otherParticipantName || 'the other person'}
+      />
     </div>
   );
 }
