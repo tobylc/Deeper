@@ -103,7 +103,9 @@ export default function ConversationPage() {
     },
     enabled: !!(selectedConversationId || id) && !!user,
     retry: 3,
-    retryDelay: 1000,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+    staleTime: 30000,
+    gcTime: 300000
   });
 
   // Determine other participant after conversation is loaded

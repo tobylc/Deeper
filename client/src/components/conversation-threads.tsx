@@ -123,18 +123,22 @@ function StackedConversation({
                       `/api/conversations/${conversation.id}/can-reopen?currentConversationId=${selectedConversationId || ''}`
                     );
                     
-                    // Production-ready response handling
+                    // Production-ready response handling with comprehensive error checking
                     if (!response.ok) {
-                      console.error(`API error: ${response.status} ${response.statusText}`);
+                      if (process.env.NODE_ENV === 'development') {
+                        console.error(`API error: ${response.status} ${response.statusText}`);
+                      }
                       onWaitingClick();
                       return;
                     }
 
                     const data = await response.json();
                     
-                    // Validate response structure
-                    if (typeof data.canReopen !== 'boolean') {
-                      console.error('Invalid API response structure:', data);
+                    // Production-ready response validation with type safety
+                    if (!data || typeof data !== 'object' || typeof data.canReopen !== 'boolean') {
+                      if (process.env.NODE_ENV === 'development') {
+                        console.error('Invalid API response structure:', data);
+                      }
                       onWaitingClick();
                       return;
                     }
@@ -155,7 +159,8 @@ function StackedConversation({
                     if (process.env.NODE_ENV === 'development') {
                       console.error('Error checking thread reopen permission:', error);
                     }
-                    onWaitingClick(); // Show waiting popup on error
+                    // Production-ready fallback behavior on network or API errors
+                    onWaitingClick();
                   }
                 }}
                 className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400"

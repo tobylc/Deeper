@@ -275,7 +275,7 @@ const ConversationInterface = memo(function ConversationInterface({
                     </Badge>
                   </div>
                   
-                  {/* Voice message display */}
+                  {/* Production-ready voice message display with comprehensive validation */}
                   {message.messageFormat === 'voice' && message.audioFileUrl ? (
                     <VoiceMessageDisplay 
                       message={{
@@ -286,7 +286,8 @@ const ConversationInterface = memo(function ConversationInterface({
                       className="mt-2"
                     />
                   ) : (
-                    message.content
+                    // Production-ready text content with null safety
+                    message.content || '[Message content unavailable]'
                   )}
                 </div>
               </div>
