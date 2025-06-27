@@ -940,6 +940,15 @@ Changelog:
   * Updated conversation thread creation endpoint to allow permanent free access for invitee users
   * Invitee users can now respond to messages and participate in conversations without any subscription limitations
   * Complete backend fix ensuring invitees have unlimited messaging access with their inviter regardless of trial status
+- June 27, 2025. Clock icon visibility fix and comprehensive thread reopening logic overhaul:
+  * Fixed waiting turn popup clock icon visibility by changing background from amber to ocean blue gradient (#4FACFE to teal)
+  * Completely overhauled thread reopening validation logic to prevent premature thread switching
+  * Enhanced backend can-reopen endpoint with strict validation: users cannot reopen threads until ALL current threads have complete question-response exchanges
+  * Implemented comprehensive thread reopening restrictions: any unanswered question in current thread blocks all thread reopening attempts
+  * Fixed thread reopening to NOT count as user's turn - reopening simply switches context without consuming turn
+  * Added inline thread reopening validation in conversation threads component with proper error handling
+  * Thread reopening now requires: (1) current thread has complete exchanges, (2) target thread has at least one complete exchange
+  * Production-ready turn-based conversation system ensuring users complete current questions before exploring previous topics
 - June 26, 2025. Production-ready TypeScript error resolution and deployment optimization:
   * Fixed all remaining TypeScript LSP errors throughout server/routes.ts for production deployment
   * Added nullToUndefined utility function for proper null/undefined type conversion across database operations
