@@ -283,10 +283,10 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
                   </Button>
                   <Button 
                     onClick={handleCreateNewThread}
-                    disabled={!newQuestionText.trim() || createThreadMutation.isPending}
+                    disabled={!newQuestionText.trim()}
                     className="bg-ocean text-white hover:bg-ocean/90"
                   >
-                    {createThreadMutation.isPending ? "Creating..." : "Start New Thread"}
+                    Use This Question
                   </Button>
                 </div>
               </div>
