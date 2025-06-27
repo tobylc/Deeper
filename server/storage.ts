@@ -6,7 +6,7 @@ import {
   type Message, type InsertMessage,
   type Email, type InsertEmail,
   type VerificationCode, type InsertVerificationCode
-} from "@shared/schema";
+} from "../shared/schema";
 import { db } from "./db";
 import { eq, or, and, sql, desc } from "drizzle-orm";
 

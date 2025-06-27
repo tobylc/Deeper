@@ -30,52 +30,52 @@ export function setupAdminRoutes(app: Express) {
 
       // User stats
       const totalUsers = await db.select({ count: count() }).from(users);
-      const activeUsers = await finalDb.select({ count: count() }).from(users)
+      const activeUsers = await db.select({ count: count() }).from(users)
         .where(gte(users.updatedAt, thirtyDaysAgo));
-      const newUsersToday = await finalDb.select({ count: count() }).from(users)
+      const newUsersToday = await db.select({ count: count() }).from(users)
         .where(gte(users.createdAt, oneDayAgo));
-      const newUsersWeek = await finalDb.select({ count: count() }).from(users)
+      const newUsersWeek = await db.select({ count: count() }).from(users)
         .where(gte(users.createdAt, sevenDaysAgo));
       
       // Subscription stats
-      const subscriptionStats = await finalDb.select({
+      const subscriptionStats = await db.select({
         tier: users.subscriptionTier,
         count: count()
       }).from(users).groupBy(users.subscriptionTier);
 
       // Connection stats
-      const totalConnections = await finalDb.select({ count: count() }).from(connections);
-      const acceptedConnections = await finalDb.select({ count: count() }).from(connections)
+      const totalConnections = await db.select({ count: count() }).from(connections);
+      const acceptedConnections = await db.select({ count: count() }).from(connections)
         .where(eq(connections.status, 'accepted'));
-      const pendingConnections = await finalDb.select({ count: count() }).from(connections)
+      const pendingConnections = await db.select({ count: count() }).from(connections)
         .where(eq(connections.status, 'pending'));
 
       // Conversation stats
-      const totalConversations = await finalDb.select({ count: count() }).from(conversations);
-      const activeConversations = await finalDb.select({ count: count() }).from(conversations)
+      const totalConversations = await db.select({ count: count() }).from(conversations);
+      const activeConversations = await db.select({ count: count() }).from(conversations)
         .where(and(eq(conversations.status, 'active'), gte(conversations.lastActivityAt, sevenDaysAgo)));
 
       // Message stats
-      const totalMessages = await finalDb.select({ count: count() }).from(messages);
-      const messagesWeek = await finalDb.select({ count: count() }).from(messages)
+      const totalMessages = await db.select({ count: count() }).from(messages);
+      const messagesWeek = await db.select({ count: count() }).from(messages)
         .where(gte(messages.createdAt, sevenDaysAgo));
-      const messagesDay = await finalDb.select({ count: count() }).from(messages)
+      const messagesDay = await db.select({ count: count() }).from(messages)
         .where(gte(messages.createdAt, oneDayAgo));
 
       // Voice vs text message ratio
-      const messageTypeStats = await finalDb.select({
+      const messageTypeStats = await db.select({
         format: messages.messageFormat,
         count: count()
       }).from(messages).groupBy(messages.messageFormat);
 
       // Email stats
-      const emailStats = await finalDb.select({
+      const emailStats = await db.select({
         type: emails.emailType,
         count: count()
       }).from(emails).groupBy(emails.emailType);
 
       // User engagement metrics
-      const userEngagement = await finalDb.execute(sql`
+      const userEngagement = await db.execute(sql`
         SELECT 
           u.subscription_tier,
           COUNT(DISTINCT u.id) as user_count,
@@ -142,7 +142,7 @@ export function setupAdminRoutes(app: Express) {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
 
-      const dailyStats = await finalDb.execute(sql`
+      const dailyStats = await db.execute(sql`
         WITH date_series AS (
           SELECT generate_series(
             ${startDate.toISOString().split('T')[0]}::date,
@@ -195,7 +195,7 @@ export function setupAdminRoutes(app: Express) {
       const search = req.query.search as string || '';
       const offset = (page - 1) * limit;
 
-      let query = finalDb.select().from(users);
+      let query = db.select().from(users);
       
       if (search) {
         query = query.where(sql`
@@ -210,7 +210,7 @@ export function setupAdminRoutes(app: Express) {
         .limit(limit)
         .offset(offset);
 
-      const totalCount = await finalDb.select({ count: count() }).from(users);
+      const totalCount = await db.select({ count: count() }).from(users);
 
       res.json({
         users: userList,
@@ -232,23 +232,23 @@ export function setupAdminRoutes(app: Express) {
     try {
       const { userId } = req.params;
 
-      const user = await finalDb.select().from(users).where(eq(users.id, userId)).limit(1);
+      const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
       if (!user.length) {
         return res.status(404).json({ error: 'User not found' });
       }
 
       // Get user's connections
-      const userConnections = await finalDb.select().from(connections)
+      const userConnections = await db.select().from(connections)
         .where(sql`${connections.inviterEmail} = ${user[0].email} OR ${connections.inviteeEmail} = ${user[0].email}`)
         .orderBy(desc(connections.createdAt));
 
       // Get user's conversations
-      const userConversations = await finalDb.select().from(conversations)
+      const userConversations = await db.select().from(conversations)
         .where(sql`${conversations.participant1Email} = ${user[0].email} OR ${conversations.participant2Email} = ${user[0].email}`)
         .orderBy(desc(conversations.lastActivityAt));
 
       // Get user's messages
-      const userMessages = await finalDb.select().from(messages)
+      const userMessages = await db.select().from(messages)
         .where(eq(messages.senderEmail, user[0].email))
         .orderBy(desc(messages.createdAt))
         .limit(50);
@@ -303,7 +303,7 @@ export function setupAdminRoutes(app: Express) {
       const status = req.query.status as string;
       const offset = (page - 1) * limit;
 
-      let query = finalDb.select().from(connections);
+      let query = db.select().from(connections);
       
       if (status) {
         query = query.where(eq(connections.status, status));
@@ -314,7 +314,7 @@ export function setupAdminRoutes(app: Express) {
         .limit(limit)
         .offset(offset);
 
-      const totalCount = await finalDb.select({ count: count() }).from(connections);
+      const totalCount = await db.select({ count: count() }).from(connections);
 
       res.json({
         connections: connectionList,
@@ -338,7 +338,7 @@ export function setupAdminRoutes(app: Express) {
       const limit = parseInt(req.query.limit as string) || 20;
       const offset = (page - 1) * limit;
 
-      const messageList = await finalDb.execute(sql`
+      const messageList = await db.execute(sql`
         SELECT 
           m.*,
           c.participant1_email,
@@ -351,7 +351,7 @@ export function setupAdminRoutes(app: Express) {
         LIMIT ${limit} OFFSET ${offset}
       `);
 
-      const totalCount = await finalDb.select({ count: count() }).from(messages);
+      const totalCount = await db.select({ count: count() }).from(messages);
 
       res.json({
         messages: messageList.rows,
@@ -372,11 +372,11 @@ export function setupAdminRoutes(app: Express) {
   app.get('/api/admin/system-health', rateLimit(60, 30), isAdmin, async (req, res) => {
     try {
       // Database connection test
-      const dbTest = await finalDb.execute(sql`SELECT 1 as test`);
+      const dbTest = await db.execute(sql`SELECT 1 as test`);
       const dbHealthy = dbTest.rows.length > 0;
 
       // Get database size and table stats
-      const tableStats = await finalDb.execute(sql`
+      const tableStats = await db.execute(sql`
         SELECT 
           schemaname,
           tablename,
@@ -390,7 +390,7 @@ export function setupAdminRoutes(app: Express) {
       `);
 
       // Get recent error patterns from logs (if implemented)
-      const recentErrors = await finalDb.execute(sql`
+      const recentErrors = await db.execute(sql`
         SELECT 
           COUNT(*) as error_count,
           'recent_period' as timeframe
@@ -418,7 +418,7 @@ export function setupAdminRoutes(app: Express) {
   // Advanced analytics - user retention and engagement
   app.get('/api/admin/analytics/retention', rateLimit(60, 20), isAdmin, async (req, res) => {
     try {
-      const retentionData = await finalDb.execute(sql`
+      const retentionData = await db.execute(sql`
         WITH user_cohorts AS (
           SELECT 
             DATE_TRUNC('week', created_at) as cohort_week,
@@ -467,12 +467,12 @@ export function setupAdminRoutes(app: Express) {
   app.get('/api/admin/debug/recent-issues', rateLimit(60, 30), isAdmin, async (req, res) => {
     try {
       const issues = {
-        failedEmails: await finalDb.select().from(emails)
+        failedEmails: await db.select().from(emails)
           .where(eq(emails.status, 'failed'))
           .orderBy(desc(emails.sentAt))
           .limit(20),
         
-        expiredTrials: await finalDb.select().from(users)
+        expiredTrials: await db.select().from(users)
           .where(and(
             eq(users.subscriptionStatus, 'trial_expired'),
             isNotNull(users.trialExpiresAt)
@@ -480,7 +480,7 @@ export function setupAdminRoutes(app: Express) {
           .orderBy(desc(users.trialExpiresAt))
           .limit(20),
           
-        staleConnections: await finalDb.select().from(connections)
+        staleConnections: await db.select().from(connections)
           .where(and(
             eq(connections.status, 'pending'),
             sql`${connections.createdAt} < NOW() - INTERVAL '7 days'`
@@ -499,7 +499,7 @@ export function setupAdminRoutes(app: Express) {
   // Database browser endpoints
   app.get('/api/admin/database/tables', rateLimit(60, 50), isAdmin, async (req, res) => {
     try {
-      const tables = await finalDb.execute(sql`
+      const tables = await db.execute(sql`
         SELECT 
           table_name as name,
           (SELECT COUNT(*) FROM information_schema.columns WHERE table_name = t.table_name) as column_count
@@ -512,7 +512,7 @@ export function setupAdminRoutes(app: Express) {
       const tablesWithCounts = await Promise.all(
         tables.rows.map(async (table: any) => {
           try {
-            const countResult = await finalDb.execute(sql`SELECT COUNT(*) as count FROM ${sql.identifier(table.name)}`);
+            const countResult = await db.execute(sql`SELECT COUNT(*) as count FROM ${sql.identifier(table.name)}`);
             return {
               name: table.name,
               rowCount: parseInt(countResult.rows[0].count),
@@ -544,7 +544,7 @@ export function setupAdminRoutes(app: Express) {
       const search = req.query.search as string || '';
 
       // Get table columns
-      const columns = await finalDb.execute(sql`
+      const columns = await db.execute(sql`
         SELECT 
           column_name as name,
           data_type as type,
@@ -572,12 +572,12 @@ export function setupAdminRoutes(app: Express) {
 
       // Get total count
       const totalQuery = `SELECT COUNT(*) as count FROM ${tableName} ${searchCondition}`;
-      const totalResult = await finalDb.execute(sql.raw(totalQuery));
+      const totalResult = await db.execute(sql.raw(totalQuery));
       const total = parseInt(totalResult.rows[0].count);
 
       // Get paginated data
       const dataQuery = `SELECT * FROM ${tableName} ${searchCondition} ORDER BY id DESC LIMIT ${limit} OFFSET ${offset}`;
-      const dataResult = await finalDb.execute(sql.raw(dataQuery));
+      const dataResult = await db.execute(sql.raw(dataQuery));
 
       res.json({
         columns: columns.rows.map((col: any) => ({
@@ -619,7 +619,7 @@ export function setupAdminRoutes(app: Express) {
       const values = Object.values(updateData);
       const query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${values.length + 1}`;
       
-      await finalDb.execute(sql.raw(query, [...values, id]));
+      await db.execute(sql.raw(query, [...values, id]));
 
       res.json({ success: true });
     } catch (error) {
@@ -638,7 +638,7 @@ export function setupAdminRoutes(app: Express) {
         return res.status(403).json({ error: 'Cannot delete from protected table' });
       }
 
-      await finalDb.execute(sql.raw(`DELETE FROM ${tableName} WHERE id = $1`, [id]));
+      await db.execute(sql.raw(`DELETE FROM ${tableName} WHERE id = $1`, [id]));
 
       res.json({ success: true });
     } catch (error) {
@@ -651,7 +651,7 @@ export function setupAdminRoutes(app: Express) {
     try {
       const { tableName } = req.params;
 
-      const result = await finalDb.execute(sql.raw(`SELECT * FROM ${tableName}`));
+      const result = await db.execute(sql.raw(`SELECT * FROM ${tableName}`));
       
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'No data to export' });
