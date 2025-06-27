@@ -2824,22 +2824,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Save audio file securely with enhanced logging
       try {
-        console.log('Saving audio file to:', audioPath);
-        console.log('Audio file size:', req.file.size);
-        console.log('Audio file type:', req.file.mimetype);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Saving audio file to:', audioPath);
+          console.log('Audio file size:', req.file.size);
+          console.log('Audio file type:', req.file.mimetype);
+        }
         
         await fs.writeFile(audioPath, req.file.buffer);
         
         // Verify file was written
         const stats = await fs.stat(audioPath);
-        console.log('Audio file saved successfully. Size:', stats.size);
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Audio file saved successfully. Size:', stats.size);
+        }
       } catch (fileError) {
         console.error("File save error:", fileError);
         return res.status(500).json({ message: "Failed to save audio file" });
       }
       
       const audioFileUrl = `/uploads/${fileName}`;
-      console.log('Generated audio file URL:', audioFileUrl);
 
       // Transcribe audio using OpenAI Whisper with production-ready error handling
       let transcription = '';
@@ -2938,13 +2942,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         audioDuration: parseInt(duration) || 0
       };
 
-      console.log('Creating voice message with data:', {
-        ...messageData,
-        content: transcription.substring(0, 100) + '...' // Truncate for logging
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Creating voice message with data:', {
+          ...messageData,
+          content: transcription.substring(0, 100) + '...' // Truncate for logging
+        });
+      }
 
       const message = await storage.createMessage(messageData);
-      console.log('Voice message created successfully with ID:', message.id);
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Voice message created successfully with ID:', message.id);
+      }
 
       // Generate thread title if this is the first question
       if (existingMessages.length === 0 && type === 'question') {

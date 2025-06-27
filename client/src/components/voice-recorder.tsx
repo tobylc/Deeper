@@ -149,6 +149,11 @@ export default function VoiceRecorder({
 
   const startRecording = async () => {
     try {
+      // Check for getUserMedia support
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Voice recording not supported in this browser');
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -245,9 +250,33 @@ export default function VoiceRecorder({
         });
       }, 1000);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error accessing microphone:', error);
-      alert('Could not access microphone. Please check your permissions.');
+      
+      // Production-ready error messaging
+      let errorMessage = 'Unable to access microphone';
+      
+      if (error.name === 'NotAllowedError') {
+        errorMessage = 'Microphone access denied. Please allow microphone permissions and try again.';
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = 'No microphone found. Please connect a microphone and try again.';
+      } else if (error.name === 'NotSupportedError') {
+        errorMessage = 'Voice recording is not supported in this browser.';
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = 'Microphone is already in use by another application.';
+      }
+
+      // Use toast notification instead of alert for better UX
+      if (typeof window !== 'undefined' && window.dispatchEvent) {
+        const toast = new CustomEvent('showToast', {
+          detail: {
+            title: 'Voice Recording Error',
+            description: errorMessage,
+            variant: 'destructive'
+          }
+        });
+        window.dispatchEvent(toast);
+      }
     }
   };
 

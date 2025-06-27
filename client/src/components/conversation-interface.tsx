@@ -116,7 +116,6 @@ const ConversationInterface = memo(function ConversationInterface({
       }
 
       const result = await response.json();
-      console.log('Voice message sent successfully:', result);
       
       // Invalidate queries to refresh conversation data immediately
       await Promise.all([
