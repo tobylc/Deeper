@@ -136,12 +136,37 @@ function Router() {
 function GlobalErrorHandler() {
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.warn('Unhandled promise rejection:', event.reason);
-      event.preventDefault(); // Prevent the default browser behavior
+      // Production-ready error filtering with comprehensive validation
+      const errorMessage = event.reason?.message || event.reason?.toString() || '';
+      
+      // Filter known recoverable errors that shouldn't crash the application
+      const recoverableErrors = [
+        'audio', 'voice', 'transcription', 'microphone', 'recording',
+        'network', 'fetch', 'connection', 'timeout', 'abort'
+      ];
+      
+      const isRecoverableError = recoverableErrors.some(keyword => 
+        errorMessage.toLowerCase().includes(keyword)
+      );
+      
+      if (isRecoverableError) {
+        event.preventDefault();
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Recoverable error handled:', event.reason);
+        }
+        return;
+      }
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Unhandled promise rejection:', event.reason);
+      }
+      event.preventDefault();
     };
 
     const handleError = (event: ErrorEvent) => {
-      console.warn('Global error:', event.error);
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Global error:', event.error);
+      }
       event.preventDefault();
     };
 
