@@ -27,11 +27,17 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
       return;
     }
 
-    // Validate and construct proper audio URL
+    // Validate and construct proper audio URL with production-ready path handling
     let audioUrl = message.audioFileUrl;
     if (!audioUrl.startsWith('http') && !audioUrl.startsWith('/')) {
-      // Ensure proper URL format for relative paths
+      // Handle relative paths - ensure they point to /uploads/
       audioUrl = audioUrl.startsWith('uploads/') ? `/${audioUrl}` : `/uploads/${audioUrl}`;
+    }
+    
+    // Additional validation for production deployment
+    if (audioUrl.startsWith('/uploads/uploads/')) {
+      // Fix double uploads path that can occur in some scenarios
+      audioUrl = audioUrl.replace('/uploads/uploads/', '/uploads/');
     }
 
     // Set the audio source immediately
@@ -110,6 +116,11 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
         // Normalize URL path for production deployment
         if (!audioUrl.startsWith('http') && !audioUrl.startsWith('/')) {
           audioUrl = audioUrl.startsWith('uploads/') ? `/${audioUrl}` : `/uploads/${audioUrl}`;
+        }
+        
+        // Fix double uploads path that can occur in some scenarios
+        if (audioUrl.startsWith('/uploads/uploads/')) {
+          audioUrl = audioUrl.replace('/uploads/uploads/', '/uploads/');
         }
         
         // Validate audio source change with error handling

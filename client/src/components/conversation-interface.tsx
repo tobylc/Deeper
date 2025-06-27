@@ -245,13 +245,16 @@ const ConversationInterface = memo(function ConversationInterface({
           </div>
         ) : (
           <div className="space-y-6 relative z-10">
-            {/* CRITICAL: Production-ready message filtering - only display messages from current active conversation */}
+            {/* CRITICAL: Single conversation display - ONLY messages from current active conversation */}
             {messages
               .filter(message => {
-                // Production-ready filtering with comprehensive validation
+                // STRICT filtering: Only messages from the EXACT current conversation ID
                 if (!message || typeof message !== 'object') return false;
                 if (!message.conversationId || !conversationId) return false;
-                return message.conversationId === conversationId;
+                // Ensure exact match to prevent multiple conversations showing simultaneously
+                const messageConvId = typeof message.conversationId === 'string' ? parseInt(message.conversationId) : message.conversationId;
+                const currentConvId = typeof conversationId === 'string' ? parseInt(conversationId) : conversationId;
+                return messageConvId === currentConvId;
               })
               .map((message, index) => (
               <div key={message.id} className="relative">

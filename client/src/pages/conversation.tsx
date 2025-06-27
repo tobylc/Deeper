@@ -172,11 +172,15 @@ export default function ConversationPage() {
           throw new Error(`Failed to load messages: ${response.status}`);
         }
         const data = await response.json();
-        // CRITICAL: Filter to show only messages from the CURRENT ACTIVE conversation
-        // This ensures only ONE conversation displays in center column
-        const filteredMessages = Array.isArray(data) ? data.filter(msg => 
-          msg && msg.conversationId === (typeof conversationId === 'string' ? parseInt(conversationId) : conversationId)
-        ) : [];
+        // CRITICAL: Single conversation display - filter to show ONLY current active conversation
+        // This prevents multiple conversations from displaying simultaneously in center column
+        const currentConvId = typeof conversationId === 'string' ? parseInt(conversationId) : conversationId;
+        const filteredMessages = Array.isArray(data) ? data.filter(msg => {
+          if (!msg || typeof msg !== 'object') return false;
+          if (!msg.conversationId) return false;
+          const msgConvId = typeof msg.conversationId === 'string' ? parseInt(msg.conversationId) : msg.conversationId;
+          return msgConvId === currentConvId;
+        }) : [];
         return filteredMessages;
       } catch (error) {
         console.error('Messages loading error:', error);
