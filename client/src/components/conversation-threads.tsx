@@ -95,13 +95,6 @@ function StackedConversation({
           </div>
           
           <div className="flex flex-col items-end space-y-1">
-            {/* Turn indicator */}
-            {conversation.currentTurn === currentUserEmail ? (
-              <Badge className="text-xs bg-ocean text-white">Your turn</Badge>
-            ) : (
-              <Badge variant="outline" className="text-xs">Their turn</Badge>
-            )}
-            
             {/* Stack expansion control */}
             {shouldStack && (
               <button

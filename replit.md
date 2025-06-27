@@ -900,10 +900,11 @@ Changelog:
   * Processing modal shows contextual messages for each stage with OpenAI Whisper transcription details
 - June 27, 2025. Conversation threads turn logic cleanup:
   * Removed redundant "Waiting for their response..." text from left column Previous Conversations section
-  * Eliminated turn state confusion by maintaining single clear turn indicator per connection
-  * Left column now shows only conversation thread navigation without conflicting waiting states
-  * Turn logic synchronized between both users with clear "Your turn" vs "Their turn" display in main header
-  * Conversation threads focus purely on thread selection without redundant turn messaging
+  * Eliminated all turn indicator badges from previous conversation threads in left column
+  * Maintained single clear turn indicator per connection in main conversation header only
+  * Left column now shows purely conversation thread navigation: title, message count, date, and expansion controls
+  * Turn logic synchronized between both users with clear "Your turn" vs "Their turn" display in main header only
+  * Previous conversations display clean navigation interface without conflicting turn indicators
 - June 26, 2025. Critical invitee user trial expiration popup elimination:
   * Fixed invitation form to prevent trial expiration popups for invitee users through isInviteeUser filtering
   * Enhanced conversation page sendMessage mutation to exclude invitees from trial expiration popup triggers
