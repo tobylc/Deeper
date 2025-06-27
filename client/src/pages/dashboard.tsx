@@ -30,7 +30,7 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
-  const [welcomeData, setWelcomeData] = useState<{inviterName: string, relationshipType: string, inviterRole?: string, inviteeRole?: string} | null>(null);
+  const [welcomeData, setWelcomeData] = useState<{inviterName: string, relationshipType: string, inviterRole?: string | null, inviteeRole?: string | null} | null>(null);
   const [showSubscriptionEnforcement, setShowSubscriptionEnforcement] = useState(false);
   const [enforcementAction, setEnforcementAction] = useState("");
 
@@ -122,6 +122,28 @@ export default function Dashboard() {
     enabled: !!user.email,
   });
 
+  // Group conversations by connection to show only one conversation per connection
+  const conversationsByConnection = conversations.reduce((acc, conversation) => {
+    const connectionKey = `${conversation.participant1Email}-${conversation.participant2Email}`;
+    const reverseKey = `${conversation.participant2Email}-${conversation.participant1Email}`;
+    
+    // Use a consistent key regardless of participant order
+    const key = connectionKey < reverseKey ? connectionKey : reverseKey;
+    
+    if (!acc[key]) {
+      acc[key] = conversation;
+    } else {
+      // Keep the most recently active conversation for this connection
+      if (new Date(conversation.lastActivityAt || conversation.createdAt || '') > 
+          new Date(acc[key].lastActivityAt || acc[key].createdAt || '')) {
+        acc[key] = conversation;
+      }
+    }
+    return acc;
+  }, {} as Record<string, Conversation>);
+
+  const uniqueConversations = Object.values(conversationsByConnection);
+
   const handleAcceptConnection = async (connectionId: number) => {
     if (!user) return;
     
@@ -180,7 +202,7 @@ export default function Dashboard() {
   const acceptedConnections = connections.filter(c => c.status === 'accepted');
   const initiatedConnections = acceptedConnections.filter(c => c.inviterEmail === user.email);
   const receivedConnections = acceptedConnections.filter(c => c.inviteeEmail === user.email);
-  const activeConversations = conversations.filter(c => c.status === 'active');
+  const activeConversations = uniqueConversations.filter(c => c.status === 'active');
 
   return (
     <div className="min-h-screen bg-background">
