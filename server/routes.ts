@@ -2425,16 +2425,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wsManager.notifyConversationUpdate(conversation.participant1Email, {
             conversationId: conversationId,
             connectionId: connectionId,
-            action: 'thread_switched',
-            activeConversationId: conversationId
+            action: 'thread_switched'
           });
           
           if (conversation.participant1Email !== conversation.participant2Email) {
             wsManager.notifyConversationUpdate(conversation.participant2Email, {
               conversationId: conversationId,
               connectionId: connectionId,
-              action: 'thread_switched',
-              activeConversationId: conversationId
+              action: 'thread_switched'
             });
           }
         }

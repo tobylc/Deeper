@@ -325,6 +325,15 @@ export class DatabaseStorage implements IStorage {
     return conversation || undefined;
   }
 
+  async updateConversationActivity(id: number): Promise<Conversation | undefined> {
+    const [conversation] = await db
+      .update(conversations)
+      .set({ lastActivityAt: new Date() })
+      .where(eq(conversations.id, id))
+      .returning();
+    return conversation || undefined;
+  }
+
   // Messages
   async getMessagesByConversationId(conversationId: number): Promise<Message[]> {
     return await db
