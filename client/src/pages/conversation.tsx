@@ -80,6 +80,34 @@ export default function ConversationPage() {
     };
   }, []);
 
+  // Real-time WebSocket integration for conversation synchronization
+  useWebSocket(user?.email || '', {
+    onConversationUpdate: (data) => {
+      // CRITICAL: Handle thread switching synchronization between both users
+      if (data.action === 'thread_switched' && data.conversationId) {
+        // Automatically switch to the thread that was selected by the other user
+        setSelectedConversationId(data.conversationId);
+        setLocation(`/conversation/${data.conversationId}`);
+        
+        // Refresh conversation threads to update active conversation
+        queryClient.invalidateQueries({ queryKey: [`/api/connections/${connection?.id}/conversations`] });
+      }
+      
+      // Refresh conversation data when messages are sent or received
+      if (data.action === 'message_sent' || data.action === 'conversation_created') {
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${selectedConversationId}/messages`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/connections/${connection?.id}/conversations`] });
+      }
+    },
+    onNewMessage: (data) => {
+      // Handle new message notifications and refresh conversation threads
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/connections/${connection?.id}/conversations`] });
+    }
+  });
+
   const { data: conversation, isLoading: conversationLoading, error: conversationError } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${selectedConversationId || id}`],
     queryFn: async () => {
@@ -564,13 +592,30 @@ export default function ConversationPage() {
     setNewMessage(question);
   };
 
-  const handleThreadSelect = (conversationId: number) => {
-    setSelectedConversationId(conversationId);
-    setNewMessage(""); // Clear message when switching threads
-    setShowThreadsView(false); // Hide threads view on mobile after selection
-    
-    // Update the URL to reflect the selected conversation
-    setLocation(`/conversation/${conversationId}`);
+  const handleThreadSelect = async (conversationId: number) => {
+    // Use new API endpoint for thread switching that doesn't consume turns
+    try {
+      const response = await fetch(`/api/conversations/${conversationId}/switch-active`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ connectionId: connection?.id }),
+      });
+
+      if (response.ok) {
+        setSelectedConversationId(conversationId);
+        setNewMessage(""); // Clear message when switching threads
+        setShowThreadsView(false); // Hide threads view on mobile after selection
+        
+        // Update the URL to reflect the selected conversation
+        setLocation(`/conversation/${conversationId}`);
+      } else {
+        console.error('Failed to switch thread:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error switching thread:', error);
+    }
   };
 
   const handleNewThreadCreated = (conversationId: number) => {
