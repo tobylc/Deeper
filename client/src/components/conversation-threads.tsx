@@ -4,6 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, Users, Clock, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
+import { WaitingTurnPopup } from './waiting-turn-popup';
+import { useUserDisplayName } from '@/hooks/useUserDisplayName';
 
 interface ConversationThreadsProps {
   connectionId: number;
@@ -42,7 +44,8 @@ function StackedConversation({
   currentUserEmail, 
   isMyTurn,
   isInviter,
-  selectedConversationId
+  selectedConversationId,
+  onWaitingClick
 }: { 
   conversation: Conversation;
   isSelected: boolean;
@@ -51,6 +54,7 @@ function StackedConversation({
   isMyTurn: boolean;
   isInviter: boolean;
   selectedConversationId?: number;
+  onWaitingClick: () => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [canReopen, setCanReopen] = useState(false);
@@ -185,6 +189,9 @@ export default function ConversationThreads({
   isMyTurn,
   isInviter
 }: ConversationThreadsProps) {
+  const [showWaitingPopup, setShowWaitingPopup] = useState(false);
+  const { data: otherParticipantName } = useUserDisplayName(otherParticipantEmail);
+
   // Fetch real conversations from API
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: [`/api/connections/${connectionId}/conversations`],
