@@ -141,10 +141,15 @@ function StackedConversation({
                     
                     if (data.canReopen) {
                       onClick(); // Reopen the thread - this does NOT count as a turn
-                    } else if (data.reason === 'respond_to_question') {
-                      onRespondFirstClick(); // Show specific popup for unanswered questions
                     } else {
-                      onWaitingClick(); // Show generic waiting popup for other reasons
+                      // Priority 1: If it's not the user's turn, always show waiting popup
+                      if (!isMyTurn) {
+                        onWaitingClick(); // Show "It's Their Turn" popup
+                      } else if (data.reason === 'respond_to_question') {
+                        onRespondFirstClick(); // Show "Respond First" popup for unanswered questions
+                      } else {
+                        onWaitingClick(); // Show generic waiting popup for other reasons
+                      }
                     }
                   } catch (error) {
                     if (process.env.NODE_ENV === 'development') {
