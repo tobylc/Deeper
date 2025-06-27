@@ -112,39 +112,11 @@ export const insertUserSchema = createInsertSchema(users);
 
 export const insertConnectionSchema = createInsertSchema(connections);
 
-export const insertConversationSchema = createInsertSchema(conversations).pick({
-  connectionId: true,
-  participant1Email: true,
-  participant2Email: true,
-  relationshipType: true,
-  currentTurn: true,
-  status: true,
-  isMainThread: true,
-  parentConversationId: true,
-  title: true,
-  topic: true,
-});
+export const insertConversationSchema = createInsertSchema(conversations);
 
-export const insertMessageSchema = createInsertSchema(messages).pick({
-  conversationId: true,
-  senderEmail: true,
-  content: true,
-  type: true,
-  messageFormat: true,
-  audioFileUrl: true,
-  transcription: true,
-  audioDuration: true,
-});
+export const insertMessageSchema = createInsertSchema(messages);
 
-export const insertEmailSchema = createInsertSchema(emails).pick({
-  toEmail: true,
-  fromEmail: true,
-  subject: true,
-  htmlContent: true,
-  textContent: true,
-  emailType: true,
-  connectionId: true,
-});
+export const insertEmailSchema = createInsertSchema(emails);
 
 // Verification codes table for production-ready phone verification
 export const verificationCodes = pgTable(
@@ -164,13 +136,7 @@ export const verificationCodes = pgTable(
   ]
 );
 
-export const insertVerificationCodeSchema = createInsertSchema(verificationCodes).pick({
-  email: true,
-  phoneNumber: true,
-  code: true,
-  expiresAt: true,
-  verified: true,
-});
+export const insertVerificationCodeSchema = createInsertSchema(verificationCodes);
 
 // Types
 export type User = typeof users.$inferSelect;

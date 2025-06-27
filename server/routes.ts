@@ -1137,7 +1137,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         inviteeRole,
         personalMessage: personalMessage || "",
         inviterEmail: currentUser.email,
-        inviterSubscriptionTier: currentUser.subscriptionTier || 'free'
+        inviterSubscriptionTier: currentUser.subscriptionTier || 'free',
+        status: 'pending'
       };
 
       // Check for duplicate connections
