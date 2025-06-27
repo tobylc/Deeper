@@ -58,6 +58,27 @@ class ErrorBoundary extends Component<
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
+  // Add global unhandled promise rejection handler to prevent error boundary triggering
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      
+      // Prevent the error from bubbling up to error boundary for voice message errors
+      if (event.reason?.message?.includes('voice message') || 
+          event.reason?.message?.includes('transcription') ||
+          event.reason?.message?.includes('audio')) {
+        event.preventDefault();
+        console.log('Voice message error prevented from triggering error boundary');
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   // Show loading state with automatic timeout
   if (isLoading) {
     return (

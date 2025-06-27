@@ -122,21 +122,43 @@ const ConversationInterface = memo(function ConversationInterface({
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to send voice message: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Voice message send failed:', response.status, errorText);
+        throw new Error(`Failed to send voice message: ${response.status} - ${errorText}`);
       }
 
       const result = await response.json();
-      
-      // Invalidate queries to refresh conversation data
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${currentUserEmail}`] });
+      console.log('Voice message sent successfully:', result);
       
       setShowTranscriptionProgress(false);
+      
+      // Invalidate queries to refresh conversation data immediately
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${currentUserEmail}`] })
+      ]);
+      
+      console.log('Voice message queries invalidated successfully');
       
     } catch (error) {
       console.error('Error sending voice message:', error);
       setShowTranscriptionProgress(false);
+      
+      // Show user-friendly error without triggering error boundary
+      if (typeof window !== 'undefined' && window.dispatchEvent) {
+        const toast = new CustomEvent('showToast', {
+          detail: {
+            title: 'Voice message error',
+            description: 'There was an issue sending your voice message. Please try again.',
+            variant: 'destructive'
+          }
+        });
+        window.dispatchEvent(toast);
+      }
+      
+      // Prevent error boundary from triggering
+      return;
     }
   }, [conversationId, currentUserEmail, nextMessageType, queryClient]);
 
