@@ -11,19 +11,7 @@ import VoiceRecorder from '@/components/voice-recorder';
 import VoiceMessageDisplay from '@/components/voice-message-display';
 import TranscriptionProgress from '@/components/transcription-progress';
 import ThoughtfulResponsePopup from '@/components/thoughtful-response-popup';
-
-interface Message {
-  id: number;
-  senderEmail: string;
-  content: string;
-  type: string;
-  createdAt: string | Date | null;
-  messageFormat?: string;
-  audioFileUrl?: string | null;
-  transcription?: string | null;
-  audioDuration?: number | null;
-  conversationId?: number;
-}
+import type { Message } from '@shared/schema';
 
 interface User {
   id: number;
@@ -130,13 +118,16 @@ const ConversationInterface = memo(function ConversationInterface({
       const result = await response.json();
       console.log('Voice message sent successfully:', result);
       
-      // Keep processing indicator visible for a moment
+      // Invalidate queries to refresh conversation data immediately
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${currentUserEmail}`] })
+      ]);
+      
+      // Keep processing indicator visible for a moment to show completion
       setTimeout(() => {
         setShowTranscriptionProgress(false);
-        
-        // Automatically refresh the page to show the new voice message
-        console.log('Voice message processing complete, refreshing page...');
-        window.location.reload();
       }, 1500); // Brief delay to show completion
       
     } catch (error) {
@@ -279,12 +270,14 @@ const ConversationInterface = memo(function ConversationInterface({
                   
                   {/* Voice message display */}
                   {message.messageFormat === 'voice' && message.audioFileUrl ? (
-                    <div className="voice-message-placeholder bg-blue-50 p-3 rounded">
-                      <p className="text-sm text-blue-600">🎵 Voice Message</p>
-                      {message.transcription && (
-                        <p className="text-xs text-gray-600 mt-1">{message.transcription}</p>
-                      )}
-                    </div>
+                    <VoiceMessageDisplay 
+                      message={{
+                        ...message,
+                        conversationId: message.conversationId || conversationId || 0
+                      }}
+                      isCurrentUser={message.senderEmail === currentUserEmail}
+                      className="mt-2"
+                    />
                   ) : (
                     message.content
                   )}
