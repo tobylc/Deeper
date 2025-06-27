@@ -190,42 +190,7 @@ export default function ConversationThreads({
           <h3 className="text-sm font-semibold text-slate-800">Previous Conversations</h3>
         </div>
         
-        {!isMyTurn && (
-          <div className="relative bg-gradient-to-br from-white via-amber-50/20 to-amber/5 p-3 rounded-sm border border-amber/20 shadow-md shadow-amber/10"
-               style={{
-                 background: `
-                   linear-gradient(135deg, 
-                     rgba(255,255,255,0.98) 0%, 
-                     rgba(255,251,235,0.96) 30%, 
-                     rgba(215,160,135,0.08) 70%, 
-                     rgba(215,160,135,0.12) 100%
-                   )
-                 `,
-                 filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.06))',
-                 backdropFilter: 'blur(0.5px)'
-               }}>
-            {/* Subtle paper texture */}
-            <div className="absolute inset-0 opacity-15 pointer-events-none">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,_rgba(0,0,0,0.02)_0%,_transparent_50%)]"></div>
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,_rgba(0,0,0,0.015)_0%,_transparent_50%)]"></div>
-            </div>
-            
-            {/* Very subtle ruled lines */}
-            <div className="absolute inset-0 opacity-25 pointer-events-none">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-full border-t border-slate-300/40"
-                  style={{ top: `${20 + i * 25}%` }}
-                />
-              ))}
-            </div>
-            
-            <p className="text-xs text-slate-700 relative z-10 font-serif leading-relaxed">
-              Waiting for their response...
-            </p>
-          </div>
-        )}
+
       </div>
 
       {/* Conversations List */}

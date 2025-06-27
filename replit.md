@@ -898,6 +898,12 @@ Changelog:
   * Added automatic page refresh after voice message processing completes successfully
   * Enhanced user experience with clear visual feedback throughout entire voice message pipeline
   * Processing modal shows contextual messages for each stage with OpenAI Whisper transcription details
+- June 27, 2025. Conversation threads turn logic cleanup:
+  * Removed redundant "Waiting for their response..." text from left column Previous Conversations section
+  * Eliminated turn state confusion by maintaining single clear turn indicator per connection
+  * Left column now shows only conversation thread navigation without conflicting waiting states
+  * Turn logic synchronized between both users with clear "Your turn" vs "Their turn" display in main header
+  * Conversation threads focus purely on thread selection without redundant turn messaging
 - June 26, 2025. Critical invitee user trial expiration popup elimination:
   * Fixed invitation form to prevent trial expiration popups for invitee users through isInviteeUser filtering
   * Enhanced conversation page sendMessage mutation to exclude invitees from trial expiration popup triggers
