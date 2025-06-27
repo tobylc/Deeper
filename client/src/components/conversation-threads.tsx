@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Users, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MessageSquare, Users, Clock, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
 
 interface ConversationThreadsProps {
   connectionId: number;
@@ -91,6 +92,22 @@ function StackedConversation({
                   <span>{new Date(conversation.lastMessageAt).toLocaleDateString()}</span>
                 </>
               )}
+            </div>
+            
+            {/* Reopen Thread Button */}
+            <div className="mt-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClick();
+                }}
+                className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400"
+              >
+                <RotateCcw className="w-3 h-3 mr-1" />
+                Reopen Thread
+              </Button>
             </div>
           </div>
           
