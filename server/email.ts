@@ -1,4 +1,4 @@
-import type { Connection } from "@shared/schema";
+import type { Connection } from "../shared/schema";
 import { storage } from "./storage";
 import sgMail from '@sendgrid/mail';
 import { getInvitationText, getEmailSubjectWithRoles } from "@shared/role-display-utils";

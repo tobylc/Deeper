@@ -9,7 +9,7 @@ import sharp from "sharp";
 import fs from "fs/promises";
 import { storage } from "./storage";
 import { finalDb } from "./db-final";
-import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "@shared/schema";
+import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "../shared/schema";
 import { getRolesForRelationship, isValidRolePair } from "@shared/relationship-roles";
 import { z } from "zod";
 
