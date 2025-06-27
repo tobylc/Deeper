@@ -3556,8 +3556,7 @@ Format each as a complete question they can use to begin this important conversa
       
       res.json({ 
         conversation, 
-        message,
-        threadTitle
+        message
       });
     } catch (error) {
       console.error("Create conversation with question error:", error);
