@@ -110,15 +110,7 @@ export const emails = pgTable("emails", {
 // Schemas
 export const insertUserSchema = createInsertSchema(users);
 
-export const insertConnectionSchema = createInsertSchema(connections).pick({
-  inviterEmail: true,
-  inviteeEmail: true,
-  relationshipType: true,
-  inviterRole: true,
-  inviteeRole: true,
-  personalMessage: true,
-  inviterSubscriptionTier: true,
-});
+export const insertConnectionSchema = createInsertSchema(connections);
 
 export const insertConversationSchema = createInsertSchema(conversations).pick({
   connectionId: true,

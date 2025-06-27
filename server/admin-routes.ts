@@ -612,7 +612,7 @@ export function setupAdminRoutes(app: Express) {
         return res.status(403).json({ error: 'Cannot delete from protected table' });
       }
 
-      await db.execute(sql.raw(`DELETE FROM ${tableName} WHERE id = $1`, [id]));
+      await db.execute(sql`DELETE FROM ${sql.identifier(tableName)} WHERE id = ${id}`);
 
       res.json({ success: true });
     } catch (error) {

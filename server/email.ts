@@ -1,7 +1,7 @@
 import type { Connection } from "../shared/schema";
 import { storage } from "./storage";
 import sgMail from '@sendgrid/mail';
-import { getInvitationText, getEmailSubjectWithRoles } from "@shared/role-display-utils";
+import { getInvitationText, getEmailSubjectWithRoles } from "../shared/role-display-utils";
 
 // Email service interface for sending notifications
 export interface EmailService {
