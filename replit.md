@@ -884,6 +884,13 @@ Changelog:
   * Timer logic now has multiple early return statements ensuring inviter's first questions send immediately
   * Reduced floating waiting text size by 50% as requested - main heading from text-4xl-7xl to text-2xl-4xl, subtitle from text-xl-4xl to text-lg-2xl
   * Complete timer bypass system ensures smooth conversation initiation without timer interference
+- June 27, 2025. Voice message error handling fix:
+  * Fixed "something went wrong" error that occurred when sending voice recordings
+  * Enhanced voice message error handling to prevent unhandled promise rejections from triggering error boundary
+  * Added global unhandled rejection handler specifically for voice message, transcription, and audio errors
+  * Improved query invalidation to use Promise.all for immediate refresh after voice message sending
+  * Voice messages now send successfully without page refresh or error boundary activation
+  * Enhanced error logging and user-friendly error messages for voice message failures
 - June 26, 2025. Critical invitee user trial expiration popup elimination:
   * Fixed invitation form to prevent trial expiration popups for invitee users through isInviteeUser filtering
   * Enhanced conversation page sendMessage mutation to exclude invitees from trial expiration popup triggers
