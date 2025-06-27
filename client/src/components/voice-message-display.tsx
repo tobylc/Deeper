@@ -18,13 +18,24 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Handle initial audio loading state
+  // Handle initial audio loading state with enhanced URL validation
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !message.audioFileUrl) {
       setIsLoading(false);
+      setError('No audio file available');
       return;
     }
+
+    // Validate and construct proper audio URL
+    let audioUrl = message.audioFileUrl;
+    if (!audioUrl.startsWith('http') && !audioUrl.startsWith('/')) {
+      // Ensure proper URL format for relative paths
+      audioUrl = audioUrl.startsWith('uploads/') ? `/${audioUrl}` : `/uploads/${audioUrl}`;
+    }
+
+    // Set the audio source immediately
+    audio.src = audioUrl;
 
     // Check if audio is already loaded
     if (audio.readyState >= 2) { // HAVE_CURRENT_DATA or higher
@@ -38,13 +49,22 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
       setError(null);
     };
 
-    const handleError = () => {
+    const handleError = (e: Event) => {
+      console.error('Audio load error details:', {
+        url: audioUrl,
+        originalUrl: message.audioFileUrl,
+        error: e,
+        readyState: audio.readyState
+      });
       setIsLoading(false);
-      setError('Unable to load audio file');
+      setError('Audio file could not be loaded');
     };
 
     audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('error', handleError);
+
+    // Force load the audio
+    audio.load();
 
     // Cleanup
     return () => {
