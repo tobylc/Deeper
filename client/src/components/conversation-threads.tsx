@@ -230,15 +230,20 @@ export default function ConversationThreads({
     enabled: !!connectionId
   });
 
-  // CRITICAL: Production-ready conversation filtering with comprehensive validation
-  const currentActiveId = activeConversationId || selectedConversationId;
+  // CRITICAL: Single conversation display - exclude ONLY the currently active conversation
+  const currentActiveId = selectedConversationId || activeConversationId;
   const sortedConversations = Array.isArray(conversations) 
     ? conversations
         .filter((conv: Conversation) => {
-          // Production-ready filtering with null checks and type validation
+          // STRICT filtering: Only show conversations that are NOT currently active in center column
           if (!conv || typeof conv !== 'object') return false;
           if (!conv.id || typeof conv.id !== 'number') return false;
-          return conv.id !== currentActiveId; // Hide active conversation from left column
+          
+          // Convert both IDs to numbers for accurate comparison
+          const convId = typeof conv.id === 'string' ? parseInt(conv.id) : conv.id;
+          const activeId = typeof currentActiveId === 'string' ? parseInt(currentActiveId) : currentActiveId;
+          
+          return convId !== activeId; // Hide ONLY the currently active conversation
         })
         .map((conv: Conversation) => ({
           ...conv,

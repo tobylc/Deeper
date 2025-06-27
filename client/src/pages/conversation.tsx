@@ -597,7 +597,7 @@ export default function ConversationPage() {
         setNewMessage(""); // Clear message when switching threads
         setShowThreadsView(false); // Hide threads view on mobile after selection
         
-        // Update the URL to reflect the selected conversation
+        // Update the URL to reflect the selected conversation for proper routing
         setLocation(`/conversation/${conversationId}`);
       } else {
         console.error('Failed to switch thread:', await response.text());

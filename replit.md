@@ -928,6 +928,16 @@ Changelog:
   * Voice messages now display immediately with transcription and playable audio controls
   * Complete AI transcription system using OpenAI Whisper with fallback error messages
   * Production-ready voice messaging system with comprehensive security and error handling
+- June 27, 2025. Single conversation display system and voice message audio fixes implemented:
+  * Fixed critical issue where multiple questions appeared simultaneously in center column
+  * Implemented strict conversation filtering ensuring ONLY one active conversation displays at any time
+  * Enhanced ConversationInterface with exact conversationId matching to prevent multiple conversations showing
+  * Updated ConversationThreads component to exclude currently active conversation from left sidebar
+  * Fixed voice message audio playback errors with comprehensive URL validation and path handling
+  * Added production-ready audio URL construction preventing double /uploads/ paths and caching issues
+  * Enhanced conversation page routing with proper URL updates when switching between conversation threads
+  * Both users now see identical synchronized conversation states with single conversation focus
+  * Complete single-conversation display system ensuring clean, focused conversation experience without multiple overlapping threads
 - June 27, 2025. Strict turn-based thread reopening system implemented:
   * Only users whose turn it is can reopen previous conversation threads
   * Waiting users see WaitingTurnPopup when attempting to reopen threads or perform turn-based actions

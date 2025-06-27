@@ -269,10 +269,28 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           </div>
         </div>
 
-        {/* Audio Element with Enhanced Debugging */}
+        {/* Audio Element with Production-Ready URL Handling */}
         <audio
           ref={audioRef}
-          src={message.audioFileUrl || ''}
+          src={(() => {
+            // Production-ready URL construction for audio playback
+            if (!message.audioFileUrl) return '';
+            let url = message.audioFileUrl;
+            
+            // Handle relative paths properly
+            if (!url.startsWith('http') && !url.startsWith('/')) {
+              url = url.startsWith('uploads/') ? `/${url}` : `/uploads/${url}`;
+            }
+            
+            // Fix double uploads path
+            if (url.startsWith('/uploads/uploads/')) {
+              url = url.replace('/uploads/uploads/', '/uploads/');
+            }
+            
+            // Add timestamp to prevent caching issues
+            const separator = url.includes('?') ? '&' : '?';
+            return `${url}${separator}t=${Date.now()}`;
+          })()}
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleEnded}
           onError={handleLoadError}
@@ -280,8 +298,6 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           onCanPlay={handleCanPlayEvent}
           preload="metadata"
           crossOrigin="anonymous"
-          onLoadedMetadata={() => console.log('Audio metadata loaded')}
-          onLoadedData={() => console.log('Audio data loaded')}
         />
         
         {/* Debug Info in Development */}
