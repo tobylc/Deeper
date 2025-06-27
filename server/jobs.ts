@@ -82,7 +82,9 @@ export class JobQueue {
     job.status = 'running';
     job.attempts++;
 
-    console.log(`🔄 Processing job: ${job.type} (attempt ${job.attempts}/${job.maxAttempts})`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 Processing job: ${job.type} (attempt ${job.attempts}/${job.maxAttempts})`);
+    }
 
     try {
       switch (job.type) {
@@ -100,7 +102,9 @@ export class JobQueue {
       }
 
       job.status = 'completed';
-      console.log(`✅ Job completed: ${job.type} (${job.id})`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ Job completed: ${job.type} (${job.id})`);
+      }
     } catch (error) {
       console.error(`❌ Job failed: ${job.type} (${job.id})`, error);
       

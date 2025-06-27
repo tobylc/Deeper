@@ -7,7 +7,9 @@ if (!process.env.REPLIT_DOMAINS) {
   throw new Error("REPLIT_DOMAINS environment variable required for production");
 }
 
-console.log(`[AUTH] Production authentication system active`);
+if (process.env.NODE_ENV === 'development') {
+  console.log(`[AUTH] Production authentication system active`);
+}
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -20,7 +22,9 @@ export function getSession() {
     max: 10000, // Maximum number of sessions
   });
 
-  console.log('[SESSION] Using optimized memory store for production stability');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[SESSION] Using optimized memory store for production stability');
+  }
 
   return session({
     secret: process.env.SESSION_SECRET!,
