@@ -130,16 +130,14 @@ const ConversationInterface = memo(function ConversationInterface({
       const result = await response.json();
       console.log('Voice message sent successfully:', result);
       
-      setShowTranscriptionProgress(false);
-      
-      // Invalidate queries to refresh conversation data immediately
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] }),
-        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] }),
-        queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${currentUserEmail}`] })
-      ]);
-      
-      console.log('Voice message queries invalidated successfully');
+      // Keep processing indicator visible for a moment
+      setTimeout(() => {
+        setShowTranscriptionProgress(false);
+        
+        // Automatically refresh the page to show the new voice message
+        console.log('Voice message processing complete, refreshing page...');
+        window.location.reload();
+      }, 1500); // Brief delay to show completion
       
     } catch (error) {
       console.error('Error sending voice message:', error);

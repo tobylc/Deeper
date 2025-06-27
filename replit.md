@@ -891,6 +891,13 @@ Changelog:
   * Improved query invalidation to use Promise.all for immediate refresh after voice message sending
   * Voice messages now send successfully without page refresh or error boundary activation
   * Enhanced error logging and user-friendly error messages for voice message failures
+- June 27, 2025. Voice message processing visual enhancement:
+  * Added comprehensive processing visual overlay showing detailed progress during voice message sending
+  * Enhanced TranscriptionProgress component with 5 distinct stages: uploading, processing, transcribing, sending, complete
+  * Implemented full-screen modal overlay with animated progress bar and stage-specific icons
+  * Added automatic page refresh after voice message processing completes successfully
+  * Enhanced user experience with clear visual feedback throughout entire voice message pipeline
+  * Processing modal shows contextual messages for each stage with OpenAI Whisper transcription details
 - June 26, 2025. Critical invitee user trial expiration popup elimination:
   * Fixed invitation form to prevent trial expiration popups for invitee users through isInviteeUser filtering
   * Enhanced conversation page sendMessage mutation to exclude invitees from trial expiration popup triggers
