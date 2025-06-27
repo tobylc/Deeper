@@ -1,6 +1,6 @@
 import { storage } from "./storage";
 import { db } from "./db";
-import { users, connections, conversations, messages } from "@shared/schema";
+import { users, connections, conversations, messages } from "../shared/schema";
 import { eq, or } from "drizzle-orm";
 
 interface DuplicateUser {

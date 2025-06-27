@@ -120,23 +120,15 @@ export const insertConnectionSchema = createInsertSchema(connections).omit({
   acceptedAt: true,
 });
 
-export const insertConversationSchema = createInsertSchema(conversations).pick({
-  connectionId: true,
-  participant1Email: true,
-  participant2Email: true,
-  relationshipType: true,
-  currentTurn: true,
+export const insertConversationSchema = createInsertSchema(conversations).omit({
+  id: true,
+  createdAt: true,
+  lastActivityAt: true,
 });
 
-export const insertMessageSchema = createInsertSchema(messages).pick({
-  conversationId: true,
-  senderEmail: true,
-  content: true,
-  type: true,
-  messageFormat: true,
-  audioFileUrl: true,
-  transcription: true,
-  audioDuration: true,
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertEmailSchema = createInsertSchema(emails).omit({

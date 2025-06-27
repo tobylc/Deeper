@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { storage } from "./storage";
-import { finalDb } from "./db-final";
-import { users, connections, conversations, messages, emails } from "@shared/schema";
+import { db } from "./db";
+import { users, connections, conversations, messages, emails } from "../shared/schema";
 import { desc, count, sql, eq, and, gte, lte, isNotNull } from "drizzle-orm";
 import { rateLimit } from "./middleware";
 import { z } from "zod";
@@ -29,7 +29,7 @@ export function setupAdminRoutes(app: Express) {
       const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       // User stats
-      const totalUsers = await finalDb.select({ count: count() }).from(users);
+      const totalUsers = await db.select({ count: count() }).from(users);
       const activeUsers = await finalDb.select({ count: count() }).from(users)
         .where(gte(users.updatedAt, thirtyDaysAgo));
       const newUsersToday = await finalDb.select({ count: count() }).from(users)
