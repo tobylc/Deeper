@@ -51,7 +51,7 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
 
         // Check if audio is loaded
         if (audioRef.current.readyState < 2) {
-          console.log('Audio not ready, loading from:', message.audioFileUrl);
+  
           await new Promise((resolve, reject) => {
             const audio = audioRef.current!;
             const timeoutId = setTimeout(() => {
@@ -80,7 +80,7 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
 
         await audioRef.current.play();
         setIsPlaying(true);
-        console.log('Audio playback started successfully');
+
       }
     } catch (err: any) {
       console.error('Audio playback error:', err);
@@ -109,12 +109,12 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
   };
 
   const handleLoadStart = () => {
-    console.log('Audio loading started for:', message.audioFileUrl);
+
     setIsLoading(true);
   };
 
   const handleCanPlay = () => {
-    console.log('Audio can play');
+
     setIsLoading(false);
     setError(null);
   };
