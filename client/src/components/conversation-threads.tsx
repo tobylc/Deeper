@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +42,7 @@ function StackedConversation({
   currentUserEmail, 
   isMyTurn,
   isInviter,
-  canReopenThread
+  checkThreadReopenPermission
 }: { 
   conversation: Conversation;
   isSelected: boolean;
@@ -50,10 +50,28 @@ function StackedConversation({
   currentUserEmail: string;
   isMyTurn: boolean;
   isInviter: boolean;
-  canReopenThread: (conv: Conversation) => boolean;
+  checkThreadReopenPermission: (conversationId: number) => Promise<boolean>;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [canReopen, setCanReopen] = useState(false);
+  const [isCheckingPermission, setIsCheckingPermission] = useState(false);
   const shouldStack = conversation.messageCount >= 4;
+
+  // Check reopen permission when component mounts or turn changes
+  useEffect(() => {
+    const checkPermission = async () => {
+      setIsCheckingPermission(true);
+      const permission = await checkThreadReopenPermission(conversation.id);
+      setCanReopen(permission);
+      setIsCheckingPermission(false);
+    };
+    
+    if (isMyTurn) {
+      checkPermission();
+    } else {
+      setCanReopen(false);
+    }
+  }, [isMyTurn, conversation.id, checkThreadReopenPermission]);
   
   // Role-based glowing effect styles - maximum visibility
   const glowStyles = isInviter 
@@ -101,13 +119,15 @@ function StackedConversation({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.stopPropagation();
-                  onClick();
+                  if (canReopen) {
+                    onClick();
+                  }
                 }}
-                disabled={!canReopenThread(conversation)}
+                disabled={!canReopen || isCheckingPermission}
                 className={`text-xs px-2 py-1 h-6 ${
-                  canReopenThread(conversation) 
+                  canReopen && !isCheckingPermission
                     ? 'border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400' 
                     : 'border-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
@@ -170,30 +190,18 @@ export default function ConversationThreads({
     enabled: !!connectionId
   });
 
-  // Check if current active conversation has unanswered question
-  const { data: currentConversationMessages = [] } = useQuery({
-    queryKey: [`/api/conversations/${selectedConversationId}/messages`],
-    queryFn: () => fetch(`/api/conversations/${selectedConversationId}/messages`).then(res => res.json()),
-    enabled: !!selectedConversationId
-  });
-
-  // Function to check if user can reopen a thread
-  const canReopenThread = (conversation: Conversation): boolean => {
-    // Must be user's turn
-    if (!isMyTurn) return false;
-
-    // Check if current conversation has unanswered question
-    if (currentConversationMessages.length > 0) {
-      const lastMessage = currentConversationMessages[currentConversationMessages.length - 1];
-      if (lastMessage?.type === 'question' && lastMessage?.senderEmail !== currentUserEmail) {
-        // Other user asked a question, must respond before reopening threads
-        return false;
-      }
+  // Check thread reopen permissions using the API
+  const checkThreadReopenPermission = async (conversationId: number): Promise<boolean> => {
+    try {
+      const response = await fetch(
+        `/api/conversations/${conversationId}/can-reopen?currentConversationId=${selectedConversationId}&userEmail=${currentUserEmail}`
+      );
+      const data = await response.json();
+      return data.canReopen;
+    } catch (error) {
+      console.error('Error checking thread reopen permission:', error);
+      return false;
     }
-
-    // Check if the thread to reopen has at least one complete exchange
-    const threadMessageCount = messageCounts[conversation.id] || 0;
-    return threadMessageCount >= 2; // At least question + response
   };
 
   // Filter out the currently active conversation and sort remaining conversations
@@ -259,16 +267,17 @@ export default function ConversationThreads({
               key={conversation.id}
               conversation={conversation}
               isSelected={false} // Never selected since active conversation is hidden
-              onClick={() => {
-                // Only allow thread selection when validation passes
-                if (canReopenThread(conversation)) {
+              onClick={async () => {
+                // Check permission before allowing thread selection
+                const permission = await checkThreadReopenPermission(conversation.id);
+                if (permission) {
                   onThreadSelect(conversation.id);
                 }
               }}
               currentUserEmail={currentUserEmail}
               isMyTurn={isMyTurn}
               isInviter={isInviter}
-              canReopenThread={canReopenThread}
+              checkThreadReopenPermission={checkThreadReopenPermission}
             />
           ))
         )}
