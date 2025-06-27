@@ -108,32 +108,50 @@ export const emails = pgTable("emails", {
 });
 
 // Schemas
-export const insertUserSchema = createInsertSchema(users).omit({
-  createdAt: true,
-  updatedAt: true,
+export const insertUserSchema = createInsertSchema(users);
+
+export const insertConnectionSchema = createInsertSchema(connections).pick({
+  inviterEmail: true,
+  inviteeEmail: true,
+  relationshipType: true,
+  inviterRole: true,
+  inviteeRole: true,
+  personalMessage: true,
+  inviterSubscriptionTier: true,
 });
 
-export const insertConnectionSchema = createInsertSchema(connections).omit({
-  id: true,
+export const insertConversationSchema = createInsertSchema(conversations).pick({
+  connectionId: true,
+  participant1Email: true,
+  participant2Email: true,
+  relationshipType: true,
+  currentTurn: true,
   status: true,
-  createdAt: true,
-  acceptedAt: true,
+  isMainThread: true,
+  parentConversationId: true,
+  title: true,
+  topic: true,
 });
 
-export const insertConversationSchema = createInsertSchema(conversations).omit({
-  id: true,
-  createdAt: true,
-  lastActivityAt: true,
+export const insertMessageSchema = createInsertSchema(messages).pick({
+  conversationId: true,
+  senderEmail: true,
+  content: true,
+  type: true,
+  messageFormat: true,
+  audioFileUrl: true,
+  transcription: true,
+  audioDuration: true,
 });
 
-export const insertMessageSchema = createInsertSchema(messages).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertEmailSchema = createInsertSchema(emails).omit({
-  id: true,
-  createdAt: true,
+export const insertEmailSchema = createInsertSchema(emails).pick({
+  toEmail: true,
+  fromEmail: true,
+  subject: true,
+  htmlContent: true,
+  textContent: true,
+  emailType: true,
+  connectionId: true,
 });
 
 // Verification codes table for production-ready phone verification
@@ -154,9 +172,12 @@ export const verificationCodes = pgTable(
   ]
 );
 
-export const insertVerificationCodeSchema = createInsertSchema(verificationCodes).omit({
-  id: true,
-  createdAt: true,
+export const insertVerificationCodeSchema = createInsertSchema(verificationCodes).pick({
+  email: true,
+  phoneNumber: true,
+  code: true,
+  expiresAt: true,
+  verified: true,
 });
 
 // Types
