@@ -2272,7 +2272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // DEPRECATED: This endpoint should not create new conversations - redirect to use existing conversation
+  // Endpoint to get or create the single conversation for a connection
   app.post("/api/connections/:connectionId/conversations", isAuthenticated, async (req: any, res) => {
     try {
       const connectionId = parseInt(req.params.connectionId);
@@ -2318,19 +2318,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const wsManager = getWebSocketManager();
         if (wsManager) {
           // Notify both participants that a new conversation was created
-          wsManager.notifyConversationUpdate(participant1Email, {
+          wsManager.notifyConversationUpdate(connection.inviterEmail, {
             conversationId: conversation.id,
             connectionId: connectionId,
             action: 'conversation_created',
-            relationshipType
+            relationshipType: connection.relationshipType
           });
           
-          if (participant1Email !== participant2Email) {
-            wsManager.notifyConversationUpdate(participant2Email, {
+          if (connection.inviterEmail !== connection.inviteeEmail) {
+            wsManager.notifyConversationUpdate(connection.inviteeEmail, {
               conversationId: conversation.id,
               connectionId: connectionId,
               action: 'conversation_created',
-              relationshipType
+              relationshipType: connection.relationshipType
             });
           }
         }
@@ -3484,44 +3484,45 @@ Format each as a complete question they can use to begin this important conversa
         });
       }
       
-      // Generate thread title from question
-      const threadTitle = generateRelationshipSpecificTitle(question, relationshipType);
-      
-      // Create new conversation thread
-      const conversationData = {
-        connectionId,
-        participant1Email,
-        participant2Email,
-        relationshipType,
-        currentTurn: participant1Email, // Inviter always gets first turn
-        status: 'active',
-        title: threadTitle,
-        topic: question,
-        isMainThread: false
-      };
-      
-      const conversation = await storage.createConversation(conversationData);
+      // Use existing conversation instead of creating new ones
+      let conversation;
+      if (existingConversations.length > 0) {
+        // Use the existing conversation for this connection
+        conversation = existingConversations[0];
+      } else {
+        // Create the first (and only) conversation for this connection
+        const conversationData = {
+          connectionId,
+          participant1Email: connection.inviterEmail,
+          participant2Email: connection.inviteeEmail,
+          relationshipType: connection.relationshipType,
+          currentTurn: connection.inviterEmail, // Inviter always gets first turn
+          status: 'active',
+          isMainThread: true
+        };
+        conversation = await storage.createConversation(conversationData);
+      }
       
       // Immediately create the first message (question) - always from inviter
       const messageData = {
         conversationId: conversation.id,
-        senderEmail: participant1Email, // Always from inviter
+        senderEmail: connection.inviterEmail, // Always from inviter
         content: question.trim(),
         type: 'question' as const
       };
       
       const message = await storage.createMessage(messageData);
       
-      // Update conversation turn to invitee (participant2)
-      await storage.updateConversationTurn(conversation.id, participant2Email);
+      // Update conversation turn to invitee
+      await storage.updateConversationTurn(conversation.id, connection.inviteeEmail);
       
-      // Send turn notification to invitee (participant2)
+      // Send turn notification to invitee
       try {
         await notificationService.sendTurnNotification({
-          recipientEmail: participant2Email,
-          senderEmail: participant1Email,
+          recipientEmail: connection.inviteeEmail,
+          senderEmail: connection.inviterEmail,
           conversationId: conversation.id,
-          relationshipType,
+          relationshipType: connection.relationshipType,
           messageType: 'question'
         });
       } catch (notificationError) {
@@ -3533,19 +3534,19 @@ Format each as a complete question they can use to begin this important conversa
         const { getWebSocketManager } = await import('./websocket');
         const wsManager = getWebSocketManager();
         if (wsManager) {
-          wsManager.notifyConversationUpdate(participant1Email, {
+          wsManager.notifyConversationUpdate(connection.inviterEmail, {
             conversationId: conversation.id,
             connectionId: connectionId,
-            action: 'conversation_created',
-            relationshipType
+            action: 'message_sent',
+            relationshipType: connection.relationshipType
           });
           
-          if (participant1Email !== participant2Email) {
-            wsManager.notifyConversationUpdate(participant2Email, {
+          if (connection.inviterEmail !== connection.inviteeEmail) {
+            wsManager.notifyConversationUpdate(connection.inviteeEmail, {
               conversationId: conversation.id,
               connectionId: connectionId,
-              action: 'conversation_created',
-              relationshipType
+              action: 'message_sent',
+              relationshipType: connection.relationshipType
             });
           }
         }
