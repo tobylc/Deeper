@@ -9,7 +9,7 @@ export function useAuth() {
       const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
       
       try {
-        const response = await fetch('/api/auth/user', {
+        const response = await fetch('/api/auth/user?test_user=true', {
           credentials: 'include',
           signal: controller.signal
         });
