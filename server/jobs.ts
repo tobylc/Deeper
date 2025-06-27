@@ -35,7 +35,9 @@ export class JobQueue {
     };
 
     this.jobs.set(id, job);
-    console.log(`📋 Job queued: ${type} (${id})`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📋 Job queued: ${type} (${id})`);
+    }
     return id;
   }
 

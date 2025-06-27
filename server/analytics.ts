@@ -17,11 +17,13 @@ export class AnalyticsService {
       timestamp: new Date()
     });
     
-    // Log important events
-    console.log(`📊 Analytics: ${event.type}`, {
-      email: event.email,
-      metadata: event.metadata
-    });
+    // Log important events in development only
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📊 Analytics: ${event.type}`, {
+        email: event.email,
+        metadata: event.metadata
+      });
+    }
   }
 
   async getDashboardMetrics() {
