@@ -360,8 +360,7 @@ export default function ConversationPage() {
     );
   }
 
-  // Only show "not found" after we've actually tried to load and failed
-  if (!conversation && !conversationLoading && conversationError) {
+  if (!conversation) {
     return (
       <div className="min-h-screen bg-gradient-radial from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="bg-[#1B2137]/90 backdrop-blur-md p-8 rounded-2xl shadow-lg text-center border border-[#4FACFE]/30">
@@ -370,20 +369,6 @@ export default function ConversationPage() {
           <Button onClick={() => setLocation("/dashboard")} className="bg-gradient-to-r from-[#4FACFE] to-teal text-white">
             Back to Dashboard
           </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // If conversation is still loading or doesn't exist yet, keep showing loading state
-  if (!conversation) {
-    return (
-      <div className="min-h-screen bg-gradient-radial from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center p-3 mx-auto mb-4">
-            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-          </div>
-          <p className="text-slate-300">Loading conversation...</p>
         </div>
       </div>
     );

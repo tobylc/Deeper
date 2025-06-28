@@ -123,7 +123,7 @@ export default function Dashboard() {
   });
 
   // Group conversations by connection to show only one conversation per connection
-  const conversationsByConnection = (conversations || []).reduce((acc, conversation) => {
+  const conversationsByConnection = conversations.reduce((acc, conversation) => {
     const connectionKey = `${conversation.participant1Email}-${conversation.participant2Email}`;
     const reverseKey = `${conversation.participant2Email}-${conversation.participant1Email}`;
     
@@ -579,16 +579,15 @@ export default function Dashboard() {
                                 
                                 const conversation = await response.json();
                                 console.log("Created conversation:", conversation);
-                                console.log("Conversation ID for redirect:", conversation.id);
                                 
                                 if (conversation && conversation.id) {
-                                  // Force clear all cache to prevent stale data
-                                  queryClient.clear();
+                                  // Refresh conversations data and wait for it
                                   await queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user.email}`] });
                                   
-                                  // Immediate redirect without delay to prevent dashboard refresh
-                                  console.log("Redirecting to conversation page:", `/conversation/${conversation.id}`);
-                                  setLocation(`/conversation/${conversation.id}`);
+                                  // Add a small delay to ensure the conversation is fully created
+                                  setTimeout(() => {
+                                    setLocation(`/conversation/${conversation.id}`);
+                                  }, 500);
                                 } else {
                                   console.error("No conversation ID in response:", conversation);
                                   toast({

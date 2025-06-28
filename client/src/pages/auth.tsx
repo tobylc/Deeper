@@ -45,8 +45,10 @@ export default function Auth() {
     setIsLoggingIn(true);
 
     try {
-      // For development testing, establish session for test user
-      const response = await apiRequest("POST", "/auth/dev-session", {});
+      const response = await apiRequest("POST", "/api/auth/login", {
+        email: email.trim(),
+        password,
+      });
 
       if (response.ok) {
         const result = await response.json();

@@ -114,38 +114,3 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
   
   next();
 }
-
-// Session-based authentication middleware
-export function isAuthenticated(req: any, res: Response, next: NextFunction) {
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[AUTH] Authentication check:', {
-      hasSession: !!req.session,
-      sessionUser: !!req.session?.user,
-      sessionID: req.sessionID,
-      method: req.method,
-      url: req.url,
-      userEmail: req.session?.user?.email || 'none'
-    });
-  }
-
-  // For development, allow requests to pass through
-  // Production systems will use proper OAuth
-  if (process.env.NODE_ENV === 'development') {
-    // Always allow in development
-    if (req.session?.user) {
-      req.user = req.session.user;
-    }
-    return next();
-  }
-
-  // Check session-based authentication for production
-  if (!req.session || !req.session.user) {
-    return res.status(401).json({ 
-      message: "Authentication required. Please log in to continue." 
-    });
-  }
-
-  // Set user for compatibility
-  req.user = req.session.user;
-  next();
-}

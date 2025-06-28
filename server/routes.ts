@@ -7,7 +7,6 @@ import bcrypt from "bcrypt";
 import multer from "multer";
 import sharp from "sharp";
 import fs from "fs/promises";
-import passport from "passport";
 import { storage } from "./storage";
 import { finalDb } from "./db-final";
 import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "../shared/schema";
@@ -522,125 +521,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Production Authentication Routes
-  app.post('/auth/login', async (req: any, res) => {
+  // Production Auth endpoints
+  app.get('/api/auth/user', async (req: any, res) => {
     try {
-      const { email, password } = req.body;
-      
-      // Get user from database
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-      }
-      
-      // Validate password
-      const isValid = await bcrypt.compare(password, user.passwordHash || '');
-      if (!isValid) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-      }
-      
-      // Establish session
-      req.session.user = {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName
-      };
-      
-      req.session.save((err: any) => {
-        if (err) console.error('Session save error:', err);
-      });
-      
-      res.json({ success: true, user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        subscriptionTier: user.subscriptionTier,
-        subscriptionStatus: user.subscriptionStatus,
-        maxConnections: user.maxConnections
-      }});
-    } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ message: 'Authentication failed' });
-    }
-  });
-
-  app.post('/auth/signup', async (req: any, res) => {
-    try {
-      const { email, password, firstName, lastName } = req.body;
-      
-      // Hash password
-      const passwordHash = await bcrypt.hash(password, 12);
-      const userId = randomUUID();
-      
-      // Create user account with proper schema
-      const userData = {
-        id: userId,
-        email,
-        passwordHash,
-        firstName,
-        lastName,
-        subscriptionTier: 'trial' as const,
-        subscriptionStatus: 'active' as const,
-        maxConnections: 3,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      
-      const user = await storage.createUser(userData);
-      
-      // Establish session
-      req.session.user = {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName
-      };
-      
-      req.session.save((err: any) => {
-        if (err) console.error('Session save error:', err);
-      });
-      
-      res.json({ success: true, user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        subscriptionTier: user.subscriptionTier,
-        subscriptionStatus: user.subscriptionStatus,
-        maxConnections: user.maxConnections
-      }});
-    } catch (error) {
-      console.error('Signup error:', error);
-      res.status(400).json({ message: 'Failed to create account' });
-    }
-  });
-
-  // Create test session for development - production systems will use OAuth
-  app.post('/auth/dev-session', async (req: any, res) => {
-    try {
-      if (process.env.NODE_ENV !== 'development') {
-        return res.status(404).json({ message: 'Not found' });
-      }
-
-      // Establish session for test user
-      const testUser = await storage.getUserByEmail('thetobyclarkshow@gmail.com');
-      if (testUser) {
-        req.session.user = {
-          id: testUser.id,
-          email: testUser.email,
-          firstName: testUser.firstName,
-          lastName: testUser.lastName
-        };
-        
-        req.session.save((err: any) => {
-          if (err) console.error('Session save error:', err);
-        });
-        
-        res.json({ 
-          success: true, 
-          user: {
+      // Development bypass for testing
+      if (process.env.NODE_ENV === 'development' && req.query.test_user) {
+        const testUser = await storage.getUserByEmail('thetobyclarkshow@gmail.com');
+        if (testUser) {
+          // Establish persistent session for test user
+          req.session.user = {
+            id: testUser.id,
+            email: testUser.email,
+            firstName: testUser.firstName,
+            lastName: testUser.lastName
+          };
+          req.user = req.session.user;
+          
+          // Force session save for persistence
+          req.session.save((err: any) => {
+            if (err) console.error('Session save error:', err);
+          });
+          
+          return res.json({
             id: testUser.id,
             email: testUser.email,
             firstName: testUser.firstName,
@@ -648,52 +550,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
             subscriptionTier: testUser.subscriptionTier,
             subscriptionStatus: testUser.subscriptionStatus,
             maxConnections: testUser.maxConnections
-          }
-        });
-      } else {
-        res.status(404).json({ message: 'Test user not found' });
+          });
+        }
       }
-    } catch (error) {
-      console.error('Dev session error:', error);
-      res.status(500).json({ message: 'Failed to establish session' });
-    }
-  });
 
-  // Production Auth endpoints
-  app.get('/api/auth/user', async (req: any, res) => {
-    try {
-      // Check if user is authenticated through session
-      if (!req.session || !req.session.user) {
+      // Check if user is authenticated
+      if (!req.isAuthenticated() || !req.user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      // Get user data from session
-      const sessionUser = req.session.user;
+      // Get user ID from session
+      let userId = req.user.id;
+      
+      // Handle different authentication sources
+      if (req.user.claims && req.user.claims.sub) {
+        userId = req.user.claims.sub;
+      }
 
-      // Fetch fresh user data from database using session email
-      const user = await storage.getUserByEmail(sessionUser.email);
+      if (!userId) {
+        return res.status(401).json({ message: "Invalid session" });
+      }
+
+      // Use production-ready database connection with rate limiting
+      let user;
+      if (req.user.email) {
+        user = await finalDb.getUserByEmail(req.user.email);
+      } else {
+        user = await finalDb.getUserById(userId);
+      }
       
       if (!user) {
-        // Clear invalid session
-        req.session.destroy((err: any) => {
-          if (err) console.error('Session destroy error:', err);
-        });
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Return user data with proper field mapping
+      // Return sanitized user data with safe property access
       res.json({
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl,
-        subscriptionTier: user.subscriptionTier,
-        subscriptionStatus: user.subscriptionStatus,
-        maxConnections: user.maxConnections,
-        hasSeenOnboarding: user.hasSeenOnboarding,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        id: user.id || '',
+        email: user.email || '',
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        profileImageUrl: user.profile_image_url || null,
+        subscriptionTier: user.subscription_tier || 'free',
+        subscriptionStatus: user.subscription_status || 'active',
+        maxConnections: user.max_connections || 1,
+        hasSeenOnboarding: user.has_seen_onboarding || false,
+        createdAt: user.created_at || null,
+        updatedAt: user.updated_at || null
       });
     } catch (error) {
       console.error("Error fetching user:", error);
