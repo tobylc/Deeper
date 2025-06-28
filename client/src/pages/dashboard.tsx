@@ -123,7 +123,7 @@ export default function Dashboard() {
   });
 
   // Group conversations by connection to show only one conversation per connection
-  const conversationsByConnection = conversations.reduce((acc, conversation) => {
+  const conversationsByConnection = (conversations || []).reduce((acc, conversation) => {
     const connectionKey = `${conversation.participant1Email}-${conversation.participant2Email}`;
     const reverseKey = `${conversation.participant2Email}-${conversation.participant1Email}`;
     

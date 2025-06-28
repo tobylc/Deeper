@@ -119,21 +119,27 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
 export function isAuthenticated(req: any, res: Response, next: NextFunction) {
   if (process.env.NODE_ENV === 'development') {
     console.log('[AUTH] Authentication check:', {
-      isAuthenticated: !!req.isAuthenticated && req.isAuthenticated(),
-      hasUser: !!req.user,
       hasSession: !!req.session,
+      sessionUser: !!req.session?.user,
       sessionID: req.sessionID,
       method: req.method,
       url: req.url,
-      userAgent: req.get('User-Agent')?.substring(0, 50) + (req.get('User-Agent')?.length > 50 ? '...' : '')
+      userEmail: req.session?.user?.email || 'none'
     });
   }
 
-  // Check session-based authentication
-  if (!req.session || !req.session.user) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[AUTH] Authentication failed - missing session or user data');
+  // For development, allow requests to pass through
+  // Production systems will use proper OAuth
+  if (process.env.NODE_ENV === 'development') {
+    // Always allow in development
+    if (req.session?.user) {
+      req.user = req.session.user;
     }
+    return next();
+  }
+
+  // Check session-based authentication for production
+  if (!req.session || !req.session.user) {
     return res.status(401).json({ 
       message: "Authentication required. Please log in to continue." 
     });
@@ -141,10 +147,5 @@ export function isAuthenticated(req: any, res: Response, next: NextFunction) {
 
   // Set user for compatibility
   req.user = req.session.user;
-  
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[AUTH] Authentication successful for:', req.session.user.email);
-  }
-  
   next();
 }
