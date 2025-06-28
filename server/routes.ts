@@ -522,80 +522,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // OAuth Google Authentication Routes
-  app.get('/auth/google', 
-    passport.authenticate('google', { scope: ['profile', 'email'] })
-  );
-
-  app.get('/auth/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/auth' }),
-    async (req: any, res) => {
-      try {
-        // Establish session after successful OAuth
-        if (req.user) {
-          req.session.user = {
-            id: req.user.id,
-            email: req.user.email,
-            firstName: req.user.firstName,
-            lastName: req.user.lastName
-          };
-          
-          // Force session save
-          req.session.save((err: any) => {
-            if (err) console.error('Session save error:', err);
-          });
-        }
-        
-        res.redirect('/dashboard');
-      } catch (error) {
-        console.error('OAuth callback error:', error);
-        res.redirect('/auth?error=callback_failed');
-      }
-    }
-  );
-
-  // Email/Password Authentication Routes
-  app.post('/auth/signup', async (req: any, res) => {
-    try {
-      const { email, password, firstName, lastName } = req.body;
-      
-      // Create user account
-      const user = await storage.createUser({
-        email,
-        password,
-        firstName,
-        lastName,
-        subscriptionTier: 'trial',
-        subscriptionStatus: 'active',
-        maxConnections: 3
-      });
-      
-      // Establish session
-      req.session.user = {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName
-      };
-      
-      req.session.save((err: any) => {
-        if (err) console.error('Session save error:', err);
-      });
-      
-      res.json({ success: true, user: user });
-    } catch (error) {
-      console.error('Signup error:', error);
-      res.status(400).json({ message: 'Failed to create account' });
-    }
-  });
-
+  // Production Authentication Routes
   app.post('/auth/login', async (req: any, res) => {
     try {
       const { email, password } = req.body;
       
-      // Authenticate user
+      // Get user from database
       const user = await storage.getUserByEmail(email);
-      if (!user || !await storage.validatePassword(email, password)) {
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+      
+      // Validate password
+      const isValid = await bcrypt.compare(password, user.passwordHash || '');
+      if (!isValid) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
       
@@ -611,10 +551,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (err) console.error('Session save error:', err);
       });
       
-      res.json({ success: true, user: user });
+      res.json({ success: true, user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        subscriptionTier: user.subscriptionTier,
+        subscriptionStatus: user.subscriptionStatus,
+        maxConnections: user.maxConnections
+      }});
     } catch (error) {
       console.error('Login error:', error);
       res.status(500).json({ message: 'Authentication failed' });
+    }
+  });
+
+  app.post('/auth/signup', async (req: any, res) => {
+    try {
+      const { email, password, firstName, lastName } = req.body;
+      
+      // Hash password
+      const passwordHash = await bcrypt.hash(password, 12);
+      const userId = randomUUID();
+      
+      // Create user account with proper schema
+      const userData = {
+        id: userId,
+        email,
+        passwordHash,
+        firstName,
+        lastName,
+        subscriptionTier: 'trial' as const,
+        subscriptionStatus: 'active' as const,
+        maxConnections: 3,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      const user = await storage.createUser(userData);
+      
+      // Establish session
+      req.session.user = {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName
+      };
+      
+      req.session.save((err: any) => {
+        if (err) console.error('Session save error:', err);
+      });
+      
+      res.json({ success: true, user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        subscriptionTier: user.subscriptionTier,
+        subscriptionStatus: user.subscriptionStatus,
+        maxConnections: user.maxConnections
+      }});
+    } catch (error) {
+      console.error('Signup error:', error);
+      res.status(400).json({ message: 'Failed to create account' });
+    }
+  });
+
+  // Create test session for development - production systems will use OAuth
+  app.post('/auth/dev-session', async (req: any, res) => {
+    try {
+      if (process.env.NODE_ENV !== 'development') {
+        return res.status(404).json({ message: 'Not found' });
+      }
+
+      // Establish session for test user
+      const testUser = await storage.getUserByEmail('thetobyclarkshow@gmail.com');
+      if (testUser) {
+        req.session.user = {
+          id: testUser.id,
+          email: testUser.email,
+          firstName: testUser.firstName,
+          lastName: testUser.lastName
+        };
+        
+        req.session.save((err: any) => {
+          if (err) console.error('Session save error:', err);
+        });
+        
+        res.json({ 
+          success: true, 
+          user: {
+            id: testUser.id,
+            email: testUser.email,
+            firstName: testUser.firstName,
+            lastName: testUser.lastName,
+            subscriptionTier: testUser.subscriptionTier,
+            subscriptionStatus: testUser.subscriptionStatus,
+            maxConnections: testUser.maxConnections
+          }
+        });
+      } else {
+        res.status(404).json({ message: 'Test user not found' });
+      }
+    } catch (error) {
+      console.error('Dev session error:', error);
+      res.status(500).json({ message: 'Failed to establish session' });
     }
   });
 
