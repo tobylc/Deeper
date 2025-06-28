@@ -64,13 +64,15 @@ function Router() {
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       // Enhanced logging for debugging
-      console.error('Global error:', event.reason);
+      console.error('Global unhandled rejection:', event.reason);
       console.error('Error type:', typeof event.reason);
       console.error('Error message:', event.reason?.message);
       console.error('Error stack:', event.reason?.stack);
+      console.error('Promise:', event.promise);
       
       // Prevent ALL unhandled rejections from triggering error boundary
       event.preventDefault();
+      return false;
     };
 
     const handleError = (event: ErrorEvent) => {
