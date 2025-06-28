@@ -41,6 +41,20 @@ export default function ConversationPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Add global error handler to prevent unhandled promise rejections
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      event.preventDefault(); // Prevent the error from crashing the page
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   // Check if user was invited by someone else (is an invitee)
   const { data: connections = [] } = useQuery<Connection[]>({
     queryKey: [`/api/connections/${user?.email}`],
@@ -133,8 +147,7 @@ export default function ConversationPage() {
       }
     },
     enabled: !!(selectedConversationId || id) && !!user,
-    retry: 1,
-    retryDelay: 1000,
+    retry: false,
     throwOnError: false
   });
 
@@ -146,7 +159,7 @@ export default function ConversationPage() {
     : null;
 
   // Get connection info for threading
-  const { data: connection } = useQuery<Connection>({
+  const { data: connection } = useQuery({
     queryKey: [`/api/connections/${conversation?.connectionId}`],
     queryFn: async () => {
       if (!conversation?.connectionId) {
@@ -189,7 +202,7 @@ export default function ConversationPage() {
     : false;
 
   // Get user data for both participants
-  const { data: currentUserData } = useQuery<User>({
+  const { data: currentUserData } = useQuery({
     queryKey: [`/api/users/by-email/${user?.email}`],
     queryFn: async () => {
       try {
@@ -208,7 +221,7 @@ export default function ConversationPage() {
     throwOnError: false,
   });
 
-  const { data: otherUserData } = useQuery<User>({
+  const { data: otherUserData } = useQuery({
     queryKey: [`/api/users/by-email/${otherParticipant}`],
     queryFn: async () => {
       try {
