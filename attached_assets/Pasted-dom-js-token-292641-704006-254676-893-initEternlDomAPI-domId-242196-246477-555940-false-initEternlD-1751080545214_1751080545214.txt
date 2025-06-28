@@ -1,0 +1,299 @@
+dom.js?token=292641-704006-254676:893 initEternlDomAPI: domId 242196-246477-555940 false
+initEternlDomAPI @ dom.js?token=292641-704006-254676:893
+(anonymous) @ dom.js?token=292641-704006-254676:932
+(anonymous) @ dom.js?token=292641-704006-254676:934
+dom.js?token=292641-704006-254676:894 initEternlDomAPI: href https://joindeeper.com/conversation/90
+initEternlDomAPI @ dom.js?token=292641-704006-254676:894
+(anonymous) @ dom.js?token=292641-704006-254676:932
+(anonymous) @ dom.js?token=292641-704006-254676:934
+90:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+content.js:30 Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+index-B-LlMrkr.js:442 Setting conversation ID from URL: 90
+dom.js?token=27008-132052-148301:893 initEternlDomAPI: domId 84749-152520-428705 true
+initEternlDomAPI @ dom.js?token=27008-132052-148301:893
+(anonymous) @ dom.js?token=27008-132052-148301:932
+(anonymous) @ dom.js?token=27008-132052-148301:934
+dom.js?token=27008-132052-148301:894 initEternlDomAPI: href https://js.stripe.com/v3/controller-with-preconnect-3f56af80c8083f35673b1752f599c94c.html#__shared_params__[version]=basil&apiKey=pk_live_51RcXMUJk5EQAqG1W7QaKuCgwJ8cZy9fowW6P4VQlFr3DoqIxmMBvICaFRMvFM7VHVcSe9fGKCZzFvKwzMY7egk0G005BMn3dvL&apiVersion=2025-03-31.basil&stripeJsId=a0136c7d-7b2d-4fad-af74-42043de92a2f&stripeObjId=sobj-c81d1cc3-799b-475a-a37c-159ac9f38d5c&firstStripeInstanceCreatedLatency=4&controllerCount=1&isCheckout=false&stripeJsLoadTime=1751080472768&manualBrowserDeprecationRollout=false&mids[guid]=NA&mids[muid]=ebea5655-8fb2-4980-9e83-719a9117012a7d696a&mids[sid]=32953fbd-750a-4cbb-948b-fda9506e8150083d4c&referrer=https%3A%2F%2Fjoindeeper.com%2Fconversation%2F90&controllerId=__privateStripeController9021
+initEternlDomAPI @ dom.js?token=27008-132052-148301:894
+(anonymous) @ dom.js?token=27008-132052-148301:932
+(anonymous) @ dom.js?token=27008-132052-148301:934
+voice_1751050907509_ybpvu6mtw8s.webm:1 
+            
+            
+           GET https://joindeeper.com/uploads/voice_1751050907509_ybpvu6mtw8s.webm 404 (Not Found)
+index-B-LlMrkr.js:430 Audio load error: t {_reactName: 'onError', _targetInst: null, type: 'error', nativeEvent: Event, target: audio, …}
+g @ index-B-LlMrkr.js:430
+RR @ index-B-LlMrkr.js:37
+FR @ index-B-LlMrkr.js:37
+LR @ index-B-LlMrkr.js:37
+q1 @ index-B-LlMrkr.js:37
+nC @ index-B-LlMrkr.js:37
+(anonymous) @ index-B-LlMrkr.js:37
+sb @ index-B-LlMrkr.js:40
+OO @ index-B-LlMrkr.js:37
+yv @ index-B-LlMrkr.js:37
+I0 @ index-B-LlMrkr.js:37
+index-B-LlMrkr.js:40 TypeError: v.filter is not a function
+    at NW (index-B-LlMrkr.js:430:79078)
+    at J0 (index-B-LlMrkr.js:38:16998)
+    at Jg (index-B-LlMrkr.js:40:3139)
+    at nA (index-B-LlMrkr.js:40:44804)
+    at eA (index-B-LlMrkr.js:40:39766)
+    at mD (index-B-LlMrkr.js:40:39694)
+    at lh (index-B-LlMrkr.js:40:39547)
+    at uy (index-B-LlMrkr.js:40:35914)
+    at wj (index-B-LlMrkr.js:40:36717)
+    at Ma (index-B-LlMrkr.js:38:3274)
+Zg @ index-B-LlMrkr.js:40
+RC.a.componentDidCatch.r.callback @ index-B-LlMrkr.js:40
+rj @ index-B-LlMrkr.js:38
+yj @ index-B-LlMrkr.js:40
+QC @ index-B-LlMrkr.js:40
+fD @ index-B-LlMrkr.js:40
+gD @ index-B-LlMrkr.js:40
+Ka @ index-B-LlMrkr.js:40
+wj @ index-B-LlMrkr.js:40
+Ma @ index-B-LlMrkr.js:38
+(anonymous) @ index-B-LlMrkr.js:40
+setTimeout
+i @ index-B-LlMrkr.js:48
+s @ index-B-LlMrkr.js:48
+batch @ index-B-LlMrkr.js:48
+li @ index-B-LlMrkr.js:48
+setData @ index-B-LlMrkr.js:48
+onSuccess @ index-B-LlMrkr.js:48
+f @ index-B-LlMrkr.js:48
+Promise.then
+m @ index-B-LlMrkr.js:48
+start @ index-B-LlMrkr.js:48
+fetch @ index-B-LlMrkr.js:48
+Oc @ index-B-LlMrkr.js:48
+onSubscribe @ index-B-LlMrkr.js:48
+subscribe @ index-B-LlMrkr.js:48
+(anonymous) @ index-B-LlMrkr.js:48
+xC @ index-B-LlMrkr.js:38
+Rp @ index-B-LlMrkr.js:40
+Ns @ index-B-LlMrkr.js:40
+gD @ index-B-LlMrkr.js:40
+Ka @ index-B-LlMrkr.js:40
+wj @ index-B-LlMrkr.js:40
+Ma @ index-B-LlMrkr.js:38
+(anonymous) @ index-B-LlMrkr.js:40
+setTimeout
+i @ index-B-LlMrkr.js:48
+s @ index-B-LlMrkr.js:48
+batch @ index-B-LlMrkr.js:48
+li @ index-B-LlMrkr.js:48
+setData @ index-B-LlMrkr.js:48
+onSuccess @ index-B-LlMrkr.js:48
+f @ index-B-LlMrkr.js:48
+Promise.then
+m @ index-B-LlMrkr.js:48
+start @ index-B-LlMrkr.js:48
+fetch @ index-B-LlMrkr.js:48
+Oc @ index-B-LlMrkr.js:48
+setOptions @ index-B-LlMrkr.js:48
+(anonymous) @ index-B-LlMrkr.js:48
+Rp @ index-B-LlMrkr.js:40
+Ns @ index-B-LlMrkr.js:40
+gD @ index-B-LlMrkr.js:40
+Ka @ index-B-LlMrkr.js:40
+wj @ index-B-LlMrkr.js:40
+Ma @ index-B-LlMrkr.js:38
+(anonymous) @ index-B-LlMrkr.js:40
+setTimeout
+i @ index-B-LlMrkr.js:48
+s @ index-B-LlMrkr.js:48
+batch @ index-B-LlMrkr.js:48
+li @ index-B-LlMrkr.js:48
+setData @ index-B-LlMrkr.js:48
+onSuccess @ index-B-LlMrkr.js:48
+f @ index-B-LlMrkr.js:48
+Promise.then
+m @ index-B-LlMrkr.js:48
+start @ index-B-LlMrkr.js:48
+fetch @ index-B-LlMrkr.js:48
+Oc @ index-B-LlMrkr.js:48
+onSubscribe @ index-B-LlMrkr.js:48
+subscribe @ index-B-LlMrkr.js:48
+(anonymous) @ index-B-LlMrkr.js:48
+xC @ index-B-LlMrkr.js:38
+Rp @ index-B-LlMrkr.js:40
+Ns @ index-B-LlMrkr.js:40
+gD @ index-B-LlMrkr.js:40
+Ka @ index-B-LlMrkr.js:40
+wj @ index-B-LlMrkr.js:40
+Ma @ index-B-LlMrkr.js:38
+(anonymous) @ index-B-LlMrkr.js:40
+setTimeout
+i @ index-B-LlMrkr.js:48
+s @ index-B-LlMrkr.js:48
+batch @ index-B-LlMrkr.js:48
+li @ index-B-LlMrkr.js:48
+setData @ index-B-LlMrkr.js:48
+onSuccess @ index-B-LlMrkr.js:48
+f @ index-B-LlMrkr.js:48
+Promise.then
+m @ index-B-LlMrkr.js:48
+start @ index-B-LlMrkr.js:48
+fetch @ index-B-LlMrkr.js:48
+Oc @ index-B-LlMrkr.js:48
+onSubscribe @ index-B-LlMrkr.js:48
+subscribe @ index-B-LlMrkr.js:48
+(anonymous) @ index-B-LlMrkr.js:48
+xC @ index-B-LlMrkr.js:38
+Rp @ index-B-LlMrkr.js:40
+Ns @ index-B-LlMrkr.js:40
+wj @ index-B-LlMrkr.js:40
+Ma @ index-B-LlMrkr.js:38
+gD @ index-B-LlMrkr.js:40
+Ka @ index-B-LlMrkr.js:40
+XC @ index-B-LlMrkr.js:40
+w @ index-B-LlMrkr.js:25
+k @ index-B-LlMrkr.js:25
+index-B-LlMrkr.js:515 Error boundary caught an error: TypeError: v.filter is not a function
+    at NW (index-B-LlMrkr.js:430:79078)
+    at J0 (index-B-LlMrkr.js:38:16998)
+    at Jg (index-B-LlMrkr.js:40:3139)
+    at nA (index-B-LlMrkr.js:40:44804)
+    at eA (index-B-LlMrkr.js:40:39766)
+    at mD (index-B-LlMrkr.js:40:39694)
+    at lh (index-B-LlMrkr.js:40:39547)
+    at uy (index-B-LlMrkr.js:40:35914)
+    at wj (index-B-LlMrkr.js:40:36717)
+    at Ma (index-B-LlMrkr.js:38:3274) {componentStack: '\n    at NW (https://joindeeper.com/assets/index-B-…om/assets/index-B-LlMrkr.js:515:64082)\n    at Xve'}
+componentDidCatch @ index-B-LlMrkr.js:515
+RC.a.componentDidCatch.r.callback @ index-B-LlMrkr.js:40
+rj @ index-B-LlMrkr.js:38
+yj @ index-B-LlMrkr.js:40
+QC @ index-B-LlMrkr.js:40
+fD @ index-B-LlMrkr.js:40
+gD @ index-B-LlMrkr.js:40
+Ka @ index-B-LlMrkr.js:40
+wj @ index-B-LlMrkr.js:40
+Ma @ index-B-LlMrkr.js:38
+(anonymous) @ index-B-LlMrkr.js:40
+setTimeout
+i @ index-B-LlMrkr.js:48
+s @ index-B-LlMrkr.js:48
+batch @ index-B-LlMrkr.js:48
+li @ index-B-LlMrkr.js:48
+setData @ index-B-LlMrkr.js:48
+onSuccess @ index-B-LlMrkr.js:48
+f @ index-B-LlMrkr.js:48
+Promise.then
+m @ index-B-LlMrkr.js:48
+start @ index-B-LlMrkr.js:48
+fetch @ index-B-LlMrkr.js:48
+Oc @ index-B-LlMrkr.js:48
+onSubscribe @ index-B-LlMrkr.js:48
+subscribe @ index-B-LlMrkr.js:48
+(anonymous) @ index-B-LlMrkr.js:48
+xC @ index-B-LlMrkr.js:38
+Rp @ index-B-LlMrkr.js:40
+Ns @ index-B-LlMrkr.js:40
+gD @ index-B-LlMrkr.js:40
+Ka @ index-B-LlMrkr.js:40
+wj @ index-B-LlMrkr.js:40
+Ma @ index-B-LlMrkr.js:38
+(anonymous) @ index-B-LlMrkr.js:40
+setTimeout
+i @ index-B-LlMrkr.js:48
+s @ index-B-LlMrkr.js:48
+batch @ index-B-LlMrkr.js:48
+li @ index-B-LlMrkr.js:48
+setData @ index-B-LlMrkr.js:48
+onSuccess @ index-B-LlMrkr.js:48
+f @ index-B-LlMrkr.js:48
+Promise.then
+m @ index-B-LlMrkr.js:48
+start @ index-B-LlMrkr.js:48
+fetch @ index-B-LlMrkr.js:48
+Oc @ index-B-LlMrkr.js:48
+setOptions @ index-B-LlMrkr.js:48
+(anonymous) @ index-B-LlMrkr.js:48
+Rp @ index-B-LlMrkr.js:40
+Ns @ index-B-LlMrkr.js:40
+gD @ index-B-LlMrkr.js:40
+Ka @ index-B-LlMrkr.js:40
+wj @ index-B-LlMrkr.js:40
+Ma @ index-B-LlMrkr.js:38
+(anonymous) @ index-B-LlMrkr.js:40
+setTimeout
+i @ index-B-LlMrkr.js:48
+s @ index-B-LlMrkr.js:48
+batch @ index-B-LlMrkr.js:48
+li @ index-B-LlMrkr.js:48
+setData @ index-B-LlMrkr.js:48
+onSuccess @ index-B-LlMrkr.js:48
+f @ index-B-LlMrkr.js:48
+Promise.then
+m @ index-B-LlMrkr.js:48
+start @ index-B-LlMrkr.js:48
+fetch @ index-B-LlMrkr.js:48
+Oc @ index-B-LlMrkr.js:48
+onSubscribe @ index-B-LlMrkr.js:48
+subscribe @ index-B-LlMrkr.js:48
+(anonymous) @ index-B-LlMrkr.js:48
+xC @ index-B-LlMrkr.js:38
+Rp @ index-B-LlMrkr.js:40
+Ns @ index-B-LlMrkr.js:40
+gD @ index-B-LlMrkr.js:40
+Ka @ index-B-LlMrkr.js:40
+wj @ index-B-LlMrkr.js:40
+Ma @ index-B-LlMrkr.js:38
+(anonymous) @ index-B-LlMrkr.js:40
+setTimeout
+i @ index-B-LlMrkr.js:48
+s @ index-B-LlMrkr.js:48
+batch @ index-B-LlMrkr.js:48
+li @ index-B-LlMrkr.js:48
+setData @ index-B-LlMrkr.js:48
+onSuccess @ index-B-LlMrkr.js:48
+f @ index-B-LlMrkr.js:48
+Promise.then
+m @ index-B-LlMrkr.js:48
+start @ index-B-LlMrkr.js:48
+fetch @ index-B-LlMrkr.js:48
+Oc @ index-B-LlMrkr.js:48
+onSubscribe @ index-B-LlMrkr.js:48
+subscribe @ index-B-LlMrkr.js:48
+(anonymous) @ index-B-LlMrkr.js:48
+xC @ index-B-LlMrkr.js:38
+Rp @ index-B-LlMrkr.js:40
+Ns @ index-B-LlMrkr.js:40
+wj @ index-B-LlMrkr.js:40
+Ma @ index-B-LlMrkr.js:38
+gD @ index-B-LlMrkr.js:40
+Ka @ index-B-LlMrkr.js:40
+XC @ index-B-LlMrkr.js:40
+w @ index-B-LlMrkr.js:25
+k @ index-B-LlMrkr.js:25
+dom.js?token=6880-108605-304831:893 initEternlDomAPI: domId 218726-716534-370898 true
+initEternlDomAPI @ dom.js?token=6880-108605-304831:893
+(anonymous) @ dom.js?token=6880-108605-304831:932
+(anonymous) @ dom.js?token=6880-108605-304831:934
+dom.js?token=6880-108605-304831:894 initEternlDomAPI: href https://m.stripe.network/inner.html#url=https%3A%2F%2Fjoindeeper.com%2Fconversation%2F90&title=&referrer=https%3A%2F%2Fjoindeeper.com%2Fconversation%2F90&muid=ebea5655-8fb2-4980-9e83-719a9117012a7d696a&sid=32953fbd-750a-4cbb-948b-fda9506e8150083d4c&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=6880-108605-304831:894
+(anonymous) @ dom.js?token=6880-108605-304831:932
+(anonymous) @ dom.js?token=6880-108605-304831:934
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+dom.js?token=262031-278535-880457:893 initEternlDomAPI: domId 984781-879319-531792 true
+initEternlDomAPI @ dom.js?token=262031-278535-880457:893
+(anonymous) @ dom.js?token=262031-278535-880457:932
+(anonymous) @ dom.js?token=262031-278535-880457:934
+dom.js?token=262031-278535-880457:894 initEternlDomAPI: href https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fjoindeeper.com%2Fconversation%2F90&title=&referrer=https%3A%2F%2Fjoindeeper.com%2Fconversation%2F90&muid=ebea5655-8fb2-4980-9e83-719a9117012a7d696a&sid=32953fbd-750a-4cbb-948b-fda9506e8150083d4c&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=262031-278535-880457:894
+(anonymous) @ dom.js?token=262031-278535-880457:932
+(anonymous) @ dom.js?token=262031-278535-880457:934
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
