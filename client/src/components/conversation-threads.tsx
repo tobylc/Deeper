@@ -211,30 +211,56 @@ export default function ConversationThreads({
   // Fetch real conversations from API
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: [`/api/connections/${connectionId}/conversations`],
-    queryFn: () => fetch(`/api/connections/${connectionId}/conversations`).then(res => res.json()),
+    queryFn: async () => {
+      try {
+        const response = await fetch(`/api/connections/${connectionId}/conversations`);
+        if (!response.ok) {
+          return [];
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error('Error fetching conversations:', error);
+        return [];
+      }
+    },
     enabled: !!connectionId
   });
 
   // Fetch message counts for each conversation
   const { data: messageCounts = {} } = useQuery({
     queryKey: [`/api/connections/${connectionId}/conversations/message-counts`],
-    queryFn: () => fetch(`/api/connections/${connectionId}/conversations/message-counts`).then(res => res.json()),
+    queryFn: async () => {
+      try {
+        const response = await fetch(`/api/connections/${connectionId}/conversations/message-counts`);
+        if (!response.ok) {
+          return {};
+        }
+        const data = await response.json();
+        return typeof data === 'object' && data !== null ? data : {};
+      } catch (error) {
+        console.error('Error fetching message counts:', error);
+        return {};
+      }
+    },
     enabled: !!connectionId
   });
 
   // Filter out the currently active conversation and sort remaining conversations
-  const sortedConversations = conversations
-    .filter((conv: Conversation) => conv.id !== selectedConversationId) // Hide currently active conversation
-    .map((conv: Conversation) => ({
-      ...conv,
-      messageCount: messageCounts[conv.id] || 0,
-      lastMessageAt: conv.lastActivityAt
-    }))
-    .sort((a: Conversation, b: Conversation) => {
-      if (a.isMainThread && !b.isMainThread) return -1;
-      if (!a.isMainThread && b.isMainThread) return 1;
-      return new Date(b.lastActivityAt || 0).getTime() - new Date(a.lastActivityAt || 0).getTime();
-    });
+  const sortedConversations = Array.isArray(conversations) 
+    ? conversations
+        .filter((conv: Conversation) => conv && conv.id !== selectedConversationId) // Hide currently active conversation
+        .map((conv: Conversation) => ({
+          ...conv,
+          messageCount: messageCounts[conv.id] || 0,
+          lastMessageAt: conv.lastActivityAt
+        }))
+        .sort((a: Conversation, b: Conversation) => {
+          if (a.isMainThread && !b.isMainThread) return -1;
+          if (!a.isMainThread && b.isMainThread) return 1;
+          return new Date(b.lastActivityAt || 0).getTime() - new Date(a.lastActivityAt || 0).getTime();
+        })
+    : [];
 
   if (isLoading) {
     return (

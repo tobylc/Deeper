@@ -60,7 +60,7 @@ export default function ConversationPage() {
     enabled: !!user?.email,
   });
 
-  const isInviteeUser = connections.some(c => c.inviteeEmail === user?.email);
+  const isInviteeUser = Array.isArray(connections) ? connections.some(c => c.inviteeEmail === user?.email) : false;
 
   useEffect(() => {
     if (!user) {
@@ -560,7 +560,8 @@ export default function ConversationPage() {
 
   const handleRecordingStart = () => {
     // NEVER start timer for inviter's first question
-    const isInviterFirstQuestion = messages.length === 0 && 
+    const messagesArray = Array.isArray(messages) ? messages : [];
+    const isInviterFirstQuestion = messagesArray.length === 0 && 
                                    connection?.inviterEmail === user?.email &&
                                    nextMessageType === 'question';
     
@@ -730,7 +731,8 @@ export default function ConversationPage() {
               setNewMessage={(message: string) => {
                 setNewMessage(message);
                 // NEVER start timer for inviter's first question - check this first
-                const isInviterFirstQuestion = messages.length === 0 && 
+                const messagesArray = Array.isArray(messages) ? messages : [];
+                const isInviterFirstQuestion = messagesArray.length === 0 && 
                                                connection?.inviterEmail === user?.email &&
                                                nextMessageType === 'question';
                 
@@ -758,7 +760,8 @@ export default function ConversationPage() {
               responseStartTime={responseStartTime}
               onTimerStart={() => {
                 // NEVER start timer for inviter's first question
-                const isInviterFirstQuestion = messages.length === 0 && 
+                const messagesArray = Array.isArray(messages) ? messages : [];
+                const isInviterFirstQuestion = messagesArray.length === 0 && 
                                                connection?.inviterEmail === user?.email &&
                                                nextMessageType === 'question';
                 
