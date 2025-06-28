@@ -109,8 +109,9 @@ export default function ConversationPage() {
       }
     },
     enabled: !!(selectedConversationId || id) && !!user,
-    retry: 3,
+    retry: 1,
     retryDelay: 1000,
+    throwOnError: false,
   });
 
   // Determine other participant after conversation is loaded
@@ -174,7 +175,7 @@ export default function ConversationPage() {
       try {
         const response = await apiRequest('GET', `/api/conversations/${conversationId}/messages`);
         if (!response.ok) {
-          throw new Error(`Failed to load messages: ${response.status}`);
+          return [];
         }
         const data = await response.json();
         return Array.isArray(data) ? data : [];
@@ -184,10 +185,11 @@ export default function ConversationPage() {
       }
     },
     enabled: !!(selectedConversationId || id) && !!user,
-    retry: 3,
+    retry: 1,
     retryDelay: 1000,
     staleTime: 0,
     refetchOnMount: true,
+    throwOnError: false,
   });
 
   // Check notification preference status for this conversation

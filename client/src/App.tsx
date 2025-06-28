@@ -32,6 +32,8 @@ class ErrorBoundary extends Component<
 
   componentDidCatch(error: Error, errorInfo: any) {
     console.error('Error boundary caught an error:', error, errorInfo);
+    console.error('Error stack:', error.stack);
+    console.error('Component stack:', errorInfo.componentStack);
   }
 
   render() {
@@ -58,30 +60,43 @@ class ErrorBoundary extends Component<
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Production-ready global error handler for unhandled promise rejections
+  // Enhanced global error handler for unhandled promise rejections
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      // Log error for monitoring in production
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Unhandled promise rejection:', event.reason);
-      }
+      // Enhanced logging for debugging
+      console.error('Global error:', event.reason);
+      console.error('Error type:', typeof event.reason);
+      console.error('Error message:', event.reason?.message);
+      console.error('Error stack:', event.reason?.stack);
       
-      // Prevent non-critical errors from disrupting user experience
-      const reason = event.reason?.message || event.reason || '';
+      // Prevent ALL unhandled rejections from triggering error boundary
+      event.preventDefault();
+    };
+
+    const handleError = (event: ErrorEvent) => {
+      console.error('Global JavaScript error:', event.error);
+      console.error('Error message:', event.message);
+      console.error('Error filename:', event.filename);
+      console.error('Error line:', event.lineno);
+      
+      // Prevent some errors from bubbling up
       const nonCriticalErrors = [
         'voice message', 'transcription', 'audio', 'network', 
-        'fetch', 'AbortError', 'NotAllowedError'
+        'fetch', 'AbortError', 'NotAllowedError', 'filter is not a function'
       ];
       
-      if (nonCriticalErrors.some(err => String(reason).toLowerCase().includes(err))) {
+      const errorMessage = event.message || event.error?.message || '';
+      if (nonCriticalErrors.some(err => String(errorMessage).toLowerCase().includes(err))) {
         event.preventDefault();
       }
     };
 
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', handleError);
     
     return () => {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('error', handleError);
     };
   }, []);
 
