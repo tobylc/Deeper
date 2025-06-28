@@ -524,78 +524,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Production Auth endpoints
   app.get('/api/auth/user', async (req: any, res) => {
     try {
-      // Development bypass for testing
-      if (process.env.NODE_ENV === 'development' && req.query.test_user) {
-        const testUser = await storage.getUserByEmail('thetobyclarkshow@gmail.com');
-        if (testUser) {
-          // Establish persistent session for test user
-          req.session.user = {
-            id: testUser.id,
-            email: testUser.email,
-            firstName: testUser.firstName,
-            lastName: testUser.lastName
-          };
-          req.user = req.session.user;
-          
-          // Force session save for persistence
-          req.session.save((err: any) => {
-            if (err) console.error('Session save error:', err);
-          });
-          
-          return res.json({
-            id: testUser.id,
-            email: testUser.email,
-            firstName: testUser.firstName,
-            lastName: testUser.lastName,
-            subscriptionTier: testUser.subscriptionTier,
-            subscriptionStatus: testUser.subscriptionStatus,
-            maxConnections: testUser.maxConnections
-          });
-        }
-      }
-
-      // Check if user is authenticated
-      if (!req.isAuthenticated() || !req.user) {
+      // Check if user is authenticated through session
+      if (!req.session || !req.session.user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      // Get user ID from session
-      let userId = req.user.id;
-      
-      // Handle different authentication sources
-      if (req.user.claims && req.user.claims.sub) {
-        userId = req.user.claims.sub;
-      }
+      // Get user data from session
+      const sessionUser = req.session.user;
 
-      if (!userId) {
-        return res.status(401).json({ message: "Invalid session" });
-      }
-
-      // Use production-ready database connection with rate limiting
-      let user;
-      if (req.user.email) {
-        user = await finalDb.getUserByEmail(req.user.email);
-      } else {
-        user = await finalDb.getUserById(userId);
-      }
+      // Fetch fresh user data from database using session email
+      const user = await storage.getUserByEmail(sessionUser.email);
       
       if (!user) {
+        // Clear invalid session
+        req.session.destroy((err: any) => {
+          if (err) console.error('Session destroy error:', err);
+        });
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Return sanitized user data with safe property access
+      // Return user data with proper field mapping
       res.json({
-        id: user.id || '',
-        email: user.email || '',
-        firstName: user.first_name || '',
-        lastName: user.last_name || '',
-        profileImageUrl: user.profile_image_url || null,
-        subscriptionTier: user.subscription_tier || 'free',
-        subscriptionStatus: user.subscription_status || 'active',
-        maxConnections: user.max_connections || 1,
-        hasSeenOnboarding: user.has_seen_onboarding || false,
-        createdAt: user.created_at || null,
-        updatedAt: user.updated_at || null
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        subscriptionTier: user.subscriptionTier,
+        subscriptionStatus: user.subscriptionStatus,
+        maxConnections: user.maxConnections,
+        hasSeenOnboarding: user.hasSeenOnboarding,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
       });
     } catch (error) {
       console.error("Error fetching user:", error);
