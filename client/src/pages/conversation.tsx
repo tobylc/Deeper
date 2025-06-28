@@ -56,7 +56,7 @@ export default function ConversationPage() {
   }, []);
 
   // Check if user was invited by someone else (is an invitee)
-  const { data: connections = [] } = useQuery<Connection[]>({
+  const { data: connections = [] } = useQuery({
     queryKey: [`/api/connections/${user?.email}`],
     queryFn: async () => {
       try {
@@ -240,7 +240,7 @@ export default function ConversationPage() {
     throwOnError: false,
   });
 
-  const { data: messages = [], isLoading: messagesLoading, error: messagesError } = useQuery<Message[]>({
+  const { data: messages = [], isLoading: messagesLoading, error: messagesError } = useQuery({
     queryKey: [`/api/conversations/${selectedConversationId || id}/messages`],
     queryFn: async () => {
       const conversationId = selectedConversationId || id;
@@ -257,8 +257,7 @@ export default function ConversationPage() {
       }
     },
     enabled: !!(selectedConversationId || id) && !!user,
-    retry: 1,
-    retryDelay: 1000,
+    retry: false,
     staleTime: 0,
     refetchOnMount: true,
     throwOnError: false,
@@ -269,10 +268,24 @@ export default function ConversationPage() {
     queryKey: [`/api/users/notification-preference/${selectedConversationId || id}`],
     queryFn: async () => {
       const conversationId = selectedConversationId || id;
-      const response = await apiRequest('GET', `/api/users/notification-preference/${conversationId}`);
-      return response.json();
+      if (!conversationId) {
+        return null;
+      }
+      
+      try {
+        const response = await apiRequest('GET', `/api/users/notification-preference/${conversationId}`);
+        if (!response.ok) {
+          return null;
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Notification preference loading error:', error);
+        return null;
+      }
     },
     enabled: !!(selectedConversationId || id) && !!user,
+    retry: false,
+    throwOnError: false,
   });
 
   // Check if user needs to see onboarding popup - only show once globally per user
