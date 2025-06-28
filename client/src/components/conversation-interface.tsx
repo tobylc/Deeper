@@ -79,8 +79,9 @@ const ConversationInterface = memo(function ConversationInterface({
 
   // Check if this is inviter's first question to bypass timer completely
   const isInviterFirstQuestion = useCallback(() => {
-    // Simple, reliable check for inviter's first question
-    return messages?.length === 0 && 
+    // Simple, reliable check for inviter's first question with null safety
+    const messagesArray = Array.isArray(messages) ? messages : [];
+    return messagesArray.length === 0 && 
            connection?.inviterEmail === currentUserEmail &&
            nextMessageType === 'question';
   }, [messages, connection, currentUserEmail, nextMessageType]);
@@ -198,12 +199,13 @@ const ConversationInterface = memo(function ConversationInterface({
   // Production-ready message sending validation with comprehensive error handling
   const canSendNow = useCallback(() => {
     // PRIORITY: Always allow inviter's first question without any timer
+    const messagesArray = Array.isArray(messages) ? messages : [];
     if (isInviterFirstQuestion()) {
       return true;
     }
     
     // Allow sending if no messages exist (empty conversation)
-    if (!messages || messages.length === 0) {
+    if (messagesArray.length === 0) {
       return true;
     }
     
@@ -230,7 +232,7 @@ const ConversationInterface = memo(function ConversationInterface({
                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4a574' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
              }} />
 
-        {messages.length === 0 ? (
+        {(!Array.isArray(messages) || messages.length === 0) ? (
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center max-w-md space-y-6">
               <div className="mb-8">
@@ -245,7 +247,7 @@ const ConversationInterface = memo(function ConversationInterface({
           </div>
         ) : (
           <div className="space-y-6 relative z-10">
-            {messages.map((message, index) => (
+            {(Array.isArray(messages) ? messages : []).map((message, index) => (
               <div key={message.id} className="relative">
                 <div className={cn(
                   "text-gray-800 leading-relaxed font-serif text-base whitespace-pre-wrap bg-white p-4 rounded-lg shadow-sm",

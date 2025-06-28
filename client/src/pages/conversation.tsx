@@ -44,6 +44,19 @@ export default function ConversationPage() {
   // Check if user was invited by someone else (is an invitee)
   const { data: connections = [] } = useQuery<Connection[]>({
     queryKey: [`/api/connections/${user?.email}`],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', `/api/connections/${user?.email}`);
+        if (!response.ok) {
+          return [];
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error('Connections loading error:', error);
+        return [];
+      }
+    },
     enabled: !!user?.email,
   });
 
@@ -173,6 +186,8 @@ export default function ConversationPage() {
     enabled: !!(selectedConversationId || id) && !!user,
     retry: 3,
     retryDelay: 1000,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   // Check notification preference status for this conversation
