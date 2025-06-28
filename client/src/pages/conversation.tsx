@@ -58,6 +58,8 @@ export default function ConversationPage() {
       }
     },
     enabled: !!user?.email,
+    throwOnError: false,
+    retry: false,
   });
 
   const isInviteeUser = Array.isArray(connections) ? connections.some(c => c.inviteeEmail === user?.email) : false;
@@ -65,8 +67,23 @@ export default function ConversationPage() {
   useEffect(() => {
     if (!user) {
       setLocation("/auth");
+      return;
     }
   }, [user, setLocation]);
+
+  // Show loading if user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-radial from-slate-900 via-slate-800 to-slate-900">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center p-3 mx-auto mb-4">
+            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <p className="text-slate-300">Authenticating...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Initialize selected conversation ID from URL
   useEffect(() => {
@@ -125,10 +142,20 @@ export default function ConversationPage() {
   const { data: connection } = useQuery<Connection>({
     queryKey: [`/api/connections/${conversation?.connectionId}`],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/connections/${conversation?.connectionId}`);
-      return response.json();
+      try {
+        const response = await apiRequest('GET', `/api/connections/${conversation?.connectionId}`);
+        if (!response.ok) {
+          return null;
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Connection loading error:', error);
+        return null;
+      }
     },
     enabled: !!conversation?.connectionId && !!user,
+    retry: false,
+    throwOnError: false,
   });
 
   // Determine user roles based on connection data
@@ -153,19 +180,39 @@ export default function ConversationPage() {
   const { data: currentUserData } = useQuery<User>({
     queryKey: [`/api/users/by-email/${user?.email}`],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/users/by-email/${user?.email}`);
-      return response.json();
+      try {
+        const response = await apiRequest('GET', `/api/users/by-email/${user?.email}`);
+        if (!response.ok) {
+          return null;
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Current user data loading error:', error);
+        return null;
+      }
     },
     enabled: !!user?.email,
+    retry: false,
+    throwOnError: false,
   });
 
   const { data: otherUserData } = useQuery<User>({
     queryKey: [`/api/users/by-email/${otherParticipant}`],
     queryFn: async () => {
-      const response = await apiRequest('GET', `/api/users/by-email/${otherParticipant}`);
-      return response.json();
+      try {
+        const response = await apiRequest('GET', `/api/users/by-email/${otherParticipant}`);
+        if (!response.ok) {
+          return null;
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Other user data loading error:', error);
+        return null;
+      }
     },
     enabled: !!otherParticipant && typeof otherParticipant === 'string',
+    retry: false,
+    throwOnError: false,
   });
 
   const { data: messages = [], isLoading: messagesLoading, error: messagesError } = useQuery<Message[]>({
