@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import multer from "multer";
 import sharp from "sharp";
 import fs from "fs/promises";
+import passport from "passport";
 import { storage } from "./storage";
 import { finalDb } from "./db-final";
 import { insertConnectionSchema, insertMessageSchema, insertUserSchema } from "../shared/schema";
@@ -518,6 +519,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // OAuth Google Authentication Routes
+  app.get('/auth/google', 
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+  );
+
+  app.get('/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/auth' }),
+    async (req: any, res) => {
+      try {
+        // Establish session after successful OAuth
+        if (req.user) {
+          req.session.user = {
+            id: req.user.id,
+            email: req.user.email,
+            firstName: req.user.firstName,
+            lastName: req.user.lastName
+          };
+          
+          // Force session save
+          req.session.save((err: any) => {
+            if (err) console.error('Session save error:', err);
+          });
+        }
+        
+        res.redirect('/dashboard');
+      } catch (error) {
+        console.error('OAuth callback error:', error);
+        res.redirect('/auth?error=callback_failed');
+      }
+    }
+  );
+
+  // Email/Password Authentication Routes
+  app.post('/auth/signup', async (req: any, res) => {
+    try {
+      const { email, password, firstName, lastName } = req.body;
+      
+      // Create user account
+      const user = await storage.createUser({
+        email,
+        password,
+        firstName,
+        lastName,
+        subscriptionTier: 'trial',
+        subscriptionStatus: 'active',
+        maxConnections: 3
+      });
+      
+      // Establish session
+      req.session.user = {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName
+      };
+      
+      req.session.save((err: any) => {
+        if (err) console.error('Session save error:', err);
+      });
+      
+      res.json({ success: true, user: user });
+    } catch (error) {
+      console.error('Signup error:', error);
+      res.status(400).json({ message: 'Failed to create account' });
+    }
+  });
+
+  app.post('/auth/login', async (req: any, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Authenticate user
+      const user = await storage.getUserByEmail(email);
+      if (!user || !await storage.validatePassword(email, password)) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+      
+      // Establish session
+      req.session.user = {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName
+      };
+      
+      req.session.save((err: any) => {
+        if (err) console.error('Session save error:', err);
+      });
+      
+      res.json({ success: true, user: user });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: 'Authentication failed' });
     }
   });
 

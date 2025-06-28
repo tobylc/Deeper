@@ -114,3 +114,37 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
   
   next();
 }
+
+// Session-based authentication middleware
+export function isAuthenticated(req: any, res: Response, next: NextFunction) {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[AUTH] Authentication check:', {
+      isAuthenticated: !!req.isAuthenticated && req.isAuthenticated(),
+      hasUser: !!req.user,
+      hasSession: !!req.session,
+      sessionID: req.sessionID,
+      method: req.method,
+      url: req.url,
+      userAgent: req.get('User-Agent')?.substring(0, 50) + (req.get('User-Agent')?.length > 50 ? '...' : '')
+    });
+  }
+
+  // Check session-based authentication
+  if (!req.session || !req.session.user) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AUTH] Authentication failed - missing session or user data');
+    }
+    return res.status(401).json({ 
+      message: "Authentication required. Please log in to continue." 
+    });
+  }
+
+  // Set user for compatibility
+  req.user = req.session.user;
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[AUTH] Authentication successful for:', req.session.user.email);
+  }
+  
+  next();
+}
