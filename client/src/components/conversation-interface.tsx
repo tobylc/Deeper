@@ -245,10 +245,7 @@ const ConversationInterface = memo(function ConversationInterface({
           </div>
         ) : (
           <div className="space-y-6 relative z-10">
-            {/* CRITICAL: Only display messages from the CURRENT ACTIVE conversation */}
-            {messages
-              .filter(message => message && message.conversationId === conversationId)
-              .map((message, index) => (
+            {messages.map((message, index) => (
               <div key={message.id} className="relative">
                 <div className={cn(
                   "text-gray-800 leading-relaxed font-serif text-base whitespace-pre-wrap bg-white p-4 rounded-lg shadow-sm",

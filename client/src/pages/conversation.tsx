@@ -19,7 +19,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
 import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
-import { useWebSocket } from "@/hooks/useWebSocket";
 import { HypnoticOrbs } from "@/components/hypnotic-orbs";
 import FloatingWaitingText from "@/components/floating-waiting-text";
 import type { Conversation, Message, Connection, User } from "@shared/schema";
@@ -80,9 +79,6 @@ export default function ConversationPage() {
       window.removeEventListener('conversationThreadCreated', handleConversationThreadCreated as EventListener);
     };
   }, []);
-
-  // Real-time WebSocket integration for conversation synchronization
-  useWebSocket();
 
   const { data: conversation, isLoading: conversationLoading, error: conversationError } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${selectedConversationId || id}`],
@@ -168,12 +164,7 @@ export default function ConversationPage() {
           throw new Error(`Failed to load messages: ${response.status}`);
         }
         const data = await response.json();
-        // CRITICAL: Filter to show only messages from the CURRENT ACTIVE conversation
-        // This ensures only ONE conversation displays in center column
-        const filteredMessages = Array.isArray(data) ? data.filter(msg => 
-          msg && msg.conversationId === (typeof conversationId === 'string' ? parseInt(conversationId) : conversationId)
-        ) : [];
-        return filteredMessages;
+        return Array.isArray(data) ? data : [];
       } catch (error) {
         console.error('Messages loading error:', error);
         return [];
@@ -573,30 +564,13 @@ export default function ConversationPage() {
     setNewMessage(question);
   };
 
-  const handleThreadSelect = async (conversationId: number) => {
-    // Use new API endpoint for thread switching that doesn't consume turns
-    try {
-      const response = await fetch(`/api/conversations/${conversationId}/switch-active`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ connectionId: connection?.id }),
-      });
-
-      if (response.ok) {
-        setSelectedConversationId(conversationId);
-        setNewMessage(""); // Clear message when switching threads
-        setShowThreadsView(false); // Hide threads view on mobile after selection
-        
-        // Update the URL to reflect the selected conversation
-        setLocation(`/conversation/${conversationId}`);
-      } else {
-        console.error('Failed to switch thread:', await response.text());
-      }
-    } catch (error) {
-      console.error('Error switching thread:', error);
-    }
+  const handleThreadSelect = (conversationId: number) => {
+    setSelectedConversationId(conversationId);
+    setNewMessage(""); // Clear message when switching threads
+    setShowThreadsView(false); // Hide threads view on mobile after selection
+    
+    // Update the URL to reflect the selected conversation
+    setLocation(`/conversation/${conversationId}`);
   };
 
   const handleNewThreadCreated = (conversationId: number) => {

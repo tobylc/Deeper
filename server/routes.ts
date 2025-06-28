@@ -2389,100 +2389,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new conversation thread with automatic message sending
-  app.post("/api/conversations/create-thread", isAuthenticated, async (req: any, res) => {
-    try {
-      const { connectionId, question, senderEmail, type } = req.body;
-      
-      const userId = req.user.claims?.sub || req.user.id;
-      const currentUser = await storage.getUser(userId);
-      
-      if (!currentUser || currentUser.email !== senderEmail) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      // Get connection to verify access and get participant details
-      const connection = await storage.getConnection(connectionId);
-      if (!connection || 
-          (connection.inviterEmail !== senderEmail && 
-           connection.inviteeEmail !== senderEmail)) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      // Create new conversation thread
-      const conversationData = {
-        connectionId,
-        participant1Email: connection.inviterEmail,
-        participant2Email: connection.inviteeEmail,
-        relationshipType: connection.relationshipType,
-        currentTurn: connection.inviterEmail === senderEmail ? connection.inviteeEmail : connection.inviterEmail,
-        status: 'active',
-        isMainThread: false
-      };
-      
-      const conversation = await storage.createConversation(conversationData);
-
-      // Automatically send the message to create the thread
-      const messageData = {
-        conversationId: conversation.id,
-        senderEmail,
-        content: question,
-        type: type || 'question',
-        messageFormat: 'text'
-      };
-
-      const message = await storage.createMessage(messageData);
-
-      // Update conversation activity timestamp
-      await storage.updateConversationActivity(conversation.id);
-
-      // Send WebSocket notifications to both participants
-      try {
-        const { getWebSocketManager } = await import('./websocket');
-        const wsManager = getWebSocketManager();
-        if (wsManager) {
-          const nextTurn = conversation.currentTurn;
-          const senderName = await storage.getUserDisplayNameByEmail(senderEmail);
-          
-          // Notify recipient about new thread and message
-          wsManager.notifyNewMessage(nextTurn, {
-            conversationId: conversation.id,
-            senderEmail,
-            senderName,
-            messageType: type || 'question',
-            relationshipType: connection.relationshipType
-          });
-          
-          // Notify both participants about thread creation
-          wsManager.notifyConversationUpdate(connection.inviterEmail, {
-            conversationId: conversation.id,
-            connectionId,
-            action: 'thread_created'
-          });
-          
-          if (connection.inviterEmail !== connection.inviteeEmail) {
-            wsManager.notifyConversationUpdate(connection.inviteeEmail, {
-              conversationId: conversation.id,
-              connectionId,
-              action: 'thread_created'
-            });
-          }
-        }
-      } catch (error) {
-        console.error('[WEBSOCKET] Failed to send thread creation notification:', error);
-      }
-
-      res.json({ 
-        conversationId: conversation.id,
-        messageId: message.id,
-        success: true 
-      });
-    } catch (error) {
-      console.error('[API] Error creating conversation thread:', error);
-      res.status(500).json({ message: "Failed to create conversation thread" });
-    }
-  });
-
   // Switch active conversation thread without consuming turn
   app.post("/api/conversations/:conversationId/switch-active", isAuthenticated, async (req: any, res) => {
     try {
@@ -2519,14 +2425,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wsManager.notifyConversationUpdate(conversation.participant1Email, {
             conversationId: conversationId,
             connectionId: connectionId,
-            action: 'thread_switched'
+            action: 'thread_switched',
+            activeConversationId: conversationId
           });
           
           if (conversation.participant1Email !== conversation.participant2Email) {
             wsManager.notifyConversationUpdate(conversation.participant2Email, {
               conversationId: conversationId,
               connectionId: connectionId,
-              action: 'thread_switched'
+              action: 'thread_switched',
+              activeConversationId: conversationId
             });
           }
         }

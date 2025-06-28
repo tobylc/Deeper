@@ -208,15 +208,12 @@ export default function ConversationThreads({
   const [showRespondFirstPopup, setShowRespondFirstPopup] = useState(false);
   const { data: otherParticipantName } = useUserDisplayName(otherParticipantEmail);
 
-  // Fetch real conversations from API with sync metadata
-  const { data: conversationData, isLoading } = useQuery({
+  // Fetch real conversations from API
+  const { data: conversations = [], isLoading } = useQuery({
     queryKey: [`/api/connections/${connectionId}/conversations`],
     queryFn: () => fetch(`/api/connections/${connectionId}/conversations`).then(res => res.json()),
     enabled: !!connectionId
   });
-
-  const conversations = conversationData?.conversations || [];
-  const activeConversationId = conversationData?.activeConversationId;
 
   // Fetch message counts for each conversation
   const { data: messageCounts = {} } = useQuery({
@@ -225,10 +222,9 @@ export default function ConversationThreads({
     enabled: !!connectionId
   });
 
-  // CRITICAL: Filter out the currently active conversation - use activeConversationId for synchronization
-  const currentActiveId = activeConversationId || selectedConversationId;
+  // Filter out the currently active conversation and sort remaining conversations
   const sortedConversations = conversations
-    .filter((conv: Conversation) => conv.id !== currentActiveId) // Hide active conversation from left column
+    .filter((conv: Conversation) => conv.id !== selectedConversationId) // Hide currently active conversation
     .map((conv: Conversation) => ({
       ...conv,
       messageCount: messageCounts[conv.id] || 0,

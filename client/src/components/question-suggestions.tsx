@@ -55,47 +55,15 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   // Removed automatic thread creation - all questions should populate text input for user editing
 
   // Handle custom question text by populating it into the main input for editing
-  const handleCreateNewThread = async () => {
+  const handleCreateNewThread = () => {
     if (!newQuestionText.trim()) {
       return;
     }
     
-    try {
-      // Create new conversation thread with the question
-      const response = await fetch('/api/conversations/create-thread', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          connectionId,
-          question: newQuestionText.trim(),
-          senderEmail: user?.email,
-          type: 'question'
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Use thread switching API to make this conversation active for both users
-        await fetch(`/api/conversations/${data.conversationId}/switch-active`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ connectionId }),
-        });
-        
-        // Trigger conversation update via custom event
-        window.dispatchEvent(new CustomEvent('conversationThreadCreated', { 
-          detail: { conversationId: data.conversationId } 
-        }));
-      } else {
-        console.error('Failed to create thread:', await response.text());
-      }
-    } catch (error) {
-      console.error('Error creating thread:', error);
-    } finally {
-      setNewQuestionText("");
-      setShowNewQuestionDialog(false);
-    }
+    // Populate the custom question into the main input for user editing
+    onQuestionSelect(newQuestionText.trim());
+    setNewQuestionText("");
+    setShowNewQuestionDialog(false);
   };
 
   // Production-ready question selection with comprehensive error handling

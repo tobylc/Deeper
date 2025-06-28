@@ -18,24 +18,13 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Handle initial audio loading state with enhanced URL validation
+  // Handle initial audio loading state
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !message.audioFileUrl) {
       setIsLoading(false);
-      setError('No audio file available');
       return;
     }
-
-    // Validate and construct proper audio URL
-    let audioUrl = message.audioFileUrl;
-    if (!audioUrl.startsWith('http') && !audioUrl.startsWith('/')) {
-      // Ensure proper URL format for relative paths
-      audioUrl = audioUrl.startsWith('uploads/') ? `/${audioUrl}` : `/uploads/${audioUrl}`;
-    }
-
-    // Set the audio source immediately
-    audio.src = audioUrl;
 
     // Check if audio is already loaded
     if (audio.readyState >= 2) { // HAVE_CURRENT_DATA or higher
@@ -49,22 +38,13 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
       setError(null);
     };
 
-    const handleError = (e: Event) => {
-      console.error('Audio load error details:', {
-        url: audioUrl,
-        originalUrl: message.audioFileUrl,
-        error: e,
-        readyState: audio.readyState
-      });
+    const handleError = () => {
       setIsLoading(false);
-      setError('Audio file could not be loaded');
+      setError('Unable to load audio file');
     };
 
     audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('error', handleError);
-
-    // Force load the audio
-    audio.load();
 
     // Cleanup
     return () => {
@@ -99,15 +79,9 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        // Validate and set proper audio URL
-        let audioUrl = message.audioFileUrl;
-        if (!audioUrl.startsWith('http') && !audioUrl.startsWith('/')) {
-          audioUrl = audioUrl.startsWith('uploads/') ? `/${audioUrl}` : `/uploads/${audioUrl}`;
-        }
-        
         // Force reload audio source if needed
-        if (audioRef.current.src !== audioUrl) {
-          audioRef.current.src = audioUrl;
+        if (audioRef.current.src !== message.audioFileUrl) {
+          audioRef.current.src = message.audioFileUrl;
         }
 
         // Check if audio is loaded
