@@ -1,61 +1,38 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Send, Users, Clock, MessageCircle, Grid3X3 } from "lucide-react";
-import ConversationInterface from "@/components/conversation-interface";
-import ConversationThreads from "@/components/conversation-threads";
-import QuestionSuggestions from "@/components/question-suggestions";
-import ProfileAvatar from "@/components/profile-avatar";
-import OnboardingPopup from "@/components/onboarding-popup";
-import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
-import NotificationPreferencePopup from "@/components/notification-preference-popup";
-import TrialExpirationPopup from "@/components/trial-expiration-popup";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
-import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
-import { HypnoticOrbs } from "@/components/hypnotic-orbs";
-import FloatingWaitingText from "@/components/floating-waiting-text";
 import type { Conversation, Message, Connection, User } from "@shared/schema";
 
 export default function ConversationPage() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { id } = useParams<{ id: string }>();
-  const [newMessage, setNewMessage] = useState("");
-  const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>(() => {
-    return id ? parseInt(id) : undefined;
-  });
-  const [showThreadsView, setShowThreadsView] = useState(false);
-  const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
-  const [showNotificationPopup, setShowNotificationPopup] = useState(false);
-  const [showTrialExpirationPopup, setShowTrialExpirationPopup] = useState(false);
-
-  const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
-  const [responseStartTime, setResponseStartTime] = useState<Date | null>(null);
-  const [pendingMessage, setPendingMessage] = useState<string>("");
-  const [hasStartedResponse, setHasStartedResponse] = useState(false);
-  const queryClient = useQueryClient();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Add global error handler to prevent unhandled promise rejections
+  // Simplified state management
+  const [conversationId, setConversationId] = useState<number | null>(null);
+
+  // Set conversation ID from URL parameter
   useEffect(() => {
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error('Unhandled promise rejection:', event.reason);
-      event.preventDefault(); // Prevent the error from crashing the page
-    };
+    if (id) {
+      const parsedId = parseInt(id);
+      if (!isNaN(parsedId)) {
+        setConversationId(parsedId);
+      }
+    }
+  }, [id]);
 
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-    
-    return () => {
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-    };
-  }, []);
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!user) {
+      setLocation("/auth");
+    }
+  }, [user, setLocation]);
 
   // Check if user was invited by someone else (is an invitee)
   const { data: connections = [] } = useQuery({
