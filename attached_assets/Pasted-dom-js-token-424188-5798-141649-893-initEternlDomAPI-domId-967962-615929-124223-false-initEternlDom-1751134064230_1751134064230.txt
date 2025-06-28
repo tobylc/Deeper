@@ -1,0 +1,334 @@
+dom.js?token=424188-5798-141649:893 initEternlDomAPI: domId 967962-615929-124223 false
+initEternlDomAPI @ dom.js?token=424188-5798-141649:893
+(anonymous) @ dom.js?token=424188-5798-141649:932
+(anonymous) @ dom.js?token=424188-5798-141649:934
+dom.js?token=424188-5798-141649:894 initEternlDomAPI: href https://joindeeper.com/conversation/90
+initEternlDomAPI @ dom.js?token=424188-5798-141649:894
+(anonymous) @ dom.js?token=424188-5798-141649:932
+(anonymous) @ dom.js?token=424188-5798-141649:934
+dom.js?token=136521-721548-480654:893 initEternlDomAPI: domId 69029-687482-872110 true
+initEternlDomAPI @ dom.js?token=136521-721548-480654:893
+(anonymous) @ dom.js?token=136521-721548-480654:932
+(anonymous) @ dom.js?token=136521-721548-480654:934
+dom.js?token=136521-721548-480654:894 initEternlDomAPI: href https://js.stripe.com/v3/controller-with-preconnect-3f56af80c8083f35673b1752f599c94c.html#__shared_params__[version]=basil&apiKey=pk_live_51RcXMUJk5EQAqG1W7QaKuCgwJ8cZy9fowW6P4VQlFr3DoqIxmMBvICaFRMvFM7VHVcSe9fGKCZzFvKwzMY7egk0G005BMn3dvL&apiVersion=2025-03-31.basil&stripeJsId=000c822a-f83b-444c-a97f-8337dc466a99&stripeObjId=sobj-b3d5ea9d-27c5-49d7-92e2-308b876e0670&firstStripeInstanceCreatedLatency=5&controllerCount=1&isCheckout=false&stripeJsLoadTime=1751134007335&manualBrowserDeprecationRollout=false&mids[guid]=NA&mids[muid]=ebea5655-8fb2-4980-9e83-719a9117012a7d696a&mids[sid]=c710d9e1-7667-4fda-bfcd-f238d03a9284fbc926&referrer=https%3A%2F%2Fjoindeeper.com%2Fconversation%2F90&controllerId=__privateStripeController5801
+initEternlDomAPI @ dom.js?token=136521-721548-480654:894
+(anonymous) @ dom.js?token=136521-721548-480654:932
+(anonymous) @ dom.js?token=136521-721548-480654:934
+90:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+content.js:30 Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+index-Bzle0X8O.js:442 Setting conversation ID from URL: 90
+index-Bzle0X8O.js:40 Error: Minified React error #310; visit https://reactjs.org/docs/error-decoder.html?invariant=310 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at tn (index-Bzle0X8O.js:38:17593)
+    at Sv (index-Bzle0X8O.js:38:17846)
+    at Object.useState (index-Bzle0X8O.js:38:24656)
+    at Ae.useState (index-Bzle0X8O.js:9:6397)
+    at Yr (index-Bzle0X8O.js:48:42397)
+    at UW (index-Bzle0X8O.js:442:49981)
+    at J0 (index-Bzle0X8O.js:38:16998)
+    at Jg (index-Bzle0X8O.js:40:3139)
+    at iA (index-Bzle0X8O.js:40:44804)
+    at tA (index-Bzle0X8O.js:40:39766)
+Zg @ index-Bzle0X8O.js:40
+DC.a.componentDidCatch.r.callback @ index-Bzle0X8O.js:40
+nj @ index-Bzle0X8O.js:38
+xj @ index-Bzle0X8O.js:40
+XC @ index-Bzle0X8O.js:40
+pD @ index-Bzle0X8O.js:40
+xD @ index-Bzle0X8O.js:40
+Ka @ index-Bzle0X8O.js:40
+jj @ index-Bzle0X8O.js:40
+$a @ index-Bzle0X8O.js:38
+(anonymous) @ index-Bzle0X8O.js:40
+setTimeout
+i @ index-Bzle0X8O.js:48
+s @ index-Bzle0X8O.js:48
+batch @ index-Bzle0X8O.js:48
+li @ index-Bzle0X8O.js:48
+setData @ index-Bzle0X8O.js:48
+onSuccess @ index-Bzle0X8O.js:48
+f @ index-Bzle0X8O.js:48
+Promise.then
+m @ index-Bzle0X8O.js:48
+start @ index-Bzle0X8O.js:48
+fetch @ index-Bzle0X8O.js:48
+Oc @ index-Bzle0X8O.js:48
+onSubscribe @ index-Bzle0X8O.js:48
+subscribe @ index-Bzle0X8O.js:48
+(anonymous) @ index-Bzle0X8O.js:48
+bC @ index-Bzle0X8O.js:38
+Ip @ index-Bzle0X8O.js:40
+Ns @ index-Bzle0X8O.js:40
+xD @ index-Bzle0X8O.js:40
+Ka @ index-Bzle0X8O.js:40
+jj @ index-Bzle0X8O.js:40
+$a @ index-Bzle0X8O.js:38
+(anonymous) @ index-Bzle0X8O.js:40
+setTimeout
+i @ index-Bzle0X8O.js:48
+s @ index-Bzle0X8O.js:48
+batch @ index-Bzle0X8O.js:48
+li @ index-Bzle0X8O.js:48
+setData @ index-Bzle0X8O.js:48
+onSuccess @ index-Bzle0X8O.js:48
+f @ index-Bzle0X8O.js:48
+Promise.then
+m @ index-Bzle0X8O.js:48
+start @ index-Bzle0X8O.js:48
+fetch @ index-Bzle0X8O.js:48
+Oc @ index-Bzle0X8O.js:48
+onSubscribe @ index-Bzle0X8O.js:48
+subscribe @ index-Bzle0X8O.js:48
+(anonymous) @ index-Bzle0X8O.js:48
+bC @ index-Bzle0X8O.js:38
+Ip @ index-Bzle0X8O.js:40
+Ns @ index-Bzle0X8O.js:40
+jj @ index-Bzle0X8O.js:40
+$a @ index-Bzle0X8O.js:38
+xD @ index-Bzle0X8O.js:40
+Ka @ index-Bzle0X8O.js:40
+ZC @ index-Bzle0X8O.js:40
+w @ index-Bzle0X8O.js:25
+k @ index-Bzle0X8O.js:25
+index-Bzle0X8O.js:515 Error boundary caught an error: Error: Minified React error #310; visit https://reactjs.org/docs/error-decoder.html?invariant=310 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at tn (index-Bzle0X8O.js:38:17593)
+    at Sv (index-Bzle0X8O.js:38:17846)
+    at Object.useState (index-Bzle0X8O.js:38:24656)
+    at Ae.useState (index-Bzle0X8O.js:9:6397)
+    at Yr (index-Bzle0X8O.js:48:42397)
+    at UW (index-Bzle0X8O.js:442:49981)
+    at J0 (index-Bzle0X8O.js:38:16998)
+    at Jg (index-Bzle0X8O.js:40:3139)
+    at iA (index-Bzle0X8O.js:40:44804)
+    at tA (index-Bzle0X8O.js:40:39766) {componentStack: '\n    at UW (https://joindeeper.com/assets/index-Bz…om/assets/index-Bzle0X8O.js:515:64114)\n    at Jve'}
+componentDidCatch @ index-Bzle0X8O.js:515
+DC.a.componentDidCatch.r.callback @ index-Bzle0X8O.js:40
+nj @ index-Bzle0X8O.js:38
+xj @ index-Bzle0X8O.js:40
+XC @ index-Bzle0X8O.js:40
+pD @ index-Bzle0X8O.js:40
+xD @ index-Bzle0X8O.js:40
+Ka @ index-Bzle0X8O.js:40
+jj @ index-Bzle0X8O.js:40
+$a @ index-Bzle0X8O.js:38
+(anonymous) @ index-Bzle0X8O.js:40
+setTimeout
+i @ index-Bzle0X8O.js:48
+s @ index-Bzle0X8O.js:48
+batch @ index-Bzle0X8O.js:48
+li @ index-Bzle0X8O.js:48
+setData @ index-Bzle0X8O.js:48
+onSuccess @ index-Bzle0X8O.js:48
+f @ index-Bzle0X8O.js:48
+Promise.then
+m @ index-Bzle0X8O.js:48
+start @ index-Bzle0X8O.js:48
+fetch @ index-Bzle0X8O.js:48
+Oc @ index-Bzle0X8O.js:48
+onSubscribe @ index-Bzle0X8O.js:48
+subscribe @ index-Bzle0X8O.js:48
+(anonymous) @ index-Bzle0X8O.js:48
+bC @ index-Bzle0X8O.js:38
+Ip @ index-Bzle0X8O.js:40
+Ns @ index-Bzle0X8O.js:40
+xD @ index-Bzle0X8O.js:40
+Ka @ index-Bzle0X8O.js:40
+jj @ index-Bzle0X8O.js:40
+$a @ index-Bzle0X8O.js:38
+(anonymous) @ index-Bzle0X8O.js:40
+setTimeout
+i @ index-Bzle0X8O.js:48
+s @ index-Bzle0X8O.js:48
+batch @ index-Bzle0X8O.js:48
+li @ index-Bzle0X8O.js:48
+setData @ index-Bzle0X8O.js:48
+onSuccess @ index-Bzle0X8O.js:48
+f @ index-Bzle0X8O.js:48
+Promise.then
+m @ index-Bzle0X8O.js:48
+start @ index-Bzle0X8O.js:48
+fetch @ index-Bzle0X8O.js:48
+Oc @ index-Bzle0X8O.js:48
+onSubscribe @ index-Bzle0X8O.js:48
+subscribe @ index-Bzle0X8O.js:48
+(anonymous) @ index-Bzle0X8O.js:48
+bC @ index-Bzle0X8O.js:38
+Ip @ index-Bzle0X8O.js:40
+Ns @ index-Bzle0X8O.js:40
+jj @ index-Bzle0X8O.js:40
+$a @ index-Bzle0X8O.js:38
+xD @ index-Bzle0X8O.js:40
+Ka @ index-Bzle0X8O.js:40
+ZC @ index-Bzle0X8O.js:40
+w @ index-Bzle0X8O.js:25
+k @ index-Bzle0X8O.js:25
+index-Bzle0X8O.js:515 Error stack: Error: Minified React error #310; visit https://reactjs.org/docs/error-decoder.html?invariant=310 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at tn (https://joindeeper.com/assets/index-Bzle0X8O.js:38:17593)
+    at Sv (https://joindeeper.com/assets/index-Bzle0X8O.js:38:17846)
+    at Object.useState (https://joindeeper.com/assets/index-Bzle0X8O.js:38:24656)
+    at Ae.useState (https://joindeeper.com/assets/index-Bzle0X8O.js:9:6397)
+    at Yr (https://joindeeper.com/assets/index-Bzle0X8O.js:48:42397)
+    at UW (https://joindeeper.com/assets/index-Bzle0X8O.js:442:49981)
+    at J0 (https://joindeeper.com/assets/index-Bzle0X8O.js:38:16998)
+    at Jg (https://joindeeper.com/assets/index-Bzle0X8O.js:40:3139)
+    at iA (https://joindeeper.com/assets/index-Bzle0X8O.js:40:44804)
+    at tA (https://joindeeper.com/assets/index-Bzle0X8O.js:40:39766)
+componentDidCatch @ index-Bzle0X8O.js:515
+DC.a.componentDidCatch.r.callback @ index-Bzle0X8O.js:40
+nj @ index-Bzle0X8O.js:38
+xj @ index-Bzle0X8O.js:40
+XC @ index-Bzle0X8O.js:40
+pD @ index-Bzle0X8O.js:40
+xD @ index-Bzle0X8O.js:40
+Ka @ index-Bzle0X8O.js:40
+jj @ index-Bzle0X8O.js:40
+$a @ index-Bzle0X8O.js:38
+(anonymous) @ index-Bzle0X8O.js:40
+setTimeout
+i @ index-Bzle0X8O.js:48
+s @ index-Bzle0X8O.js:48
+batch @ index-Bzle0X8O.js:48
+li @ index-Bzle0X8O.js:48
+setData @ index-Bzle0X8O.js:48
+onSuccess @ index-Bzle0X8O.js:48
+f @ index-Bzle0X8O.js:48
+Promise.then
+m @ index-Bzle0X8O.js:48
+start @ index-Bzle0X8O.js:48
+fetch @ index-Bzle0X8O.js:48
+Oc @ index-Bzle0X8O.js:48
+onSubscribe @ index-Bzle0X8O.js:48
+subscribe @ index-Bzle0X8O.js:48
+(anonymous) @ index-Bzle0X8O.js:48
+bC @ index-Bzle0X8O.js:38
+Ip @ index-Bzle0X8O.js:40
+Ns @ index-Bzle0X8O.js:40
+xD @ index-Bzle0X8O.js:40
+Ka @ index-Bzle0X8O.js:40
+jj @ index-Bzle0X8O.js:40
+$a @ index-Bzle0X8O.js:38
+(anonymous) @ index-Bzle0X8O.js:40
+setTimeout
+i @ index-Bzle0X8O.js:48
+s @ index-Bzle0X8O.js:48
+batch @ index-Bzle0X8O.js:48
+li @ index-Bzle0X8O.js:48
+setData @ index-Bzle0X8O.js:48
+onSuccess @ index-Bzle0X8O.js:48
+f @ index-Bzle0X8O.js:48
+Promise.then
+m @ index-Bzle0X8O.js:48
+start @ index-Bzle0X8O.js:48
+fetch @ index-Bzle0X8O.js:48
+Oc @ index-Bzle0X8O.js:48
+onSubscribe @ index-Bzle0X8O.js:48
+subscribe @ index-Bzle0X8O.js:48
+(anonymous) @ index-Bzle0X8O.js:48
+bC @ index-Bzle0X8O.js:38
+Ip @ index-Bzle0X8O.js:40
+Ns @ index-Bzle0X8O.js:40
+jj @ index-Bzle0X8O.js:40
+$a @ index-Bzle0X8O.js:38
+xD @ index-Bzle0X8O.js:40
+Ka @ index-Bzle0X8O.js:40
+ZC @ index-Bzle0X8O.js:40
+w @ index-Bzle0X8O.js:25
+k @ index-Bzle0X8O.js:25
+index-Bzle0X8O.js:515 Component stack: 
+    at UW (https://joindeeper.com/assets/index-Bzle0X8O.js:442:39896)
+    at Ht (https://joindeeper.com/assets/index-Bzle0X8O.js:48:3233)
+    at s5 (https://joindeeper.com/assets/index-Bzle0X8O.js:48:4046)
+    at Xve (https://joindeeper.com/assets/index-Bzle0X8O.js:515:64915)
+    at u (https://joindeeper.com/assets/index-Bzle0X8O.js:48:45651)
+    at JT (https://joindeeper.com/assets/index-Bzle0X8O.js:363:50432)
+    at O5 (https://joindeeper.com/assets/index-Bzle0X8O.js:48:40331)
+    at Qve (https://joindeeper.com/assets/index-Bzle0X8O.js:515:64114)
+    at Jve
+componentDidCatch @ index-Bzle0X8O.js:515
+DC.a.componentDidCatch.r.callback @ index-Bzle0X8O.js:40
+nj @ index-Bzle0X8O.js:38
+xj @ index-Bzle0X8O.js:40
+XC @ index-Bzle0X8O.js:40
+pD @ index-Bzle0X8O.js:40
+xD @ index-Bzle0X8O.js:40
+Ka @ index-Bzle0X8O.js:40
+jj @ index-Bzle0X8O.js:40
+$a @ index-Bzle0X8O.js:38
+(anonymous) @ index-Bzle0X8O.js:40
+setTimeout
+i @ index-Bzle0X8O.js:48
+s @ index-Bzle0X8O.js:48
+batch @ index-Bzle0X8O.js:48
+li @ index-Bzle0X8O.js:48
+setData @ index-Bzle0X8O.js:48
+onSuccess @ index-Bzle0X8O.js:48
+f @ index-Bzle0X8O.js:48
+Promise.then
+m @ index-Bzle0X8O.js:48
+start @ index-Bzle0X8O.js:48
+fetch @ index-Bzle0X8O.js:48
+Oc @ index-Bzle0X8O.js:48
+onSubscribe @ index-Bzle0X8O.js:48
+subscribe @ index-Bzle0X8O.js:48
+(anonymous) @ index-Bzle0X8O.js:48
+bC @ index-Bzle0X8O.js:38
+Ip @ index-Bzle0X8O.js:40
+Ns @ index-Bzle0X8O.js:40
+xD @ index-Bzle0X8O.js:40
+Ka @ index-Bzle0X8O.js:40
+jj @ index-Bzle0X8O.js:40
+$a @ index-Bzle0X8O.js:38
+(anonymous) @ index-Bzle0X8O.js:40
+setTimeout
+i @ index-Bzle0X8O.js:48
+s @ index-Bzle0X8O.js:48
+batch @ index-Bzle0X8O.js:48
+li @ index-Bzle0X8O.js:48
+setData @ index-Bzle0X8O.js:48
+onSuccess @ index-Bzle0X8O.js:48
+f @ index-Bzle0X8O.js:48
+Promise.then
+m @ index-Bzle0X8O.js:48
+start @ index-Bzle0X8O.js:48
+fetch @ index-Bzle0X8O.js:48
+Oc @ index-Bzle0X8O.js:48
+onSubscribe @ index-Bzle0X8O.js:48
+subscribe @ index-Bzle0X8O.js:48
+(anonymous) @ index-Bzle0X8O.js:48
+bC @ index-Bzle0X8O.js:38
+Ip @ index-Bzle0X8O.js:40
+Ns @ index-Bzle0X8O.js:40
+jj @ index-Bzle0X8O.js:40
+$a @ index-Bzle0X8O.js:38
+xD @ index-Bzle0X8O.js:40
+Ka @ index-Bzle0X8O.js:40
+ZC @ index-Bzle0X8O.js:40
+w @ index-Bzle0X8O.js:25
+k @ index-Bzle0X8O.js:25
+dom.js?token=978695-148349-288238:893 initEternlDomAPI: domId 196201-980060-35824 true
+initEternlDomAPI @ dom.js?token=978695-148349-288238:893
+(anonymous) @ dom.js?token=978695-148349-288238:932
+(anonymous) @ dom.js?token=978695-148349-288238:934
+dom.js?token=978695-148349-288238:894 initEternlDomAPI: href https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fjoindeeper.com%2Fconversation%2F90&title=&referrer=https%3A%2F%2Fjoindeeper.com%2Fconversation%2F90&muid=ebea5655-8fb2-4980-9e83-719a9117012a7d696a&sid=c710d9e1-7667-4fda-bfcd-f238d03a9284fbc926&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=978695-148349-288238:894
+(anonymous) @ dom.js?token=978695-148349-288238:932
+(anonymous) @ dom.js?token=978695-148349-288238:934
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+dom.js?token=231632-676654-927486:893 initEternlDomAPI: domId 353117-152512-400628 true
+initEternlDomAPI @ dom.js?token=231632-676654-927486:893
+(anonymous) @ dom.js?token=231632-676654-927486:932
+(anonymous) @ dom.js?token=231632-676654-927486:934
+dom.js?token=231632-676654-927486:894 initEternlDomAPI: href https://m.stripe.network/inner.html#url=https%3A%2F%2Fjoindeeper.com%2Fconversation%2F90&title=&referrer=https%3A%2F%2Fjoindeeper.com%2Fconversation%2F90&muid=ebea5655-8fb2-4980-9e83-719a9117012a7d696a&sid=c710d9e1-7667-4fda-bfcd-f238d03a9284fbc926&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=231632-676654-927486:894
+(anonymous) @ dom.js?token=231632-676654-927486:932
+(anonymous) @ dom.js?token=231632-676654-927486:934
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
