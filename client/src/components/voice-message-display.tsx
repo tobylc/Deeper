@@ -27,17 +27,11 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
       return;
     }
 
-    // Validate and construct proper audio URL with production-ready path handling
+    // Validate and construct proper audio URL
     let audioUrl = message.audioFileUrl;
     if (!audioUrl.startsWith('http') && !audioUrl.startsWith('/')) {
-      // Handle relative paths - ensure they point to /uploads/
+      // Ensure proper URL format for relative paths
       audioUrl = audioUrl.startsWith('uploads/') ? `/${audioUrl}` : `/uploads/${audioUrl}`;
-    }
-    
-    // Additional validation for production deployment
-    if (audioUrl.startsWith('/uploads/uploads/')) {
-      // Fix double uploads path that can occur in some scenarios
-      audioUrl = audioUrl.replace('/uploads/uploads/', '/uploads/');
     }
 
     // Set the audio source immediately
@@ -105,25 +99,13 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        // Production-ready URL validation and construction
+        // Validate and set proper audio URL
         let audioUrl = message.audioFileUrl;
-        
-        // Comprehensive URL validation
-        if (!audioUrl || typeof audioUrl !== 'string') {
-          throw new Error('Invalid audio file URL');
-        }
-        
-        // Normalize URL path for production deployment
         if (!audioUrl.startsWith('http') && !audioUrl.startsWith('/')) {
           audioUrl = audioUrl.startsWith('uploads/') ? `/${audioUrl}` : `/uploads/${audioUrl}`;
         }
         
-        // Fix double uploads path that can occur in some scenarios
-        if (audioUrl.startsWith('/uploads/uploads/')) {
-          audioUrl = audioUrl.replace('/uploads/uploads/', '/uploads/');
-        }
-        
-        // Validate audio source change with error handling
+        // Force reload audio source if needed
         if (audioRef.current.src !== audioUrl) {
           audioRef.current.src = audioUrl;
         }
@@ -269,29 +251,10 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           </div>
         </div>
 
-        {/* Audio Element with Cache-Busting URL Construction */}
+        {/* Audio Element with Enhanced Debugging */}
         <audio
           ref={audioRef}
-          src={(() => {
-            // CRITICAL: Force fresh audio loading with cache-busting
-            if (!message.audioFileUrl) return '';
-            let url = message.audioFileUrl;
-            
-            // Normalize URL path construction
-            if (!url.startsWith('http') && !url.startsWith('/')) {
-              url = url.startsWith('uploads/') ? `/${url}` : `/uploads/${url}`;
-            }
-            
-            // Fix potential double uploads path
-            if (url.includes('/uploads/uploads/')) {
-              url = url.replace('/uploads/uploads/', '/uploads/');
-            }
-            
-            // CRITICAL: Add cache-busting timestamp to force reload
-            const separator = url.includes('?') ? '&' : '?';
-            const timestamp = Date.now();
-            return `${url}${separator}v=${timestamp}&cache=${Math.random()}`;
-          })()}
+          src={message.audioFileUrl || ''}
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleEnded}
           onError={handleLoadError}
@@ -299,6 +262,8 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           onCanPlay={handleCanPlayEvent}
           preload="metadata"
           crossOrigin="anonymous"
+          onLoadedMetadata={() => console.log('Audio metadata loaded')}
+          onLoadedData={() => console.log('Audio data loaded')}
         />
         
         {/* Debug Info in Development */}

@@ -56,18 +56,13 @@ export default function ConversationPage() {
     }
   }, [user, setLocation]);
 
-  // Initialize selected conversation ID from URL and force complete refresh
+  // Initialize selected conversation ID from URL
   useEffect(() => {
     if (id && !selectedConversationId) {
       console.log("Setting conversation ID from URL:", id);
       setSelectedConversationId(parseInt(id));
-      
-      // CRITICAL: Force complete cache invalidation and refresh
-      queryClient.clear();
-      queryClient.invalidateQueries();
-      queryClient.refetchQueries();
     }
-  }, [id, selectedConversationId, queryClient]);
+  }, [id, selectedConversationId]);
 
   // Listen for WebSocket conversation thread creation events
   useEffect(() => {
@@ -100,17 +95,13 @@ export default function ConversationPage() {
         }
         return response.json();
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Conversation loading error:', error);
-        }
+        console.error('Conversation loading error:', error);
         throw error;
       }
     },
     enabled: !!(selectedConversationId || id) && !!user,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
-    staleTime: 30000,
-    gcTime: 300000
+    retryDelay: 1000,
   });
 
   // Determine other participant after conversation is loaded
@@ -177,17 +168,12 @@ export default function ConversationPage() {
           throw new Error(`Failed to load messages: ${response.status}`);
         }
         const data = await response.json();
-        
-        // CRITICAL: Backend already filters by conversationId, but add client-side validation
-        const currentConvId = typeof conversationId === 'string' ? parseInt(conversationId) : conversationId;
-        const validatedMessages = Array.isArray(data) ? data.filter(msg => {
-          if (!msg || typeof msg !== 'object') return false;
-          if (!msg.conversationId) return false;
-          const msgConvId = typeof msg.conversationId === 'string' ? parseInt(msg.conversationId) : msg.conversationId;
-          return msgConvId === currentConvId;
-        }) : [];
-        
-        return validatedMessages;
+        // CRITICAL: Filter to show only messages from the CURRENT ACTIVE conversation
+        // This ensures only ONE conversation displays in center column
+        const filteredMessages = Array.isArray(data) ? data.filter(msg => 
+          msg && msg.conversationId === (typeof conversationId === 'string' ? parseInt(conversationId) : conversationId)
+        ) : [];
+        return filteredMessages;
       } catch (error) {
         console.error('Messages loading error:', error);
         return [];
@@ -196,9 +182,6 @@ export default function ConversationPage() {
     enabled: !!(selectedConversationId || id) && !!user,
     retry: 3,
     retryDelay: 1000,
-    // CRITICAL: Prevent stale cache from showing multiple conversations
-    staleTime: 0,
-    gcTime: 0,
   });
 
   // Check notification preference status for this conversation
@@ -602,14 +585,11 @@ export default function ConversationPage() {
       });
 
       if (response.ok) {
-        // CRITICAL: Clear cache before switching to prevent multiple conversations
-        queryClient.clear();
-        
         setSelectedConversationId(conversationId);
         setNewMessage(""); // Clear message when switching threads
         setShowThreadsView(false); // Hide threads view on mobile after selection
         
-        // Update the URL to reflect the selected conversation for proper routing
+        // Update the URL to reflect the selected conversation
         setLocation(`/conversation/${conversationId}`);
       } else {
         console.error('Failed to switch thread:', await response.text());

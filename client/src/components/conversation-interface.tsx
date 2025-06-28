@@ -245,17 +245,9 @@ const ConversationInterface = memo(function ConversationInterface({
           </div>
         ) : (
           <div className="space-y-6 relative z-10">
-            {/* CRITICAL: Single conversation display - ONLY messages from current active conversation */}
+            {/* CRITICAL: Only display messages from the CURRENT ACTIVE conversation */}
             {messages
-              .filter(message => {
-                // STRICT filtering: Only messages from the EXACT current conversation ID
-                if (!message || typeof message !== 'object') return false;
-                if (!message.conversationId || !conversationId) return false;
-                // Ensure exact match to prevent multiple conversations showing simultaneously
-                const messageConvId = typeof message.conversationId === 'string' ? parseInt(message.conversationId) : message.conversationId;
-                const currentConvId = typeof conversationId === 'string' ? parseInt(conversationId) : conversationId;
-                return messageConvId === currentConvId;
-              })
+              .filter(message => message && message.conversationId === conversationId)
               .map((message, index) => (
               <div key={message.id} className="relative">
                 <div className={cn(
@@ -278,7 +270,7 @@ const ConversationInterface = memo(function ConversationInterface({
                     </Badge>
                   </div>
                   
-                  {/* Production-ready voice message display with comprehensive validation */}
+                  {/* Voice message display */}
                   {message.messageFormat === 'voice' && message.audioFileUrl ? (
                     <VoiceMessageDisplay 
                       message={{
@@ -289,8 +281,7 @@ const ConversationInterface = memo(function ConversationInterface({
                       className="mt-2"
                     />
                   ) : (
-                    // Production-ready text content with null safety
-                    message.content || '[Message content unavailable]'
+                    message.content
                   )}
                 </div>
               </div>

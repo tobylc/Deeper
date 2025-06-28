@@ -123,22 +123,18 @@ function StackedConversation({
                       `/api/conversations/${conversation.id}/can-reopen?currentConversationId=${selectedConversationId || ''}`
                     );
                     
-                    // Production-ready response handling with comprehensive error checking
+                    // Production-ready response handling
                     if (!response.ok) {
-                      if (process.env.NODE_ENV === 'development') {
-                        console.error(`API error: ${response.status} ${response.statusText}`);
-                      }
+                      console.error(`API error: ${response.status} ${response.statusText}`);
                       onWaitingClick();
                       return;
                     }
 
                     const data = await response.json();
                     
-                    // Production-ready response validation with type safety
-                    if (!data || typeof data !== 'object' || typeof data.canReopen !== 'boolean') {
-                      if (process.env.NODE_ENV === 'development') {
-                        console.error('Invalid API response structure:', data);
-                      }
+                    // Validate response structure
+                    if (typeof data.canReopen !== 'boolean') {
+                      console.error('Invalid API response structure:', data);
                       onWaitingClick();
                       return;
                     }
@@ -159,8 +155,7 @@ function StackedConversation({
                     if (process.env.NODE_ENV === 'development') {
                       console.error('Error checking thread reopen permission:', error);
                     }
-                    // Production-ready fallback behavior on network or API errors
-                    onWaitingClick();
+                    onWaitingClick(); // Show waiting popup on error
                   }
                 }}
                 className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400"
@@ -230,35 +225,20 @@ export default function ConversationThreads({
     enabled: !!connectionId
   });
 
-  // CRITICAL: Single conversation display - exclude ONLY the currently active conversation
-  const currentActiveId = selectedConversationId || activeConversationId;
-  const sortedConversations = Array.isArray(conversations) 
-    ? conversations
-        .filter((conv: Conversation) => {
-          // STRICT filtering: Only show conversations that are NOT currently active in center column
-          if (!conv || typeof conv !== 'object') return false;
-          if (!conv.id || typeof conv.id !== 'number') return false;
-          
-          // Convert both IDs to numbers for accurate comparison
-          const convId = typeof conv.id === 'string' ? parseInt(conv.id) : conv.id;
-          const activeId = typeof currentActiveId === 'string' ? parseInt(currentActiveId) : currentActiveId;
-          
-          return convId !== activeId; // Hide ONLY the currently active conversation
-        })
-        .map((conv: Conversation) => ({
-          ...conv,
-          messageCount: messageCounts[conv.id] || 0,
-          lastMessageAt: conv.lastActivityAt
-        }))
-        .sort((a: Conversation, b: Conversation) => {
-          // Production-ready sorting with null safety
-          if (a.isMainThread && !b.isMainThread) return -1;
-          if (!a.isMainThread && b.isMainThread) return 1;
-          const aTime = a.lastActivityAt ? new Date(a.lastActivityAt).getTime() : 0;
-          const bTime = b.lastActivityAt ? new Date(b.lastActivityAt).getTime() : 0;
-          return bTime - aTime;
-        })
-    : [];
+  // CRITICAL: Filter out the currently active conversation - use activeConversationId for synchronization
+  const currentActiveId = activeConversationId || selectedConversationId;
+  const sortedConversations = conversations
+    .filter((conv: Conversation) => conv.id !== currentActiveId) // Hide active conversation from left column
+    .map((conv: Conversation) => ({
+      ...conv,
+      messageCount: messageCounts[conv.id] || 0,
+      lastMessageAt: conv.lastActivityAt
+    }))
+    .sort((a: Conversation, b: Conversation) => {
+      if (a.isMainThread && !b.isMainThread) return -1;
+      if (!a.isMainThread && b.isMainThread) return 1;
+      return new Date(b.lastActivityAt || 0).getTime() - new Date(a.lastActivityAt || 0).getTime();
+    });
 
   if (isLoading) {
     return (
