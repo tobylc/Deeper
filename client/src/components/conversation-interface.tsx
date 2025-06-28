@@ -84,7 +84,7 @@ const ConversationInterface = memo(function ConversationInterface({
     return messagesArray.length === 0 && 
            connection?.inviterEmail === currentUserEmail &&
            nextMessageType === 'question';
-  }, [messages, connection, currentUserEmail, nextMessageType]);
+  }, [messages?.length, connection?.inviterEmail, currentUserEmail, nextMessageType]);
 
   // Handle voice message sending with AI transcription
   const handleVoiceMessageSend = useCallback(async (audioBlob: Blob, duration: number) => {
@@ -217,7 +217,7 @@ const ConversationInterface = memo(function ConversationInterface({
     // Check if 10 minutes have passed since response started
     const remainingTime = getRemainingTime();
     return remainingTime <= 0;
-  }, [isInviterFirstQuestion, messages, hasStartedResponse, getRemainingTime]);
+  }, [isInviterFirstQuestion, messages?.length, hasStartedResponse, getRemainingTime]);
 
   return (
     <div className="h-full flex flex-col">

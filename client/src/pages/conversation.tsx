@@ -28,7 +28,9 @@ export default function ConversationPage() {
   const [, setLocation] = useLocation();
   const { id } = useParams<{ id: string }>();
   const [newMessage, setNewMessage] = useState("");
-  const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
+  const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>(() => {
+    return id ? parseInt(id) : undefined;
+  });
   const [showThreadsView, setShowThreadsView] = useState(false);
   const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
@@ -99,19 +101,22 @@ export default function ConversationPage() {
     );
   }
 
-  // Initialize selected conversation ID from URL
+  // Update selected conversation ID when URL changes
   useEffect(() => {
-    if (id && !selectedConversationId) {
-      console.log("Setting conversation ID from URL:", id);
-      setSelectedConversationId(parseInt(id));
+    if (id) {
+      const conversationId = parseInt(id);
+      if (!isNaN(conversationId) && conversationId !== selectedConversationId) {
+        console.log("Setting conversation ID from URL:", id);
+        setSelectedConversationId(conversationId);
+      }
     }
-  }, [id, selectedConversationId]);
+  }, [id]);
 
   // Listen for WebSocket conversation thread creation events
   useEffect(() => {
     const handleConversationThreadCreated = (event: CustomEvent) => {
       const { conversationId } = event.detail;
-      if (conversationId) {
+      if (conversationId && typeof conversationId === 'number') {
         setSelectedConversationId(conversationId);
         setNewMessage(""); // Clear any existing message
       }
@@ -294,7 +299,7 @@ export default function ConversationPage() {
       // Only show if user has never seen onboarding globally
       setShowOnboardingPopup(true);
     }
-  }, [currentUserData?.hasSeenOnboarding, conversation?.id]);
+  }, [currentUserData?.hasSeenOnboarding, conversation?.id, showOnboardingPopup]);
 
 
 
