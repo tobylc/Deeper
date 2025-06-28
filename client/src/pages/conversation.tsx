@@ -110,13 +110,20 @@ export default function ConversationPage() {
     };
   }, []);
 
-  const { data: conversation, isLoading: conversationLoading, error: conversationError } = useQuery<Conversation>({
+  const { data: conversation, isLoading: conversationLoading, error: conversationError } = useQuery({
     queryKey: [`/api/conversations/${selectedConversationId || id}`],
     queryFn: async () => {
       const conversationId = selectedConversationId || id;
+      if (!conversationId) {
+        throw new Error("No conversation ID provided");
+      }
+      
       try {
         const response = await apiRequest('GET', `/api/conversations/${conversationId}`);
         if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Conversation not found");
+          }
           throw new Error(`Failed to load conversation: ${response.status}`);
         }
         return response.json();
@@ -128,7 +135,7 @@ export default function ConversationPage() {
     enabled: !!(selectedConversationId || id) && !!user,
     retry: 1,
     retryDelay: 1000,
-    throwOnError: false,
+    throwOnError: false
   });
 
   // Determine other participant after conversation is loaded
@@ -142,9 +149,14 @@ export default function ConversationPage() {
   const { data: connection } = useQuery<Connection>({
     queryKey: [`/api/connections/${conversation?.connectionId}`],
     queryFn: async () => {
+      if (!conversation?.connectionId) {
+        return null;
+      }
+      
       try {
-        const response = await apiRequest('GET', `/api/connections/${conversation?.connectionId}`);
+        const response = await apiRequest('GET', `/api/connections/${conversation.connectionId}`);
         if (!response.ok) {
+          console.warn(`Connection not found: ${response.status}`);
           return null;
         }
         return response.json();
