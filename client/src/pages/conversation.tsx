@@ -559,66 +559,6 @@ export default function ConversationPage() {
     return Math.max(0, Math.ceil(remaining / 1000)); // Return seconds remaining
   };
 
-  // Create new conversation thread with question (for stacking previous conversation)
-  const createNewThreadMutation = useMutation({
-    mutationFn: async (questionContent: string) => {
-      if (!connection || !user?.email) {
-        throw new Error("Missing connection or user data");
-      }
-      
-      const response = await apiRequest("POST", `/api/connections/${connection.id}/conversations/with-question`, {
-        question: questionContent,
-        participant1Email: connection.inviterEmail,
-        participant2Email: connection.inviteeEmail,
-        relationshipType: connection.relationshipType,
-      });
-      
-      return response.json();
-    },
-    onSuccess: (data) => {
-      // Invalidate queries to refresh conversation lists
-      queryClient.invalidateQueries({ queryKey: [`/api/connections/${connection?.id}/conversations`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
-      
-      // Switch to the new conversation thread
-      const newConversationId = data.conversation.id;
-      setSelectedConversationId(newConversationId);
-      setNewMessage(""); // Clear message input
-      
-      // Update URL to reflect new conversation
-      setLocation(`/conversation/${newConversationId}`);
-      
-      // Reset response tracking
-      setResponseStartTime(null);
-      setHasStartedResponse(false);
-      
-      toast({
-        title: "New conversation started!",
-        description: "Your previous conversation has been saved and a new thread created.",
-      });
-    },
-    onError: (error: any) => {
-      console.error("Create new thread error:", error);
-      
-      // Parse error response
-      let errorData;
-      try {
-        errorData = JSON.parse(error.message);
-      } catch {
-        errorData = { message: error.message };
-      }
-      
-      toast({
-        title: "Unable to start new conversation",
-        description: errorData.message || "Please try again in a moment",
-      });
-    },
-  });
-
-  const handleCreateNewConversationThread = (questionContent: string) => {
-    createNewThreadMutation.mutate(questionContent);
-  };
-
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
     
@@ -633,17 +573,6 @@ export default function ConversationPage() {
       return;
     }
     
-    // Check if this is a new question after a complete exchange - should create new thread
-    const shouldCreateNewThread = nextMessageType === 'question' && 
-                                  hasCompleteExchange && 
-                                  !lastQuestionNeedsResponse;
-    
-    if (shouldCreateNewThread) {
-      // Create a new conversation thread instead of adding to existing one
-      handleCreateNewConversationThread(newMessage.trim());
-      return;
-    }
-    
     // Check if enough time has passed for thoughtful response (only for non-first questions)
     if (hasStartedResponse && !checkResponseTime()) {
       setPendingMessage(newMessage);
@@ -651,7 +580,7 @@ export default function ConversationPage() {
       return;
     }
     
-    // Proceed with sending the message to current thread
+    // Proceed with sending the message
     proceedWithSending(newMessage);
   };
 
