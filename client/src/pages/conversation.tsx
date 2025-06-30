@@ -110,6 +110,26 @@ export default function ConversationPage() {
     };
   }, []);
 
+  // Enhanced WebSocket integration to synchronize thread reopening between users
+  useEffect(() => {
+    const handleThreadSyncEvent = (event: CustomEvent) => {
+      const { conversationId, action } = event.detail;
+      
+      if (action === 'thread_reopened' && conversationId && conversationId !== selectedConversationId) {
+        console.log('[CONVERSATION] Syncing to reopened thread from other user:', conversationId);
+        setSelectedConversationId(conversationId);
+        setNewMessage(""); // Clear any pending message
+        setLocation(`/conversation/${conversationId}`);
+      }
+    };
+
+    window.addEventListener('conversationSync', handleThreadSyncEvent as EventListener);
+    
+    return () => {
+      window.removeEventListener('conversationSync', handleThreadSyncEvent as EventListener);
+    };
+  }, [selectedConversationId, setLocation]);
+
   const { data: conversation, isLoading: conversationLoading, error: conversationError } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${selectedConversationId || id}`],
     queryFn: async () => {
@@ -677,7 +697,7 @@ export default function ConversationPage() {
     setNewMessage(question);
   };
 
-  const handleThreadSelect = (conversationId: number) => {
+  const handleThreadSelect = async (conversationId: number) => {
     console.log('[THREAD_SELECT] Switching to conversation:', conversationId);
     
     setSelectedConversationId(conversationId);
@@ -686,6 +706,29 @@ export default function ConversationPage() {
     
     // Update the URL to reflect the selected conversation
     setLocation(`/conversation/${conversationId}`);
+    
+    // CRITICAL FIX: Send WebSocket notification to synchronize thread reopening with other user
+    if (conversation?.connectionId) {
+      try {
+        const response = await fetch(`/api/connections/${conversation.connectionId}/switch-active-thread`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            conversationId: conversationId
+          })
+        });
+        
+        if (response.ok) {
+          console.log('[THREAD_SELECT] WebSocket notification sent for thread switch');
+        } else {
+          console.error('[THREAD_SELECT] Failed to send thread switch notification:', response.status);
+        }
+      } catch (error) {
+        console.error('[THREAD_SELECT] Error sending thread switch notification:', error);
+      }
+    }
     
     // Minimal query invalidation to prevent unwanted turn modifications
     // Only invalidate the specific conversation data we need to refresh

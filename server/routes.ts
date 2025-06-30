@@ -2449,6 +2449,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Switch active conversation thread via connection endpoint - matches frontend call
+  app.post("/api/connections/:connectionId/switch-active-thread", isAuthenticated, async (req: any, res) => {
+    try {
+      const connectionId = parseInt(req.params.connectionId);
+      const { conversationId } = req.body;
+      
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Verify user is part of this connection
+      const connection = await storage.getConnection(connectionId);
+      if (!connection || 
+          (connection.inviterEmail !== currentUser.email && 
+           connection.inviteeEmail !== currentUser.email)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Get the conversation to switch to
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      // Verify conversation belongs to this connection
+      if (conversation.connectionId !== connectionId) {
+        return res.status(403).json({ message: "Conversation does not belong to this connection" });
+      }
+
+      // Send real-time WebSocket notifications to both participants about thread switch
+      try {
+        const { getWebSocketManager } = await import('./websocket');
+        const wsManager = getWebSocketManager();
+        if (wsManager) {
+          // Notify both participants that thread was switched - using 'thread_reopened' action
+          wsManager.notifyConversationUpdate(conversation.participant1Email, {
+            conversationId: conversationId,
+            connectionId: connectionId,
+            action: 'thread_reopened'
+          });
+          
+          if (conversation.participant1Email !== conversation.participant2Email) {
+            wsManager.notifyConversationUpdate(conversation.participant2Email, {
+              conversationId: conversationId,
+              connectionId: connectionId,
+              action: 'thread_reopened'
+            });
+          }
+        }
+      } catch (error) {
+        console.error('[WEBSOCKET] Failed to send thread switch notification:', error);
+      }
+
+      res.json({ 
+        success: true, 
+        activeConversationId: conversationId,
+        message: "Thread switched successfully - both users synchronized"
+      });
+    } catch (error) {
+      console.error('[API] Error switching active thread:', error);
+      res.status(500).json({ message: "Failed to switch active thread" });
+    }
+  });
+
   // Endpoint to get or create the single conversation for a connection
   app.post("/api/connections/:connectionId/conversations", isAuthenticated, async (req: any, res) => {
     try {
