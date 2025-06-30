@@ -2477,7 +2477,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // CRITICAL PROTECTION: Thread reopening must NEVER modify turn state
       // This endpoint is purely for navigation and WebSocket synchronization
       console.log(`[THREAD_REOPEN] User ${currentUser.email} reopening thread ${conversationId} - NO TURN MODIFICATION`);
-      console.log(`[THREAD_REOPEN] Current conversation turn remains: ${conversation.currentTurn}`);
+      console.log(`[THREAD_REOPEN] BEFORE: Conversation ${conversationId} turn is: ${conversation.currentTurn}`);
+      
+      // DEBUGGING: Get conversation again to verify no changes
+      const conversationAfterReopen = await storage.getConversation(conversationId);
+      console.log(`[THREAD_REOPEN] AFTER: Conversation ${conversationId} turn is: ${conversationAfterReopen?.currentTurn}`);
+      
+      if (conversation.currentTurn !== conversationAfterReopen?.currentTurn) {
+        console.error(`[CRITICAL_BUG] Turn state changed during thread reopening!`);
+        console.error(`[CRITICAL_BUG] Before: ${conversation.currentTurn}, After: ${conversationAfterReopen?.currentTurn}`);
+      } else {
+        console.log(`[THREAD_REOPEN] ✓ Turn state preserved successfully`);
+      }
 
       // Send real-time WebSocket notifications to both participants about thread switch
       // CRITICAL: This is pure navigation synchronization - no database modifications
