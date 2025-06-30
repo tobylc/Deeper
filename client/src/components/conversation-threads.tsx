@@ -209,23 +209,32 @@ export default function ConversationThreads({
   const { data: otherParticipantName } = useUserDisplayName(otherParticipantEmail);
 
   // Fetch real conversations from API
-  const { data: conversations = [], isLoading } = useQuery({
+  const { data: conversationData, isLoading } = useQuery({
     queryKey: [`/api/connections/${connectionId}/conversations`],
     queryFn: async () => {
       try {
         const response = await fetch(`/api/connections/${connectionId}/conversations`);
         if (!response.ok) {
-          return [];
+          return { conversations: [], activeConversationId: null, previousConversations: [] };
         }
         const data = await response.json();
-        return Array.isArray(data) ? data : [];
+        // API returns { conversations, activeConversationId, previousConversations }
+        return data && typeof data === 'object' ? data : { conversations: [], activeConversationId: null, previousConversations: [] };
       } catch (error) {
         console.error('Error fetching conversations:', error);
-        return [];
+        return { conversations: [], activeConversationId: null, previousConversations: [] };
       }
     },
     enabled: !!connectionId
   });
+
+  const conversations = conversationData?.conversations || [];
+  
+  // Debug logging for production troubleshooting
+  console.log('[CONVERSATION_THREADS] Connection ID:', connectionId);
+  console.log('[CONVERSATION_THREADS] Raw API response:', conversationData);
+  console.log('[CONVERSATION_THREADS] Conversations array:', conversations);
+  console.log('[CONVERSATION_THREADS] Selected conversation ID:', selectedConversationId);
 
   // Fetch message counts for each conversation
   const { data: messageCounts = {} } = useQuery({
@@ -261,6 +270,11 @@ export default function ConversationThreads({
           return new Date(b.lastActivityAt || 0).getTime() - new Date(a.lastActivityAt || 0).getTime();
         })
     : [];
+
+  // Debug logging for filtered conversations
+  console.log('[CONVERSATION_THREADS] Filtered conversations for left column:', sortedConversations);
+  console.log('[CONVERSATION_THREADS] Total conversations before filter:', conversations.length);
+  console.log('[CONVERSATION_THREADS] Total conversations after filter:', sortedConversations.length);
 
   if (isLoading) {
     return (
