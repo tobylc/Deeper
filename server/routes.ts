@@ -2413,9 +2413,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      // Update conversation activity timestamp to make it the most recent
-      await storage.updateConversationActivity(conversationId);
-
       // Send real-time WebSocket notifications to both participants about thread switch
       try {
         const { getWebSocketManager } = await import('./websocket');
@@ -2425,16 +2422,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wsManager.notifyConversationUpdate(conversation.participant1Email, {
             conversationId: conversationId,
             connectionId: connectionId,
-            action: 'thread_switched',
-            activeConversationId: conversationId
+            action: 'conversation_started'
           });
           
           if (conversation.participant1Email !== conversation.participant2Email) {
             wsManager.notifyConversationUpdate(conversation.participant2Email, {
               conversationId: conversationId,
               connectionId: connectionId,
-              action: 'thread_switched',
-              activeConversationId: conversationId
+              action: 'conversation_started'
             });
           }
         }
@@ -2749,14 +2744,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               wsManager.notifyConversationUpdate(conversation.participant1Email, {
                 conversationId: newConversation.id,
                 connectionId: conversation.connectionId,
-                action: 'thread_created'
+                action: 'conversation_started'
               });
               
               if (conversation.participant1Email !== conversation.participant2Email) {
                 wsManager.notifyConversationUpdate(conversation.participant2Email, {
                   conversationId: newConversation.id,
                   connectionId: conversation.connectionId,
-                  action: 'thread_created'
+                  action: 'conversation_started'
                 });
               }
             }
