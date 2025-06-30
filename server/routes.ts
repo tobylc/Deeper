@@ -2418,18 +2418,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { getWebSocketManager } = await import('./websocket');
         const wsManager = getWebSocketManager();
         if (wsManager) {
-          // Notify both participants that thread was switched
+          // Notify both participants that thread was switched - using 'thread_reopened' action
+          // This prevents turn modifications that occur with 'conversation_started'
           wsManager.notifyConversationUpdate(conversation.participant1Email, {
             conversationId: conversationId,
             connectionId: connectionId,
-            action: 'conversation_started'
+            action: 'thread_reopened'
           });
           
           if (conversation.participant1Email !== conversation.participant2Email) {
             wsManager.notifyConversationUpdate(conversation.participant2Email, {
               conversationId: conversationId,
               connectionId: connectionId,
-              action: 'conversation_started'
+              action: 'thread_reopened'
             });
           }
         }

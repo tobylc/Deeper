@@ -138,7 +138,18 @@ export function useWebSocket() {
 
     console.log('[WebSocket] Conversation update received:', data);
 
-    // Invalidate relevant queries to refresh dashboard and conversation threads
+    // Handle thread reopening specially - minimal invalidation to prevent turn changes
+    if (data.action === 'thread_reopened') {
+      console.log('[WebSocket] Thread reopened - using minimal query invalidation');
+      
+      // Only invalidate conversation threads list, NOT the conversation itself
+      if (data.connectionId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
+      }
+      return; // Exit early to prevent full invalidation
+    }
+
+    // For other conversation updates (new conversations, etc.), do full invalidation
     queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
     queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
     
