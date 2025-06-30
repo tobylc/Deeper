@@ -320,16 +320,24 @@ export default function ConversationPage() {
         setSelectedConversationId(responseData.newConversationId);
         setLocation(`/conversation/${responseData.newConversationId}`);
         
+        // Force immediate cache refresh for thread lists to ensure left column updates instantly
+        if (conversation?.connectionId) {
+          // Invalidate and immediately refetch to force synchronous update
+          queryClient.invalidateQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations`] });
+          queryClient.invalidateQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations/message-counts`] });
+          
+          // Use setTimeout to trigger refetch after invalidation
+          setTimeout(() => {
+            queryClient.refetchQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations`] });
+            queryClient.refetchQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations/message-counts`] });
+          }, 100);
+        }
+        
         // Invalidate queries for both old and new conversations
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/${responseData.originalConversationId}/messages`] });
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/${responseData.newConversationId}/messages`] });
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/${responseData.newConversationId}`] });
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
-        
-        // Also invalidate connection conversations to update thread lists
-        if (conversation?.connectionId) {
-          queryClient.invalidateQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations`] });
-        }
         
         toast({
           title: "New conversation started!",
@@ -658,9 +666,23 @@ export default function ConversationPage() {
   };
 
   const handleThreadSelect = (conversationId: number) => {
+    console.log('[THREAD_SELECT] Switching to conversation:', conversationId);
+    
     setSelectedConversationId(conversationId);
     setNewMessage(""); // Clear message when switching threads
     setShowThreadsView(false); // Hide threads view on mobile after selection
+    
+    // Invalidate queries to ensure proper thread list updates
+    if (conversation?.connectionId) {
+      queryClient.invalidateQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations/message-counts`] });
+    }
+    
+    // Invalidate conversation queries for both old and new conversations
+    if (selectedConversationId || id) {
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${selectedConversationId || id}/messages`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${selectedConversationId || id}`] });
+    }
     
     // Update the URL to reflect the selected conversation
     setLocation(`/conversation/${conversationId}`);
