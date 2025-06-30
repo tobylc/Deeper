@@ -18,6 +18,7 @@ import TrialExpirationPopup from "@/components/trial-expiration-popup";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import { getRoleDisplayInfo, getConversationHeaderText } from "@shared/role-display-utils";
 import { HypnoticOrbs } from "@/components/hypnotic-orbs";
 import FloatingWaitingText from "@/components/floating-waiting-text";
@@ -40,6 +41,9 @@ export default function ConversationPage() {
   const [hasStartedResponse, setHasStartedResponse] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Initialize WebSocket for real-time conversation synchronization - CRITICAL FIX
+  const { isConnected: wsConnected, connectionAttempts } = useWebSocket();
 
   // Check if user was invited by someone else (is an invitee)
   const { data: connections = [] } = useQuery<Connection[]>({
@@ -852,17 +856,44 @@ export default function ConversationPage() {
                 size="sm"
                 onClick={async () => {
                   try {
-                    const response = await fetch('/api/websocket/test');
-                    const data = await response.json();
-                    console.log('[WEBSOCKET_TEST] Test results:', data);
-                    toast({
-                      title: "WebSocket Test",
-                      description: `Connected: ${data.currentUserConnected}, Users: ${data.connectionCount}`,
-                    });
+                    // Test basic WebSocket connectivity
+                    const wsTestResponse = await fetch('/api/websocket/test');
+                    const wsData = await wsTestResponse.json();
+                    console.log('[WEBSOCKET_TEST] WebSocket test results:', wsData);
+                    
+                    // Test thread synchronization if we have an active conversation
+                    if (conversation?.connectionId && selectedConversationId) {
+                      console.log('[SYNC_TEST] Testing thread synchronization...');
+                      const syncResponse = await fetch(`/api/connections/${conversation.connectionId}/switch-active-thread`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ conversationId: selectedConversationId })
+                      });
+                      
+                      if (syncResponse.ok) {
+                        console.log('[SYNC_TEST] Thread sync notification sent successfully');
+                        toast({
+                          title: "Synchronization Test Complete",
+                          description: `WebSocket: ${wsData.currentUserConnected ? 'Connected' : 'Disconnected'}, Thread sync: Sent`,
+                        });
+                      } else {
+                        console.error('[SYNC_TEST] Thread sync failed:', syncResponse.status);
+                        toast({
+                          title: "Sync Test Results",
+                          description: `WebSocket: ${wsData.currentUserConnected ? 'OK' : 'Failed'}, Thread sync: Failed`,
+                          variant: "destructive"
+                        });
+                      }
+                    } else {
+                      toast({
+                        title: "WebSocket Test",
+                        description: `Connected: ${wsData.currentUserConnected}, Users: ${wsData.connectionCount}`,
+                      });
+                    }
                   } catch (error) {
                     console.error('[WEBSOCKET_TEST] Error:', error);
                     toast({
-                      title: "WebSocket Test Failed",
+                      title: "Test Failed",
                       description: "Check console for details",
                       variant: "destructive"
                     });
@@ -870,8 +901,13 @@ export default function ConversationPage() {
                 }}
                 className="text-xs px-2 py-1"
               >
-                WS Test
+                Test Sync
               </Button>
+              <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-500' : 'bg-red-500'}`} 
+                   title={`WebSocket: ${wsConnected ? 'Connected' : `Disconnected (${connectionAttempts} attempts)`}`} />
+              <span className="text-xs text-gray-500">
+                {wsConnected ? 'Live' : 'Offline'}
+              </span>
               <Badge variant={isMyTurn ? "default" : "outline"} className="text-xs">
                 {isMyTurn ? "Your turn" : "Their turn"}
               </Badge>
