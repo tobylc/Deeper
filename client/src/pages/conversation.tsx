@@ -296,7 +296,7 @@ export default function ConversationPage() {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: async (data: { content: string; type: 'question' | 'response' }) => {
+    mutationFn: async (data: { content: string; type: 'question' | 'response' | 'follow up' }) => {
       if (!user?.email) {
         throw new Error("User not authenticated");
       }

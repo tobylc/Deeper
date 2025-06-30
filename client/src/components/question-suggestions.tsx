@@ -30,7 +30,7 @@ interface QuestionSuggestionsProps {
   onNewThreadCreated: (conversationId: number) => void;
   canUseRightColumn: boolean;
   canCreateNewThread: boolean;
-  nextMessageType: 'question' | 'response';
+  nextMessageType: 'question' | 'response' | 'follow up';
 }
 
 export default function QuestionSuggestions({ relationshipType, userRole, otherUserRole, onQuestionSelect, isMyTurn, otherParticipant, connectionId, onNewThreadCreated, canUseRightColumn, canCreateNewThread, nextMessageType }: QuestionSuggestionsProps) {

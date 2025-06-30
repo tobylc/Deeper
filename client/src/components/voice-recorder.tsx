@@ -17,7 +17,7 @@ interface VoiceRecorderProps {
   messages?: any[];
   connection?: any;
   currentUserEmail?: string;
-  nextMessageType?: 'question' | 'response';
+  nextMessageType?: 'question' | 'response' | 'follow up';
 }
 
 export default function VoiceRecorder({ 

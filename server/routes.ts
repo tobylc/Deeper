@@ -2810,7 +2810,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const messagesAfterLastQuestion = existingMessages.slice(lastQuestionIndex + 1);
             const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg.type === 'response');
             
-            // If the last question hasn't been responded to, only allow responses
+            // If the last question hasn't been responded to, only allow responses or follow-ups
             if (!hasResponseToLastQuestion && messageData.type === 'question') {
               return res.status(400).json({ 
                 message: "The previous question must be answered before asking a new question",
@@ -2819,14 +2819,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 hasResponse: false
               });
             }
+            
+            // Allow follow-up messages after question-response exchanges in reopened threads
+            if (hasResponseToLastQuestion && messageData.type === 'follow up') {
+              // Follow-ups are allowed when there's already a question-response exchange
+              // This supports conversation continuation in reopened threads
+            }
           }
           
           // Validate message type is one of the allowed values
-          if (!['question', 'response'].includes(messageData.type)) {
+          if (!['question', 'response', 'follow up'].includes(messageData.type)) {
             return res.status(400).json({ 
               message: "Invalid message type",
               code: "INVALID_MESSAGE_TYPE",
-              allowed: ["question", "response"],
+              allowed: ["question", "response", "follow up"],
               received: messageData.type 
             });
           }
