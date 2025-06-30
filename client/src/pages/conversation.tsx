@@ -677,20 +677,20 @@ export default function ConversationPage() {
     setNewMessage(""); // Clear message when switching threads
     setShowThreadsView(false); // Hide threads view on mobile after selection
     
-    // Invalidate queries to ensure proper thread list updates
-    if (conversation?.connectionId) {
-      queryClient.invalidateQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations/message-counts`] });
-    }
-    
-    // Invalidate conversation queries for both old and new conversations
-    if (selectedConversationId || id) {
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${selectedConversationId || id}/messages`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${selectedConversationId || id}`] });
-    }
-    
     // Update the URL to reflect the selected conversation
     setLocation(`/conversation/${conversationId}`);
+    
+    // Minimal query invalidation to prevent unwanted turn modifications
+    // Only invalidate the specific conversation data we need to refresh
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] });
+      
+      // Invalidate thread list after a delay to prevent race conditions
+      if (conversation?.connectionId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations`] });
+      }
+    }, 100);
   };
 
   const handleNewThreadCreated = (conversationId: number) => {
