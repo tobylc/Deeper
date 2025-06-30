@@ -748,17 +748,10 @@ export default function ConversationPage() {
       console.error('[THREAD_SELECT] No connection ID available for WebSocket notification');
     }
     
-    // Minimal query invalidation to prevent unwanted turn modifications
-    // Only invalidate the specific conversation data we need to refresh
-    setTimeout(() => {
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] });
-      
-      // Invalidate thread list after a delay to prevent race conditions
-      if (conversation?.connectionId) {
-        queryClient.invalidateQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations`] });
-      }
-    }, 100);
+    // CRITICAL FIX: No query invalidation for thread reopening
+    // Thread reopening is pure navigation - should not refresh any data that could affect turns
+    // The WebSocket notification above handles synchronization between users
+    console.log('[THREAD_SELECT] Thread reopening complete - no query invalidation to preserve turn state');
   };
 
   const handleNewThreadCreated = (conversationId: number) => {

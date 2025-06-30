@@ -2497,6 +2497,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Switch active conversation thread via connection endpoint - matches frontend call
+  // CRITICAL: This endpoint is for thread navigation ONLY - no turn modification allowed
   app.post("/api/connections/:connectionId/switch-active-thread", isAuthenticated, async (req: any, res) => {
     try {
       const connectionId = parseInt(req.params.connectionId);
@@ -2528,7 +2529,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Conversation does not belong to this connection" });
       }
 
+      // CRITICAL PROTECTION: Thread reopening must NEVER modify turn state
+      // This endpoint is purely for navigation and WebSocket synchronization
+      console.log(`[THREAD_REOPEN] User ${currentUser.email} reopening thread ${conversationId} - NO TURN MODIFICATION`);
+      console.log(`[THREAD_REOPEN] Current conversation turn remains: ${conversation.currentTurn}`);
+
       // Send real-time WebSocket notifications to both participants about thread switch
+      // CRITICAL: This is pure navigation synchronization - no database modifications
       try {
         const { getWebSocketManager } = await import('./websocket');
         const wsManager = getWebSocketManager();
@@ -2537,6 +2544,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[WEBSOCKET] Participant 1: ${conversation.participant1Email}`);
           console.log(`[WEBSOCKET] Participant 2: ${conversation.participant2Email}`);
           console.log(`[WEBSOCKET] ConversationId: ${conversationId}, ConnectionId: ${connectionId}`);
+          console.log(`[WEBSOCKET] IMPORTANT: No turn modification - pure navigation sync`);
           
           // Notify both participants that thread was switched - using 'thread_reopened' action
           wsManager.notifyConversationUpdate(conversation.participant1Email, {
@@ -2553,7 +2561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
           
-          console.log(`[WEBSOCKET] Thread switch notifications sent successfully`);
+          console.log(`[WEBSOCKET] Thread switch notifications sent successfully - turn state preserved`);
         } else {
           console.error('[WEBSOCKET] WebSocket manager not available');
         }
@@ -2564,7 +2572,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         success: true, 
         activeConversationId: conversationId,
-        message: "Thread switched successfully - both users synchronized"
+        currentTurn: conversation.currentTurn, // Return current turn to confirm no modification
+        message: "Thread switched successfully - turn state preserved, both users synchronized"
       });
     } catch (error) {
       console.error('[API] Error switching active thread:', error);
