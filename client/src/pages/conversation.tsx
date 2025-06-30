@@ -448,6 +448,21 @@ export default function ConversationPage() {
     );
   }
 
+  // CRITICAL FIX: Force cache refresh for turn synchronization
+  useEffect(() => {
+    const handleThreadSwitch = (event: CustomEvent) => {
+      console.log('[ConversationPage] Thread switched event received, forcing cache refresh');
+      // Force immediate cache invalidation and refetch to synchronize turn state
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${selectedConversationId || id}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/conversations/${selectedConversationId || id}`] });
+    };
+
+    window.addEventListener('conversationThreadSwitched', handleThreadSwitch as EventListener);
+    return () => {
+      window.removeEventListener('conversationThreadSwitched', handleThreadSwitch as EventListener);
+    };
+  }, [selectedConversationId, id, queryClient]);
+
   // Correct turn logic: inviter (participant1) always starts the conversation
   // For empty conversations, inviter should always have the first turn
   const isMyTurn = conversation && user?.email && messages && Array.isArray(messages)

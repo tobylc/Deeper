@@ -152,6 +152,41 @@ export function useWebSocket() {
       return; // Exit early - no toast needed for turn updates
     }
 
+    // CRITICAL FIX: Handle thread switching to synchronize both users' conversation pages
+    if (data.action === 'thread_switched') {
+      console.log('[WebSocket] Thread switched - synchronizing conversation state for both users');
+      
+      // Update URL for both users to show the same conversation
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/conversation/') && data.conversationId) {
+        // Only update URL if we're not already on this conversation
+        const currentConversationId = window.location.pathname.split('/conversation/')[1];
+        if (currentConversationId !== data.conversationId.toString()) {
+          window.history.pushState(null, '', `/conversation/${data.conversationId}`);
+          
+          // Dispatch custom event to notify conversation page components
+          window.dispatchEvent(new CustomEvent('conversationThreadSwitched', { 
+            detail: { 
+              conversationId: data.conversationId,
+              currentTurn: data.currentTurn,
+              switchedByUser: data.switchedByUser
+            } 
+          }));
+        }
+      }
+
+      // Invalidate conversation data to ensure both users see the correct turn state
+      if (data.conversationId && data.connectionId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
+        // Also refresh dashboard to sync turn indicators
+        queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+      }
+      return; // Exit early - no toast needed for thread switching
+    }
+
     // Handle thread reopening specially - minimal invalidation to prevent turn changes
     if (data.action === 'thread_reopened') {
       console.log('[WebSocket] Thread reopened - using minimal query invalidation');

@@ -16,7 +16,7 @@ export class WebSocketManager {
     this.wss = new WebSocketServer({ 
       server,
       path: '/ws',
-      verifyClient: (info) => {
+      verifyClient: (info: any) => {
         // Basic verification - in production you'd validate auth tokens
         return true;
       }

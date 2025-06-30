@@ -140,7 +140,20 @@ function StackedConversation({
                     }
                     
                     if (data.canReopen) {
-                      onClick(); // Reopen the thread - this does NOT count as a turn
+                      // CRITICAL FIX: Call backend endpoint to synchronize thread switching between both users
+                      try {
+                        await fetch(`/api/conversations/${conversation.id}/switch`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                        });
+                        
+                        onClick(); // Reopen the thread - this does NOT count as a turn
+                      } catch (error) {
+                        console.error('Failed to synchronize thread switch:', error);
+                        onClick(); // Still switch locally even if sync fails
+                      }
                     } else {
                       // Priority 1: If it's not the user's turn, always show waiting popup
                       if (!isMyTurn) {

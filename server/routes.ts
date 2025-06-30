@@ -2287,6 +2287,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // CRITICAL FIX: Thread switching endpoint with turn synchronization
+  app.post("/api/conversations/:conversationId/switch", isAuthenticated, async (req: any, res) => {
+    try {
+      const conversationId = parseInt(req.params.conversationId);
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      // Verify user is participant
+      if (conversation.participant1Email !== currentUser.email && 
+          conversation.participant2Email !== currentUser.email) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // PRODUCTION FIX: Ensure turn consistency by refreshing conversation data
+      const refreshedConversation = await storage.getConversation(conversationId);
+      if (!refreshedConversation) {
+        return res.status(404).json({ message: "Conversation not found after refresh" });
+      }
+
+      console.log(`[TURN_SYNC] Thread switch: conversation ${conversationId}, current turn: ${refreshedConversation.currentTurn}, switched by: ${currentUser.email}`);
+
+      // Send WebSocket notifications to BOTH users to synchronize thread switching
+      try {
+        const { getWebSocketManager } = await import('./websocket');
+        const wsManager = getWebSocketManager();
+        if (wsManager) {
+          const notificationData = {
+            conversationId,
+            connectionId: refreshedConversation.connectionId,
+            action: 'thread_switched',
+            switchedByUser: currentUser.email,
+            currentTurn: refreshedConversation.currentTurn,
+            relationshipType: refreshedConversation.relationshipType
+          };
+
+          // Notify both participants to synchronize their conversation states
+          wsManager.notifyConversationUpdate(refreshedConversation.participant1Email, notificationData);
+          if (refreshedConversation.participant1Email !== refreshedConversation.participant2Email) {
+            wsManager.notifyConversationUpdate(refreshedConversation.participant2Email, notificationData);
+          }
+        }
+      } catch (error) {
+        console.error('[WEBSOCKET] Failed to send thread switch notification:', error);
+      }
+
+      res.json({ 
+        success: true,
+        conversationId,
+        currentTurn: refreshedConversation.currentTurn,
+        participant1Email: refreshedConversation.participant1Email,
+        participant2Email: refreshedConversation.participant2Email
+      });
+    } catch (error) {
+      console.error("Thread switch error:", error);
+      res.status(500).json({ message: "Failed to switch thread" });
+    }
+  });
+
   // Check if a user can reopen a specific conversation thread
   app.get("/api/conversations/:conversationId/can-reopen", isAuthenticated, async (req: any, res) => {
     try {
