@@ -941,6 +941,15 @@ Changelog:
   * Enhanced conversation page sendMessage mutation to exclude invitees from trial expiration popup triggers
   * Added comprehensive invitee user detection across all components that could show trial expiration popups
   * Invitee users now have permanent free access without inappropriate upgrade prompts or trial limitations
+- June 30, 2025. Critical conversation thread synchronization system implementation:
+  * Fixed major conversation synchronization issue where users could see different conversation threads simultaneously
+  * Added real-time WebSocket synchronization when users reopen previous conversation threads from left column
+  * Created backend API endpoint `/api/connections/:connectionId/switch-active-thread` for thread switching notifications
+  * Enhanced frontend WebSocket handler to dispatch custom 'conversationSync' events for thread reopening coordination
+  * Added conversation page event listener to automatically synchronize thread selection when other user reopens conversations
+  * Fixed "both users showing their turn" issue by ensuring thread reopening doesn't modify conversation turn state
+  * Complete real-time thread synchronization ensuring both users always see identical conversation states
+  * Production-ready solution eliminating conversation state conflicts and maintaining perfect turn-based flow consistency
 - June 30, 2025. Production-ready conversation synchronization system implementation:
   * Fixed critical turn synchronization issue where both users could simultaneously see "their turn"
   * Enhanced WebSocket notifications to send explicit turn_updated messages to both participants when messages are sent
