@@ -2449,6 +2449,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test WebSocket connectivity endpoint
+  app.get("/api/websocket/test", isAuthenticated, async (req: any, res) => {
+    try {
+      const { getWebSocketManager } = await import('./websocket');
+      const wsManager = getWebSocketManager();
+      const userId = req.user.claims?.sub || req.user.id;
+      const currentUser = await storage.getUser(userId);
+      
+      if (!currentUser) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      if (wsManager) {
+        const connectedUsers = wsManager.getConnectedUsers();
+        const connectionCount = wsManager.getConnectionCount();
+        const isUserConnected = connectedUsers.includes(currentUser.email);
+        
+        console.log(`[WEBSOCKET_TEST] Connected users: ${connectedUsers.join(', ')}`);
+        console.log(`[WEBSOCKET_TEST] Total connections: ${connectionCount}`);
+        console.log(`[WEBSOCKET_TEST] User ${currentUser.email} connected: ${isUserConnected}`);
+        
+        // Send a test notification
+        wsManager.notifyConversationUpdate(currentUser.email, {
+          conversationId: 9999,
+          connectionId: 9999,
+          action: 'test_notification'
+        });
+        
+        res.json({
+          wsManagerAvailable: true,
+          connectedUsers: connectedUsers,
+          connectionCount: connectionCount,
+          currentUserConnected: isUserConnected,
+          testNotificationSent: true
+        });
+      } else {
+        res.json({
+          wsManagerAvailable: false,
+          message: "WebSocket manager not initialized"
+        });
+      }
+    } catch (error) {
+      console.error('[WEBSOCKET_TEST] Error:', error);
+      res.status(500).json({ message: "WebSocket test failed", error: error.message });
+    }
+  });
+
   // Switch active conversation thread via connection endpoint - matches frontend call
   app.post("/api/connections/:connectionId/switch-active-thread", isAuthenticated, async (req: any, res) => {
     try {
@@ -2486,6 +2533,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { getWebSocketManager } = await import('./websocket');
         const wsManager = getWebSocketManager();
         if (wsManager) {
+          console.log(`[WEBSOCKET] Sending thread_reopened notification to both participants`);
+          console.log(`[WEBSOCKET] Participant 1: ${conversation.participant1Email}`);
+          console.log(`[WEBSOCKET] Participant 2: ${conversation.participant2Email}`);
+          console.log(`[WEBSOCKET] ConversationId: ${conversationId}, ConnectionId: ${connectionId}`);
+          
           // Notify both participants that thread was switched - using 'thread_reopened' action
           wsManager.notifyConversationUpdate(conversation.participant1Email, {
             conversationId: conversationId,
@@ -2500,6 +2552,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               action: 'thread_reopened'
             });
           }
+          
+          console.log(`[WEBSOCKET] Thread switch notifications sent successfully`);
+        } else {
+          console.error('[WEBSOCKET] WebSocket manager not available');
         }
       } catch (error) {
         console.error('[WEBSOCKET] Failed to send thread switch notification:', error);

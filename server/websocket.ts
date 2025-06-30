@@ -151,11 +151,19 @@ export class WebSocketManager {
     relationshipType?: string;
     newTurn?: string; // Added for turn synchronization
   }) {
-    this.notifyUser(email, {
-      type: 'conversation_update',
-      data: conversationData,
-      timestamp: new Date().toISOString()
-    });
+    console.log(`[WEBSOCKET] Sending conversation update to ${email}:`, JSON.stringify(conversationData));
+    
+    const clients = this.clients.get(email);
+    if (clients && clients.length > 0) {
+      console.log(`[WEBSOCKET] Found ${clients.length} client(s) for ${email}`);
+      this.notifyUser(email, {
+        type: 'conversation_update',
+        data: conversationData,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      console.log(`[WEBSOCKET] No connected clients found for ${email}`);
+    }
   }
 
   public broadcast(data: any) {

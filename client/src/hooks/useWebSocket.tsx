@@ -166,14 +166,17 @@ export function useWebSocket() {
     // Handle thread reopening specially - minimal invalidation to prevent turn changes
     if (data.action === 'thread_reopened') {
       console.log('[WebSocket] Thread reopened - using minimal query invalidation and dispatching sync event');
+      console.log('[WebSocket] Thread reopened data:', JSON.stringify(data));
       
       // Only invalidate conversation threads list, NOT the conversation itself
       if (data.connectionId) {
+        console.log('[WebSocket] Invalidating conversation threads for connection:', data.connectionId);
         queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
       }
       
       // Dispatch custom event for conversation page synchronization
       if (data.conversationId) {
+        console.log('[WebSocket] Dispatching conversationSync event for conversation:', data.conversationId);
         const syncEvent = new CustomEvent('conversationSync', {
           detail: {
             conversationId: data.conversationId,
@@ -182,6 +185,7 @@ export function useWebSocket() {
           }
         });
         window.dispatchEvent(syncEvent);
+        console.log('[WebSocket] conversationSync event dispatched successfully');
       }
       
       return; // Exit early to prevent full invalidation

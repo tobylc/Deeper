@@ -113,19 +113,26 @@ export default function ConversationPage() {
   // Enhanced WebSocket integration to synchronize thread reopening between users
   useEffect(() => {
     const handleThreadSyncEvent = (event: CustomEvent) => {
+      console.log('[CONVERSATION] Received conversationSync event:', event.detail);
       const { conversationId, action } = event.detail;
       
       if (action === 'thread_reopened' && conversationId && conversationId !== selectedConversationId) {
         console.log('[CONVERSATION] Syncing to reopened thread from other user:', conversationId);
+        console.log('[CONVERSATION] Current selected conversation:', selectedConversationId);
         setSelectedConversationId(conversationId);
         setNewMessage(""); // Clear any pending message
         setLocation(`/conversation/${conversationId}`);
+        console.log('[CONVERSATION] Successfully synchronized to new conversation thread');
+      } else {
+        console.log('[CONVERSATION] Thread sync event ignored - same conversation or different action');
       }
     };
 
+    console.log('[CONVERSATION] Adding conversationSync event listener');
     window.addEventListener('conversationSync', handleThreadSyncEvent as EventListener);
     
     return () => {
+      console.log('[CONVERSATION] Removing conversationSync event listener');
       window.removeEventListener('conversationSync', handleThreadSyncEvent as EventListener);
     };
   }, [selectedConversationId, setLocation]);
@@ -698,7 +705,9 @@ export default function ConversationPage() {
   };
 
   const handleThreadSelect = async (conversationId: number) => {
-    console.log('[THREAD_SELECT] Switching to conversation:', conversationId);
+    console.log('[THREAD_SELECT] Starting thread switch to conversation:', conversationId);
+    console.log('[THREAD_SELECT] Current connection ID:', conversation?.connectionId);
+    console.log('[THREAD_SELECT] Current user email:', user?.email);
     
     setSelectedConversationId(conversationId);
     setNewMessage(""); // Clear message when switching threads
@@ -710,6 +719,7 @@ export default function ConversationPage() {
     // CRITICAL FIX: Send WebSocket notification to synchronize thread reopening with other user
     if (conversation?.connectionId) {
       try {
+        console.log('[THREAD_SELECT] Sending thread switch API request...');
         const response = await fetch(`/api/connections/${conversation.connectionId}/switch-active-thread`, {
           method: 'POST',
           headers: {
@@ -721,13 +731,17 @@ export default function ConversationPage() {
         });
         
         if (response.ok) {
-          console.log('[THREAD_SELECT] WebSocket notification sent for thread switch');
+          const responseData = await response.json();
+          console.log('[THREAD_SELECT] WebSocket notification sent successfully:', responseData);
         } else {
-          console.error('[THREAD_SELECT] Failed to send thread switch notification:', response.status);
+          const errorData = await response.text();
+          console.error('[THREAD_SELECT] Failed to send thread switch notification:', response.status, errorData);
         }
       } catch (error) {
         console.error('[THREAD_SELECT] Error sending thread switch notification:', error);
       }
+    } else {
+      console.error('[THREAD_SELECT] No connection ID available for WebSocket notification');
     }
     
     // Minimal query invalidation to prevent unwanted turn modifications
@@ -832,6 +846,31 @@ export default function ConversationPage() {
               >
                 <Grid3X3 className="w-3 h-3 mr-1" />
                 Questions
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/websocket/test');
+                    const data = await response.json();
+                    console.log('[WEBSOCKET_TEST] Test results:', data);
+                    toast({
+                      title: "WebSocket Test",
+                      description: `Connected: ${data.currentUserConnected}, Users: ${data.connectionCount}`,
+                    });
+                  } catch (error) {
+                    console.error('[WEBSOCKET_TEST] Error:', error);
+                    toast({
+                      title: "WebSocket Test Failed",
+                      description: "Check console for details",
+                      variant: "destructive"
+                    });
+                  }
+                }}
+                className="text-xs px-2 py-1"
+              >
+                WS Test
               </Button>
               <Badge variant={isMyTurn ? "default" : "outline"} className="text-xs">
                 {isMyTurn ? "Your turn" : "Their turn"}
