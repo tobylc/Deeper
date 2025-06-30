@@ -19,17 +19,25 @@ export function useWebSocket() {
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const maxReconnectAttempts = 5;
 
+  // Return connection status for UI components
+  const getConnectionStatus = () => ({ isConnected, connectionAttempts });
+
   const connect = () => {
-    if (!user?.email || !user?.id) return;
+    if (!user?.email || !user?.id) {
+      console.log('[WebSocket] Cannot connect - missing user data:', { email: user?.email, id: user?.id });
+      return;
+    }
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws?email=${encodeURIComponent(user.email)}&userId=${encodeURIComponent(user.id)}`;
+    
+    console.log('[WebSocket] Attempting to connect to:', wsUrl);
 
     try {
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
-        console.log('[WebSocket] Connected');
+        console.log('[WebSocket] Connected successfully');
         setIsConnected(true);
         setConnectionAttempts(0);
         
@@ -37,6 +45,7 @@ export function useWebSocket() {
         wsRef.current?.send(JSON.stringify({
           type: 'subscribe_dashboard'
         }));
+        console.log('[WebSocket] Sent dashboard subscription request');
       };
 
       wsRef.current.onmessage = (event) => {
@@ -93,7 +102,16 @@ export function useWebSocket() {
         break;
 
       case 'conversation_update':
+        console.log('[WebSocket] Received conversation_update:', message.data);
         handleConversationUpdate(message.data);
+        break;
+
+      case 'test_notification':
+        console.log('[WebSocket] Received test notification:', message.data);
+        toast({
+          title: "WebSocket Test",
+          description: "Test notification received successfully!",
+        });
         break;
 
       case 'pong':
@@ -101,7 +119,7 @@ export function useWebSocket() {
         break;
 
       default:
-        console.log('[WebSocket] Unknown message type:', message.type);
+        console.log('[WebSocket] Unknown message type:', message.type, 'Data:', message.data);
     }
   };
 
