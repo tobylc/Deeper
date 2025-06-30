@@ -1101,6 +1101,14 @@ Changelog:
   * Trial subscriptions maintain 7-day trial period with tier updates only after payment confirmation
   * Enhanced webhook handlers with proper tier benefits mapping for secure subscription management
   * Complete payment verification flow ensuring users only get upgraded plans after successful payment
+- June 30, 2025. Critical voice message functionality fix for reopened threads:
+  * Fixed voice message endpoint to support 'follow up' message types matching text message functionality
+  * Enhanced voice message turn validation logic to match sophisticated text message validation system
+  * Updated voice message type validation to allow 'question', 'response', and 'follow up' messages
+  * Implemented comprehensive message flow validation for voice messages in reopened conversation threads
+  * Voice messages now work correctly in reopened threads without screen blinks or message disappearance
+  * Enhanced error handling and debugging for voice message endpoint with production-ready validation
+  * Complete voice message system parity with text messaging including support for thread continuation
 ```
 
 ## User Preferences
