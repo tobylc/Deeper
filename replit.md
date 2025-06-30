@@ -918,6 +918,13 @@ Changelog:
   * Removed turn-based blocking from conversation threads component for thread reopening actions
   * Production deployment now preserves exact turn state during thread navigation between both users
   * Complete turn preservation system ensuring thread reopening never modifies whose turn it is in conversations
+- June 30, 2025. Production-level duplicate endpoint consolidation for thread reopening:
+  * Identified and fixed root cause: frontend was calling TWO different thread reopening endpoints
+  * Removed duplicate /api/conversations/:conversationId/switch-active endpoint that lacked comprehensive turn preservation
+  * Consolidated all thread reopening to use /api/connections/:connectionId/switch-active-thread with full turn protection
+  * Enhanced connection-based endpoint with detailed turn preservation logging and verification
+  * Frontend now uses single, safe endpoint with comprehensive turn state validation and WebSocket synchronization
+  * Production-ready solution eliminates endpoint confusion and ensures consistent turn preservation behavior
 - June 27, 2025. Production-ready voice message system completion:
   * Fixed VoiceMessageDisplay component integration replacing placeholder with functional audio controls
   * Enhanced voice message error handling with comprehensive user-friendly notifications

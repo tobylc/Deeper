@@ -2376,65 +2376,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Switch active conversation thread without consuming turn
-  app.post("/api/conversations/:conversationId/switch-active", isAuthenticated, async (req: any, res) => {
-    try {
-      const conversationId = parseInt(req.params.conversationId);
-      const { connectionId } = req.body;
-      
-      const userId = req.user.claims?.sub || req.user.id;
-      const currentUser = await storage.getUser(userId);
-      
-      if (!currentUser) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      // Get the conversation to switch to
-      const conversation = await storage.getConversation(conversationId);
-      if (!conversation) {
-        return res.status(404).json({ message: "Conversation not found" });
-      }
-
-      // Verify user has access to this conversation
-      if (conversation.participant1Email !== currentUser.email && conversation.participant2Email !== currentUser.email) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      // Send real-time WebSocket notifications to both participants about thread switch
-      try {
-        const { getWebSocketManager } = await import('./websocket');
-        const wsManager = getWebSocketManager();
-        if (wsManager) {
-          // Notify both participants that thread was switched - using 'thread_reopened' action
-          // This prevents turn modifications that occur with 'conversation_started'
-          wsManager.notifyConversationUpdate(conversation.participant1Email, {
-            conversationId: conversationId,
-            connectionId: connectionId,
-            action: 'thread_reopened'
-          });
-          
-          if (conversation.participant1Email !== conversation.participant2Email) {
-            wsManager.notifyConversationUpdate(conversation.participant2Email, {
-              conversationId: conversationId,
-              connectionId: connectionId,
-              action: 'thread_reopened'
-            });
-          }
-        }
-      } catch (error) {
-        console.error('[WEBSOCKET] Failed to send thread switch notification:', error);
-      }
-
-      res.json({ 
-        success: true, 
-        activeConversationId: conversationId,
-        message: "Thread switched successfully - does not consume turn"
-      });
-    } catch (error) {
-      console.error('[API] Error switching active thread:', error);
-      res.status(500).json({ message: "Failed to switch active thread" });
-    }
-  });
+  // REMOVED: Duplicate endpoint that could cause turn state confusion
+  // All thread switching now goes through /api/connections/:connectionId/switch-active-thread
+  // which has comprehensive turn preservation logic
 
   // Test WebSocket connectivity endpoint
   app.get("/api/websocket/test", isAuthenticated, async (req: any, res) => {

@@ -730,23 +730,24 @@ export default function ConversationPage() {
     // Update the URL to reflect the selected conversation
     setLocation(`/conversation/${conversationId}`);
     
-    // CRITICAL FIX: Send WebSocket notification to synchronize thread reopening with other user
+    // CRITICAL FIX: Use the safer connection-based endpoint that has comprehensive turn preservation
     if (conversation?.connectionId) {
       try {
-        console.log('[THREAD_SELECT] Sending thread switch API request...');
-        const response = await fetch(`/api/conversations/${conversationId}/switch-active`, {
+        console.log('[THREAD_SELECT] Sending thread switch via connection endpoint for maximum turn preservation...');
+        const response = await fetch(`/api/connections/${conversation.connectionId}/switch-active-thread`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            connectionId: conversation.connectionId
+            conversationId: conversationId
           })
         });
         
         if (response.ok) {
           const responseData = await response.json();
-          console.log('[THREAD_SELECT] WebSocket notification sent successfully:', responseData);
+          console.log('[THREAD_SELECT] Thread switch completed with turn preservation:', responseData);
+          console.log('[THREAD_SELECT] Current turn preserved as:', responseData.currentTurn);
         } else {
           const errorData = await response.text();
           console.error('[THREAD_SELECT] Failed to send thread switch notification:', response.status, errorData);
