@@ -181,32 +181,28 @@ export function useWebSocket() {
       return; // Exit early - no toast needed for turn updates
     }
 
-    // Handle thread reopening with FULL synchronization to ensure both users see identical conversation states
+    // Handle thread reopening with MINIMAL invalidation to preserve turn state
     if (data.action === 'thread_reopened') {
-      console.log('[WebSocket] Thread reopened - performing FULL conversation synchronization for both users');
+      console.log('[WebSocket] Thread reopened - performing MINIMAL synchronization to preserve turn state');
       console.log('[WebSocket] Thread reopened data:', JSON.stringify(data));
       
-      // CRITICAL FIX: Invalidate AND immediately refetch conversation data to ensure both users have identical turn states
+      // CRITICAL FIX: Only refresh messages for thread reopening - DO NOT touch conversation data to preserve turn state
       if (data.conversationId) {
-        console.log('[WebSocket] Force refreshing conversation data for conversation:', data.conversationId);
-        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
-        queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
-        
-        // Also refresh messages to ensure complete synchronization
+        console.log('[WebSocket] Refreshing ONLY messages for conversation (preserving turn state):', data.conversationId);
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
         queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
       }
       
-      // Invalidate conversation threads list
+      // Only refresh conversation threads list (not turn-related data)
       if (data.connectionId) {
-        console.log('[WebSocket] Invalidating conversation threads for connection:', data.connectionId);
+        console.log('[WebSocket] Refreshing conversation threads list for connection:', data.connectionId);
         queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
         queryClient.refetchQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
       }
       
-      // Dispatch custom event for conversation page synchronization
+      // Dispatch custom event for conversation page navigation synchronization
       if (data.conversationId) {
-        console.log('[WebSocket] Dispatching conversationSync event for conversation:', data.conversationId);
+        console.log('[WebSocket] Dispatching conversationSync event for navigation sync:', data.conversationId);
         const syncEvent = new CustomEvent('conversationSync', {
           detail: {
             conversationId: data.conversationId,
@@ -218,7 +214,7 @@ export function useWebSocket() {
         console.log('[WebSocket] conversationSync event dispatched successfully');
       }
       
-      return; // Exit early after full thread reopening synchronization
+      return; // Exit early after minimal thread reopening synchronization
     }
 
     // For other conversation updates (new conversations, etc.), do full invalidation with immediate refresh

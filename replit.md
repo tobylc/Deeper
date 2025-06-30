@@ -910,6 +910,14 @@ Changelog:
   * Added WebSocket connection status monitoring with visual indicators for production debugging
   * Thread reopening now works as intended: pure navigation synchronization without consuming user turns
   * Production-ready conversation threading system with complete turn logic integrity maintained
+- June 30, 2025. Critical WebSocket synchronization fix for thread reopening turn preservation:
+  * Fixed critical issue where thread reopening WebSocket events caused excessive query invalidation leading to turn state corruption
+  * Modified WebSocket thread_reopened handler to only refresh messages and conversation threads - NOT conversation turn data
+  * Corrected API endpoint URL in frontend from non-existent switch-active-thread to existing switch-active endpoint
+  * Enhanced thread reopening validation to be more permissive since it's pure navigation, not turn-consuming action
+  * Removed turn-based blocking from conversation threads component for thread reopening actions
+  * Production deployment now preserves exact turn state during thread navigation between both users
+  * Complete turn preservation system ensuring thread reopening never modifies whose turn it is in conversations
 - June 27, 2025. Production-ready voice message system completion:
   * Fixed VoiceMessageDisplay component integration replacing placeholder with functional audio controls
   * Enhanced voice message error handling with comprehensive user-friendly notifications
