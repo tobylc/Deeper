@@ -941,6 +941,12 @@ Changelog:
   * Created production-ready SQL analysis to detect and prevent future turn state corruption
   * Database now maintains accurate turn assignments: person who sent last message loses turn, other person gains turn
   * Complete resolution of persistent thread reopening issue through database corruption cleanup
+- June 30, 2025. Voice message functionality fix for reopened conversation threads:
+  * Fixed critical bug where voice messages failed to send after thread reopening due to missing conversationId prop
+  * Updated ConversationInterface component to receive proper conversationId fallback chain: selectedConversationId || parseInt(id!) || conversation?.id
+  * Enhanced voice message error handling to log missing required data for easier debugging
+  * Voice messages now send successfully in reopened threads with proper conversation context
+  * Production-ready voice message system works seamlessly across all conversation states
 - June 27, 2025. Production-ready voice message system completion:
   * Fixed VoiceMessageDisplay component integration replacing placeholder with functional audio controls
   * Enhanced voice message error handling with comprehensive user-friendly notifications

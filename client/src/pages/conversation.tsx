@@ -988,7 +988,7 @@ export default function ConversationPage() {
               onRecordingStart={handleRecordingStart}
               isSending={sendMessageMutation.isPending}
               nextMessageType={nextMessageType}
-              conversationId={selectedConversationId || 0}
+              conversationId={selectedConversationId || parseInt(id!) || conversation?.id}
               hasStartedResponse={hasStartedResponse}
               responseStartTime={responseStartTime}
               onTimerStart={() => {

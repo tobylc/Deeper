@@ -90,7 +90,11 @@ const ConversationInterface = memo(function ConversationInterface({
   const handleVoiceMessageSend = useCallback(async (audioBlob: Blob, duration: number) => {
     try {
       if (!conversationId || !currentUserEmail || !nextMessageType) {
-        console.error('Missing required data for voice message sending');
+        console.error('Missing required data for voice message sending:', {
+          conversationId,
+          currentUserEmail,
+          nextMessageType
+        });
         return;
       }
 
