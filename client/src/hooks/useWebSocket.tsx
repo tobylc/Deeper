@@ -181,15 +181,27 @@ export function useWebSocket() {
       return; // Exit early - no toast needed for turn updates
     }
 
-    // Handle thread reopening specially - minimal invalidation to prevent turn changes
+    // Handle thread reopening with FULL synchronization to ensure both users see identical conversation states
     if (data.action === 'thread_reopened') {
-      console.log('[WebSocket] Thread reopened - using minimal query invalidation and dispatching sync event');
+      console.log('[WebSocket] Thread reopened - performing FULL conversation synchronization for both users');
       console.log('[WebSocket] Thread reopened data:', JSON.stringify(data));
       
-      // Only invalidate conversation threads list, NOT the conversation itself
+      // CRITICAL FIX: Invalidate AND immediately refetch conversation data to ensure both users have identical turn states
+      if (data.conversationId) {
+        console.log('[WebSocket] Force refreshing conversation data for conversation:', data.conversationId);
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
+        queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
+        
+        // Also refresh messages to ensure complete synchronization
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
+        queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
+      }
+      
+      // Invalidate conversation threads list
       if (data.connectionId) {
         console.log('[WebSocket] Invalidating conversation threads for connection:', data.connectionId);
         queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
+        queryClient.refetchQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
       }
       
       // Dispatch custom event for conversation page synchronization
@@ -206,7 +218,7 @@ export function useWebSocket() {
         console.log('[WebSocket] conversationSync event dispatched successfully');
       }
       
-      return; // Exit early to prevent full invalidation
+      return; // Exit early after full thread reopening synchronization
     }
 
     // For other conversation updates (new conversations, etc.), do full invalidation with immediate refresh

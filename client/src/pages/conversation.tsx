@@ -120,15 +120,25 @@ export default function ConversationPage() {
       console.log('[CONVERSATION] Received conversationSync event:', event.detail);
       const { conversationId, action } = event.detail;
       
-      if (action === 'thread_reopened' && conversationId && conversationId !== selectedConversationId) {
-        console.log('[CONVERSATION] Syncing to reopened thread from other user:', conversationId);
+      if (action === 'thread_reopened' && conversationId) {
+        console.log('[CONVERSATION] Processing thread reopening sync for conversation:', conversationId);
         console.log('[CONVERSATION] Current selected conversation:', selectedConversationId);
+        
+        // Always sync to the reopened thread, regardless of current selection
+        // This ensures both users see identical conversation states
         setSelectedConversationId(conversationId);
         setNewMessage(""); // Clear any pending message
         setLocation(`/conversation/${conversationId}`);
-        console.log('[CONVERSATION] Successfully synchronized to new conversation thread');
+        
+        // CRITICAL: Force immediate refresh of all conversation data to ensure turn synchronization
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
+        queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}`] });
+        queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
+        
+        console.log('[CONVERSATION] Successfully synchronized to reopened conversation thread with data refresh');
       } else {
-        console.log('[CONVERSATION] Thread sync event ignored - same conversation or different action');
+        console.log('[CONVERSATION] Thread sync event ignored - different action or missing conversationId');
       }
     };
 
@@ -139,7 +149,7 @@ export default function ConversationPage() {
       console.log('[CONVERSATION] Removing conversationSync event listener');
       window.removeEventListener('conversationSync', handleThreadSyncEvent as EventListener);
     };
-  }, [selectedConversationId, setLocation]);
+  }, [selectedConversationId, setLocation, queryClient]);
 
   const { data: conversation, isLoading: conversationLoading, error: conversationError } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${selectedConversationId || id}`],

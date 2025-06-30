@@ -2339,27 +2339,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // CRITICAL: Check if there's ANY current thread with unanswered questions
-      // Users can only reopen threads when ALL current threads have complete question-response pairs
+      // SIMPLIFIED: Thread reopening is just navigation - minimal validation needed
+      // Only block if the current thread has an unanswered question from the OTHER user
       if (currentConversationId && currentConversationId !== conversationId) {
         const currentMessages = await storage.getMessages(currentConversationId);
         if (currentMessages.length > 0) {
           const lastMessage = currentMessages[currentMessages.length - 1];
           
-          // Check if there's an unanswered question from the OTHER user that needs a response
+          // Only block if there's an unanswered question from the OTHER user that needs a response
           if (lastMessage.type === 'question' && lastMessage.senderEmail !== currentUser.email) {
-            return res.json({ 
-              canReopen: false, 
-              reason: "respond_to_question",
-              message: "Must respond to the current question before reopening previous threads" 
-            });
-          }
-          
-          // Additional check: ensure there's been at least one complete exchange in current thread
-          const hasCurrentQuestion = currentMessages.some(msg => msg.type === 'question');
-          const hasCurrentResponse = currentMessages.some(msg => msg.type === 'response');
-          
-          if (hasCurrentQuestion && !hasCurrentResponse) {
             return res.json({ 
               canReopen: false, 
               reason: "respond_to_question",
@@ -2369,15 +2357,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Check if the thread to reopen has at least one complete exchange
+      // Allow reopening any thread that has at least one message (very permissive)
       const messages = await storage.getMessages(conversationId);
-      const hasQuestion = messages.some(msg => msg.type === 'question');
-      const hasResponse = messages.some(msg => msg.type === 'response');
       
-      if (!hasQuestion || !hasResponse) {
+      if (messages.length === 0) {
         return res.json({ 
           canReopen: false, 
-          reason: "Thread needs at least one complete question-response exchange before it can be reopened" 
+          reason: "empty_thread",
+          message: "Cannot reopen empty conversation thread" 
         });
       }
 
