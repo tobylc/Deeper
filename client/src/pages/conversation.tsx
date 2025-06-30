@@ -734,13 +734,13 @@ export default function ConversationPage() {
     if (conversation?.connectionId) {
       try {
         console.log('[THREAD_SELECT] Sending thread switch API request...');
-        const response = await fetch(`/api/connections/${conversation.connectionId}/switch-active-thread`, {
+        const response = await fetch(`/api/conversations/${conversationId}/switch-active`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            conversationId: conversationId
+            connectionId: conversation.connectionId
           })
         });
         

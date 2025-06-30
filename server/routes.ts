@@ -2451,26 +2451,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (wsManager) {
         const connectedUsers = wsManager.getConnectedUsers();
         const connectionCount = wsManager.getConnectionCount();
-        const isUserConnected = connectedUsers.includes(currentUser.email);
+        const isUserConnected = connectedUsers.includes(currentUser.email || '');
         
         console.log(`[WEBSOCKET_TEST] Connected users: ${connectedUsers.join(', ')}`);
         console.log(`[WEBSOCKET_TEST] Total connections: ${connectionCount}`);
-        console.log(`[WEBSOCKET_TEST] User ${currentUser.email} connected: ${isUserConnected}`);
+        console.log(`[WEBSOCKET_TEST] User ${currentUser.email || 'unknown'} connected: ${isUserConnected}`);
         
         // Send a test notification
-        wsManager.notifyConversationUpdate(currentUser.email, {
-          conversationId: 9999,
-          connectionId: 9999,
-          action: 'test_notification'
-        });
+        if (currentUser.email) {
+          wsManager.notifyConversationUpdate(currentUser.email, {
+            conversationId: 9999,
+            connectionId: 9999,
+            action: 'test_notification'
+          });
         
-        res.json({
-          wsManagerAvailable: true,
-          connectedUsers: connectedUsers,
-          connectionCount: connectionCount,
-          currentUserConnected: isUserConnected,
-          testNotificationSent: true
-        });
+          res.json({
+            wsManagerAvailable: true,
+            connectedUsers: connectedUsers,
+            connectionCount: connectionCount,
+            currentUserConnected: isUserConnected,
+            testNotificationSent: true
+          });
+        } else {
+          res.json({
+            wsManagerAvailable: true,
+            connectedUsers: connectedUsers,
+            connectionCount: connectionCount,
+            currentUserConnected: false,
+            testNotificationSent: false,
+            error: "User email not available"
+          });
+        }
       } else {
         res.json({
           wsManagerAvailable: false,
@@ -2479,7 +2490,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error('[WEBSOCKET_TEST] Error:', error);
-      res.status(500).json({ message: "WebSocket test failed", error: error.message });
+      res.status(500).json({ 
+        message: "WebSocket test failed", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   });
 
