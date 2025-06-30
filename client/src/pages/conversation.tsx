@@ -344,11 +344,18 @@ export default function ConversationPage() {
           description: "Your question has started a new conversation thread",
         });
       } else {
-        // Regular message sent to existing conversation
+        // Regular message sent to existing conversation - FORCE IMMEDIATE SYNC
         const conversationId = selectedConversationId || id;
+        
+        // Invalidate queries for immediate cache refresh
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] });
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+        queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
+        
+        // Force immediate refetch to ensure sender sees updated turn status instantly
+        queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}`] });
+        queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
         
         toast({
           title: "Message sent!",

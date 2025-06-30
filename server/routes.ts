@@ -2897,6 +2897,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // This ensures frontend cache is synchronized for both participants
           wsManager.notifyConversationUpdate(messageData.senderEmail, {
             conversationId,
+            connectionId: conversation.connectionId,
             action: 'turn_updated',
             newTurn: nextTurn,
             relationshipType: conversation.relationshipType
@@ -2904,6 +2905,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           wsManager.notifyConversationUpdate(nextTurn, {
             conversationId,
+            connectionId: conversation.connectionId,
             action: 'turn_updated', 
             newTurn: nextTurn,
             relationshipType: conversation.relationshipType

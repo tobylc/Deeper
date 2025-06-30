@@ -110,11 +110,17 @@ export function useWebSocket() {
 
     console.log('[WebSocket] New message received:', data);
 
-    // Invalidate relevant queries to refresh dashboard
+    // CRITICAL FIX: Force immediate refresh of conversation data for real-time sync
+    // Invalidate and immediately refetch all relevant queries
     queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
     queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
     queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
     queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
+
+    // Force immediate refetch to ensure both users see changes instantly
+    queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
+    queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
+    queryClient.refetchQueries({ queryKey: ['/api/connections'] });
 
     // Show toast notification
     toast({
@@ -140,14 +146,19 @@ export function useWebSocket() {
 
     // CRITICAL FIX: Handle turn updates to synchronize both users
     if (data.action === 'turn_updated') {
-      console.log('[WebSocket] Turn updated - invalidating conversation data for both users');
+      console.log('[WebSocket] Turn updated - forcing immediate conversation data refresh for both users');
       
-      // Invalidate conversation data to refresh turn information
+      // Force immediate refresh of conversation data to sync turn information
       if (data.conversationId) {
+        // Invalidate and immediately refetch conversation data
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
-        // Also invalidate dashboard to update turn badges
+        queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
+        
+        // Also force refresh dashboard and conversation lists
         queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+        queryClient.refetchQueries({ queryKey: ['/api/connections'] });
+        queryClient.refetchQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
       }
       return; // Exit early - no toast needed for turn updates
     }
@@ -163,7 +174,7 @@ export function useWebSocket() {
       return; // Exit early to prevent full invalidation
     }
 
-    // For other conversation updates (new conversations, etc.), do full invalidation
+    // For other conversation updates (new conversations, etc.), do full invalidation with immediate refresh
     queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
     queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
     
@@ -171,9 +182,17 @@ export function useWebSocket() {
       queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
       
-      // Also invalidate conversation threads for the specific connection
-      queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations/message-counts`] });
+      // CRITICAL: Force immediate refresh of conversation threads to maintain sync
+      if (data.connectionId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations/message-counts`] });
+        queryClient.refetchQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
+        queryClient.refetchQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations/message-counts`] });
+      }
+      
+      // Force immediate refresh for conversation and message data
+      queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
     }
 
     // Handle new conversation thread creation
