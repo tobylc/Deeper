@@ -156,14 +156,11 @@ export default function ConversationPage() {
     queryFn: async () => {
       const conversationId = selectedConversationId || id;
       try {
-        console.log(`[CONVERSATION_QUERY] Fetching conversation ${conversationId}...`);
         const response = await apiRequest('GET', `/api/conversations/${conversationId}`);
         if (!response.ok) {
           throw new Error(`Failed to load conversation: ${response.status}`);
         }
-        const conversationData = await response.json();
-        console.log(`[CONVERSATION_QUERY] Loaded conversation ${conversationId}, currentTurn: ${conversationData.currentTurn}`);
-        return conversationData;
+        return response.json();
       } catch (error) {
         console.error('Conversation loading error:', error);
         throw error;
