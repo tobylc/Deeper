@@ -2681,7 +2681,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingMessages = await storage.getMessagesByConversationId(conversationId);
       const lastMessage = existingMessages[existingMessages.length - 1];
 
-      // Production-ready message type validation with comprehensive error handling
+      // CRITICAL FIX: Check if this should create a new conversation thread instead
+      // When user sends a new question after a complete question-response exchange,
+      // automatically create a new conversation thread and move current one to left column
+      if (messageData.type === 'question' && existingMessages.length > 0) {
+        // Check if there's already been a complete question-response exchange
+        const hasQuestion = existingMessages.some(msg => msg.type === 'question');
+        const hasResponse = existingMessages.some(msg => msg.type === 'response');
+        
+        // Find the most recent question
+        let lastQuestionIndex = -1;
+        for (let i = existingMessages.length - 1; i >= 0; i--) {
+          if (existingMessages[i].type === 'question') {
+            lastQuestionIndex = i;
+            break;
+          }
+        }
+        
+        // Check if the last question has been responded to
+        const lastQuestionHasResponse = lastQuestionIndex !== -1 ? 
+          existingMessages.slice(lastQuestionIndex + 1).some(msg => msg.type === 'response') : false;
+        
+        // If there's been a complete exchange (question + response) and last question is answered,
+        // create a new conversation thread instead of adding to this one
+        if (hasQuestion && hasResponse && lastQuestionHasResponse) {
+          console.log('[THREAD_CREATION] Detected new question after complete exchange - creating new thread');
+          
+          // Create new conversation thread
+          const newConversation = await storage.createConversation({
+            participant1Email: conversation.participant1Email,
+            participant2Email: conversation.participant2Email,
+            relationshipType: conversation.relationshipType,
+            connectionId: conversation.connectionId,
+            currentTurn: messageData.senderEmail, // New thread starts with sender's turn
+            title: null, // Will be generated when first message is sent
+            status: 'active',
+            isMainThread: false,
+            parentConversationId: null,
+            lastActivityAt: new Date()
+          });
+          
+          // Send the message to the new conversation
+          const newMessage = await storage.createMessage({
+            ...messageData,
+            conversationId: newConversation.id
+          });
+          
+          // Generate thread title for the new conversation
+          const threadTitle = generateRelationshipSpecificTitle(
+            messageData.content, 
+            conversation.relationshipType
+          );
+          await storage.updateConversationTitle(newConversation.id, threadTitle);
+          
+          // Update turn for the new conversation
+          const otherParticipant = messageData.senderEmail === conversation.participant1Email 
+            ? conversation.participant2Email 
+            : conversation.participant1Email;
+          await storage.updateConversationTurn(newConversation.id, otherParticipant);
+          
+          // Send real-time WebSocket notifications to both participants about new thread
+          try {
+            const { getWebSocketManager } = await import('./websocket');
+            const wsManager = getWebSocketManager();
+            if (wsManager) {
+              // Notify both participants that a new thread was created
+              wsManager.notifyConversationUpdate(conversation.participant1Email, {
+                conversationId: newConversation.id,
+                connectionId: conversation.connectionId,
+                action: 'thread_created'
+              });
+              
+              if (conversation.participant1Email !== conversation.participant2Email) {
+                wsManager.notifyConversationUpdate(conversation.participant2Email, {
+                  conversationId: newConversation.id,
+                  connectionId: conversation.connectionId,
+                  action: 'thread_created'
+                });
+              }
+            }
+          } catch (error) {
+            console.error('[WEBSOCKET] Failed to send new thread notification:', error);
+          }
+          
+          // Track new thread creation
+          analytics.track({
+            type: 'message_sent',
+            email: messageData.senderEmail,
+            metadata: { 
+              conversationId: newConversation.id,
+              originalConversationId: conversationId,
+              messageType: messageData.type,
+              relationshipType: conversation.relationshipType,
+              threadCreated: true
+            }
+          });
+          
+          // Return the new message with the new conversation ID
+          return res.json({
+            ...newMessage,
+            newThreadCreated: true,
+            newConversationId: newConversation.id,
+            originalConversationId: conversationId
+          });
+        }
+      }
+
+      // Original validation logic for messages being added to existing conversation
       try {
         if (existingMessages.length === 0) {
           // First message must be a question

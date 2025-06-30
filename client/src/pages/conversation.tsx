@@ -303,7 +303,7 @@ export default function ConversationPage() {
       if (!data.content.trim()) {
         throw new Error("Message content cannot be empty");
       }
-      const response = await apiRequest("POST", `/api/conversations/${id}/messages`, {
+      const response = await apiRequest("POST", `/api/conversations/${selectedConversationId || id}/messages`, {
         senderEmail: user.email,
         content: data.content.trim(),
         type: data.type,
@@ -311,10 +311,42 @@ export default function ConversationPage() {
       
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${id}/messages`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${id}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+    onSuccess: (responseData) => {
+      // Check if a new thread was created automatically
+      if (responseData.newThreadCreated && responseData.newConversationId) {
+        console.log('[THREAD_CREATION] New thread created automatically, switching to:', responseData.newConversationId);
+        
+        // Switch to the new conversation thread immediately
+        setSelectedConversationId(responseData.newConversationId);
+        setLocation(`/conversation/${responseData.newConversationId}`);
+        
+        // Invalidate queries for both old and new conversations
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${responseData.originalConversationId}/messages`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${responseData.newConversationId}/messages`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${responseData.newConversationId}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+        
+        // Also invalidate connection conversations to update thread lists
+        if (conversation?.connectionId) {
+          queryClient.invalidateQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations`] });
+        }
+        
+        toast({
+          title: "New conversation started!",
+          description: "Your question has started a new conversation thread",
+        });
+      } else {
+        // Regular message sent to existing conversation
+        const conversationId = selectedConversationId || id;
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+        
+        toast({
+          title: "Message sent!",
+          description: "Your message has been delivered",
+        });
+      }
       
       // Check if this is user's first message in this conversation and they haven't set notification preferences
       if (messages.length === 0 && notificationPref && !notificationPref.hasPreference && !notificationPref.neverShow) {
@@ -322,10 +354,6 @@ export default function ConversationPage() {
       }
       
       setNewMessage("");
-      toast({
-        title: "Message sent!",
-        description: "Your message has been delivered",
-      });
     },
     onError: (error: any) => {
       console.error("Send message error:", error);
