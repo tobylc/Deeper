@@ -653,6 +653,33 @@ export default function ConversationPage() {
     setNewMessage("");
   };
 
+  // PRODUCTION FIX: Turn repair functionality for debugging
+  const repairTurnsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/conversations/repair-turns');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      console.log('[TURN_REPAIR] Success:', data);
+      toast({
+        title: "Turn synchronization repaired",
+        description: `Fixed ${data.repairedConversations} conversations`,
+      });
+      
+      // Force refresh all conversation data
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${selectedConversationId || id}`] });
+    },
+    onError: (error) => {
+      console.error('[TURN_REPAIR] Error:', error);
+      toast({
+        title: "Turn repair failed",
+        description: "Unable to repair turn synchronization",
+      });
+    },
+  });
+
   const handleThoughtfulResponseProceed = () => {
     setShowThoughtfulResponsePopup(false);
     proceedWithSending(pendingMessage);
