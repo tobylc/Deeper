@@ -762,10 +762,10 @@ export default function ConversationPage() {
       console.error('[THREAD_SELECT] No connection ID available for WebSocket notification');
     }
     
-    // CRITICAL FIX: No query invalidation for thread reopening
-    // Thread reopening is pure navigation - should not refresh any data that could affect turns
-    // The WebSocket notification above handles synchronization between users
-    console.log('[THREAD_SELECT] Thread reopening complete - no query invalidation to preserve turn state');
+    // CRITICAL FIX: Thread reopening is pure navigation with ZERO data refresh
+    // Any query invalidation during thread reopening can corrupt turn state
+    // Frontend navigation happens via URL/state changes - WebSocket handles user synchronization
+    console.log('[THREAD_SELECT] Thread reopening complete - ZERO query invalidation for maximum turn preservation');
   };
 
   const handleNewThreadCreated = (conversationId: number) => {

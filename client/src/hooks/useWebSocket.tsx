@@ -181,28 +181,18 @@ export function useWebSocket() {
       return; // Exit early - no toast needed for turn updates
     }
 
-    // Handle thread reopening with MINIMAL invalidation to preserve turn state
+    // Handle thread reopening with ZERO invalidation to preserve turn state
     if (data.action === 'thread_reopened') {
-      console.log('[WebSocket] Thread reopened - performing MINIMAL synchronization to preserve turn state');
+      console.log('[WebSocket] Thread reopened - performing ZERO query invalidation to preserve turn state');
       console.log('[WebSocket] Thread reopened data:', JSON.stringify(data));
       
-      // CRITICAL FIX: Only refresh messages for thread reopening - DO NOT touch conversation data to preserve turn state
-      if (data.conversationId) {
-        console.log('[WebSocket] Refreshing ONLY messages for conversation (preserving turn state):', data.conversationId);
-        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
-        queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
-      }
+      // CRITICAL FIX: NO query invalidation whatsoever for thread reopening
+      // Thread reopening is pure navigation - any query refresh can corrupt turn state
+      console.log('[WebSocket] Skipping ALL query invalidation to preserve exact turn state');
       
-      // Only refresh conversation threads list (not turn-related data)
-      if (data.connectionId) {
-        console.log('[WebSocket] Refreshing conversation threads list for connection:', data.connectionId);
-        queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
-        queryClient.refetchQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
-      }
-      
-      // Dispatch custom event for conversation page navigation synchronization
+      // ONLY dispatch custom event for frontend navigation synchronization
       if (data.conversationId) {
-        console.log('[WebSocket] Dispatching conversationSync event for navigation sync:', data.conversationId);
+        console.log('[WebSocket] Dispatching conversationSync event for pure navigation sync:', data.conversationId);
         const syncEvent = new CustomEvent('conversationSync', {
           detail: {
             conversationId: data.conversationId,
@@ -211,10 +201,10 @@ export function useWebSocket() {
           }
         });
         window.dispatchEvent(syncEvent);
-        console.log('[WebSocket] conversationSync event dispatched successfully');
+        console.log('[WebSocket] conversationSync event dispatched - NO DATA REFRESH');
       }
       
-      return; // Exit early after minimal thread reopening synchronization
+      return; // Exit early after zero-invalidation thread reopening synchronization
     }
 
     // For other conversation updates (new conversations, etc.), do full invalidation with immediate refresh
