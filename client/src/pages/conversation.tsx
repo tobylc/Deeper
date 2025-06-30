@@ -457,7 +457,7 @@ export default function ConversationPage() {
     : false;
   
   // Production-ready message type validation: EVERY question requires a response
-  const getNextMessageType = (): 'question' | 'response' => {
+  const getNextMessageType = (): 'question' | 'response' | 'follow up' => {
     try {
       if (!messages || !Array.isArray(messages) || messages.length === 0) return 'question';
       
@@ -477,6 +477,11 @@ export default function ConversationPage() {
         
         if (!hasResponseToLastQuestion) {
           return 'response';
+        }
+        
+        // If there's already a question-response exchange, allow follow-ups
+        if (hasResponseToLastQuestion) {
+          return 'follow up';
         }
       }
       

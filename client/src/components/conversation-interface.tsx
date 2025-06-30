@@ -44,7 +44,7 @@ interface ConversationInterfaceProps {
   onQuestionSelect: (question: string) => void;
   onRecordingStart: () => void;
   isSending: boolean;
-  nextMessageType: 'question' | 'response';
+  nextMessageType: 'question' | 'response' | 'follow up';
   hasStartedResponse?: boolean;
   responseStartTime?: Date | null;
   onTimerStart?: () => void;
