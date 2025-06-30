@@ -2893,7 +2893,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             relationshipType: conversation.relationshipType
           });
           
-          // Notify sender that their dashboard should refresh (conversation thread updated)
+          // CRITICAL FIX: Notify BOTH users about turn change to prevent "both users see their turn" issue
+          // This ensures frontend cache is synchronized for both participants
+          wsManager.notifyConversationUpdate(messageData.senderEmail, {
+            conversationId,
+            action: 'turn_updated',
+            newTurn: nextTurn,
+            relationshipType: conversation.relationshipType
+          });
+          
+          wsManager.notifyConversationUpdate(nextTurn, {
+            conversationId,
+            action: 'turn_updated', 
+            newTurn: nextTurn,
+            relationshipType: conversation.relationshipType
+          });
+          
+          // Also notify sender that message was sent
           wsManager.notifyConversationUpdate(messageData.senderEmail, {
             conversationId,
             action: 'message_sent',

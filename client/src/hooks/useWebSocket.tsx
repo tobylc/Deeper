@@ -138,6 +138,20 @@ export function useWebSocket() {
 
     console.log('[WebSocket] Conversation update received:', data);
 
+    // CRITICAL FIX: Handle turn updates to synchronize both users
+    if (data.action === 'turn_updated') {
+      console.log('[WebSocket] Turn updated - invalidating conversation data for both users');
+      
+      // Invalidate conversation data to refresh turn information
+      if (data.conversationId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
+        // Also invalidate dashboard to update turn badges
+        queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+      }
+      return; // Exit early - no toast needed for turn updates
+    }
+
     // Handle thread reopening specially - minimal invalidation to prevent turn changes
     if (data.action === 'thread_reopened') {
       console.log('[WebSocket] Thread reopened - using minimal query invalidation');

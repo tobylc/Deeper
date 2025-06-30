@@ -149,6 +149,7 @@ export class WebSocketManager {
     connectionId?: number;
     action: string;
     relationshipType?: string;
+    newTurn?: string; // Added for turn synchronization
   }) {
     this.notifyUser(email, {
       type: 'conversation_update',
