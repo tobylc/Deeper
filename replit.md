@@ -941,16 +941,6 @@ Changelog:
   * Enhanced conversation page sendMessage mutation to exclude invitees from trial expiration popup triggers
   * Added comprehensive invitee user detection across all components that could show trial expiration popups
   * Invitee users now have permanent free access without inappropriate upgrade prompts or trial limitations
-- June 30, 2025. CRITICAL PRODUCTION FIX: Complete turn synchronization system overhaul:
-  * Fixed critical bug where both users could see "their turn" simultaneously in conversation pages
-  * Added explicit turn_updated WebSocket notifications to both participants when messages are sent
-  * Implemented thread switching endpoint with real-time synchronization between both users
-  * Enhanced WebSocket handler with thread_switched action for immediate URL and state synchronization
-  * Added comprehensive database integrity check and repair system for turn inconsistencies
-  * Created forced cache refresh mechanism to eliminate stale turn data between users
-  * Both users' conversation pages now stay perfectly synchronized - only ONE user has turn at any time
-  * Production-ready turn validation ensures waiting users cannot disrupt conversation flow
-  * Complete real-time synchronization system prevents any turn state desynchronization between participants
   * Maintained production-ready error handling while ensuring invitees never see trial expiration scenarios
   * Complete invitee user experience protection ensuring they only see relevant messaging for their permanent free status
 - June 26, 2025. Backend invitee user permanent free access implementation:
