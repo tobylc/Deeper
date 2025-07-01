@@ -404,7 +404,7 @@ export default function VoiceRecorder({
     }
   };
 
-  const handleSendAttempt = () => {
+  const handleSendAttempt = async () => {
     // Skip timer validation for inviter's first question
     if (!canSendNow()) {
       setShowThoughtfulResponseTimer(true);
@@ -412,15 +412,25 @@ export default function VoiceRecorder({
     }
     
     if (audioBlob && canSendMessage) {
-      onSendVoiceMessage(audioBlob, duration);
-      clearRecording();
+      try {
+        await onSendVoiceMessage(audioBlob, duration);
+        clearRecording();
+      } catch (error) {
+        console.error('Error sending voice message:', error);
+        // Don't clear recording on error so user can retry
+      }
     }
   };
 
-  const handleThoughtfulResponseProceed = () => {
+  const handleThoughtfulResponseProceed = async () => {
     if (audioBlob && canSendMessage && canSendNow()) {
-      onSendVoiceMessage(audioBlob, duration);
-      clearRecording();
+      try {
+        await onSendVoiceMessage(audioBlob, duration);
+        clearRecording();
+      } catch (error) {
+        console.error('Error sending voice message:', error);
+        // Don't clear recording on error so user can retry
+      }
     }
     setShowThoughtfulResponseTimer(false);
   };

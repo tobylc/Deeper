@@ -97,6 +97,7 @@ const ConversationInterface = memo(function ConversationInterface({
       }
 
       setShowTranscriptionProgress(true);
+      setIsTranscriptionComplete(false);
       
       // Create FormData for multipart upload
       const formData = new FormData();
@@ -127,12 +128,21 @@ const ConversationInterface = memo(function ConversationInterface({
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${currentUserEmail}`] })
       ]);
       
-      // Hide progress indicator immediately after successful processing and data refresh
-      setShowTranscriptionProgress(false);
+      // Signal completion to progress component
+      setIsTranscriptionComplete(true);
+      
+      // Hide progress after showing completion state briefly
+      setTimeout(() => {
+        setShowTranscriptionProgress(false);
+        setIsTranscriptionComplete(false);
+        // Reset message mode to text after successful voice message send
+        setMessageMode('text');
+      }, 2000);
       
     } catch (error) {
       console.error('Error sending voice message:', error);
       setShowTranscriptionProgress(false);
+      setIsTranscriptionComplete(false);
       
       // Show user-friendly error without triggering error boundary
       if (typeof window !== 'undefined' && window.dispatchEvent) {
@@ -534,7 +544,10 @@ const ConversationInterface = memo(function ConversationInterface({
 
       {/* Transcription Progress */}
       {showTranscriptionProgress && (
-        <TranscriptionProgress isVisible={showTranscriptionProgress} />
+        <TranscriptionProgress 
+          isVisible={showTranscriptionProgress} 
+          isProcessingComplete={isTranscriptionComplete}
+        />
       )}
     </div>
   );
