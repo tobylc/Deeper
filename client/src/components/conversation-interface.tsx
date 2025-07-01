@@ -75,6 +75,7 @@ const ConversationInterface = memo(function ConversationInterface({
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
   const [showTranscriptionProgress, setShowTranscriptionProgress] = useState(false);
+  const [isTranscriptionComplete, setIsTranscriptionComplete] = useState(false);
   const [isConversationExpanded, setIsConversationExpanded] = useState(false);
   const queryClient = useQueryClient();
 
@@ -126,10 +127,8 @@ const ConversationInterface = memo(function ConversationInterface({
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${currentUserEmail}`] })
       ]);
       
-      // Keep processing indicator visible for a moment to show completion
-      setTimeout(() => {
-        setShowTranscriptionProgress(false);
-      }, 1500); // Brief delay to show completion
+      // Hide progress indicator immediately after successful processing and data refresh
+      setShowTranscriptionProgress(false);
       
     } catch (error) {
       console.error('Error sending voice message:', error);

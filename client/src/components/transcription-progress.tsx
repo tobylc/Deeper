@@ -7,12 +7,14 @@ interface TranscriptionProgressProps {
   isVisible: boolean;
   onComplete?: () => void;
   className?: string;
+  isProcessingComplete?: boolean;
 }
 
 export default function TranscriptionProgress({ 
   isVisible, 
   onComplete, 
-  className 
+  className,
+  isProcessingComplete = false
 }: TranscriptionProgressProps) {
   const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState<'uploading' | 'processing' | 'transcribing' | 'sending' | 'complete'>('uploading');
@@ -20,11 +22,12 @@ export default function TranscriptionProgress({
   useEffect(() => {
     if (!isVisible) {
       setProgress(0);
-      setStage('processing');
+      setStage('uploading');
       return;
     }
 
     // Simulate realistic voice message processing with multiple stages
+    // Progress automatically to 95% but wait for isProcessingComplete to finish
     const interval = setInterval(() => {
       setProgress(prev => {
         if (prev < 15) {
@@ -39,20 +42,26 @@ export default function TranscriptionProgress({
         } else if (prev < 95) {
           setStage('sending');
           return prev + Math.random() * 4 + 1; // 1-5% increments in sending phase
-        } else if (prev < 100) {
-          return prev + Math.random() * 2 + 1; // 1-3% increments near completion
         } else {
-          setStage('complete');
-          setTimeout(() => {
-            onComplete?.();
-          }, 800);
-          return 100;
+          // Wait at 95% until processing is complete
+          return 95;
         }
       });
     }, 120 + Math.random() * 80); // Variable timing for realistic feel
 
     return () => clearInterval(interval);
-  }, [isVisible, onComplete]);
+  }, [isVisible]);
+
+  // Handle completion when processing is done
+  useEffect(() => {
+    if (isProcessingComplete && progress >= 95) {
+      setProgress(100);
+      setStage('complete');
+      setTimeout(() => {
+        onComplete?.();
+      }, 800);
+    }
+  }, [isProcessingComplete, progress, onComplete]);
 
   if (!isVisible) return null;
 
