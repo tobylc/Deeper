@@ -130,11 +130,13 @@ export default function ConversationPage() {
         setNewMessage(""); // Clear any pending message
         setLocation(`/conversation/${conversationId}`);
         
-        // CRITICAL FIX: Thread reopening is pure navigation - NO query invalidation
-        // Any data refresh during thread reopening can corrupt turn states
-        // The existing data is correct - we're just switching which conversation to display
+        // CRITICAL: Force immediate refresh of all conversation data to ensure turn synchronization
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
+        queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}`] });
+        queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
         
-        console.log('[CONVERSATION] Successfully synchronized to reopened conversation thread - ZERO data refresh to preserve turn state');
+        console.log('[CONVERSATION] Successfully synchronized to reopened conversation thread with data refresh');
       } else {
         console.log('[CONVERSATION] Thread sync event ignored - different action or missing conversationId');
       }
@@ -986,7 +988,7 @@ export default function ConversationPage() {
               onRecordingStart={handleRecordingStart}
               isSending={sendMessageMutation.isPending}
               nextMessageType={nextMessageType}
-              conversationId={selectedConversationId || parseInt(id!) || conversation?.id}
+              conversationId={selectedConversationId || 0}
               hasStartedResponse={hasStartedResponse}
               responseStartTime={responseStartTime}
               onTimerStart={() => {

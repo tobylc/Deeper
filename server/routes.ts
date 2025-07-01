@@ -3057,8 +3057,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Valid sender email is required" });
       }
 
-      if (!type || !['question', 'response', 'follow up'].includes(type)) {
-        return res.status(400).json({ message: "Invalid message type. Must be 'question', 'response', or 'follow up'" });
+      if (!type || !['question', 'response'].includes(type)) {
+        return res.status(400).json({ message: "Invalid message type. Must be 'question' or 'response'" });
       }
 
       // Validate and sanitize duration
@@ -3102,15 +3102,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Not authorized to send messages in this conversation" });
       }
 
-      // Enhanced turn validation - matches text message endpoint logic
-      // Allow voice messages during sender's turn - this covers both new messages and reopened threads
+      // Check if it's the sender's turn
       if (senderEmail !== conversation.currentTurn) {
-        return res.status(400).json({ 
-          message: "It's not your turn to send a message",
-          code: "NOT_YOUR_TURN",
-          currentTurn: conversation.currentTurn,
-          senderEmail: senderEmail
-        });
+        return res.status(400).json({ message: "It's not your turn to send a message" });
       }
 
       // Generate secure filename with timestamp and random string
@@ -3216,67 +3210,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingMessages = await storage.getMessagesByConversationId(conversationId);
       const lastMessage = existingMessages[existingMessages.length - 1];
 
-      // Enhanced message type validation - matches text message endpoint logic
-      try {
-        if (existingMessages.length === 0) {
-          // First message must be a question
-          if (type !== 'question') {
-            return res.status(400).json({ 
-              message: "First message must be a question",
-              code: "INVALID_FIRST_MESSAGE_TYPE",
-              expected: "question",
-              received: type 
-            });
-          }
-        } else {
-          // Production-ready question-response validation: EVERY question requires a response before new questions
-          // Find the most recent question in the conversation
-          let lastQuestionIndex = -1;
-          for (let i = existingMessages.length - 1; i >= 0; i--) {
-            if (existingMessages[i].type === 'question') {
-              lastQuestionIndex = i;
-              break;
-            }
-          }
-          
-          // If there's a question without a response, only allow responses
-          if (lastQuestionIndex !== -1) {
-            const messagesAfterLastQuestion = existingMessages.slice(lastQuestionIndex + 1);
-            const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg.type === 'response');
-            
-            // If the last question hasn't been responded to, only allow responses or follow-ups
-            if (!hasResponseToLastQuestion && type === 'question') {
-              return res.status(400).json({ 
-                message: "The previous question must be answered before asking a new question",
-                code: "QUESTION_REQUIRES_RESPONSE",
-                lastQuestionIndex: lastQuestionIndex,
-                hasResponse: false
-              });
-            }
-            
-            // Allow follow-up messages after question-response exchanges in reopened threads
-            if (hasResponseToLastQuestion && type === 'follow up') {
-              // Follow-ups are allowed when there's already a question-response exchange
-              // This supports conversation continuation in reopened threads
-            }
-          }
-          
-          // Validate message type is one of the allowed values
-          if (!['question', 'response', 'follow up'].includes(type)) {
-            return res.status(400).json({ 
-              message: "Invalid message type",
-              code: "INVALID_MESSAGE_TYPE",
-              allowed: ["question", "response", "follow up"],
-              received: type 
-            });
-          }
+      // Validate message type based on conversation flow
+      if (existingMessages.length === 0) {
+        if (type !== 'question') {
+          return res.status(400).json({ message: "First message must be a question" });
         }
-      } catch (validationError) {
-        console.error('[VOICE_MESSAGE_VALIDATION] Error validating message type:', validationError);
-        return res.status(500).json({ 
-          message: "Message validation failed",
-          code: "VALIDATION_ERROR" 
-        });
+      } else {
+        const expectedType = lastMessage.type === 'question' ? 'response' : 'question';
+        if (type !== expectedType) {
+          return res.status(400).json({ message: `Expected ${expectedType}, got ${type}` });
+        }
       }
 
       // Create voice message with transcription

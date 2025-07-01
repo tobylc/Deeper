@@ -941,12 +941,6 @@ Changelog:
   * Created production-ready SQL analysis to detect and prevent future turn state corruption
   * Database now maintains accurate turn assignments: person who sent last message loses turn, other person gains turn
   * Complete resolution of persistent thread reopening issue through database corruption cleanup
-- June 30, 2025. Voice message functionality fix for reopened conversation threads:
-  * Fixed critical bug where voice messages failed to send after thread reopening due to missing conversationId prop
-  * Updated ConversationInterface component to receive proper conversationId fallback chain: selectedConversationId || parseInt(id!) || conversation?.id
-  * Enhanced voice message error handling to log missing required data for easier debugging
-  * Voice messages now send successfully in reopened threads with proper conversation context
-  * Production-ready voice message system works seamlessly across all conversation states
 - June 27, 2025. Production-ready voice message system completion:
   * Fixed VoiceMessageDisplay component integration replacing placeholder with functional audio controls
   * Enhanced voice message error handling with comprehensive user-friendly notifications
@@ -1101,14 +1095,6 @@ Changelog:
   * Trial subscriptions maintain 7-day trial period with tier updates only after payment confirmation
   * Enhanced webhook handlers with proper tier benefits mapping for secure subscription management
   * Complete payment verification flow ensuring users only get upgraded plans after successful payment
-- June 30, 2025. Critical voice message functionality fix for reopened threads:
-  * Fixed voice message endpoint to support 'follow up' message types matching text message functionality
-  * Enhanced voice message turn validation logic to match sophisticated text message validation system
-  * Updated voice message type validation to allow 'question', 'response', and 'follow up' messages
-  * Implemented comprehensive message flow validation for voice messages in reopened conversation threads
-  * Voice messages now work correctly in reopened threads without screen blinks or message disappearance
-  * Enhanced error handling and debugging for voice message endpoint with production-ready validation
-  * Complete voice message system parity with text messaging including support for thread continuation
 ```
 
 ## User Preferences
