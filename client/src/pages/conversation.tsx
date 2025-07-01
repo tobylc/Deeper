@@ -130,13 +130,11 @@ export default function ConversationPage() {
         setNewMessage(""); // Clear any pending message
         setLocation(`/conversation/${conversationId}`);
         
-        // CRITICAL: Force immediate refresh of all conversation data to ensure turn synchronization
-        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] });
-        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
-        queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}`] });
-        queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
+        // CRITICAL FIX: Thread reopening is pure navigation - NO query invalidation
+        // Any data refresh during thread reopening can corrupt turn states
+        // The existing data is correct - we're just switching which conversation to display
         
-        console.log('[CONVERSATION] Successfully synchronized to reopened conversation thread with data refresh');
+        console.log('[CONVERSATION] Successfully synchronized to reopened conversation thread - ZERO data refresh to preserve turn state');
       } else {
         console.log('[CONVERSATION] Thread sync event ignored - different action or missing conversationId');
       }
