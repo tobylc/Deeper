@@ -64,14 +64,14 @@ function StackedConversation({
   const [isExpanded, setIsExpanded] = useState(false);
   const shouldStack = conversation.messageCount >= 4;
 
-  // Role-based glowing effect styles - maximum visibility
+  // Role-based subtle glow effect styles - refined aesthetic
   const glowStyles = isInviter 
-    ? 'shadow-[0_0_60px_rgba(79,172,254,1),0_0_100px_rgba(79,172,254,0.7),0_0_150px_rgba(79,172,254,0.4)] border-4 border-[#4FACFE] ring-8 ring-[#4FACFE]/60 hover:shadow-[0_0_80px_rgba(79,172,254,1),0_0_120px_rgba(79,172,254,0.8)] bg-gradient-to-br from-[#4FACFE]/20 via-[#4FACFE]/10 to-transparent backdrop-blur-sm' 
-    : 'shadow-[0_0_60px_rgba(215,160,135,1),0_0_100px_rgba(215,160,135,0.7),0_0_150px_rgba(215,160,135,0.4)] border-4 border-[#D7A087] ring-8 ring-[#D7A087]/60 hover:shadow-[0_0_80px_rgba(215,160,135,1),0_0_120px_rgba(215,160,135,0.8)] bg-gradient-to-br from-[#D7A087]/20 via-[#D7A087]/10 to-transparent backdrop-blur-sm';
+    ? 'shadow-[0_0_20px_rgba(79,172,254,0.6),0_0_40px_rgba(79,172,254,0.3)] border-2 border-[#4FACFE]/40 hover:shadow-[0_0_30px_rgba(79,172,254,0.8)] bg-gradient-to-br from-[#4FACFE]/10 to-transparent backdrop-blur-sm' 
+    : 'shadow-[0_0_20px_rgba(215,160,135,0.6),0_0_40px_rgba(215,160,135,0.3)] border-2 border-[#D7A087]/40 hover:shadow-[0_0_30px_rgba(215,160,135,0.8)] bg-gradient-to-br from-[#D7A087]/10 to-transparent backdrop-blur-sm';
   
   return (
     <Card 
-      className={`cursor-pointer transition-all duration-300 ${shouldStack ? 'relative' : ''} ${glowStyles} ${
+      className={`cursor-pointer transition-all duration-300 rounded-xl ${shouldStack ? 'relative' : ''} ${glowStyles} ${
         isSelected ? 'ring-2 ring-ocean border-ocean/30' : ''
       }`}
       onClick={() => {
@@ -84,9 +84,9 @@ function StackedConversation({
     >
       {shouldStack && !isExpanded && (
         <>
-          {/* Paper stack effect - bottom layers */}
-          <div className="absolute -bottom-1 -right-1 w-full h-full bg-slate-100 rounded-lg rotate-1 opacity-60"></div>
-          <div className="absolute -bottom-0.5 -right-0.5 w-full h-full bg-slate-50 rounded-lg rotate-0.5 opacity-80"></div>
+          {/* Paper stack effect - bottom layers with consistent rounded corners */}
+          <div className="absolute -bottom-1 -right-1 w-full h-full bg-slate-100/60 rounded-xl rotate-1"></div>
+          <div className="absolute -bottom-0.5 -right-0.5 w-full h-full bg-slate-50/80 rounded-xl rotate-0.5"></div>
         </>
       )}
       
@@ -159,7 +159,7 @@ function StackedConversation({
                     onWaitingClick(); // Show waiting popup on error
                   }
                 }}
-                className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400"
+                className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400 rounded-lg"
               >
                 <RotateCcw className="w-3 h-3 mr-1" />
                 Reopen Thread
