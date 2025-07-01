@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Send, Type, Mic, ArrowRight, Clock } from 'lucide-react';
+import { Send, Type, Mic, ArrowRight, Clock, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UserDisplayName } from '@/hooks/useUserDisplayName';
 import ProfileAvatar from '@/components/profile-avatar';
@@ -75,6 +75,7 @@ const ConversationInterface = memo(function ConversationInterface({
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
   const [showTranscriptionProgress, setShowTranscriptionProgress] = useState(false);
+  const [isConversationExpanded, setIsConversationExpanded] = useState(false);
   const queryClient = useQueryClient();
 
   // Check if this is inviter's first question to bypass timer completely
@@ -247,44 +248,114 @@ const ConversationInterface = memo(function ConversationInterface({
           </div>
         ) : (
           <div className="space-y-6 relative z-10">
-            {(Array.isArray(messages) ? messages : []).map((message, index) => (
-              <div key={message.id} className="relative">
-                <div className={cn(
-                  "text-gray-800 leading-relaxed font-serif text-base whitespace-pre-wrap bg-white p-4 rounded-lg shadow-sm",
-                  // Role-based glowing effects for message bubbles
-                  message.senderEmail === currentUserEmail
-                    ? (connection?.inviterEmail === currentUserEmail
-                        ? "shadow-[0_0_30px_rgba(79,172,254,0.6),0_0_50px_rgba(79,172,254,0.3)] border-2 border-[#4FACFE]/50 ring-2 ring-[#4FACFE]/30 bg-gradient-to-br from-[#4FACFE]/5 to-white"
-                        : "shadow-[0_0_30px_rgba(215,160,135,0.6),0_0_50px_rgba(215,160,135,0.3)] border-2 border-[#D7A087]/50 ring-2 ring-[#D7A087]/30 bg-gradient-to-br from-[#D7A087]/5 to-white")
-                    : (connection?.inviterEmail !== currentUserEmail
-                        ? "shadow-[0_0_30px_rgba(79,172,254,0.6),0_0_50px_rgba(79,172,254,0.3)] border-2 border-[#4FACFE]/50 ring-2 ring-[#4FACFE]/30 bg-gradient-to-br from-[#4FACFE]/5 to-white"
-                        : "shadow-[0_0_30px_rgba(215,160,135,0.6),0_0_50px_rgba(215,160,135,0.3)] border-2 border-[#D7A087]/50 ring-2 ring-[#D7A087]/30 bg-gradient-to-br from-[#D7A087]/5 to-white")
-                )}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-600">
-                      {message.senderEmail === currentUserEmail ? 'You' : <UserDisplayName email={message.senderEmail} />}
-                    </span>
-                    <Badge variant="secondary" className="text-xs">
-                      {message.type}
-                    </Badge>
-                  </div>
-                  
-                  {/* Voice message display */}
-                  {message.messageFormat === 'voice' && message.audioFileUrl ? (
-                    <VoiceMessageDisplay 
-                      message={{
-                        ...message,
-                        conversationId: message.conversationId || conversationId || 0
-                      }}
-                      isCurrentUser={message.senderEmail === currentUserEmail}
-                      className="mt-2"
-                    />
-                  ) : (
-                    message.content
+            {/* Stacked Conversation Logic */}
+            {(() => {
+              const messagesArray = Array.isArray(messages) ? messages : [];
+              const shouldStack = messagesArray.length >= 4;
+              const displayMessages = shouldStack && !isConversationExpanded 
+                ? messagesArray.slice(-2) // Show only last 2 messages when stacked
+                : messagesArray; // Show all messages when expanded or less than 4 total
+
+              return (
+                <>
+                  {/* Stacked Papers Indicator */}
+                  {shouldStack && !isConversationExpanded && (
+                    <div className="relative mb-6">
+                      {/* Paper stack effect with multiple layers */}
+                      <div className="relative">
+                        <div className="absolute -top-2 -left-2 w-full h-20 bg-slate-100/80 rounded-xl rotate-2 shadow-md"></div>
+                        <div className="absolute -top-1 -left-1 w-full h-20 bg-slate-50/90 rounded-xl rotate-1 shadow-sm"></div>
+                        
+                        {/* Top visible paper with summary */}
+                        <div className="relative bg-white p-4 rounded-xl shadow-lg border-2 border-slate-200/50">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <FileText className="w-5 h-5 text-slate-600" />
+                              <div>
+                                <p className="text-sm font-medium text-slate-800">
+                                  {messagesArray.length - 2} earlier messages
+                                </p>
+                                <p className="text-xs text-slate-600">
+                                  Conversation started {new Date(messagesArray[0]?.createdAt || '').toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setIsConversationExpanded(true)}
+                              className="text-slate-600 hover:text-slate-800 hover:bg-slate-100"
+                            >
+                              <ChevronDown className="w-4 h-4 mr-1" />
+                              Expand All
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   )}
-                </div>
-              </div>
-            ))}
+
+                  {/* Conversation Messages */}
+                  <div className={cn(
+                    "space-y-6",
+                    shouldStack && isConversationExpanded ? "max-h-[500px] overflow-y-auto" : ""
+                  )}>
+                    {displayMessages.map((message, index) => (
+                      <div key={message.id} className="relative">
+                        <div className={cn(
+                          "text-gray-800 leading-relaxed font-serif text-base whitespace-pre-wrap bg-white p-4 rounded-lg shadow-sm",
+                          // Role-based glowing effects for message bubbles
+                          message.senderEmail === currentUserEmail
+                            ? (connection?.inviterEmail === currentUserEmail
+                                ? "shadow-[0_0_30px_rgba(79,172,254,0.6),0_0_50px_rgba(79,172,254,0.3)] border-2 border-[#4FACFE]/50 ring-2 ring-[#4FACFE]/30 bg-gradient-to-br from-[#4FACFE]/5 to-white"
+                                : "shadow-[0_0_30px_rgba(215,160,135,0.6),0_0_50px_rgba(215,160,135,0.3)] border-2 border-[#D7A087]/50 ring-2 ring-[#D7A087]/30 bg-gradient-to-br from-[#D7A087]/5 to-white")
+                            : (connection?.inviterEmail !== currentUserEmail
+                                ? "shadow-[0_0_30px_rgba(79,172,254,0.6),0_0_50px_rgba(79,172,254,0.3)] border-2 border-[#4FACFE]/50 ring-2 ring-[#4FACFE]/30 bg-gradient-to-br from-[#4FACFE]/5 to-white"
+                                : "shadow-[0_0_30px_rgba(215,160,135,0.6),0_0_50px_rgba(215,160,135,0.3)] border-2 border-[#D7A087]/50 ring-2 ring-[#D7A087]/30 bg-gradient-to-br from-[#D7A087]/5 to-white")
+                        )}>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-600">
+                              {message.senderEmail === currentUserEmail ? 'You' : <UserDisplayName email={message.senderEmail} />}
+                            </span>
+                            <Badge variant="secondary" className="text-xs">
+                              {message.type}
+                            </Badge>
+                          </div>
+                          
+                          {/* Voice message display */}
+                          {message.messageFormat === 'voice' && message.audioFileUrl ? (
+                            <VoiceMessageDisplay 
+                              message={{
+                                ...message,
+                                conversationId: message.conversationId || conversationId || 0
+                              }}
+                              isCurrentUser={message.senderEmail === currentUserEmail}
+                              className="mt-2"
+                            />
+                          ) : (
+                            message.content
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Restack Button - shown when conversation is expanded */}
+                  {shouldStack && isConversationExpanded && (
+                    <div className="flex justify-center mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsConversationExpanded(false)}
+                        className="text-slate-600 hover:text-slate-800 border-slate-300 hover:border-slate-400"
+                      >
+                        <ChevronUp className="w-4 h-4 mr-2" />
+                        Restack Conversation
+                      </Button>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
       </div>
