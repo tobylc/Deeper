@@ -85,7 +85,7 @@ export const messages = pgTable("messages", {
   conversationId: integer("conversation_id").notNull(),
   senderEmail: text("sender_email").notNull(),
   content: text("content").notNull(),
-  type: text("type").notNull(), // 'question', 'response', 'follow up'
+  type: text("type").notNull(), // 'question', 'response'
   messageFormat: text("message_format").notNull().default("text"), // 'text', 'voice'
   audioFileUrl: text("audio_file_url"), // URL to stored audio file for voice messages
   transcription: text("transcription"), // AI-generated text from voice message

@@ -6,7 +6,7 @@ import QuotesIcon from "@/components/quotes-icon";
 interface ExchangeRequiredPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  nextMessageType: 'question' | 'response' | 'follow up';
+  nextMessageType: 'question' | 'response';
   relationshipType: string;
 }
 

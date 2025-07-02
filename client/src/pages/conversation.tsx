@@ -504,8 +504,8 @@ export default function ConversationPage() {
         : conversation.currentTurn === user.email)
     : false;
   
-  // Production-ready message type validation: EVERY question requires a response
-  const getNextMessageType = (): 'question' | 'response' | 'follow up' => {
+  // Simplified message type validation: Only question or response
+  const getNextMessageType = (): 'question' | 'response' => {
     try {
       if (!messages || !Array.isArray(messages) || messages.length === 0) return 'question';
       
@@ -526,13 +526,9 @@ export default function ConversationPage() {
         if (!hasResponseToLastQuestion) {
           return 'response';
         }
-        
-        // If there's already a question-response exchange, allow follow-ups
-        if (hasResponseToLastQuestion) {
-          return 'follow up';
-        }
       }
       
+      // If all questions have been answered, allow new questions
       return 'question';
     } catch (error) {
       console.error('[CONVERSATION] Error determining next message type:', error);
