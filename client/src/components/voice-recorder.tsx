@@ -212,8 +212,8 @@ export default function VoiceRecorder({
         // Stop all tracks to free up microphone
         stream.getTracks().forEach(track => track.stop());
         
-        // Close audio context
-        if (audioContextRef.current) {
+        // Close audio context safely
+        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
           audioContextRef.current.close();
         }
       };
@@ -368,6 +368,12 @@ export default function VoiceRecorder({
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
+    }
+    
+    // Close audio context safely
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
     }
   };
 
