@@ -582,6 +582,16 @@ export default function ConversationPage() {
     messages.some(msg => msg && msg.type === 'question') && 
     messages.some(msg => msg && msg.type === 'response');
 
+  // Debug logging for exchange detection
+  console.log('[EXCHANGE_DEBUG] Messages array:', messages?.map(m => ({ 
+    type: m?.type, 
+    format: m?.messageFormat, 
+    sender: m?.senderEmail, 
+    content: m?.content?.substring(0, 30) 
+  })));
+  console.log('[EXCHANGE_DEBUG] hasCompleteExchange:', hasCompleteExchange);
+  console.log('[EXCHANGE_DEBUG] canCreateNewThread:', hasCompleteExchange && !lastQuestionNeedsResponse);
+
   // Production-ready right column validation with comprehensive error handling
   const checkCanUseRightColumn = () => {
     try {
