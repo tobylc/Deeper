@@ -88,6 +88,37 @@ const ConversationInterface = memo(function ConversationInterface({
            nextMessageType === 'question';
   }, [messages, connection, currentUserEmail, nextMessageType]);
 
+  // Check if this is a new question that will create a new conversation thread
+  const isNewQuestionAfterExchange = useCallback(() => {
+    const messagesArray = Array.isArray(messages) ? messages : [];
+    
+    // Only applies to questions
+    if (nextMessageType !== 'question') return false;
+    
+    // Must have messages in current conversation
+    if (messagesArray.length === 0) return false;
+    
+    // Check if there's been a complete question-response exchange
+    const hasQuestion = messagesArray.some(msg => msg.type === 'question');
+    const hasResponse = messagesArray.some(msg => msg.type === 'response');
+    
+    // Find the most recent question
+    let lastQuestionIndex = -1;
+    for (let i = messagesArray.length - 1; i >= 0; i--) {
+      if (messagesArray[i].type === 'question') {
+        lastQuestionIndex = i;
+        break;
+      }
+    }
+    
+    // Check if the last question has been responded to
+    const lastQuestionHasResponse = lastQuestionIndex !== -1 ? 
+      messagesArray.slice(lastQuestionIndex + 1).some(msg => msg.type === 'response') : false;
+    
+    // This will create a new thread if there's been a complete exchange and last question is answered
+    return hasQuestion && hasResponse && lastQuestionHasResponse;
+  }, [messages, nextMessageType]);
+
   // Handle voice message sending with AI transcription
   const handleVoiceMessageSend = useCallback(async (audioBlob: Blob, duration: number) => {
     try {
@@ -215,6 +246,11 @@ const ConversationInterface = memo(function ConversationInterface({
       return true;
     }
     
+    // PRIORITY: Always allow new questions that will create new conversation threads
+    if (isNewQuestionAfterExchange()) {
+      return true;
+    }
+    
     // Allow sending if no messages exist (empty conversation)
     if (messagesArray.length === 0) {
       return true;
@@ -228,7 +264,7 @@ const ConversationInterface = memo(function ConversationInterface({
     // Check if 10 minutes have passed since response started
     const remainingTime = getRemainingTime();
     return remainingTime <= 0;
-  }, [isInviterFirstQuestion, messages, hasStartedResponse, getRemainingTime]);
+  }, [isInviterFirstQuestion, isNewQuestionAfterExchange, messages, hasStartedResponse, getRemainingTime]);
 
   return (
     <div className="h-full flex flex-col">
@@ -435,8 +471,8 @@ const ConversationInterface = memo(function ConversationInterface({
                       onChange={(e) => {
                         try {
                           setNewMessage(e.target.value);
-                          // Only start timer if this is not inviter's first question
-                          if (!isInviterFirstQuestion() && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
+                          // Only start timer if this is not inviter's first question AND not a new question that creates threads
+                          if (!isInviterFirstQuestion() && !isNewQuestionAfterExchange() && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
                             onTimerStart();
                           }
                         } catch (error) {

@@ -936,6 +936,14 @@ Changelog:
 - June 30, 2025. Critical database corruption resolution and turn state integrity restoration:
   * Identified root cause: Database had corrupted turn states where current_turn was assigned to users who had just sent messages
   * Performed comprehensive database analysis comparing actual message history with stored turn assignments
+- July 2, 2025. New question timer bypass system implementation:
+  * Enhanced thoughtful response timer system to bypass 10-minute countdown for all new questions that create conversation threads
+  * Added isNewQuestionAfterExchange detection logic that identifies when questions will create new threads (after complete question-response exchanges)
+  * Updated timer bypass logic across all input methods: text input, voice recording, question suggestions, and manual sending
+  * Applied timer bypass to all timer trigger points: setNewMessage callbacks, onTimerStart callbacks, handleSendMessage, and handleRecordingStart
+  * New questions that move current conversations to left column and create new threads now send immediately without timer delays
+  * Timer system maintains 10-minute thoughtful response requirement for all responses and follow-up messages within existing conversation threads
+  * Complete timer bypass system ensures smooth conversation flow when users want to start new discussion topics
   * Fixed conversation 90: Corrected current_turn from toby@gowithclark.com to thetobyclarkshow@gmail.com based on message chronology
   * Implemented database integrity check revealing turn corruption where last message sender incorrectly retained turn
   * Created production-ready SQL analysis to detect and prevent future turn state corruption

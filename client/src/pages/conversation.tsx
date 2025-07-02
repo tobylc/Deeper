@@ -681,6 +681,33 @@ export default function ConversationPage() {
       return;
     }
     
+    // NEVER show timer popup for new questions that will create new conversation threads
+    const isNewQuestionAfterExchange = nextMessageType === 'question' && messages.length > 0 && (() => {
+      const hasQuestion = messages.some(msg => msg.type === 'question');
+      const hasResponse = messages.some(msg => msg.type === 'response');
+      
+      // Find the most recent question
+      let lastQuestionIndex = -1;
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].type === 'question') {
+          lastQuestionIndex = i;
+          break;
+        }
+      }
+      
+      // Check if the last question has been responded to
+      const lastQuestionHasResponse = lastQuestionIndex !== -1 ? 
+        messages.slice(lastQuestionIndex + 1).some(msg => msg.type === 'response') : false;
+      
+      return hasQuestion && hasResponse && lastQuestionHasResponse;
+    })();
+    
+    if (isNewQuestionAfterExchange) {
+      // Skip all timer logic for new questions that create new threads
+      proceedWithSending(newMessage);
+      return;
+    }
+    
     // Check if enough time has passed for thoughtful response (only for non-first questions)
     if (hasStartedResponse && !checkResponseTime()) {
       setPendingMessage(newMessage);
@@ -724,6 +751,32 @@ export default function ConversationPage() {
     
     if (isInviterFirstQuestion) {
       // Completely skip timer for inviter's first question
+      return;
+    }
+    
+    // NEVER start timer for new questions that will create new conversation threads
+    const isNewQuestionAfterExchange = nextMessageType === 'question' && messagesArray.length > 0 && (() => {
+      const hasQuestion = messagesArray.some(msg => msg.type === 'question');
+      const hasResponse = messagesArray.some(msg => msg.type === 'response');
+      
+      // Find the most recent question
+      let lastQuestionIndex = -1;
+      for (let i = messagesArray.length - 1; i >= 0; i--) {
+        if (messagesArray[i].type === 'question') {
+          lastQuestionIndex = i;
+          break;
+        }
+      }
+      
+      // Check if the last question has been responded to
+      const lastQuestionHasResponse = lastQuestionIndex !== -1 ? 
+        messagesArray.slice(lastQuestionIndex + 1).some(msg => msg.type === 'response') : false;
+      
+      return hasQuestion && hasResponse && lastQuestionHasResponse;
+    })();
+    
+    if (isNewQuestionAfterExchange) {
+      // Completely skip timer for new questions that create new threads
       return;
     }
     
@@ -993,6 +1046,32 @@ export default function ConversationPage() {
                   return;
                 }
                 
+                // NEVER start timer for new questions that will create new conversation threads
+                const isNewQuestionAfterExchange = nextMessageType === 'question' && messagesArray.length > 0 && (() => {
+                  const hasQuestion = messagesArray.some(msg => msg.type === 'question');
+                  const hasResponse = messagesArray.some(msg => msg.type === 'response');
+                  
+                  // Find the most recent question
+                  let lastQuestionIndex = -1;
+                  for (let i = messagesArray.length - 1; i >= 0; i--) {
+                    if (messagesArray[i].type === 'question') {
+                      lastQuestionIndex = i;
+                      break;
+                    }
+                  }
+                  
+                  // Check if the last question has been responded to
+                  const lastQuestionHasResponse = lastQuestionIndex !== -1 ? 
+                    messagesArray.slice(lastQuestionIndex + 1).some(msg => msg.type === 'response') : false;
+                  
+                  return hasQuestion && hasResponse && lastQuestionHasResponse;
+                })();
+                
+                if (isNewQuestionAfterExchange) {
+                  // Skip all timer logic for new questions that create new threads
+                  return;
+                }
+                
                 // Start timer when user begins typing (only for non-first questions)
                 if (message.trim() && !hasStartedResponse) {
                   setHasStartedResponse(true);
@@ -1019,6 +1098,32 @@ export default function ConversationPage() {
                 
                 if (isInviterFirstQuestion) {
                   // Completely skip timer for inviter's first question
+                  return;
+                }
+                
+                // NEVER start timer for new questions that will create new conversation threads
+                const isNewQuestionAfterExchange = nextMessageType === 'question' && messagesArray.length > 0 && (() => {
+                  const hasQuestion = messagesArray.some(msg => msg.type === 'question');
+                  const hasResponse = messagesArray.some(msg => msg.type === 'response');
+                  
+                  // Find the most recent question
+                  let lastQuestionIndex = -1;
+                  for (let i = messagesArray.length - 1; i >= 0; i--) {
+                    if (messagesArray[i].type === 'question') {
+                      lastQuestionIndex = i;
+                      break;
+                    }
+                  }
+                  
+                  // Check if the last question has been responded to
+                  const lastQuestionHasResponse = lastQuestionIndex !== -1 ? 
+                    messagesArray.slice(lastQuestionIndex + 1).some(msg => msg.type === 'response') : false;
+                  
+                  return hasQuestion && hasResponse && lastQuestionHasResponse;
+                })();
+                
+                if (isNewQuestionAfterExchange) {
+                  // Completely skip timer for new questions that create new threads
                   return;
                 }
                 
