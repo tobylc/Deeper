@@ -344,7 +344,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Serve uploaded files with proper headers for audio playback
   app.use('/uploads', (req, res, next) => {
-    const filePath = path.join(process.cwd(), 'public', 'uploads', req.path);
+    // Remove leading slash from req.path to avoid double slashes
+    const relativePath = req.path.startsWith('/') ? req.path.slice(1) : req.path;
+    const filePath = path.join(process.cwd(), 'public', 'uploads', relativePath);
+    
+    console.log('Serving audio file:', {
+      requestPath: req.path,
+      relativePath,
+      fullFilePath: filePath,
+      url: req.url
+    });
     
     // Set appropriate headers for audio files with proper MIME type detection
     const audioExtensions = {
