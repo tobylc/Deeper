@@ -66,6 +66,55 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
     setShowNewQuestionDialog(false);
   };
 
+  // Handle creating a new conversation thread with a selected question
+  const handleCreateNewQuestion = async (question: string) => {
+    try {
+      console.log('[QUESTION_SUGGESTIONS] Creating new conversation thread with question:', question.substring(0, 50) + '...');
+      
+      const response = await fetch(`/api/connections/${connectionId}/conversations/with-question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: question.trim(),
+          participant1Email: user?.email, // Will be filled by backend
+          participant2Email: otherParticipant,
+          relationshipType: relationshipType
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[QUESTION_SUGGESTIONS] New conversation thread created:', data.conversationId);
+        
+        // Notify parent component of the new thread
+        onNewThreadCreated(data.conversationId);
+        
+        toast({
+          title: "New conversation started",
+          description: "Your question has been sent and a new conversation thread created.",
+        });
+      } else {
+        const errorData = await response.json();
+        console.error('[QUESTION_SUGGESTIONS] Failed to create conversation thread:', errorData);
+        
+        if (errorData.code === 'EXCHANGE_REQUIRED') {
+          setShowExchangeRequiredPopup(true);
+        } else {
+          toast({
+            title: "Unable to start conversation",
+            description: errorData.message || "Please try again.",
+          });
+        }
+      }
+    } catch (error) {
+      console.error('[QUESTION_SUGGESTIONS] Error creating conversation thread:', error);
+      toast({
+        title: "Unable to start conversation",
+        description: "Please refresh the page and try again.",
+      });
+    }
+  };
+
   // Production-ready question selection with comprehensive error handling
   const handleQuestionSelect = (question: string) => {
     try {
