@@ -1,0 +1,31 @@
+[EXCHANGE_DEBUG] Messages array: Array(6)0: {type: 'question', format: 'text', sender: 'thetobyclarkshow@gmail.com', content: "What's a favorite family tradi"}1: {type: 'response', format: 'voice', sender: 'toby@gowithclark.com', content: 'I will say that I love all the'}2: {type: 'follow up', format: 'text', sender: 'thetobyclarkshow@gmail.com', content: 'hjghg'}3: {type: 'follow up', format: 'text', sender: 'toby@gowithclark.com', content: 'hhhhfhghgh'}4: {type: 'question', format: 'voice', sender: 'thetobyclarkshow@gmail.com', content: "Alright, let's see if this is "}5: {type: 'response', format: 'voice', sender: 'toby@gowithclark.com', content: 'Hello, I want to see if this s'}length: 6[[Prototype]]: Array(0)
+index-vUGCMcVr.js:447 [EXCHANGE_DEBUG] hasCompleteExchange: true
+index-vUGCMcVr.js:447 [EXCHANGE_DEBUG] canCreateNewThread: true
+index-vUGCMcVr.js:447 [EXCHANGE_DEBUG] Validation states: ObjectcanCreateNewThread: truecanUseRightColumn: truehasCompleteExchange: trueisMyTurn: truelastQuestionNeedsResponse: false[[Prototype]]: Object
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Connection ID: 40
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Raw API response: undefined
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Conversations array: Array(0)length: 0[[Prototype]]: Array(0)
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Selected conversation ID: 92
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Filtered conversations for left column: Array(0)
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Total conversations before filter: 0
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Total conversations after filter: 0
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Connection ID: 40
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Raw API response: Object
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Conversations array: Array(2)0: {id: 92, connectionId: 40, participant1Email: 'thetobyclarkshow@gmail.com', participant2Email: 'toby@gowithclark.com', relationshipType: 'Parent-Child', …}1: {id: 90, connectionId: 40, participant1Email: 'thetobyclarkshow@gmail.com', participant2Email: 'toby@gowithclark.com', relationshipType: 'Parent-Child', …}length: 2[[Prototype]]: Array(0)
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Selected conversation ID: 92
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Filtered conversations for left column: Array(1)
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Total conversations before filter: 2
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Total conversations after filter: 1
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Connection ID: 40
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Raw API response: ObjectactiveConversationId: 92conversations: (2) [{…}, {…}]previousConversations: [{…}][[Prototype]]: Object
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Conversations array: Array(2)0: {id: 92, connectionId: 40, participant1Email: 'thetobyclarkshow@gmail.com', participant2Email: 'toby@gowithclark.com', relationshipType: 'Parent-Child', …}1: {id: 90, connectionId: 40, participant1Email: 'thetobyclarkshow@gmail.com', participant2Email: 'toby@gowithclark.com', relationshipType: 'Parent-Child', …}length: 2[[Prototype]]: Array(0)
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Selected conversation ID: 92
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Filtered conversations for left column: Array(1)
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Total conversations before filter: 2
+index-vUGCMcVr.js:435 [CONVERSATION_THREADS] Total conversations after filter: 1
+index-vUGCMcVr.js:447 [QUESTION_SUGGESTIONS] handleQuestionSelect called with: Object
+index-vUGCMcVr.js:435 [EXCHANGE_REQUIRED_POPUP] Popup opened with: ObjectnextMessageType: "follow up"relationshipType: "Parent-Child"timestamp: "2025-07-02T20:09:03.789Z"[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
+ [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+contentscript.js:2 
