@@ -3867,36 +3867,51 @@ Format each as a complete question they can use to begin this important conversa
           // For subsequent threads, ensure at least one complete exchange exists somewhere
           let hasAnyCompleteExchange = false;
           
+          console.log(`[EXCHANGE_DEBUG] Checking ${existingConversations.length} conversations for connection ${connectionId}`);
+          
           for (const conv of existingConversations) {
             try {
               const messages = await storage.getMessagesByConversationId(conv.id);
               const hasQuestion = messages.some(msg => msg.type === 'question');
               const hasResponse = messages.some(msg => msg.type === 'response');
               
-              // Debug logging for exchange validation
-              console.log(`[EXCHANGE_DEBUG] Conversation ${conv.id}:`, {
+              // Enhanced debug logging for exchange validation
+              console.log(`[EXCHANGE_DEBUG] Conversation ${conv.id} (${conv.title || 'untitled'}):`, {
                 messageCount: messages.length,
-                messageTypes: messages.map(m => ({ type: m.type, format: m.messageFormat, sender: m.senderEmail })),
+                messageTypes: messages.map(m => ({ 
+                  type: m.type, 
+                  format: m.messageFormat, 
+                  sender: m.senderEmail,
+                  content: m.content?.substring(0, 30) + '...'
+                })),
                 hasQuestion,
                 hasResponse,
                 hasExchange: hasQuestion && hasResponse
               });
               
               if (hasQuestion && hasResponse) {
+                console.log(`[EXCHANGE_DEBUG] ✓ Found complete exchange in conversation ${conv.id}`);
                 hasAnyCompleteExchange = true;
                 break;
+              } else {
+                console.log(`[EXCHANGE_DEBUG] ✗ No complete exchange in conversation ${conv.id}: hasQuestion=${hasQuestion}, hasResponse=${hasResponse}`);
               }
             } catch (messageError) {
               console.error(`[THREAD_VALIDATION] Error checking complete exchange for conversation ${conv.id}:`, messageError);
             }
           }
           
+          console.log(`[EXCHANGE_DEBUG] Final result: hasAnyCompleteExchange = ${hasAnyCompleteExchange}`);
+          
           if (!hasAnyCompleteExchange) {
+            console.log(`[EXCHANGE_DEBUG] ✗ BLOCKING: No complete exchanges found across ${existingConversations.length} conversations`);
             return res.status(400).json({ 
               message: "Complete at least one question-response exchange before starting new conversation threads",
               code: "EXCHANGE_REQUIRED",
               existingConversations: existingConversations.length
             });
+          } else {
+            console.log(`[EXCHANGE_DEBUG] ✓ ALLOWING: Found complete exchange, proceeding with thread creation`);
           }
         }
       } catch (validationError) {
