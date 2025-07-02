@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, ArrowRight } from "lucide-react";
 import QuotesIcon from "@/components/quotes-icon";
@@ -19,6 +19,17 @@ export default function ExchangeRequiredPopup({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md p-0 bg-transparent border-0 shadow-none">
+        <DialogHeader className="sr-only">
+          <DialogTitle>
+            {nextMessageType === 'response' ? 'Response Needed First' : 'Initial Exchange Required'}
+          </DialogTitle>
+          <DialogDescription>
+            {nextMessageType === 'response' 
+              ? 'Please respond to the current question in the conversation before asking a new question.'
+              : 'Complete at least one question-response exchange before starting new conversation threads.'
+            }
+          </DialogDescription>
+        </DialogHeader>
         {/* Beautiful parchment-style popup */}
         <div 
           className="relative bg-gradient-to-br from-white via-amber-50/40 to-amber-100/30 p-8 border border-amber-200/60 shadow-2xl"
