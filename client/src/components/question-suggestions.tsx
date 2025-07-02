@@ -149,13 +149,17 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         return;
       }
       
-      // ALWAYS populate question into text input for user editing
-      // User can then edit and send to create new thread or continue existing thread
-      if (canUseRightColumn && isMyTurn) {
-        console.log('[QUESTION_SUGGESTIONS] Populating question into text input for editing');
+      // Handle question selection based on user's ability to ask questions
+      if (nextMessageType === 'question' && isMyTurn) {
+        // If next message should be a question, populate into current input
+        console.log('[QUESTION_SUGGESTIONS] Populating question into current input');
         onQuestionSelect(question.trim());
+      } else if (canCreateNewThread && isMyTurn) {
+        // If user can create new threads, create a new conversation thread with this question
+        console.log('[QUESTION_SUGGESTIONS] Creating new thread with question');
+        handleCreateNewQuestion(question.trim());
       } else {
-        // If not user's turn or cannot use right column, show appropriate popup
+        // If not user's turn or cannot create threads, show appropriate popup
         console.log('[QUESTION_SUGGESTIONS] Showing popup - cannot use right column');
         setShowExchangeRequiredPopup(true);
       }
