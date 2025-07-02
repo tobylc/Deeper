@@ -582,6 +582,16 @@ export default function ConversationPage() {
     messages.some(msg => msg && msg.type === 'question') && 
     messages.some(msg => msg && msg.type === 'response');
 
+  // Debug logging for frontend exchange validation
+  console.log('[FRONTEND_EXCHANGE_DEBUG]', {
+    messageCount: messages?.length || 0,
+    messages: messages?.map(m => ({ type: m?.type, format: m?.messageFormat, sender: m?.senderEmail })) || [],
+    hasQuestion: messages?.some(msg => msg && msg.type === 'question') || false,
+    hasResponse: messages?.some(msg => msg && msg.type === 'response') || false,
+    hasCompleteExchange,
+    conversationId
+  });
+
   // Production-ready right column validation with comprehensive error handling
   const checkCanUseRightColumn = () => {
     try {
