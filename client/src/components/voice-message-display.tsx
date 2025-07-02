@@ -71,6 +71,8 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
       return;
     }
 
+    console.log('Attempting to play audio from URL:', message.audioFileUrl);
+
     try {
       setError(null);
       setIsLoading(true);
@@ -240,15 +242,15 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           onLoadedData={() => console.log('Audio data loaded')}
         />
         
-        {/* Debug Info in Development */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
-            <div>Audio URL: {message.audioFileUrl}</div>
-            <div>Duration: {message.audioDuration}s</div>
-            <div>Error: {error || 'None'}</div>
-            <div>Loading: {isLoading ? 'Yes' : 'No'}</div>
-          </div>
-        )}
+        {/* Debug Info - Always show for debugging voice issues */}
+        <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
+          <div>Audio URL: {message.audioFileUrl}</div>
+          <div>Duration: {message.audioDuration}s</div>
+          <div>Error: {error || 'None'}</div>
+          <div>Loading: {isLoading ? 'Yes' : 'No'}</div>
+          <div>Audio Ready State: {audioRef.current?.readyState}</div>
+          <div>Audio Network State: {audioRef.current?.networkState}</div>
+        </div>
       </Card>
 
       {/* Transcription */}

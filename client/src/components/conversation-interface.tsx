@@ -103,9 +103,8 @@ const ConversationInterface = memo(function ConversationInterface({
       const formData = new FormData();
       formData.append('audio', audioBlob, 'voice-message.webm');
       formData.append('senderEmail', currentUserEmail);
-      // Map message type to what backend expects ('follow up' -> 'question')
-      const backendMessageType = nextMessageType === 'follow up' ? 'question' : nextMessageType;
-      formData.append('type', backendMessageType);
+      // Voice messages are always sent as "response" type
+      formData.append('type', 'response');
       formData.append('duration', duration.toString());
 
       // Send voice message to backend for AI transcription
