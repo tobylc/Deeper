@@ -3872,6 +3872,16 @@ Format each as a complete question they can use to begin this important conversa
               const messages = await storage.getMessagesByConversationId(conv.id);
               const hasQuestion = messages.some(msg => msg.type === 'question');
               const hasResponse = messages.some(msg => msg.type === 'response');
+              
+              // Debug logging for exchange validation
+              console.log(`[EXCHANGE_DEBUG] Conversation ${conv.id}:`, {
+                messageCount: messages.length,
+                messageTypes: messages.map(m => ({ type: m.type, format: m.messageFormat, sender: m.senderEmail })),
+                hasQuestion,
+                hasResponse,
+                hasExchange: hasQuestion && hasResponse
+              });
+              
               if (hasQuestion && hasResponse) {
                 hasAnyCompleteExchange = true;
                 break;
