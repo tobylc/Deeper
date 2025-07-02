@@ -16,6 +16,15 @@ export default function ExchangeRequiredPopup({
   nextMessageType,
   relationshipType 
 }: ExchangeRequiredPopupProps) {
+  // Debug logging when popup opens
+  if (isOpen) {
+    console.log('[EXCHANGE_REQUIRED_POPUP] Popup opened with:', {
+      nextMessageType,
+      relationshipType,
+      timestamp: new Date().toISOString()
+    });
+  }
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md p-0 bg-transparent border-0 shadow-none">

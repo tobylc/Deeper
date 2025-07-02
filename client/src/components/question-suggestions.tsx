@@ -69,6 +69,14 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   // Production-ready question selection with comprehensive error handling
   const handleQuestionSelect = (question: string) => {
     try {
+      console.log('[QUESTION_SUGGESTIONS] handleQuestionSelect called with:', {
+        question: question?.substring(0, 50) + '...',
+        canUseRightColumn,
+        canCreateNewThread,
+        isMyTurn,
+        nextMessageType
+      });
+      
       // Validate question content
       if (!question || !question.trim()) {
         console.error('[QUESTION_SUGGESTIONS] Empty question selected');
@@ -77,6 +85,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
       
       // Check if user can use right column
       if (!canUseRightColumn) {
+        console.log('[QUESTION_SUGGESTIONS] Showing exchange required popup - canUseRightColumn is false');
         setShowExchangeRequiredPopup(true);
         return;
       }
