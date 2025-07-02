@@ -635,6 +635,15 @@ export default function ConversationPage() {
 
   const canCreateNewThread = checkCanCreateNewThread();
 
+  // Debug logging for validation states
+  console.log('[EXCHANGE_DEBUG] Validation states:', {
+    isMyTurn,
+    lastQuestionNeedsResponse,
+    hasCompleteExchange,
+    canUseRightColumn,
+    canCreateNewThread
+  });
+
 
 
   const checkResponseTime = () => {
