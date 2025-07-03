@@ -245,31 +245,25 @@ const ConversationInterface = memo(function ConversationInterface({
 
   // Production-ready message sending validation with comprehensive error handling
   const canSendNow = useCallback(() => {
-    // PRIORITY: Always allow inviter's first question without any timer
-    const messagesArray = Array.isArray(messages) ? messages : [];
-    if (isInviterFirstQuestion()) {
+    // Always allow questions immediately (no timer for any questions)
+    if (nextMessageType === 'question') {
       return true;
     }
     
-    // PRIORITY: Always allow new questions that will create new conversation threads
-    if (isNewQuestionAfterExchange()) {
-      return true;
+    // For responses: apply 10-minute thoughtful response timer
+    if (nextMessageType === 'response') {
+      if (!hasStartedResponse) {
+        return true; // Timer hasn't started yet
+      }
+      
+      // Check if 10 minutes have passed since response started
+      const remainingTime = getRemainingTime();
+      return remainingTime <= 0;
     }
     
-    // Allow sending if no messages exist (empty conversation)
-    if (messagesArray.length === 0) {
-      return true;
-    }
-    
-    // Allow sending if user hasn't started the response timer yet
-    if (!hasStartedResponse) {
-      return true;
-    }
-    
-    // Check if 10 minutes have passed since response started
-    const remainingTime = getRemainingTime();
-    return remainingTime <= 0;
-  }, [isInviterFirstQuestion, isNewQuestionAfterExchange, messages, hasStartedResponse, getRemainingTime]);
+    // For follow-ups and other message types, allow sending immediately
+    return true;
+  }, [nextMessageType, hasStartedResponse, getRemainingTime]);
 
   return (
     <div className="h-full flex flex-col">
@@ -456,7 +450,8 @@ const ConversationInterface = memo(function ConversationInterface({
                     value={newMessage}
                     onChange={(e) => {
                       setNewMessage(e.target.value);
-                      if (!isInviterFirstQuestion() && !isNewQuestionAfterExchange() && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
+                      // Start thoughtful response timer ONLY for responses (not questions)
+                      if (nextMessageType === 'response' && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
                         onTimerStart();
                       }
                     }}
@@ -503,7 +498,7 @@ const ConversationInterface = memo(function ConversationInterface({
                         <Send className="h-2 w-2" />
                       )}
                     </Button>
-                    {!isInviterFirstQuestion() && hasStartedResponse && !canSendNow() && (
+                    {nextMessageType === 'response' && hasStartedResponse && !canSendNow() && (
                       <span className="text-xs text-slate-400 font-mono mt-1">
                         {formatTime(getRemainingTime())}
                       </span>

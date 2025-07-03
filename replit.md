@@ -936,6 +936,13 @@ Changelog:
 - June 30, 2025. Critical database corruption resolution and turn state integrity restoration:
   * Identified root cause: Database had corrupted turn states where current_turn was assigned to users who had just sent messages
   * Performed comprehensive database analysis comparing actual message history with stored turn assignments
+- July 3, 2025. Critical timer logic simplification for production clarity:
+  * Simplified thoughtful response timer to apply ONLY to responses, never to questions of any type
+  * Eliminated complex conditional logic distinguishing between first questions vs new questions
+  * Enhanced timer logic to use nextMessageType === 'response' as the single trigger condition
+  * Updated both text and voice messaging components with consistent timer enforcement
+  * Timer now shows only for responses: questions (including first questions and new thread questions) send immediately
+  * Complete timer system clarity ensures proper turn-based conversation flow without timer interference on question creation
 - July 3, 2025. Critical conversation logic fixes and duplicate typewriter text resolution:
   * Fixed critical issue where text responses were incorrectly labeled as "new questions" creating unwanted conversation threads
   * Updated getNextMessageType() function to return 'response' as default instead of 'question' for regular text input

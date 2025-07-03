@@ -105,9 +105,23 @@ export default function VoiceRecorder({
   };
 
   const canSendNow = () => {
-    if (messages && messages.length === 0) return true; // First message bypass
-    if (!hasStartedResponse || !responseStartTime) return true;
-    return getRemainingTime() === 0;
+    // Always allow questions immediately (no timer for any questions)
+    if (nextMessageType === 'question') {
+      return true;
+    }
+    
+    // For responses: apply 10-minute thoughtful response timer
+    if (nextMessageType === 'response') {
+      if (!hasStartedResponse) {
+        return true; // Timer hasn't started yet
+      }
+      
+      // Check if 10 minutes have passed since response started
+      return getRemainingTime() === 0;
+    }
+    
+    // For follow-ups and other message types, allow sending immediately
+    return true;
   };
 
   const startRecording = async () => {
@@ -123,8 +137,8 @@ export default function VoiceRecorder({
       
       onRecordingStart?.();
       
-      // Trigger timer if needed
-      if (messages && messages.length > 0 && onTimerStart && !hasStartedResponse) {
+      // Trigger timer only for responses (not questions)
+      if (nextMessageType === 'response' && onTimerStart && !hasStartedResponse) {
         onTimerStart();
       }
 
@@ -282,8 +296,8 @@ export default function VoiceRecorder({
   };
 
   const handleSendAttempt = async () => {
-    // Check timer requirements for non-first messages
-    if (messages && messages.length > 0 && hasStartedResponse && !canSendNow()) {
+    // Check timer requirements only for responses
+    if (nextMessageType === 'response' && hasStartedResponse && !canSendNow()) {
       setShowThoughtfulResponseTimer(true);
       return;
     }
@@ -443,8 +457,8 @@ export default function VoiceRecorder({
             >
               <Send className="w-3 h-3" />
             </Button>
-            {/* Timer countdown matching text input */}
-            {hasStartedResponse && !canSendNow() && (
+            {/* Timer countdown for responses only */}
+            {nextMessageType === 'response' && hasStartedResponse && !canSendNow() && (
               <span className="text-xs text-slate-500 font-mono">
                 {formatTime(getRemainingTime())}
               </span>

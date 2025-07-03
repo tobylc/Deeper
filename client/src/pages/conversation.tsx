@@ -1072,45 +1072,11 @@ export default function ConversationPage() {
               hasStartedResponse={hasStartedResponse}
               responseStartTime={responseStartTime}
               onTimerStart={() => {
-                // NEVER start timer for inviter's first question
-                const messagesArray = Array.isArray(messages) ? messages : [];
-                const isInviterFirstQuestion = messagesArray.length === 0 && 
-                                               connection?.inviterEmail === user?.email &&
-                                               nextMessageType === 'question';
-                
-                if (isInviterFirstQuestion) {
-                  // Completely skip timer for inviter's first question
-                  return;
+                // Only start timer for responses (never for questions)
+                if (nextMessageType === 'response') {
+                  setHasStartedResponse(true);
+                  setResponseStartTime(new Date());
                 }
-                
-                // NEVER start timer for new questions that will create new conversation threads
-                const isNewQuestionAfterExchange = nextMessageType === 'question' && messagesArray.length > 0 && (() => {
-                  const hasQuestion = messagesArray.some(msg => msg.type === 'question');
-                  const hasResponse = messagesArray.some(msg => msg.type === 'response');
-                  
-                  // Find the most recent question
-                  let lastQuestionIndex = -1;
-                  for (let i = messagesArray.length - 1; i >= 0; i--) {
-                    if (messagesArray[i].type === 'question') {
-                      lastQuestionIndex = i;
-                      break;
-                    }
-                  }
-                  
-                  // Check if the last question has been responded to
-                  const lastQuestionHasResponse = lastQuestionIndex !== -1 ? 
-                    messagesArray.slice(lastQuestionIndex + 1).some(msg => msg.type === 'response') : false;
-                  
-                  return hasQuestion && hasResponse && lastQuestionHasResponse;
-                })();
-                
-                if (isNewQuestionAfterExchange) {
-                  // Completely skip timer for new questions that create new threads
-                  return;
-                }
-                
-                setHasStartedResponse(true);
-                setResponseStartTime(new Date());
               }}
             />
           </div>
