@@ -3082,6 +3082,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { senderEmail, type, duration } = req.body;
       const userId = req.user.claims?.sub || req.user.id;
       
+      // Add comprehensive debugging for voice message creation
+      if (process.env.NODE_ENV === 'development') {
+        console.log('=== VOICE MESSAGE DEBUG START ===');
+        console.log('Request params:', req.params);
+        console.log('Request body:', req.body);
+        console.log('File info:', req.file ? {
+          originalname: req.file.originalname,
+          mimetype: req.file.mimetype,
+          size: req.file.size
+        } : 'No file');
+        console.log('User ID:', userId);
+        console.log('Conversation ID:', conversationId);
+      }
+      
       // Comprehensive input validation
       if (!req.file) {
         return res.status(400).json({ message: "Audio file is required" });
@@ -3133,18 +3147,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate conversation exists and user is authorized
       const conversation = await storage.getConversation(conversationId);
       if (!conversation) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('ERROR: Conversation not found for ID:', conversationId);
+        }
         return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Conversation found:', {
+          id: conversation.id,
+          participant1: conversation.participant1Email,
+          participant2: conversation.participant2Email,
+          currentTurn: conversation.currentTurn
+        });
       }
 
       // Check if sender is a participant
       if (senderEmail !== conversation.participant1Email && 
           senderEmail !== conversation.participant2Email) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('ERROR: User not authorized in conversation');
+        }
         return res.status(403).json({ message: "Not authorized to send messages in this conversation" });
       }
 
       // Check if it's the sender's turn
       if (senderEmail !== conversation.currentTurn) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('ERROR: Not sender\'s turn. Current turn:', conversation.currentTurn, 'Sender:', senderEmail);
+        }
         return res.status(400).json({ message: "It's not your turn to send a message" });
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('All validations passed, proceeding with file save...');
       }
 
       // Generate secure filename with timestamp and random string
@@ -3169,6 +3205,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (process.env.NODE_ENV === 'development') {
           console.log('Audio file saved successfully. Size:', stats.size);
+          console.log('Audio file path:', audioPath);
+          console.log('Audio URL will be:', audioFileUrl);
         }
       } catch (fileError) {
         console.error("File save error:", fileError);
