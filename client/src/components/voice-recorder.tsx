@@ -48,204 +48,134 @@ export default function VoiceRecorder({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const volumeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
-  const previewTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      if (previewTimerRef.current) {
-        clearInterval(previewTimerRef.current);
-      }
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
-      }
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-    };
-  }, [audioUrl]);
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  // Real-time countdown timer synchronization
-  useEffect(() => {
-    if (hasStartedResponse && responseStartTime) {
-      const interval = setInterval(() => {
-        setCurrentTime(new Date());
-      }, 1000);
-      return () => clearInterval(interval);
+  const clearRecording = () => {
+    setIsRecording(false);
+    setIsPaused(false);
+    setHasRecording(false);
+    setDuration(0);
+    setAudioBlob(null);
+    setAudioUrl(null);
+    setVolumeLevel(0);
+    setIsPlayingPreview(false);
+    setPreviewCurrentTime(0);
+    audioChunksRef.current = [];
+    
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-  }, [hasStartedResponse, responseStartTime]);
-
-  // Calculate remaining time for thoughtful response timer using currentTime for real-time sync
-  const getRemainingTime = () => {
-    if (!hasStartedResponse || !responseStartTime) return 600; // 10 minutes in seconds
-    const elapsed = (currentTime.getTime() - responseStartTime.getTime()) / 1000;
-    return Math.max(0, 600 - elapsed);
+    if (volumeTimerRef.current) {
+      clearInterval(volumeTimerRef.current);
+      volumeTimerRef.current = null;
+    }
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current = null;
+    }
   };
 
   const formatTime = (seconds: number) => {
-    const totalSeconds = Math.max(0, Math.floor(seconds));
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Check if this is inviter's first question to bypass timer completely
-  const isInviterFirstQuestion = () => {
-    if (!messages || !connection || !currentUserEmail) return false;
-    return messages.length === 0 && 
-           connection.inviterEmail === currentUserEmail &&
-           nextMessageType === 'question';
+  const getRemainingTime = () => {
+    if (!hasStartedResponse || !responseStartTime) return 0;
+    const elapsed = Math.floor((currentTime.getTime() - responseStartTime.getTime()) / 1000);
+    return Math.max(0, 600 - elapsed); // 10 minutes = 600 seconds
   };
 
   const canSendNow = () => {
-    // Skip timer completely for inviter's first question
-    if (isInviterFirstQuestion()) return true;
-    if (!hasStartedResponse) return true;
-    return getRemainingTime() <= 0;
-  };
-
-  // Volume monitoring function
-  const monitorVolume = () => {
-    if (!analyserRef.current) return;
-    
-    const bufferLength = analyserRef.current.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    
-    // Use time domain data for accurate volume detection
-    analyserRef.current.getByteTimeDomainData(dataArray);
-    
-    // Calculate RMS (Root Mean Square) for accurate volume
-    let sumSquares = 0;
-    for (let i = 0; i < bufferLength; i++) {
-      const amplitude = (dataArray[i] - 128) / 128; // Normalize to -1 to 1
-      sumSquares += amplitude * amplitude;
-    }
-    
-    const rms = Math.sqrt(sumSquares / bufferLength);
-    // Scale and amplify for better visual feedback
-    const volume = Math.min(100, Math.max(0, rms * 500));
-    
-    setVolumeLevel(volume);
-    
-    if (isRecording && !isPaused) {
-      animationFrameRef.current = requestAnimationFrame(monitorVolume);
-    }
+    if (messages && messages.length === 0) return true; // First message bypass
+    if (!hasStartedResponse || !responseStartTime) return true;
+    return getRemainingTime() === 0;
   };
 
   const startRecording = async () => {
     try {
-      // Check for getUserMedia support
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Voice recording not supported in this browser');
-      }
-
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
+          autoGainControl: true,
           sampleRate: 44100
         } 
       });
       
-      streamRef.current = stream;
+      onRecordingStart?.();
       
-      // Set up audio analysis for volume monitoring
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // Trigger timer if needed
+      if (messages && messages.length > 0 && onTimerStart && !hasStartedResponse) {
+        onTimerStart();
+      }
+
+      // Set up audio analysis for volume levels
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
       const analyser = audioContext.createAnalyser();
-      const microphone = audioContext.createMediaStreamSource(stream);
-      
-      // Create a gain node for better control
-      const gainNode = audioContext.createGain();
-      gainNode.gain.value = 1.0;
-      
-      analyser.fftSize = 512; // Balanced resolution for real-time performance
-      analyser.smoothingTimeConstant = 0.3; // Less smoothing for more responsive feedback
-      analyser.minDecibels = -90;
-      analyser.maxDecibels = -10;
-      
-      microphone.connect(gainNode);
-      gainNode.connect(analyser);
-      
-      audioContextRef.current = audioContext;
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
+      source.connect(analyser);
       analyserRef.current = analyser;
-      
+
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus'
       });
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-      
+
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
-      
+
       mediaRecorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
-        const url = URL.createObjectURL(blob);
-        setAudioBlob(blob);
-        setAudioUrl(url);
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setAudioBlob(audioBlob);
+        setAudioUrl(URL.createObjectURL(audioBlob));
         setHasRecording(true);
-        
-        // Stop volume monitoring
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
-        }
-        
-        // Stop all tracks to free up microphone
         stream.getTracks().forEach(track => track.stop());
-        
-        // Close audio context safely
-        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-          audioContextRef.current.close();
-        }
       };
-      
-      mediaRecorder.start();
+
+      mediaRecorder.start(100); // Collect data every 100ms
       setIsRecording(true);
       setIsPaused(false);
-      setDuration(0);
-      setVolumeLevel(0);
-      
-      // Start volume monitoring with delay to ensure audio context is ready
-      setTimeout(() => {
-        monitorVolume();
-      }, 100);
-      
-      // Notify parent that recording started (for response timer)
-      if (onRecordingStart) {
-        onRecordingStart();
-      }
-      
-      // Start thoughtful response timer if not already started (skip for inviter's first question)
-      if (!isInviterFirstQuestion() && !hasStartedResponse && onTimerStart) {
-        onTimerStart();
-      }
-      
-      // Start timer
+
+      // Start duration timer
       timerRef.current = setInterval(() => {
         setDuration(prev => {
-          if (prev >= 1800) { // 30 minutes max
+          const newDuration = prev + 1;
+          if (newDuration >= 30 * 60) { // 30 minutes max
             stopRecording();
-            return prev;
+            return 30 * 60;
           }
-          return prev + 1;
+          return newDuration;
+        });
+      }, 1000);
+      
+      // Start volume level monitoring with delay for audio context setup
+      setTimeout(() => {
+        volumeTimerRef.current = setInterval(() => {
+          if (analyserRef.current && isRecording) {
+            const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+            analyserRef.current.getByteFrequencyData(dataArray);
+            const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+            setVolumeLevel(Math.min(100, (average / 128) * 100));
+          }
         });
       }, 1000);
       
@@ -258,162 +188,66 @@ export default function VoiceRecorder({
       let errorMessage = 'Unable to access microphone';
       
       if (error.name === 'NotAllowedError') {
-        errorMessage = 'Microphone access denied. Please allow microphone permissions and try again.';
+        errorMessage = 'Microphone access denied. Please allow microphone access and try again.';
       } else if (error.name === 'NotFoundError') {
         errorMessage = 'No microphone found. Please connect a microphone and try again.';
-      } else if (error.name === 'NotSupportedError') {
-        errorMessage = 'Voice recording is not supported in this browser.';
       } else if (error.name === 'NotReadableError') {
-        errorMessage = 'Microphone is already in use by another application.';
-      }
-
-      // Use toast notification instead of alert for better UX
-      if (typeof window !== 'undefined' && window.dispatchEvent) {
-        const toast = new CustomEvent('showToast', {
-          detail: {
-            title: 'Voice Recording Error',
-            description: errorMessage,
-            variant: 'destructive'
-          }
-        });
-        window.dispatchEvent(toast);
-      }
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      setIsPaused(false);
-      setVolumeLevel(0);
-      
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
+        errorMessage = 'Microphone is being used by another application. Please close other applications and try again.';
       }
       
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
+      // You can add toast notification here if needed
+      alert(errorMessage);
     }
   };
 
   const pauseRecording = () => {
-    if (mediaRecorderRef.current && isRecording && !isPaused) {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
-      
-      // Stop timer and volume monitoring
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-      
-      setVolumeLevel(0);
     }
   };
 
   const resumeRecording = () => {
-    if (mediaRecorderRef.current && isRecording && isPaused) {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
-      
       // Resume timer
       timerRef.current = setInterval(() => {
         setDuration(prev => {
-          if (prev >= 1800) { // 30 minutes max
+          const newDuration = prev + 1;
+          if (newDuration >= 30 * 60) { // 30 minutes max
             stopRecording();
-            return prev;
+            return 30 * 60;
           }
-          return prev + 1;
+          return newDuration;
         });
       }, 1000);
-      
-      // Resume volume monitoring
-      monitorVolume();
     }
   };
 
-  const clearRecording = () => {
-    setHasRecording(false);
-    setAudioBlob(null);
-    setDuration(0);
-    setVolumeLevel(0);
-    setIsRecording(false);
-    setIsPaused(false);
-    setIsPlayingPreview(false);
-    setPreviewCurrentTime(0);
-    
-    if (audioUrl) {
-      URL.revokeObjectURL(audioUrl);
-      setAudioUrl(null);
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setIsPaused(false);
     }
-    
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
-    if (previewTimerRef.current) {
-      clearInterval(previewTimerRef.current);
-      previewTimerRef.current = null;
-    }
-    
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-    
-    // Close audio context safely
-    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
-  };
-
-  const togglePreview = () => {
-    if (!audioRef.current || !audioUrl) return;
-
-    if (isPlayingPreview) {
-      audioRef.current.pause();
-      setIsPlayingPreview(false);
-      if (previewTimerRef.current) {
-        clearInterval(previewTimerRef.current);
-      }
-    } else {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play();
-      setIsPlayingPreview(true);
-      setPreviewCurrentTime(0);
-      
-      // Start preview timer
-      previewTimerRef.current = setInterval(() => {
-        if (audioRef.current) {
-          const currentTime = audioRef.current.currentTime;
-          setPreviewCurrentTime(currentTime);
-          
-          if (currentTime >= duration) {
-            setIsPlayingPreview(false);
-            setPreviewCurrentTime(0);
-            if (previewTimerRef.current) {
-              clearInterval(previewTimerRef.current);
-            }
-          }
-        }
-      }, 100);
+    if (volumeTimerRef.current) {
+      clearInterval(volumeTimerRef.current);
+      volumeTimerRef.current = null;
     }
   };
 
   const handleSendAttempt = async () => {
-    // Skip timer validation for inviter's first question
-    if (!canSendNow()) {
+    // Check timer requirements for non-first messages
+    if (messages && messages.length > 0 && hasStartedResponse && !canSendNow()) {
       setShowThoughtfulResponseTimer(true);
       return;
     }
@@ -446,25 +280,11 @@ export default function VoiceRecorder({
     setShowThoughtfulResponseTimer(false);
   };
 
-  // Get volume color based on level
+  // Get volume level color for visual feedback
   const getVolumeColor = (volume: number) => {
     if (volume < 30) return '#10B981'; // green
     if (volume < 70) return '#F59E0B'; // yellow  
     return '#EF4444'; // red
-  };
-
-  // Get recording button color and animation
-  const getRecordingButtonStyle = () => {
-    if (!isRecording) {
-      return "bg-gradient-to-r from-[#4FACFE] to-[#3B82F6] hover:from-[#4FACFE]/90 hover:to-[#3B82F6]/90 text-white";
-    }
-    
-    if (isPaused) {
-      return "bg-yellow-500 hover:bg-yellow-600 text-white";
-    }
-    
-    const color = getVolumeColor(volumeLevel);
-    return `text-white animate-pulse`;
   };
 
   const formatDuration = (seconds: number) => {
@@ -475,31 +295,27 @@ export default function VoiceRecorder({
 
   return (
     <>
-      <div className={cn("bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-0.5", className)}>
-        <div className="flex items-center space-x-2">
-        {/* Condensed Recording Interface */}
+      <div className={cn("flex items-center space-x-2 px-2 py-0.5", className)}>
+        {/* Recording Status Indicator */}
         <div className="flex items-center space-x-1">
-          {/* Recording Status Indicator */}
-          <div className="flex items-center space-x-1">
-            {isRecording ? (
-              <div className="flex items-center space-x-1">
-                <div 
-                  className="w-2 h-2 rounded-full animate-pulse transition-all duration-100"
-                  style={{ backgroundColor: getVolumeColor(volumeLevel) }}
-                />
-                <span className="text-xs text-slate-600 font-mono">
-                  {formatDuration(duration)}
-                </span>
-              </div>
-            ) : hasRecording ? (
-              <div className="flex items-center space-x-1">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
-                <span className="text-xs text-slate-600">Ready</span>
-              </div>
-            ) : (
-              <span className="text-xs text-slate-400">Tap to record</span>
-            )}
-          </div>
+          {isRecording ? (
+            <div className="flex items-center space-x-1">
+              <div 
+                className="w-2 h-2 rounded-full animate-pulse transition-all duration-100"
+                style={{ backgroundColor: getVolumeColor(volumeLevel) }}
+              />
+              <span className="text-xs text-slate-600 font-mono">
+                {formatDuration(duration)}
+              </span>
+            </div>
+          ) : hasRecording ? (
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 rounded-full bg-green-500" />
+              <span className="text-xs text-slate-600">Ready</span>
+            </div>
+          ) : (
+            <span className="text-xs text-slate-400">Tap to record</span>
+          )}
         </div>
 
         {/* Main Recording Button - Compact */}
@@ -522,48 +338,59 @@ export default function VoiceRecorder({
           )}
         </Button>
 
-        {/* Stop Button (when recording) */}
+        {/* Stop Recording Button */}
         {isRecording && (
           <Button
             onClick={stopRecording}
-            className="w-6 h-6 rounded-full bg-gray-500 hover:bg-gray-600 text-white transition-all duration-200 flex-shrink-0"
+            className="w-6 h-6 rounded-full bg-slate-500 hover:bg-slate-600 text-white transition-all duration-200 flex-shrink-0"
           >
             <Square className="w-3 h-3" />
           </Button>
         )}
 
-        {/* Clear Button */}
-        {hasRecording && (
+        {/* Clear Recording Button */}
+        {hasRecording && !isRecording && (
           <Button
             onClick={clearRecording}
-            className="w-6 h-6 rounded-full bg-gray-400 hover:bg-gray-500 text-white transition-all duration-200 flex-shrink-0"
+            className="w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 text-white transition-all duration-200 flex-shrink-0"
           >
             <Trash2 className="w-3 h-3" />
           </Button>
         )}
 
-        {/* Preview Playback - Compact */}
-        {hasRecording && audioUrl && (
-          <div className="flex items-center space-x-1 flex-1 min-w-0">
+        {/* Recording Progress - Inline */}
+        {isRecording && (
+          <div className="flex-1 max-w-24">
+            <div className="w-full bg-slate-200 rounded-full h-1">
+              <div 
+                className="bg-[#4FACFE] h-1 rounded-full transition-all duration-500" 
+                style={{ width: `${Math.min((duration / (30 * 60)) * 100, 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Playback Controls for Recorded Audio */}
+        {hasRecording && !isRecording && audioUrl && (
+          <div className="flex items-center space-x-1">
             <Button
-              onClick={togglePreview}
-              className="w-6 h-6 rounded-full bg-[#4FACFE] hover:bg-[#4FACFE]/90 text-white flex-shrink-0"
+              onClick={() => setIsPlayingPreview(!isPlayingPreview)}
+              className="w-6 h-6 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-all duration-200 flex-shrink-0"
             >
               {isPlayingPreview ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
             </Button>
-            <div className="flex-1 min-w-0 px-1">
-              <div className="h-1 bg-slate-200 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-[#4FACFE] transition-all duration-200"
-                  style={{ width: `${duration > 0 ? (previewCurrentTime / duration) * 100 : 0}%` }}
-                />
+            
+            {/* Preview Progress */}
+            {isPlayingPreview && (
+              <div className="flex-1 max-w-16">
+                <div className="w-full bg-slate-200 rounded-full h-1">
+                  <div 
+                    className="bg-blue-500 h-1 rounded-full transition-all duration-100" 
+                    style={{ width: `${(previewCurrentTime / duration) * 100}%` }}
+                  />
+                </div>
               </div>
-            </div>
-            <span className="text-xs text-slate-600 font-mono flex-shrink-0">
-              {formatDuration(duration)}
-            </span>
-            {/* Audio element for preview */}
-            <audio ref={audioRef} src={audioUrl} preload="metadata" />
+            )}
           </div>
         )}
 
@@ -588,8 +415,6 @@ export default function VoiceRecorder({
             )}
           </div>
         )}
-
-        </div>
       </div>
 
       {/* Thoughtful Response Timer Popup */}
