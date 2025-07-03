@@ -467,12 +467,12 @@ const ConversationInterface = memo(function ConversationInterface({
                 </button>
               </div>
 
-              {/* Input Surface - Compact */}
+              {/* Input Surface - Minimalistic */}
               <div className="relative">
                 {messageMode === 'text' ? (
-                  /* Compact Text Input */
-                  <div className="relative bg-white border border-slate-200 rounded-lg shadow-md p-3">
-                    <div className="flex space-x-3">
+                  /* Minimalistic Text Input */
+                  <div className="relative bg-white border border-slate-200 rounded-lg shadow-sm px-3 py-2">
+                    <div className="flex space-x-2">
                       <Textarea
                         value={newMessage}
                         onChange={(e) => {
@@ -496,7 +496,7 @@ const ConversationInterface = memo(function ConversationInterface({
                             ? "What would you like to explore together?"
                             : "Express what's in your heart..."
                         }
-                        className="flex-1 min-h-[80px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-400 focus:ring-0 text-sm leading-relaxed p-0"
+                        className="flex-1 min-h-[40px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-400 focus:ring-0 text-sm leading-relaxed p-0"
                         disabled={isSending}
                       />
                       <div className="flex flex-col justify-between items-center">
@@ -534,8 +534,8 @@ const ConversationInterface = memo(function ConversationInterface({
                     </div>
                   </div>
                 ) : (
-                  /* Compact Voice Recorder */
-                  <div className="bg-white border border-slate-200 rounded-lg shadow-md p-3">
+                  /* Minimalistic Voice Recorder */
+                  <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-3 py-2">
                     <VoiceRecorder
                       onSendVoiceMessage={handleVoiceMessageSend}
                       onRecordingStart={onRecordingStart}

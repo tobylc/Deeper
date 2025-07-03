@@ -3206,7 +3206,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (process.env.NODE_ENV === 'development') {
           console.log('Audio file saved successfully. Size:', stats.size);
           console.log('Audio file path:', audioPath);
-          console.log('Audio URL will be:', audioFileUrl);
         }
       } catch (fileError) {
         console.error("File save error:", fileError);
@@ -3214,6 +3213,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const audioFileUrl = `/uploads/${fileName}`;
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Audio URL will be:', audioFileUrl);
+      }
 
       // Transcribe audio using OpenAI Whisper with production-ready error handling
       let transcription = '';
