@@ -168,11 +168,6 @@ export default function ConversationPage() {
     retry: 1,
     retryDelay: 1000,
     throwOnError: false,
-    // CRITICAL FIX: Prevent aggressive refetching during thread switches that can corrupt turn state
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    refetchOnReconnect: false,
-    staleTime: 5000, // Consider data fresh for 5 seconds to prevent race conditions
   });
 
   // Determine other participant after conversation is loaded
@@ -278,12 +273,9 @@ export default function ConversationPage() {
     enabled: !!(selectedConversationId || id) && !!user,
     retry: 1,
     retryDelay: 1000,
-    throwOnError: false,
-    // CRITICAL FIX: Synchronize with conversation query settings to prevent race conditions
-    refetchOnWindowFocus: false,
+    staleTime: 0,
     refetchOnMount: true,
-    refetchOnReconnect: false,
-    staleTime: 5000, // Match conversation query stale time for consistency
+    throwOnError: false,
   });
 
   // Check notification preference status for this conversation
@@ -504,21 +496,11 @@ export default function ConversationPage() {
 
   // Correct turn logic: inviter (participant1) always starts the conversation
   // For empty conversations, inviter should always have the first turn
-  // CRITICAL FIX: Add safeguards against query race conditions during thread switching
   const isMyTurn = conversation && user?.email && messages && Array.isArray(messages)
     ? (messages.length === 0 
         ? conversation.participant1Email === user.email // Inviter gets first turn in empty conversation
         : conversation.currentTurn === user.email)
     : false;
-  
-  // DEBUGGING: Log turn state calculation for production troubleshooting
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[TURN_CALC] Conversation ID:', selectedConversationId || id);
-    console.log('[TURN_CALC] Current user:', user?.email);
-    console.log('[TURN_CALC] Conversation current turn:', conversation?.currentTurn);
-    console.log('[TURN_CALC] Messages length:', messages?.length);
-    console.log('[TURN_CALC] Calculated isMyTurn:', isMyTurn);
-  }
   
   // Simplified message type validation: Only question or response
   const getNextMessageType = (): 'question' | 'response' => {
@@ -807,11 +789,6 @@ export default function ConversationPage() {
     console.log('[THREAD_SELECT] Current connection ID:', conversation?.connectionId);
     console.log('[THREAD_SELECT] Current user email:', user?.email);
     
-    // CRITICAL FIX: Prevent query race conditions during thread switching
-    // Store current conversation data to ensure turn state stability
-    const currentConversationTurn = conversation?.currentTurn;
-    console.log('[THREAD_SELECT] Preserving current turn state:', currentConversationTurn);
-    
     setSelectedConversationId(conversationId);
     setNewMessage(""); // Clear message when switching threads
     setShowThreadsView(false); // Hide threads view on mobile after selection
@@ -837,10 +814,6 @@ export default function ConversationPage() {
           const responseData = await response.json();
           console.log('[THREAD_SELECT] Thread switch completed with turn preservation:', responseData);
           console.log('[THREAD_SELECT] Current turn preserved as:', responseData.currentTurn);
-          
-          // CRITICAL FIX: Add small delay to ensure backend processing completes
-          // before any potential query refreshes from WebSocket events
-          await new Promise(resolve => setTimeout(resolve, 100));
         } else {
           const errorData = await response.text();
           console.error('[THREAD_SELECT] Failed to send thread switch notification:', response.status, errorData);

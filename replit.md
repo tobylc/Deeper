@@ -936,12 +936,6 @@ Changelog:
 - June 30, 2025. Critical database corruption resolution and turn state integrity restoration:
   * Identified root cause: Database had corrupted turn states where current_turn was assigned to users who had just sent messages
   * Performed comprehensive database analysis comparing actual message history with stored turn assignments
-- July 3, 2025. Critical React Query race condition fixes for thread reopening turn preservation:
-  * Fixed critical issue where React Query automatic refetching during conversation ID changes caused turn state corruption
-  * Enhanced query configuration with consistent staleTime (5 seconds) and reduced refetching for conversation and messages queries
-  * Added 100ms delay in thread switching to ensure backend processing completes before any potential query refreshes
-  * Implemented comprehensive debugging logs to track turn state calculations during conversation transitions
-  * Thread reopening now maintains absolute turn state preservation through stabilized query management
 - July 3, 2025. Production-ready voice messaging system with condensed UI design:
   * Completely redesigned voice recording interface from large card layout to minimalistic horizontal bar design
   * Condensed all voice controls (record, stop, clear, progress) into single thin row matching text input area height
