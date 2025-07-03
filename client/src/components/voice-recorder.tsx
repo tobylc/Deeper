@@ -250,7 +250,9 @@ export default function VoiceRecorder({
       }, 1000);
       
     } catch (error: any) {
-      console.error('Error accessing microphone:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error accessing microphone:', error);
+      }
       
       // Production-ready error messaging
       let errorMessage = 'Unable to access microphone';
@@ -421,7 +423,9 @@ export default function VoiceRecorder({
         await onSendVoiceMessage(audioBlob, duration);
         clearRecording();
       } catch (error) {
-        console.error('Error sending voice message:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error sending voice message:', error);
+        }
         // Don't clear recording on error so user can retry
       }
     }
@@ -433,7 +437,9 @@ export default function VoiceRecorder({
         await onSendVoiceMessage(audioBlob, duration);
         clearRecording();
       } catch (error) {
-        console.error('Error sending voice message:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error sending voice message:', error);
+        }
         // Don't clear recording on error so user can retry
       }
     }

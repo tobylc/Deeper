@@ -57,7 +57,7 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
       setIsLoading(false);
       setError(null);
       if (process.env.NODE_ENV === 'development') {
-        console.log('Audio initially loaded successfully');
+
       }
     };
 
@@ -65,7 +65,9 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
       setIsLoading(false);
       const errorMsg = `Audio load error: ${(e.target as HTMLAudioElement)?.error?.message || 'Unknown error'}`;
       setError(errorMsg);
-      console.error('Initial audio load error:', errorMsg);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Initial audio load error:', errorMsg);
+      }
     };
 
     const handleLoadStart = () => {
@@ -96,12 +98,16 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
 
   const togglePlayback = async () => {
     if (!audioRef.current) {
-      console.error('Audio ref not available');
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Audio ref not available');
+      }
       return;
     }
 
     if (!message.audioFileUrl) {
-      console.error('No audio URL available');
+      if (process.env.NODE_ENV === 'development') {
+        console.error('No audio URL available');
+      }
       setError('Audio file not available');
       return;
     }
@@ -133,7 +139,9 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           }
         }
         
-        console.log('Constructed audio URL:', audioUrl);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Constructed audio URL:', audioUrl);
+        }
         
         // Always force a fresh load to avoid cache issues
         const audio = audioRef.current;
@@ -160,9 +168,13 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
             }
           }
           
-          console.log('Audio file accessibility confirmed');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Audio file accessibility confirmed');
+          }
         } catch (fetchError) {
-          console.error('Audio file fetch test failed:', fetchError);
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Audio file fetch test failed:', fetchError);
+          }
           
           // If we have transcription, show it as fallback
           if (message.transcription && message.transcription !== '[Transcription unavailable - audio only]') {
