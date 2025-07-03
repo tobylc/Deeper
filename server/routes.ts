@@ -3245,13 +3245,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate message type based on conversation flow
       // Special rule: ALL voice messages are always treated as "response" type
       if (existingMessages.length === 0) {
-        if (type !== 'question') {
-          return res.status(400).json({ message: "First message must be a question" });
+        // For voice messages, allow "response" type even as first message
+        // For text messages, require "question" type as first message
+        if (type !== 'question' && type !== 'response') {
+          return res.status(400).json({ message: "First message must be a question or response" });
         }
       } else {
         // Voice messages are always allowed as "response" regardless of turn logic
-        if (type !== 'response') {
-          return res.status(400).json({ message: "Voice messages must be sent as response type" });
+        if (type !== 'response' && type !== 'question' && type !== 'follow up') {
+          return res.status(400).json({ message: "Invalid message type" });
         }
       }
 
