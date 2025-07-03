@@ -11,7 +11,7 @@ import VoiceRecorder from '@/components/voice-recorder';
 import VoiceMessageDisplay from '@/components/voice-message-display';
 import TranscriptionProgress from '@/components/transcription-progress';
 import ThoughtfulResponsePopup from '@/components/thoughtful-response-popup';
-import FloatingWaitingText from '@/components/floating-waiting-text';
+
 import type { Message } from '@shared/schema';
 
 interface User {
@@ -78,7 +78,7 @@ const ConversationInterface = memo(function ConversationInterface({
   const [showTranscriptionProgress, setShowTranscriptionProgress] = useState(false);
   const [isTranscriptionComplete, setIsTranscriptionComplete] = useState(false);
   const [isConversationExpanded, setIsConversationExpanded] = useState(false);
-  const [showFloatingText, setShowFloatingText] = useState(true);
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -217,25 +217,7 @@ const ConversationInterface = memo(function ConversationInterface({
     };
   }, [hasStartedResponse, responseStartTime]);
 
-  // Scroll detection to hide/show floating text
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
-
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
-      const threshold = 50; // pixels from bottom
-      const isNearBottom = scrollHeight - scrollTop - clientHeight <= threshold;
-      
-      setShowFloatingText(isNearBottom);
-    };
-
-    scrollContainer.addEventListener('scroll', handleScroll);
-    // Initial check
-    handleScroll();
-
-    return () => scrollContainer.removeEventListener('scroll', handleScroll);
-  }, []);
+  // Scroll detection removed - floating text now handled at conversation page level
 
   // Calculate remaining time for thoughtful response timer with error handling
   const getRemainingTime = useCallback(() => {
@@ -429,10 +411,7 @@ const ConversationInterface = memo(function ConversationInterface({
         )}
       </div>
 
-      {/* Floating Waiting Text when not user's turn and user is at bottom */}
-      {!isMyTurn && showFloatingText && (
-        <FloatingWaitingText className="absolute inset-x-0 bottom-4" />
-      )}
+      {/* Floating Waiting Text removed from here - now handled at conversation page level to prevent duplication */}
 
       {/* Static Minimalistic Input Area at Bottom */}
       {isMyTurn && (

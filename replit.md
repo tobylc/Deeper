@@ -936,6 +936,15 @@ Changelog:
 - June 30, 2025. Critical database corruption resolution and turn state integrity restoration:
   * Identified root cause: Database had corrupted turn states where current_turn was assigned to users who had just sent messages
   * Performed comprehensive database analysis comparing actual message history with stored turn assignments
+- July 3, 2025. Critical conversation logic fixes and duplicate typewriter text resolution:
+  * Fixed critical issue where text responses were incorrectly labeled as "new questions" creating unwanted conversation threads
+  * Updated getNextMessageType() function to return 'response' as default instead of 'question' for regular text input
+  * Removed automatic thread creation logic from server routes - new threads only created via right-column suggestions
+  * Fixed duplicate typewriter effect by removing FloatingWaitingText component from conversation-interface.tsx
+  * FloatingWaitingText now only displays once from conversation.tsx level, eliminating double "Their turn to write" text
+  * Ensured new conversation threads can only be created through explicit right-column actions (curated questions, AI suggestions, "Ask New Question" button)
+  * Regular text input now always creates follow-up responses within current conversation thread as intended
+  * Production-ready conversation logic maintaining proper thread management and turn-based dialogue flow
 - July 3, 2025. Production-ready voice messaging system with condensed UI design:
   * Completely redesigned voice recording interface from large card layout to minimalistic horizontal bar design
   * Condensed all voice controls (record, stop, clear, progress) into single thin row matching text input area height
