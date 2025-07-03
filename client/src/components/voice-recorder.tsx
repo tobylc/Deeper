@@ -50,6 +50,7 @@ export default function VoiceRecorder({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const volumeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -82,6 +83,12 @@ export default function VoiceRecorder({
     if (previewAudioRef.current) {
       previewAudioRef.current.pause();
       previewAudioRef.current = null;
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      audioContextRef.current.close().catch(() => {
+        // Ignore AudioContext close errors in production
+      });
+      audioContextRef.current = null;
     }
   };
 
@@ -123,6 +130,7 @@ export default function VoiceRecorder({
 
       // Set up audio analysis for volume levels
       const audioContext = new AudioContext();
+      audioContextRef.current = audioContext;
       const source = audioContext.createMediaStreamSource(stream);
       const analyser = audioContext.createAnalyser();
       analyser.fftSize = 256;
@@ -242,6 +250,12 @@ export default function VoiceRecorder({
     if (volumeTimerRef.current) {
       clearInterval(volumeTimerRef.current);
       volumeTimerRef.current = null;
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      audioContextRef.current.close().catch(() => {
+        // Ignore AudioContext close errors in production
+      });
+      audioContextRef.current = null;
     }
   };
 

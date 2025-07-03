@@ -134,8 +134,7 @@ const ConversationInterface = memo(function ConversationInterface({
       const formData = new FormData();
       formData.append('audio', audioBlob, 'voice-message.webm');
       formData.append('senderEmail', currentUserEmail);
-      // ALL voice messages should be treated as responses, not questions
-      formData.append('type', 'response');
+      formData.append('type', nextMessageType);
       formData.append('duration', duration.toString());
 
       // Send voice message to backend for AI transcription
