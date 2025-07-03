@@ -118,53 +118,15 @@ function StackedConversation({
               )}
             </div>
             
-            {/* Reopen Thread Button */}
+            {/* Reopen Thread Button - Pure Navigation Only */}
             <div className="mt-2">
               <Button
                 size="sm"
                 variant="outline"
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.stopPropagation();
-                  try {
-                    const response = await fetch(
-                      `/api/conversations/${conversation.id}/can-reopen?currentConversationId=${selectedConversationId || ''}`
-                    );
-                    
-                    // Production-ready response handling
-                    if (!response.ok) {
-                      console.error(`API error: ${response.status} ${response.statusText}`);
-                      onWaitingClick();
-                      return;
-                    }
-
-                    const data = await response.json();
-                    
-                    // Validate response structure
-                    if (typeof data.canReopen !== 'boolean') {
-                      console.error('Invalid API response structure:', data);
-                      onWaitingClick();
-                      return;
-                    }
-                    
-                    if (data.canReopen) {
-                      onClick(); // Reopen the thread - this does NOT count as a turn and does NOT require user's turn
-                    } else {
-                      // FIXED: Thread reopening should NOT depend on whose turn it is
-                      // Only show respond first popup if there are unanswered questions
-                      if (data.reason === 'respond_to_question') {
-                        onRespondFirstClick(); // Show "Respond First" popup for unanswered questions
-                      } else {
-                        // For any other reason, allow thread reopening (it's just navigation)
-                        console.log('[THREAD_REOPEN] Backend blocking thread reopen for reason:', data.reason);
-                        onClick(); // Allow thread reopening regardless - it's pure navigation
-                      }
-                    }
-                  } catch (error) {
-                    if (process.env.NODE_ENV === 'development') {
-                      console.error('Error checking thread reopen permission:', error);
-                    }
-                    onWaitingClick(); // Show waiting popup on error
-                  }
+                  console.log('[THREAD_REOPEN] Pure navigation - reopening thread', conversation.id);
+                  onClick(); // Thread reopening is just navigation - no validation needed
                 }}
                 className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400 rounded-lg"
               >

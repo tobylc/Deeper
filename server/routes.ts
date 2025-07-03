@@ -2437,7 +2437,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Switch active conversation thread via connection endpoint - matches frontend call
-  // CRITICAL: This endpoint is for thread navigation ONLY - no turn modification allowed
+  // ULTRA-SIMPLIFIED: Thread reopening is pure navigation only
   app.post("/api/connections/:connectionId/switch-active-thread", isAuthenticated, async (req: any, res) => {
     try {
       const connectionId = parseInt(req.params.connectionId);
@@ -2458,46 +2458,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      // Get the conversation to switch to
+      // Get the conversation to switch to (minimal validation)
       const conversation = await storage.getConversation(conversationId);
       if (!conversation) {
         return res.status(404).json({ message: "Conversation not found" });
       }
 
-      // Verify conversation belongs to this connection
-      if (conversation.connectionId !== connectionId) {
-        return res.status(403).json({ message: "Conversation does not belong to this connection" });
-      }
+      console.log(`[THREAD_REOPEN] Pure navigation: User ${currentUser.email} switching to thread ${conversationId}`);
 
-      // CRITICAL PROTECTION: Thread reopening must NEVER modify turn state
-      // This endpoint is purely for navigation and WebSocket synchronization
-      console.log(`[THREAD_REOPEN] User ${currentUser.email} reopening thread ${conversationId} - NO TURN MODIFICATION`);
-      console.log(`[THREAD_REOPEN] BEFORE: Conversation ${conversationId} turn is: ${conversation.currentTurn}`);
-      
-      // DEBUGGING: Get conversation again to verify no changes
-      const conversationAfterReopen = await storage.getConversation(conversationId);
-      console.log(`[THREAD_REOPEN] AFTER: Conversation ${conversationId} turn is: ${conversationAfterReopen?.currentTurn}`);
-      
-      if (conversation.currentTurn !== conversationAfterReopen?.currentTurn) {
-        console.error(`[CRITICAL_BUG] Turn state changed during thread reopening!`);
-        console.error(`[CRITICAL_BUG] Before: ${conversation.currentTurn}, After: ${conversationAfterReopen?.currentTurn}`);
-      } else {
-        console.log(`[THREAD_REOPEN] ✓ Turn state preserved successfully`);
-      }
-
-      // Send real-time WebSocket notifications to both participants about thread switch
-      // CRITICAL: This is pure navigation synchronization - no database modifications
+      // Send WebSocket notification for real-time synchronization (no database changes)
       try {
         const { getWebSocketManager } = await import('./websocket');
         const wsManager = getWebSocketManager();
         if (wsManager) {
-          console.log(`[WEBSOCKET] Sending thread_reopened notification to both participants`);
-          console.log(`[WEBSOCKET] Participant 1: ${conversation.participant1Email}`);
-          console.log(`[WEBSOCKET] Participant 2: ${conversation.participant2Email}`);
-          console.log(`[WEBSOCKET] ConversationId: ${conversationId}, ConnectionId: ${connectionId}`);
-          console.log(`[WEBSOCKET] IMPORTANT: No turn modification - pure navigation sync`);
-          
-          // Notify both participants that thread was switched - using 'thread_reopened' action
+          // Notify both participants of thread switch for UI synchronization only
           wsManager.notifyConversationUpdate(conversation.participant1Email, {
             conversationId: conversationId,
             connectionId: connectionId,
@@ -2511,20 +2485,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
               action: 'thread_reopened'
             });
           }
-          
-          console.log(`[WEBSOCKET] Thread switch notifications sent successfully - turn state preserved`);
-        } else {
-          console.error('[WEBSOCKET] WebSocket manager not available');
         }
       } catch (error) {
         console.error('[WEBSOCKET] Failed to send thread switch notification:', error);
       }
 
+      // Return success without any database modifications
       res.json({ 
         success: true, 
         activeConversationId: conversationId,
-        currentTurn: conversation.currentTurn, // Return current turn to confirm no modification
-        message: "Thread switched successfully - turn state preserved, both users synchronized"
+        message: "Thread navigation completed"
       });
     } catch (error) {
       console.error('[API] Error switching active thread:', error);

@@ -787,10 +787,9 @@ export default function ConversationPage() {
   };
 
   const handleThreadSelect = async (conversationId: number) => {
-    console.log('[THREAD_SELECT] Starting thread switch to conversation:', conversationId);
-    console.log('[THREAD_SELECT] Current connection ID:', conversation?.connectionId);
-    console.log('[THREAD_SELECT] Current user email:', user?.email);
+    console.log('[THREAD_SELECT] Pure navigation to conversation:', conversationId);
     
+    // Update frontend state immediately (pure navigation)
     setSelectedConversationId(conversationId);
     setNewMessage(""); // Clear message when switching threads
     setShowThreadsView(false); // Hide threads view on mobile after selection
@@ -798,11 +797,10 @@ export default function ConversationPage() {
     // Update the URL to reflect the selected conversation
     setLocation(`/conversation/${conversationId}`);
     
-    // CRITICAL FIX: Use the safer connection-based endpoint that has comprehensive turn preservation
+    // Send WebSocket notification to synchronize both users (no turn modification)
     if (conversation?.connectionId) {
       try {
-        console.log('[THREAD_SELECT] Sending thread switch via connection endpoint for maximum turn preservation...');
-        const response = await fetch(`/api/connections/${conversation.connectionId}/switch-active-thread`, {
+        await fetch(`/api/connections/${conversation.connectionId}/switch-active-thread`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -811,26 +809,11 @@ export default function ConversationPage() {
             conversationId: conversationId
           })
         });
-        
-        if (response.ok) {
-          const responseData = await response.json();
-          console.log('[THREAD_SELECT] Thread switch completed with turn preservation:', responseData);
-          console.log('[THREAD_SELECT] Current turn preserved as:', responseData.currentTurn);
-        } else {
-          const errorData = await response.text();
-          console.error('[THREAD_SELECT] Failed to send thread switch notification:', response.status, errorData);
-        }
+        console.log('[THREAD_SELECT] Navigation synchronized between users');
       } catch (error) {
-        console.error('[THREAD_SELECT] Error sending thread switch notification:', error);
+        console.error('[THREAD_SELECT] Sync error:', error);
       }
-    } else {
-      console.error('[THREAD_SELECT] No connection ID available for WebSocket notification');
     }
-    
-    // CRITICAL FIX: Thread reopening is pure navigation with ZERO data refresh
-    // Any query invalidation during thread reopening can corrupt turn state
-    // Frontend navigation happens via URL/state changes - WebSocket handles user synchronization
-    console.log('[THREAD_SELECT] Thread reopening complete - ZERO query invalidation for maximum turn preservation');
   };
 
   const handleNewThreadCreated = (conversationId: number) => {
