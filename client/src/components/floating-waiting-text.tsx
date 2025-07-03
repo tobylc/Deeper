@@ -68,8 +68,6 @@ const FloatingWaitingText = memo<FloatingWaitingTextProps>(function FloatingWait
   className,
   'aria-label': ariaLabel = 'Waiting for response'
 }) {
-  const [showSubtext, setShowSubtext] = useState(false);
-
   return (
     <div 
       className={cn(
@@ -80,25 +78,15 @@ const FloatingWaitingText = memo<FloatingWaitingTextProps>(function FloatingWait
       aria-label={ariaLabel}
       aria-live="polite"
     >
-      {/* Typewriter waiting text */}
+      {/* Single line typewriter waiting text */}
       <div className="text-center max-w-3xl px-4">
         <div className="typewriter-container">
           <h2 className="typewriter-text typewriter-main">
             <TypewriterText 
               text="Their turn to write"
               speed={100}
-              onComplete={() => setShowSubtext(true)}
             />
           </h2>
-          
-          {showSubtext && (
-            <p className="typewriter-text typewriter-sub">
-              <TypewriterText 
-                text="Waiting for their thoughtful response..."
-                speed={80}
-              />
-            </p>
-          )}
         </div>
       </div>
 
