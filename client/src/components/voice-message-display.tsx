@@ -81,9 +81,13 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        // Force reload audio source if needed
-        if (audioRef.current.src !== message.audioFileUrl) {
-          audioRef.current.src = message.audioFileUrl;
+        // Force reload audio source with proper URL handling
+        const audioUrl = message.audioFileUrl.startsWith('/') 
+          ? message.audioFileUrl 
+          : `/${message.audioFileUrl}`;
+        
+        if (audioRef.current.src !== audioUrl) {
+          audioRef.current.src = audioUrl;
         }
 
         // Check if audio is loaded
@@ -230,7 +234,9 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
         {/* Audio Element with Enhanced Debugging */}
         <audio
           ref={audioRef}
-          src={message.audioFileUrl || ''}
+          src={message.audioFileUrl?.startsWith('/') 
+            ? message.audioFileUrl 
+            : `/${message.audioFileUrl || ''}`}
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleEnded}
           onError={handleLoadError}
