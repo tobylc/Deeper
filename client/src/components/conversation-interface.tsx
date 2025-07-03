@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo } from 'react';
+import React, { useState, useEffect, useCallback, memo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -78,6 +78,8 @@ const ConversationInterface = memo(function ConversationInterface({
   const [showTranscriptionProgress, setShowTranscriptionProgress] = useState(false);
   const [isTranscriptionComplete, setIsTranscriptionComplete] = useState(false);
   const [isConversationExpanded, setIsConversationExpanded] = useState(false);
+  const [showFloatingText, setShowFloatingText] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   // Check if this is inviter's first question to bypass timer completely
@@ -215,6 +217,26 @@ const ConversationInterface = memo(function ConversationInterface({
     };
   }, [hasStartedResponse, responseStartTime]);
 
+  // Scroll detection to hide/show floating text
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      const threshold = 50; // pixels from bottom
+      const isNearBottom = scrollHeight - scrollTop - clientHeight <= threshold;
+      
+      setShowFloatingText(isNearBottom);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    // Initial check
+    handleScroll();
+
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Calculate remaining time for thoughtful response timer with error handling
   const getRemainingTime = useCallback(() => {
     try {
@@ -270,7 +292,7 @@ const ConversationInterface = memo(function ConversationInterface({
   return (
     <div className="h-full flex flex-col">
       {/* Messages Container - flex-1 to take remaining space */}
-      <div className="flex-1 overflow-y-auto p-8 min-h-0 relative bg-gradient-to-br from-amber-50/40 via-yellow-50/30 to-orange-50/20 pb-24">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-8 min-h-0 relative bg-gradient-to-br from-amber-50/40 via-yellow-50/30 to-orange-50/20 pb-24">
         {/* Wood desk texture background */}
         <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(ellipse_at_center,_rgba(139,69,19,0.4)_0%,_transparent_70%)]" />
         
@@ -407,8 +429,8 @@ const ConversationInterface = memo(function ConversationInterface({
         )}
       </div>
 
-      {/* Floating Waiting Text when not user's turn */}
-      {!isMyTurn && (
+      {/* Floating Waiting Text when not user's turn and user is at bottom */}
+      {!isMyTurn && showFloatingText && (
         <FloatingWaitingText className="absolute inset-x-0 bottom-4" />
       )}
 
