@@ -138,29 +138,9 @@ export default function VoiceRecorder({
       source.connect(analyser);
       analyserRef.current = analyser;
 
-      // Use the most compatible audio format available - prioritize MP4 for better browser support
-      let options: MediaRecorderOptions = {};
-      let selectedFormat = 'none';
-      
-      if (MediaRecorder.isTypeSupported('audio/mp4')) {
-        options = { mimeType: 'audio/mp4' };
-        selectedFormat = 'audio/mp4';
-      } else if (MediaRecorder.isTypeSupported('audio/wav')) {
-        options = { mimeType: 'audio/wav' };
-        selectedFormat = 'audio/wav';
-      } else if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-        options = { mimeType: 'audio/webm;codecs=opus' };
-        selectedFormat = 'audio/webm;codecs=opus';
-      } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-        options = { mimeType: 'audio/webm' };
-        selectedFormat = 'audio/webm';
-      }
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Selected audio recording format:', selectedFormat);
-      }
-      
-      const mediaRecorder = new MediaRecorder(stream, options);
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
@@ -172,9 +152,7 @@ export default function VoiceRecorder({
       };
 
       mediaRecorder.onstop = () => {
-        // Use the same MIME type that was used for recording
-        const mimeType = (options as any).mimeType || 'audio/webm';
-        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         setAudioBlob(audioBlob);
         setAudioUrl(URL.createObjectURL(audioBlob));
         setHasRecording(true);

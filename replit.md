@@ -936,12 +936,6 @@ Changelog:
 - June 30, 2025. Critical database corruption resolution and turn state integrity restoration:
   * Identified root cause: Database had corrupted turn states where current_turn was assigned to users who had just sent messages
   * Performed comprehensive database analysis comparing actual message history with stored turn assignments
-- July 3, 2025. Critical React Query race condition fixes for thread reopening turn preservation:
-  * Fixed critical issue where React Query automatic refetching during conversation ID changes caused turn state corruption
-  * Enhanced query configuration with consistent staleTime (5 seconds) and reduced refetching for conversation and messages queries
-  * Added 100ms delay in thread switching to ensure backend processing completes before any potential query refreshes
-  * Implemented comprehensive debugging logs to track turn state calculations during conversation transitions
-  * Thread reopening now maintains absolute turn state preservation through stabilized query management
 - July 3, 2025. Production-ready voice messaging system with condensed UI design:
   * Completely redesigned voice recording interface from large card layout to minimalistic horizontal bar design
   * Condensed all voice controls (record, stop, clear, progress) into single thin row matching text input area height
@@ -954,15 +948,7 @@ Changelog:
   * Reduced input area background padding from p-3 to px-3 py-2 for more compact appearance
   * Decreased textarea minimum height from 80px to 40px for streamlined text input
   * Updated shadow styling from shadow-md to shadow-sm for subtle, less prominent visual effect
-  * Applied minimalistic design to both text and voice input modes
-- July 3, 2025. Critical turn state corruption fix for conversation thread reopening:
-  * Fixed corrupted turn state in conversation 96 where current_turn was incorrectly assigned to last message sender
-  * Database analysis revealed turn should be opposite of last message sender (person who responds next, not who just sent)
-  * Corrected turn from thetobyclarkshow@gmail.com to toby@gowithclark.com based on message chronology
-  * Specific "Reopen Thread" button for "What's something you've learned about yourself recently?" now works correctly
-  * Turn state corruption was causing incorrect turn passing behavior only for this conversation thread
-  * All other conversation threads had correct turn states and functioned properly
-  * Database integrity maintained with proper turn assignment ensuring accurate conversation flow consistently
+  * Applied minimalistic design to both text and voice input modes consistently
   * Enhanced voice message debugging system with comprehensive error tracking and validation logging
   * Fixed LSP error in voice message endpoint by properly declaring audioFileUrl variable before usage
 - July 3, 2025. Ultra-minimal bottom input positioning:

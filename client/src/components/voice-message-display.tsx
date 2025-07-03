@@ -63,45 +63,10 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
 
     const handleError = (e: Event) => {
       setIsLoading(false);
-      const audioError = (e.target as HTMLAudioElement)?.error;
-      const errorCode = audioError?.code;
-      const errorMessage = audioError?.message || 'Unknown error';
-      
-      // Detailed error information for debugging
-      let detailedError = `Playback failed: Audio load failed: `;
-      switch (errorCode) {
-        case MediaError.MEDIA_ERR_ABORTED:
-          detailedError += 'MEDIA_ERR_ABORTED: Playback aborted by user';
-          break;
-        case MediaError.MEDIA_ERR_NETWORK:
-          detailedError += 'MEDIA_ERR_NETWORK: Network error while loading audio';
-          break;
-        case MediaError.MEDIA_ERR_DECODE:
-          detailedError += 'MEDIA_ERR_DECODE: Audio format not supported or corrupted';
-          break;
-        case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-          detailedError += 'MEDIA_ERR_SRC_NOT_SUPPORTED: Audio format or source not supported';
-          break;
-        default:
-          detailedError += errorMessage;
-      }
-      
-      // Add more detailed browser-specific error info
-      if (errorMessage.includes('DEMUXER_ERROR')) {
-        detailedError += '\nDEMUXER_ERROR_COULD_NOT_OPEN: FFmpegDemuxer: open context failed';
-      }
-      
-      setError(detailedError);
-      
+      const errorMsg = `Audio load error: ${(e.target as HTMLAudioElement)?.error?.message || 'Unknown error'}`;
+      setError(errorMsg);
       if (process.env.NODE_ENV === 'development') {
-        console.error('Audio playback error details:', {
-          errorCode,
-          errorMessage,
-          detailedError,
-          audioUrl: message.audioFileUrl,
-          readyState: audio?.readyState,
-          networkState: audio?.networkState
-        });
+        console.error('Initial audio load error:', errorMsg);
       }
     };
 
