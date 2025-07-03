@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Mic, MicOff, Send, Trash2, Square, Pause, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
@@ -469,166 +468,131 @@ export default function VoiceRecorder({
   };
 
   return (
-    <Card className={cn("p-3 bg-gradient-to-r from-slate-50 to-blue-50 border-[#4FACFE]/20", className)}>
-      <div className="space-y-3">
-        {/* Recording Controls with Enhanced Layout */}
-        <div className="flex items-center justify-center space-x-3">
-          {/* Pause Button (Left) */}
-          {isRecording && (
-            <div className="flex flex-col items-center space-y-1">
-              <Button
-                onClick={isPaused ? resumeRecording : pauseRecording}
-                className="w-10 h-10 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white transition-all duration-200"
-              >
-                {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-              </Button>
-              <span className="text-xs text-slate-600 font-medium">
-                {isPaused ? "Resume" : "Pause"}
-              </span>
-            </div>
-          )}
-
-          {/* Main Recording Button with Volume Visualization (Center) */}
-          <div className="relative flex flex-col items-center space-y-1">
-            <div className="relative">
-              <Button
-                onClick={!isRecording ? startRecording : undefined}
-                disabled={disabled || hasRecording || isRecording}
-                className={cn(
-                  "w-14 h-14 rounded-full transition-all duration-300 shadow-lg relative",
-                  getRecordingButtonStyle()
-                )}
-                style={isRecording && !isPaused ? { backgroundColor: getVolumeColor(volumeLevel) } : {}}
-              >
-                <Mic className="w-5 h-5" />
-              </Button>
-              
-              {/* Volume Level Ring */}
-              {isRecording && !isPaused && (
-                <div 
-                  className="absolute inset-0 rounded-full border-4 transition-all duration-100"
-                  style={{
-                    borderColor: getVolumeColor(volumeLevel),
-                    borderWidth: `${Math.max(2, volumeLevel * 0.1)}px`,
-                    transform: `scale(${1 + volumeLevel * 0.01})`
-                  }}
-                />
-              )}
-            </div>
-            <span className="text-xs text-slate-600 font-medium">Record</span>
-          </div>
-
-          {/* Stop Button (Right) */}
-          {isRecording && (
-            <div className="flex flex-col items-center space-y-1">
-              <Button
-                onClick={stopRecording}
-                className="w-10 h-10 rounded-full bg-red-500 hover:bg-red-600 text-white transition-all duration-200"
-              >
-                <Square className="w-4 h-4" />
-              </Button>
-              <span className="text-xs text-slate-600 font-medium">Stop</span>
-            </div>
-          )}
-        </div>
-
-        {/* Recording Status with Timer */}
-        <div className="text-center space-y-1">
-          <div className="text-lg font-mono text-slate-800 font-semibold">
-            {formatDuration(duration)}
-          </div>
-          <div className="text-xs text-slate-600">
+    <>
+      <div className={cn("bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-0.5", className)}>
+        <div className="flex items-center space-x-2">
+        {/* Condensed Recording Interface */}
+        <div className="flex items-center space-x-1">
+          {/* Recording Status Indicator */}
+          <div className="flex items-center space-x-1">
             {isRecording ? (
-              isPaused ? "Paused" : "Recording..."
-            ) : hasRecording ? "Ready to send" : "Tap to record"}
+              <div className="flex items-center space-x-1">
+                <div 
+                  className="w-2 h-2 rounded-full animate-pulse transition-all duration-100"
+                  style={{ backgroundColor: getVolumeColor(volumeLevel) }}
+                />
+                <span className="text-xs text-slate-600 font-mono">
+                  {formatDuration(duration)}
+                </span>
+              </div>
+            ) : hasRecording ? (
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 rounded-full bg-green-500" />
+                <span className="text-xs text-slate-600">Ready</span>
+              </div>
+            ) : (
+              <span className="text-xs text-slate-400">Tap to record</span>
+            )}
           </div>
-          
-
         </div>
 
-        {/* Preview Playback Interface */}
+        {/* Main Recording Button - Compact */}
+        <Button
+          onClick={!isRecording ? startRecording : (isPaused ? resumeRecording : pauseRecording)}
+          disabled={disabled}
+          className={cn(
+            "w-6 h-6 rounded-full transition-all duration-200 text-white flex-shrink-0",
+            isRecording 
+              ? (isPaused 
+                  ? "bg-yellow-500 hover:bg-yellow-600" 
+                  : "bg-red-500 hover:bg-red-600")
+              : "bg-[#4FACFE] hover:bg-[#4FACFE]/90"
+          )}
+        >
+          {isRecording ? (
+            isPaused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />
+          ) : (
+            <Mic className="w-3 h-3" />
+          )}
+        </Button>
+
+        {/* Stop Button (when recording) */}
+        {isRecording && (
+          <Button
+            onClick={stopRecording}
+            className="w-6 h-6 rounded-full bg-gray-500 hover:bg-gray-600 text-white transition-all duration-200 flex-shrink-0"
+          >
+            <Square className="w-3 h-3" />
+          </Button>
+        )}
+
+        {/* Clear Button */}
+        {hasRecording && (
+          <Button
+            onClick={clearRecording}
+            className="w-6 h-6 rounded-full bg-gray-400 hover:bg-gray-500 text-white transition-all duration-200 flex-shrink-0"
+          >
+            <Trash2 className="w-3 h-3" />
+          </Button>
+        )}
+
+        {/* Preview Playback - Compact */}
         {hasRecording && audioUrl && (
-          <div className="space-y-2 p-2 bg-white/50 rounded-lg border border-slate-200">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-700">Preview Recording</span>
-              <div className="flex items-center space-x-2">
-                <Button
-                  onClick={togglePreview}
-                  size="sm"
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1"
-                >
-                  {isPlayingPreview ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-                </Button>
-              </div>
-            </div>
-            
-            {/* Preview Progress Bar */}
-            <div className="flex items-center space-x-2 text-xs">
-              <span className="text-slate-500">{formatTime(previewCurrentTime)}</span>
-              <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
+          <div className="flex items-center space-x-1 flex-1 min-w-0">
+            <Button
+              onClick={togglePreview}
+              className="w-6 h-6 rounded-full bg-[#4FACFE] hover:bg-[#4FACFE]/90 text-white flex-shrink-0"
+            >
+              {isPlayingPreview ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+            </Button>
+            <div className="flex-1 min-w-0 px-1">
+              <div className="h-1 bg-slate-200 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-[#4FACFE] transition-all duration-100"
-                  style={{ width: `${(previewCurrentTime / duration) * 100}%` }}
+                  className="h-full bg-[#4FACFE] transition-all duration-200"
+                  style={{ width: `${duration > 0 ? (previewCurrentTime / duration) * 100 : 0}%` }}
                 />
               </div>
-              <span className="text-slate-500">{formatDuration(duration)}</span>
             </div>
-            
-            {/* Action Buttons with Timer */}
-            <div className="flex items-center justify-between">
-              <Button
-                onClick={clearRecording}
-                size="sm"
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1"
-              >
-                <Trash2 className="w-3 h-3 mr-1" />
-                Delete
-              </Button>
-              
-              <div className="flex items-center space-x-2">
-                {/* 10-Minute Countdown Timer */}
-                {messages.length > 0 && hasStartedResponse && !canSendNow() && (
-                  <div className="flex items-center space-x-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-                    <span>{formatTime(getRemainingTime())}</span>
-                  </div>
-                )}
-                
-                <Button
-                  onClick={handleSendAttempt}
-                  disabled={!canSendMessage}
-                  className={cn(
-                    "px-3 py-1 transition-all duration-200",
-                    (() => {
-                      // Check if this is the inviter's first question - allow immediate sending
-                      const isInviterFirstQuestion = messages.length === 0 && 
-                                                     connection?.inviterEmail === currentUserEmail &&
-                                                     nextMessageType === 'question';
-                      
-                      return (canSendNow() || isInviterFirstQuestion)
-                        ? "bg-gradient-to-r from-[#4FACFE] to-[#3B82F6] text-white hover:from-[#4FACFE]/90 hover:to-[#3B82F6]/90 shadow-lg" 
-                        : "bg-slate-300 text-slate-500 cursor-pointer hover:bg-slate-400";
-                    })()
-                  )}
-                >
-                  <Send className="w-3 h-3 mr-1" />
-                  Send
-                </Button>
-              </div>
-            </div>
-            
+            <span className="text-xs text-slate-600 font-mono flex-shrink-0">
+              {formatDuration(duration)}
+            </span>
+            {/* Audio element for preview */}
             <audio ref={audioRef} src={audioUrl} preload="metadata" />
           </div>
         )}
 
-        {/* Thoughtful Response Timer Popup */}
-        <ThoughtfulResponsePopup
-          isOpen={showThoughtfulResponseTimer}
-          onClose={() => setShowThoughtfulResponseTimer(false)}
-          onProceed={handleThoughtfulResponseProceed}
-          remainingSeconds={getRemainingTime()}
-        />
+        {/* Send Button */}
+        {hasRecording && (
+          <div className="flex items-center space-x-1">
+            <Button
+              onClick={handleSendAttempt}
+              disabled={!canSendMessage}
+              className={cn(
+                "w-6 h-6 rounded-full bg-green-500 hover:bg-green-600 text-white transition-all duration-200 flex-shrink-0",
+                !canSendMessage && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              <Send className="w-3 h-3" />
+            </Button>
+            {/* Timer countdown matching text input */}
+            {hasStartedResponse && !canSendNow() && (
+              <span className="text-xs text-slate-500 font-mono">
+                {formatTime(getRemainingTime())}
+              </span>
+            )}
+          </div>
+        )}
+
+        </div>
       </div>
-    </Card>
+
+      {/* Thoughtful Response Timer Popup */}
+      <ThoughtfulResponsePopup
+        isOpen={showThoughtfulResponseTimer}
+        onClose={() => setShowThoughtfulResponseTimer(false)}
+        onProceed={handleThoughtfulResponseProceed}
+        remainingSeconds={getRemainingTime()}
+      />
+    </>
   );
 }
