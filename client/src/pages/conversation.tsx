@@ -526,11 +526,13 @@ export default function ConversationPage() {
         }
       }
       
-      // If all questions have been answered, allow new questions
-      return 'question';
+      // CRITICAL FIX: After questions are answered, ALL text input should be follow-up responses
+      // New questions can ONLY be created via right column suggestions or "Ask New Question" button
+      // Regular text input should always be treated as follow-up responses to continue the conversation
+      return 'response';
     } catch (error) {
       console.error('[CONVERSATION] Error determining next message type:', error);
-      return 'question'; // Safe default
+      return 'response'; // Safe default to prevent accidental new thread creation
     }
   };
 
