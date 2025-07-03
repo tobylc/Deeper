@@ -269,7 +269,7 @@ const ConversationInterface = memo(function ConversationInterface({
   return (
     <div className="h-full flex flex-col">
       {/* Messages Container - flex-1 to take remaining space */}
-      <div className="flex-1 overflow-y-auto p-8 min-h-0 relative bg-gradient-to-br from-amber-50/40 via-yellow-50/30 to-orange-50/20">
+      <div className="flex-1 overflow-y-auto p-8 min-h-0 relative bg-gradient-to-br from-amber-50/40 via-yellow-50/30 to-orange-50/20 pb-24">
         {/* Wood desk texture background */}
         <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(ellipse_at_center,_rgba(139,69,19,0.4)_0%,_transparent_70%)]" />
         
@@ -406,165 +406,153 @@ const ConversationInterface = memo(function ConversationInterface({
         )}
       </div>
 
-      {/* Fixed Input Area at Bottom - Only visible when it's user's turn */}
+      {/* Minimalistic Input Area at Bottom - Only visible when it's user's turn */}
       {isMyTurn && (
-        <div className="flex-shrink-0">
-          {/* Message Mode Toggle */}
-          <div className="flex items-center justify-center space-x-2 pt-4 mb-4 px-4">
-            <button
-              onClick={() => {
-                try {
-                  setMessageMode('text');
-                } catch (error) {
-                  console.error('Error switching to text mode:', error);
-                }
-              }}
-              aria-pressed={messageMode === 'text'}
-              aria-label="Switch to text message mode"
-              className={cn(
-                "inline-flex items-center justify-center gap-2 h-9 rounded-md px-3 text-sm font-medium transition-all duration-200",
-                "border-0 outline-0 ring-0 shadow-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0",
-                "disabled:pointer-events-none disabled:opacity-50",
-                messageMode === 'text' 
-                  ? "bg-ocean text-white shadow-ocean/20" 
-                  : "text-slate-600 hover:bg-slate-50"
-              )}
-              disabled={isSending}
-            >
-              <Type className="w-4 h-4 mr-2" aria-hidden="true" />
-              Write Text
-            </button>
-            <button
-              onClick={() => {
-                try {
-                  setMessageMode('voice');
-                } catch (error) {
-                  console.error('Error switching to voice mode:', error);
-                }
-              }}
-              aria-pressed={messageMode === 'voice'}
-              aria-label="Switch to voice message mode"
-              className={cn(
-                "inline-flex items-center justify-center gap-2 h-9 rounded-md px-3 text-sm font-medium transition-all duration-200",
-                "border-0 outline-0 ring-0 shadow-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0",
-                "disabled:pointer-events-none disabled:opacity-50",
-                messageMode === 'voice' 
-                  ? "bg-white text-[#4FACFE] shadow-lg hover:bg-slate-50" 
-                  : "text-[#4FACFE] hover:bg-slate-50"
-              )}
-              disabled={isSending}
-            >
-              <Mic className="w-4 h-4 mr-2" />
-              Record Voice
-            </button>
-          </div>
+        <div className="flex-shrink-0 group">
+          {/* Minimalistic Input - Condensed by default, expands on hover */}
+          <div className="relative transition-all duration-300 ease-in-out mx-4 mb-4">
+            {/* Condensed State */}
+            <div className={cn(
+              "absolute inset-0 bg-white/80 border border-slate-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out",
+              "group-hover:opacity-0 group-hover:pointer-events-none",
+              "flex items-center justify-between px-4 py-3"
+            )}>
+              <div className="flex items-center space-x-3">
+                <div className="flex space-x-2">
+                  <Type className="w-4 h-4 text-slate-400" />
+                  <Mic className="w-4 h-4 text-slate-400" />
+                </div>
+                <span className="text-sm text-slate-500">
+                  {nextMessageType === 'question' 
+                    ? "What would you like to explore together?"
+                    : "Express what's in your heart..."}
+                </span>
+              </div>
+              <Send className="w-4 h-4 text-slate-300" />
+            </div>
 
-          {/* Input Surface */}
-          <div className="relative">
-            {messageMode === 'text' ? (
-              /* Text Writing Surface */
-              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 pb-4 border border-ocean/20 shadow-md rounded-t-sm">
-                <div className="flex space-x-4">
-                  <div className="flex-1">
-                    <Textarea
-                      value={newMessage}
-                      onChange={(e) => {
-                        try {
+            {/* Expanded State - Visible on hover */}
+            <div className={cn(
+              "opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out",
+              "transform translate-y-2 group-hover:translate-y-0",
+              "pointer-events-none group-hover:pointer-events-auto"
+            )}>
+              {/* Message Mode Toggle - Compact */}
+              <div className="flex items-center justify-center space-x-2 mb-3">
+                <button
+                  onClick={() => setMessageMode('text')}
+                  className={cn(
+                    "inline-flex items-center gap-2 h-8 rounded-md px-3 text-xs font-medium transition-all duration-200",
+                    messageMode === 'text' 
+                      ? "bg-ocean text-white" 
+                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                  )}
+                  disabled={isSending}
+                >
+                  <Type className="w-3 h-3" />
+                  Text
+                </button>
+                <button
+                  onClick={() => setMessageMode('voice')}
+                  className={cn(
+                    "inline-flex items-center gap-2 h-8 rounded-md px-3 text-xs font-medium transition-all duration-200",
+                    messageMode === 'voice' 
+                      ? "bg-[#4FACFE] text-white" 
+                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                  )}
+                  disabled={isSending}
+                >
+                  <Mic className="w-3 h-3" />
+                  Voice
+                </button>
+              </div>
+
+              {/* Input Surface - Compact */}
+              <div className="relative">
+                {messageMode === 'text' ? (
+                  /* Compact Text Input */
+                  <div className="relative bg-white border border-slate-200 rounded-lg shadow-md p-3">
+                    <div className="flex space-x-3">
+                      <Textarea
+                        value={newMessage}
+                        onChange={(e) => {
                           setNewMessage(e.target.value);
-                          // Only start timer if this is not inviter's first question AND not a new question that creates threads
                           if (!isInviterFirstQuestion() && !isNewQuestionAfterExchange() && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
                             onTimerStart();
                           }
-                        } catch (error) {
-                          console.error('Error handling message input:', error);
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        try {
+                        }}
+                        onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
-                            // Skip timer validation for inviter's first question
                             if (canSendNow()) {
                               onSendMessage();
                             } else {
                               setShowThoughtfulResponsePopup(true);
                             }
                           }
-                        } catch (error) {
-                          console.error('Error handling key press:', error);
+                        }}
+                        placeholder={
+                          nextMessageType === 'question' 
+                            ? "What would you like to explore together?"
+                            : "Express what's in your heart..."
                         }
-                      }}
-                      placeholder={
-                        nextMessageType === 'question' 
-                          ? "What would you like to explore together?"
-                          : "Express what's in your heart..."
-                      }
-                      className="min-h-[120px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-500 focus:ring-0 text-base leading-relaxed p-0"
-                      disabled={isSending}
-                      aria-label="Message composition area"
-                      aria-describedby="message-help"
-                    />
-                  </div>
-                  <div className="flex flex-col items-center justify-between py-2">
-                    <Button
-                      onClick={() => {
-                        try {
-                          // Skip timer validation for inviter's first question
-                          if (canSendNow()) {
-                            onSendMessage();
-                          } else {
-                            setShowThoughtfulResponsePopup(true);
-                          }
-                        } catch (error) {
-                          console.error('Error sending message:', error);
-                        }
-                      }}
-                      disabled={!newMessage.trim() || isSending}
-                      size="sm"
-                      aria-label={isSending ? "Sending message..." : "Send message"}
-                      className={cn(
-                        "w-12 h-12 rounded-full shadow-lg transition-all duration-200",
-                        "bg-gradient-to-br from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean",
-                        "hover:shadow-xl hover:scale-105 active:scale-95",
-                        "focus:outline-none focus:ring-2 focus:ring-ocean/50 focus:ring-offset-2",
-                        !newMessage.trim() || isSending 
-                          ? "opacity-50 cursor-not-allowed" 
-                          : "cursor-pointer"
-                      )}
-                    >
-                      {isSending ? (
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <Send className="h-5 w-5" />
-                      )}
-                    </Button>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs text-slate-600">Share</span>
-                      {!isInviterFirstQuestion() && hasStartedResponse && !canSendNow() && (
-                        <span className="text-xs text-slate-500 font-mono">
-                          {formatTime(getRemainingTime())}
-                        </span>
-                      )}
+                        className="flex-1 min-h-[80px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-400 focus:ring-0 text-sm leading-relaxed p-0"
+                        disabled={isSending}
+                      />
+                      <div className="flex flex-col justify-between items-center">
+                        <Button
+                          onClick={() => {
+                            if (canSendNow()) {
+                              onSendMessage();
+                            } else {
+                              setShowThoughtfulResponsePopup(true);
+                            }
+                          }}
+                          disabled={!newMessage.trim() || isSending}
+                          size="sm"
+                          className={cn(
+                            "w-8 h-8 rounded-full shadow-sm transition-all duration-200",
+                            "bg-gradient-to-br from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean",
+                            "hover:shadow-md hover:scale-105",
+                            !newMessage.trim() || isSending 
+                              ? "opacity-50 cursor-not-allowed" 
+                              : "cursor-pointer"
+                          )}
+                        >
+                          {isSending ? (
+                            <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                          ) : (
+                            <Send className="h-3 w-3" />
+                          )}
+                        </Button>
+                        {!isInviterFirstQuestion() && hasStartedResponse && !canSendNow() && (
+                          <span className="text-xs text-slate-400 font-mono mt-1">
+                            {formatTime(getRemainingTime())}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  /* Compact Voice Recorder */
+                  <div className="bg-white border border-slate-200 rounded-lg shadow-md p-3">
+                    <VoiceRecorder
+                      onSendVoiceMessage={handleVoiceMessageSend}
+                      onRecordingStart={onRecordingStart}
+                      disabled={isSending}
+                      canSendMessage={true}
+                      hasStartedResponse={hasStartedResponse}
+                      responseStartTime={responseStartTime}
+                      onTimerStart={onTimerStart}
+                      messages={messages}
+                      connection={connection}
+                      currentUserEmail={currentUserEmail}
+                      nextMessageType={nextMessageType}
+                    />
+                  </div>
+                )}
               </div>
-            ) : (
-              /* Voice Recording Surface */
-              <VoiceRecorder
-                onSendVoiceMessage={handleVoiceMessageSend}
-                onRecordingStart={onRecordingStart}
-                disabled={isSending}
-                canSendMessage={true}
-                hasStartedResponse={hasStartedResponse}
-                responseStartTime={responseStartTime}
-                onTimerStart={onTimerStart}
-                messages={messages}
-                connection={connection}
-                currentUserEmail={currentUserEmail}
-                nextMessageType={nextMessageType}
-              />
-            )}
+            </div>
           </div>
         </div>
       )}

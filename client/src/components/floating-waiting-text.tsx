@@ -73,7 +73,7 @@ const FloatingWaitingText = memo<FloatingWaitingTextProps>(function FloatingWait
   return (
     <div 
       className={cn(
-        "absolute inset-x-0 bottom-0 flex items-end justify-center pointer-events-none z-30 pb-8",
+        "absolute inset-x-0 bottom-20 flex items-end justify-center pointer-events-none z-10 pb-8",
         className
       )}
       role="status"
