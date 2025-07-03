@@ -184,65 +184,122 @@
     box-shadow: 0 4px 12px hsla(215, 85%, 60%, 0.3);
   }
 
-  /* Intrigue floating waiting text animations - optimized for production */
-  @keyframes intrigueFloat {
-    0%, 100% {
-      transform: translate3d(0px, 0px, 0px) rotate(0deg) scale(1);
+  /* Professional typewriter waiting text styles */
+  @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+  
+  .typewriter-container {
+    position: relative;
+    padding: 16px 24px;
+    background: 
+      radial-gradient(circle at 20% 20%, rgba(0,0,0,0.03) 1px, transparent 1px),
+      radial-gradient(circle at 80% 80%, rgba(0,0,0,0.02) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,248,248,0.95) 100%);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 2px;
+    box-shadow: 
+      0 2px 8px rgba(0,0,0,0.06),
+      inset 0 1px 0 rgba(255,255,255,0.8);
+    
+    /* Subtle paper texture */
+    background-size: 20px 20px, 25px 25px, 100% 100%;
+  }
+
+  .typewriter-container::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    width: 3px;
+    height: 3px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 50%;
+    box-shadow: 
+      -8px 4px 0 -1px rgba(0,0,0,0.08),
+      -15px -2px 0 -2px rgba(0,0,0,0.05);
+  }
+  
+  .typewriter-container::after {
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    left: 10px;
+    width: 2px;
+    height: 2px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 50%;
+    box-shadow: 
+      12px -3px 0 -0.5px rgba(0,0,0,0.06);
+  }
+
+  .typewriter-text {
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    color: #2a2a2a;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+    font-weight: 400;
+    
+    /* Slight ink imperfections */
+    text-shadow: 
+      0.5px 0.5px 0px rgba(0,0,0,0.1),
+      -0.5px 0px 0px rgba(0,0,0,0.05);
+  }
+
+  .typewriter-main {
+    font-size: 1.125rem; /* 18px - 50% smaller than original */
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1a1a1a;
+  }
+
+  .typewriter-sub {
+    font-size: 0.875rem; /* 14px - 50% smaller than original */
+    color: #4a4a4a;
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  @keyframes typewriterBlink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  .typewriter-cursor {
+    display: inline-block;
+    background-color: #2a2a2a;
+    width: 2px;
+    height: 1.2em;
+    margin-left: 1px;
+    animation: typewriterBlink 1s infinite;
+    position: relative;
+    top: 0.1em;
+  }
+
+  /* Responsive sizing */
+  @media (min-width: 640px) {
+    .typewriter-main {
+      font-size: 1.25rem; /* 20px */
     }
-    25% {
-      transform: translate3d(8px, -5px, 0px) rotate(0.8deg) scale(1.02);
-    }
-    50% {
-      transform: translate3d(-6px, -3px, 0px) rotate(-0.6deg) scale(0.98);
-    }
-    75% {
-      transform: translate3d(12px, -8px, 0px) rotate(1.2deg) scale(1.03);
+    
+    .typewriter-sub {
+      font-size: 1rem; /* 16px */
     }
   }
 
-  @keyframes intriguePulse {
-    0%, 100% {
-      text-shadow: 0 0 20px rgba(71, 85, 105, 0.3);
-      opacity: 0.8;
+  @media (min-width: 768px) {
+    .typewriter-main {
+      font-size: 1.375rem; /* 22px */
     }
-    50% {
-      text-shadow: 0 0 40px rgba(71, 85, 105, 0.6), 0 0 60px rgba(71, 85, 105, 0.4);
-      opacity: 1;
+    
+    .typewriter-sub {
+      font-size: 1.125rem; /* 18px */
     }
-  }
-
-  @keyframes subtleIntrigue {
-    0%, 100% {
-      text-shadow: 0 0 18px rgba(100, 116, 139, 0.25);
-      opacity: 0.7;
-    }
-    50% {
-      text-shadow: 0 0 35px rgba(100, 116, 139, 0.5);
-      opacity: 0.9;
-    }
-  }
-
-  .intrigue-float {
-    animation: intrigueFloat 8s ease-in-out infinite, intriguePulse 6s ease-in-out infinite;
-    will-change: transform, opacity, text-shadow;
-    backface-visibility: hidden;
-    transform-origin: center center;
-  }
-
-  .intrigue-float-delayed {
-    animation: intrigueFloat 10s ease-in-out infinite 2s, subtleIntrigue 7s ease-in-out infinite 1s;
-    will-change: transform, opacity, text-shadow;
-    backface-visibility: hidden;
-    transform-origin: center center;
   }
 
   /* Reduce motion for accessibility */
   @media (prefers-reduced-motion: reduce) {
-    .intrigue-float,
-    .intrigue-float-delayed {
+    .typewriter-cursor {
       animation: none;
-      transform: none;
-      text-shadow: 0 0 10px rgba(71, 85, 105, 0.2);
+      opacity: 1;
     }
   }
 
