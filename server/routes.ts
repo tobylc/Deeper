@@ -318,7 +318,7 @@ const audioUpload = multer({
 });
 
 // Ensure uploads directory exists
-const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+const uploadsDir = path.join(process.cwd(), 'uploads');
 async function ensureUploadsDir() {
   try {
     await fs.access(uploadsDir);
@@ -339,48 +339,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(securityHeaders);
   app.use(requestLogger);
   
-  // Serve static files from public directory
-  app.use(express.static(path.join(process.cwd(), 'public')));
-  
-  // Serve uploaded files with proper headers for audio playback
-  app.use('/uploads', (req, res, next) => {
-    // Remove leading slash from req.path to avoid double slashes
-    const relativePath = req.path.startsWith('/') ? req.path.slice(1) : req.path;
-    const filePath = path.join(process.cwd(), 'public', 'uploads', relativePath);
-    
-    console.log('Serving audio file:', {
-      requestPath: req.path,
-      relativePath,
-      fullFilePath: filePath,
-      url: req.url
-    });
-    
-    // Set appropriate headers for audio files with proper MIME type detection
-    const audioExtensions = {
-      '.webm': 'audio/webm',
-      '.mp3': 'audio/mpeg',
-      '.wav': 'audio/wav',
-      '.mp4': 'audio/mp4',
-      '.ogg': 'audio/ogg',
-      '.m4a': 'audio/mp4',
-      '.aac': 'audio/aac'
-    };
-    
-    const fileExt = path.extname(req.path).toLowerCase();
-    if (audioExtensions[fileExt as keyof typeof audioExtensions]) {
-      res.setHeader('Content-Type', audioExtensions[fileExt as keyof typeof audioExtensions]);
-      res.setHeader('Accept-Ranges', 'bytes');
-      res.setHeader('Cache-Control', 'public, max-age=31536000');
-      res.setHeader('Access-Control-Allow-Origin', '*');
-    }
-    
-    res.sendFile(filePath, (err) => {
-      if (err) {
-        console.error('File serving error:', err);
-        res.status(404).json({ message: 'Audio file not found' });
+  // Serve uploaded files with proper headers for audio playback (before general static)
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
+    setHeaders: (res, path) => {
+      // Set appropriate headers for audio files with proper MIME type detection
+      const audioExtensions = {
+        '.webm': 'audio/webm',
+        '.mp3': 'audio/mpeg', 
+        '.wav': 'audio/wav',
+        '.mp4': 'audio/mp4',
+        '.ogg': 'audio/ogg',
+        '.m4a': 'audio/mp4',
+        '.aac': 'audio/aac'
+      };
+      
+      const fileExt = path.substring(path.lastIndexOf('.')).toLowerCase();
+      if (audioExtensions[fileExt as keyof typeof audioExtensions]) {
+        res.setHeader('Content-Type', audioExtensions[fileExt as keyof typeof audioExtensions]);
+        res.setHeader('Accept-Ranges', 'bytes');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Range');
       }
-    });
-  });
+    }
+  }));
+  
+  // Serve static files from public directory (after uploads)
+  app.use(express.static(path.join(process.cwd(), 'public')));
 
   // CRITICAL: Universal invitation routes for both development and production
   app.get("/invitation", (req, res, next) => {
@@ -3047,6 +3033,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { senderEmail, type, duration } = req.body;
       const userId = req.user.claims?.sub || req.user.id;
       
+      // Add comprehensive debugging for voice message creation
+      if (process.env.NODE_ENV === 'development') {
+        console.log('=== VOICE MESSAGE DEBUG START ===');
+        console.log('Request params:', req.params);
+        console.log('Request body:', req.body);
+        console.log('File info:', req.file ? {
+          originalname: req.file.originalname,
+          mimetype: req.file.mimetype,
+          size: req.file.size
+        } : 'No file');
+        console.log('User ID:', userId);
+        console.log('Conversation ID:', conversationId);
+      }
+      
       // Comprehensive input validation
       if (!req.file) {
         return res.status(400).json({ message: "Audio file is required" });
@@ -3098,24 +3098,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate conversation exists and user is authorized
       const conversation = await storage.getConversation(conversationId);
       if (!conversation) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('ERROR: Conversation not found for ID:', conversationId);
+        }
         return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Conversation found:', {
+          id: conversation.id,
+          participant1: conversation.participant1Email,
+          participant2: conversation.participant2Email,
+          currentTurn: conversation.currentTurn
+        });
       }
 
       // Check if sender is a participant
       if (senderEmail !== conversation.participant1Email && 
           senderEmail !== conversation.participant2Email) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('ERROR: User not authorized in conversation');
+        }
         return res.status(403).json({ message: "Not authorized to send messages in this conversation" });
       }
 
       // Check if it's the sender's turn
       if (senderEmail !== conversation.currentTurn) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('ERROR: Not sender\'s turn. Current turn:', conversation.currentTurn, 'Sender:', senderEmail);
+        }
         return res.status(400).json({ message: "It's not your turn to send a message" });
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('All validations passed, proceeding with file save...');
       }
 
       // Generate secure filename with timestamp and random string
       const timestamp = Date.now();
       const randomString = Math.random().toString(36).substring(2, 15);
-      const fileExtension = req.file.mimetype.split('/')[1] || 'webm';
+      
+      // Map MIME types to proper file extensions
+      const mimeToExtension: { [key: string]: string } = {
+        'audio/webm': 'webm',
+        'audio/mp4': 'm4a',
+        'audio/wav': 'wav',
+        'audio/ogg': 'ogg',
+        'audio/mpeg': 'mp3'
+      };
+      
+      const fileExtension = mimeToExtension[req.file.mimetype as string] || 'webm';
       const fileName = `voice_${timestamp}_${randomString}.${fileExtension}`;
       audioPath = path.join(uploadsDir, fileName);
       
@@ -3134,6 +3166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (process.env.NODE_ENV === 'development') {
           console.log('Audio file saved successfully. Size:', stats.size);
+          console.log('Audio file path:', audioPath);
         }
       } catch (fileError) {
         console.error("File save error:", fileError);
@@ -3141,6 +3174,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const audioFileUrl = `/uploads/${fileName}`;
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Audio URL will be:', audioFileUrl);
+      }
 
       // Transcribe audio using OpenAI Whisper with production-ready error handling
       let transcription = '';
@@ -3216,14 +3253,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const lastMessage = existingMessages[existingMessages.length - 1];
 
       // Validate message type based on conversation flow
+      // Special rule: ALL voice messages are always treated as "response" type
       if (existingMessages.length === 0) {
-        if (type !== 'question') {
-          return res.status(400).json({ message: "First message must be a question" });
+        // For voice messages, allow "response" type even as first message
+        // For text messages, require "question" type as first message
+        if (type !== 'question' && type !== 'response') {
+          return res.status(400).json({ message: "First message must be a question or response" });
         }
       } else {
-        const expectedType = lastMessage.type === 'question' ? 'response' : 'question';
-        if (type !== expectedType) {
-          return res.status(400).json({ message: `Expected ${expectedType}, got ${type}` });
+        // Voice messages are always allowed as "response" regardless of turn logic
+        if (type !== 'response' && type !== 'question' && type !== 'follow up') {
+          return res.status(400).json({ message: "Invalid message type" });
         }
       }
 

@@ -49,7 +49,8 @@ function StackedConversation({
   isInviter,
   selectedConversationId,
   onWaitingClick,
-  onRespondFirstClick
+  onRespondFirstClick,
+  index
 }: { 
   conversation: Conversation;
   isSelected: boolean;
@@ -60,19 +61,25 @@ function StackedConversation({
   selectedConversationId?: number;
   onWaitingClick: () => void;
   onRespondFirstClick: () => void;
+  index: number;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const shouldStack = conversation.messageCount >= 4;
+  // Remove stacked effect for conversations with more than 3 messages
+  const shouldStack = false;
 
-  // Role-based subtle glow effect styles - refined aesthetic
-  const glowStyles = isInviter 
-    ? 'shadow-[0_0_20px_rgba(79,172,254,0.6),0_0_40px_rgba(79,172,254,0.3)] border-2 border-[#4FACFE]/40 hover:shadow-[0_0_30px_rgba(79,172,254,0.8)] bg-gradient-to-br from-[#4FACFE]/10 to-transparent backdrop-blur-sm' 
-    : 'shadow-[0_0_20px_rgba(215,160,135,0.6),0_0_40px_rgba(215,160,135,0.3)] border-2 border-[#D7A087]/40 hover:shadow-[0_0_30px_rgba(215,160,135,0.8)] bg-gradient-to-br from-[#D7A087]/10 to-transparent backdrop-blur-sm';
+  // Rotating border colors: ocean blue, amber, dark navy
+  const borderColors = [
+    'border-[#4FACFE] border-4', // Ocean blue from app
+    'border-[#D7A087] border-4', // Amber from app
+    'border-[#1e3a8a] border-4'  // Dark navy blue
+  ];
+  
+  const borderStyle = borderColors[index % 3];
   
   return (
     <Card 
-      className={`cursor-pointer transition-all duration-300 rounded-xl ${shouldStack ? 'relative' : ''} ${glowStyles} ${
-        isSelected ? 'ring-2 ring-ocean border-ocean/30' : ''
+      className={`cursor-pointer transition-all duration-200 rounded-lg ${shouldStack ? 'relative' : ''} ${borderStyle} bg-white hover:bg-gray-50 ${
+        isSelected ? 'ring-2 ring-gray-400' : ''
       }`}
       onClick={() => {
         if (isMyTurn) {
@@ -84,9 +91,9 @@ function StackedConversation({
     >
       {shouldStack && !isExpanded && (
         <>
-          {/* Paper stack effect - bottom layers with consistent rounded corners */}
-          <div className="absolute -bottom-1 -right-1 w-full h-full bg-slate-100/60 rounded-xl rotate-1"></div>
-          <div className="absolute -bottom-0.5 -right-0.5 w-full h-full bg-slate-50/80 rounded-xl rotate-0.5"></div>
+          {/* Clean stacked paper effect without background colors */}
+          <div className="absolute -bottom-1 -right-1 w-full h-full border-2 border-gray-200 rounded-lg rotate-1"></div>
+          <div className="absolute -bottom-0.5 -right-0.5 w-full h-full border-2 border-gray-100 rounded-lg rotate-0.5"></div>
         </>
       )}
       
@@ -319,7 +326,7 @@ export default function ConversationThreads({
             </CardContent>
           </Card>
         ) : (
-          sortedConversations.map((conversation: Conversation) => (
+          sortedConversations.map((conversation: Conversation, index: number) => (
             <StackedConversation
               key={conversation.id}
               conversation={conversation}
@@ -338,6 +345,7 @@ export default function ConversationThreads({
               selectedConversationId={selectedConversationId}
               onWaitingClick={() => setShowWaitingPopup(true)}
               onRespondFirstClick={() => setShowRespondFirstPopup(true)}
+              index={index}
             />
           ))
         )}

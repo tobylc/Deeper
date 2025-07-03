@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Format Test</title>
+</head>
+<body>
+    <h3>Supported Audio Formats:</h3>
+    <div id="results"></div>
+    
+    <script>
+        const formats = [
+            'audio/mp4',
+            'audio/webm',
+            'audio/webm;codecs=opus',
+            'audio/wav',
+            'audio/ogg',
+            'audio/mpeg'
+        ];
+        
+        const resultsDiv = document.getElementById('results');
+        
+        formats.forEach(format => {
+            const supported = MediaRecorder.isTypeSupported(format);
+            const div = document.createElement('div');
+            div.textContent = `${format}: ${supported ? 'SUPPORTED' : 'NOT SUPPORTED'}`;
+            div.style.color = supported ? 'green' : 'red';
+            resultsDiv.appendChild(div);
+        });
+    </script>
+</body>
+</html>

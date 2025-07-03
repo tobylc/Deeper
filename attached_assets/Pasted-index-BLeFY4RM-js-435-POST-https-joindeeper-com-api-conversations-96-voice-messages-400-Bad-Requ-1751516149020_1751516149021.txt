@@ -1,0 +1,57 @@
+index-BLeFY4RM.js:435  POST https://joindeeper.com/api/conversations/96/voice-messages 400 (Bad Request)
+(anonymous) @ index-BLeFY4RM.js:435
+rr @ index-BLeFY4RM.js:435
+H3 @ index-BLeFY4RM.js:37
+K3 @ index-BLeFY4RM.js:37
+G3 @ index-BLeFY4RM.js:37
+Q1 @ index-BLeFY4RM.js:37
+cC @ index-BLeFY4RM.js:37
+(anonymous) @ index-BLeFY4RM.js:37
+fb @ index-BLeFY4RM.js:40
+$O @ index-BLeFY4RM.js:37
+Sv @ index-BLeFY4RM.js:37
+W0 @ index-BLeFY4RM.js:37
+u4 @ index-BLeFY4RM.js:37Understand this error
+index-BLeFY4RM.js:435 Voice message send failed: 400 {"message":"Expected question, got response"}
+(anonymous) @ index-BLeFY4RM.js:435
+await in (anonymous)
+rr @ index-BLeFY4RM.js:435
+H3 @ index-BLeFY4RM.js:37
+K3 @ index-BLeFY4RM.js:37
+G3 @ index-BLeFY4RM.js:37
+Q1 @ index-BLeFY4RM.js:37
+cC @ index-BLeFY4RM.js:37
+(anonymous) @ index-BLeFY4RM.js:37
+fb @ index-BLeFY4RM.js:40
+$O @ index-BLeFY4RM.js:37
+Sv @ index-BLeFY4RM.js:37
+W0 @ index-BLeFY4RM.js:37
+u4 @ index-BLeFY4RM.js:37Understand this error
+index-BLeFY4RM.js:435 Error sending voice message: Error: Failed to send voice message: 400 - {"message":"Expected question, got response"}
+    at index-BLeFY4RM.js:435:69683
+    at async rr (index-BLeFY4RM.js:435:54627)
+(anonymous) @ index-BLeFY4RM.js:435
+await in (anonymous)
+rr @ index-BLeFY4RM.js:435
+H3 @ index-BLeFY4RM.js:37
+K3 @ index-BLeFY4RM.js:37
+G3 @ index-BLeFY4RM.js:37
+Q1 @ index-BLeFY4RM.js:37
+cC @ index-BLeFY4RM.js:37
+(anonymous) @ index-BLeFY4RM.js:37
+fb @ index-BLeFY4RM.js:40
+$O @ index-BLeFY4RM.js:37
+Sv @ index-BLeFY4RM.js:37
+W0 @ index-BLeFY4RM.js:37
+u4 @ index-BLeFY4RM.js:37Understand this error
+index-BLeFY4RM.js:520 Unhandled promise rejection: InvalidStateError: Cannot close a closed AudioContext.
+e @ index-BLeFY4RM.js:520Understand this warning
+index-BLeFY4RM.js:520 Global unhandled rejection: InvalidStateError: Cannot close a closed AudioContext.
+r @ index-BLeFY4RM.js:520Understand this error
+index-BLeFY4RM.js:520 Error type: object
+r @ index-BLeFY4RM.js:520Understand this error
+index-BLeFY4RM.js:520 Error message: Cannot close a closed AudioContext.
+r @ index-BLeFY4RM.js:520Understand this error
+index-BLeFY4RM.js:520 Error stack: undefined
+r @ index-BLeFY4RM.js:520Understand this error
+index-BLeFY4RM.js:520 Promise: Promise {<rejected>: InvalidStateError: Cannot close a closed AudioContext.}
