@@ -406,153 +406,122 @@ const ConversationInterface = memo(function ConversationInterface({
         )}
       </div>
 
-      {/* Minimalistic Input Area at Bottom - Only visible when it's user's turn */}
+      {/* Static Minimalistic Input Area at Bottom */}
       {isMyTurn && (
-        <div className="flex-shrink-0 group">
-          {/* Minimalistic Input - Condensed by default, expands on hover */}
-          <div className="relative transition-all duration-300 ease-in-out mx-4 mb-4">
-            {/* Condensed State */}
-            <div className={cn(
-              "absolute inset-0 bg-white/80 border border-slate-200 rounded-lg shadow-sm transition-all duration-300 ease-in-out",
-              "group-hover:opacity-0 group-hover:pointer-events-none",
-              "flex items-center justify-between px-4 py-3"
-            )}>
-              <div className="flex items-center space-x-3">
+        <div className="flex-shrink-0">
+          {/* Message Mode Toggle - Thin and minimal */}
+          <div className="flex items-center justify-center space-x-2 mb-1 px-4">
+            <button
+              onClick={() => setMessageMode('text')}
+              className={cn(
+                "inline-flex items-center gap-1 h-6 rounded px-2 text-xs font-medium transition-colors",
+                messageMode === 'text' 
+                  ? "bg-ocean text-white" 
+                  : "text-slate-500 hover:text-slate-700"
+              )}
+              disabled={isSending}
+            >
+              <Type className="w-3 h-3" />
+              Text
+            </button>
+            <button
+              onClick={() => setMessageMode('voice')}
+              className={cn(
+                "inline-flex items-center gap-1 h-6 rounded px-2 text-xs font-medium transition-colors",
+                messageMode === 'voice' 
+                  ? "bg-[#4FACFE] text-white" 
+                  : "text-slate-500 hover:text-slate-700"
+              )}
+              disabled={isSending}
+            >
+              <Mic className="w-3 h-3" />
+              Voice
+            </button>
+          </div>
+
+          {/* Input Surface - Thin and Static */}
+          <div className="px-2 pb-1">
+            {messageMode === 'text' ? (
+              /* Thin Text Input */
+              <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-1">
                 <div className="flex space-x-2">
-                  <Type className="w-4 h-4 text-slate-400" />
-                  <Mic className="w-4 h-4 text-slate-400" />
-                </div>
-                <span className="text-sm text-slate-500">
-                  {nextMessageType === 'question' 
-                    ? "What would you like to explore together?"
-                    : "Express what's in your heart..."}
-                </span>
-              </div>
-              <Send className="w-4 h-4 text-slate-300" />
-            </div>
-
-            {/* Expanded State - Visible on hover */}
-            <div className={cn(
-              "opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out",
-              "transform translate-y-2 group-hover:translate-y-0",
-              "pointer-events-none group-hover:pointer-events-auto"
-            )}>
-              {/* Message Mode Toggle - Compact */}
-              <div className="flex items-center justify-center space-x-2 mb-3">
-                <button
-                  onClick={() => setMessageMode('text')}
-                  className={cn(
-                    "inline-flex items-center gap-2 h-8 rounded-md px-3 text-xs font-medium transition-all duration-200",
-                    messageMode === 'text' 
-                      ? "bg-ocean text-white" 
-                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-                  )}
-                  disabled={isSending}
-                >
-                  <Type className="w-3 h-3" />
-                  Text
-                </button>
-                <button
-                  onClick={() => setMessageMode('voice')}
-                  className={cn(
-                    "inline-flex items-center gap-2 h-8 rounded-md px-3 text-xs font-medium transition-all duration-200",
-                    messageMode === 'voice' 
-                      ? "bg-[#4FACFE] text-white" 
-                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-                  )}
-                  disabled={isSending}
-                >
-                  <Mic className="w-3 h-3" />
-                  Voice
-                </button>
-              </div>
-
-              {/* Input Surface - Minimalistic */}
-              <div className="relative">
-                {messageMode === 'text' ? (
-                  /* Minimalistic Text Input */
-                  <div className="relative bg-white border border-slate-200 rounded-lg shadow-sm px-3 py-2">
-                    <div className="flex space-x-2">
-                      <Textarea
-                        value={newMessage}
-                        onChange={(e) => {
-                          setNewMessage(e.target.value);
-                          if (!isInviterFirstQuestion() && !isNewQuestionAfterExchange() && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
-                            onTimerStart();
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            if (canSendNow()) {
-                              onSendMessage();
-                            } else {
-                              setShowThoughtfulResponsePopup(true);
-                            }
-                          }
-                        }}
-                        placeholder={
-                          nextMessageType === 'question' 
-                            ? "What would you like to explore together?"
-                            : "Express what's in your heart..."
+                  <Textarea
+                    value={newMessage}
+                    onChange={(e) => {
+                      setNewMessage(e.target.value);
+                      if (!isInviterFirstQuestion() && !isNewQuestionAfterExchange() && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
+                        onTimerStart();
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (canSendNow()) {
+                          onSendMessage();
+                        } else {
+                          setShowThoughtfulResponsePopup(true);
                         }
-                        className="flex-1 min-h-[40px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-400 focus:ring-0 text-sm leading-relaxed p-0"
-                        disabled={isSending}
-                      />
-                      <div className="flex flex-col justify-between items-center">
-                        <Button
-                          onClick={() => {
-                            if (canSendNow()) {
-                              onSendMessage();
-                            } else {
-                              setShowThoughtfulResponsePopup(true);
-                            }
-                          }}
-                          disabled={!newMessage.trim() || isSending}
-                          size="sm"
-                          className={cn(
-                            "w-8 h-8 rounded-full shadow-sm transition-all duration-200",
-                            "bg-gradient-to-br from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean",
-                            "hover:shadow-md hover:scale-105",
-                            !newMessage.trim() || isSending 
-                              ? "opacity-50 cursor-not-allowed" 
-                              : "cursor-pointer"
-                          )}
-                        >
-                          {isSending ? (
-                            <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
-                          ) : (
-                            <Send className="h-3 w-3" />
-                          )}
-                        </Button>
-                        {!isInviterFirstQuestion() && hasStartedResponse && !canSendNow() && (
-                          <span className="text-xs text-slate-400 font-mono mt-1">
-                            {formatTime(getRemainingTime())}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                      }
+                    }}
+                    placeholder={
+                      nextMessageType === 'question' 
+                        ? "What would you like to explore together?"
+                        : "Express what's in your heart..."
+                    }
+                    className="flex-1 min-h-[32px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-400 focus:ring-0 text-sm leading-relaxed p-0"
+                    disabled={isSending}
+                  />
+                  <div className="flex flex-col justify-center items-center">
+                    <Button
+                      onClick={() => {
+                        if (canSendNow()) {
+                          onSendMessage();
+                        } else {
+                          setShowThoughtfulResponsePopup(true);
+                        }
+                      }}
+                      disabled={!newMessage.trim() || isSending}
+                      size="sm"
+                      className={cn(
+                        "w-6 h-6 rounded-full shadow-sm transition-all duration-200",
+                        "bg-gradient-to-br from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean",
+                        !newMessage.trim() || isSending 
+                          ? "opacity-50 cursor-not-allowed" 
+                          : "cursor-pointer"
+                      )}
+                    >
+                      {isSending ? (
+                        <div className="w-2 h-2 border border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Send className="h-2 w-2" />
+                      )}
+                    </Button>
+                    {!isInviterFirstQuestion() && hasStartedResponse && !canSendNow() && (
+                      <span className="text-xs text-slate-400 font-mono mt-1">
+                        {formatTime(getRemainingTime())}
+                      </span>
+                    )}
                   </div>
-                ) : (
-                  /* Minimalistic Voice Recorder */
-                  <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-3 py-2">
-                    <VoiceRecorder
-                      onSendVoiceMessage={handleVoiceMessageSend}
-                      onRecordingStart={onRecordingStart}
-                      disabled={isSending}
-                      canSendMessage={true}
-                      hasStartedResponse={hasStartedResponse}
-                      responseStartTime={responseStartTime}
-                      onTimerStart={onTimerStart}
-                      messages={messages}
-                      connection={connection}
-                      currentUserEmail={currentUserEmail}
-                      nextMessageType={nextMessageType}
-                    />
-                  </div>
-                )}
+                </div>
               </div>
-            </div>
+            ) : (
+              /* Thin Voice Recorder */
+              <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-1">
+                <VoiceRecorder
+                  onSendVoiceMessage={handleVoiceMessageSend}
+                  onRecordingStart={onRecordingStart}
+                  disabled={isSending}
+                  canSendMessage={true}
+                  hasStartedResponse={hasStartedResponse}
+                  responseStartTime={responseStartTime}
+                  onTimerStart={onTimerStart}
+                  messages={messages}
+                  connection={connection}
+                  currentUserEmail={currentUserEmail}
+                  nextMessageType={nextMessageType}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
