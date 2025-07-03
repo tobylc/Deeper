@@ -64,7 +64,8 @@ function StackedConversation({
   index: number;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const shouldStack = conversation.messageCount >= 4;
+  // Remove stacked effect for conversations with more than 3 messages
+  const shouldStack = false;
 
   // Rotating border colors: ocean blue, amber, dark navy
   const borderColors = [

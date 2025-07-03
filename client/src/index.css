@@ -190,72 +190,62 @@
   .typewriter-container {
     position: relative;
     padding: 16px 24px;
-    background: 
-      radial-gradient(circle at 20% 20%, rgba(0,0,0,0.03) 1px, transparent 1px),
-      radial-gradient(circle at 80% 80%, rgba(0,0,0,0.02) 1px, transparent 1px),
-      linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,248,248,0.95) 100%);
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 2px;
-    box-shadow: 
-      0 2px 8px rgba(0,0,0,0.06),
-      inset 0 1px 0 rgba(255,255,255,0.8);
-    
-    /* Subtle paper texture */
-    background-size: 20px 20px, 25px 25px, 100% 100%;
+    /* Remove background - text appears directly on the page background */
   }
 
-  .typewriter-container::before {
-    content: '';
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    width: 3px;
-    height: 3px;
-    background: rgba(0,0,0,0.15);
-    border-radius: 50%;
-    box-shadow: 
-      -8px 4px 0 -1px rgba(0,0,0,0.08),
-      -15px -2px 0 -2px rgba(0,0,0,0.05);
-  }
-  
-  .typewriter-container::after {
-    content: '';
-    position: absolute;
-    bottom: 6px;
-    left: 10px;
-    width: 2px;
-    height: 2px;
-    background: rgba(0,0,0,0.1);
-    border-radius: 50%;
-    box-shadow: 
-      12px -3px 0 -0.5px rgba(0,0,0,0.06);
-  }
+  /* Remove decorative elements - clean typewriter text only */
 
   .typewriter-text {
     font-family: 'Courier Prime', 'Courier New', monospace;
-    color: #2a2a2a;
-    letter-spacing: 0.5px;
+    color: #1a1a1a;
+    letter-spacing: 0.8px;
     line-height: 1.4;
     font-weight: 400;
     
-    /* Slight ink imperfections */
+    /* Ultra-realistic old ink typewriter effect */
     text-shadow: 
-      0.5px 0.5px 0px rgba(0,0,0,0.1),
-      -0.5px 0px 0px rgba(0,0,0,0.05);
+      /* Main ink blob effect */
+      0.8px 0.8px 0px rgba(0,0,0,0.3),
+      0.4px 0.4px 1px rgba(0,0,0,0.2),
+      /* Ink spread and bleeding */
+      -0.3px 0.2px 0px rgba(0,0,0,0.15),
+      0.2px -0.3px 0px rgba(0,0,0,0.12),
+      /* Subtle ink variations */
+      0px 0px 2px rgba(0,0,0,0.08),
+      /* Paper impression depth */
+      0px 1px 0px rgba(0,0,0,0.05);
+      
+    /* Slight font weight variation to mimic typewriter key pressure differences */
+    filter: contrast(1.1) brightness(0.95);
   }
 
   .typewriter-main {
     font-size: 1.125rem; /* 18px - 50% smaller than original */
     font-weight: 700;
     margin-bottom: 8px;
-    color: #1a1a1a;
+    color: #0f0f0f;
+    /* Enhanced ink density for main heading */
+    text-shadow: 
+      0.9px 0.9px 0px rgba(0,0,0,0.4),
+      0.5px 0.5px 1px rgba(0,0,0,0.25),
+      -0.4px 0.3px 0px rgba(0,0,0,0.18),
+      0.3px -0.4px 0px rgba(0,0,0,0.15),
+      0px 0px 2px rgba(0,0,0,0.1),
+      0px 1px 0px rgba(0,0,0,0.08);
   }
 
   .typewriter-sub {
     font-size: 0.875rem; /* 14px - 50% smaller than original */
-    color: #4a4a4a;
+    color: #2a2a2a;
     font-weight: 400;
     font-style: italic;
+    /* Lighter ink effect for subtitle */
+    text-shadow: 
+      0.6px 0.6px 0px rgba(0,0,0,0.25),
+      0.3px 0.3px 1px rgba(0,0,0,0.15),
+      -0.2px 0.1px 0px rgba(0,0,0,0.1),
+      0.1px -0.2px 0px rgba(0,0,0,0.08),
+      0px 0px 1px rgba(0,0,0,0.05);
   }
 
   @keyframes typewriterBlink {
@@ -265,13 +255,19 @@
 
   .typewriter-cursor {
     display: inline-block;
-    background-color: #2a2a2a;
+    background-color: #0f0f0f;
     width: 2px;
     height: 1.2em;
     margin-left: 1px;
     animation: typewriterBlink 1s infinite;
     position: relative;
     top: 0.1em;
+    /* Vintage typewriter cursor with ink bleeding effect */
+    box-shadow: 
+      0.5px 0 0 rgba(0,0,0,0.3),
+      -0.5px 0 0 rgba(0,0,0,0.2),
+      0 0 1px rgba(0,0,0,0.4);
+    border-radius: 0.5px;
   }
 
   /* Responsive sizing */

@@ -395,12 +395,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (err) {
           console.error('File serving error:', {
             error: err.message,
-            statusCode: err.status || err.statusCode,
+            statusCode: (err as any).status || (err as any).statusCode,
             path: filePath
           });
           
           if (!res.headersSent) {
-            res.status(err.status || 500).json({ 
+            res.status((err as any).status || 500).json({ 
               message: 'Failed to serve audio file',
               debug: process.env.NODE_ENV === 'development' ? err.message : undefined
             });
