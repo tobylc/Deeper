@@ -11,6 +11,7 @@ import VoiceRecorder from '@/components/voice-recorder';
 import VoiceMessageDisplay from '@/components/voice-message-display';
 import TranscriptionProgress from '@/components/transcription-progress';
 import ThoughtfulResponsePopup from '@/components/thoughtful-response-popup';
+import FloatingWaitingText from '@/components/floating-waiting-text';
 import type { Message } from '@shared/schema';
 
 interface User {
@@ -405,6 +406,11 @@ const ConversationInterface = memo(function ConversationInterface({
           </div>
         )}
       </div>
+
+      {/* Floating Waiting Text when not user's turn */}
+      {!isMyTurn && (
+        <FloatingWaitingText className="absolute inset-x-0 bottom-4" />
+      )}
 
       {/* Static Minimalistic Input Area at Bottom */}
       {isMyTurn && (
