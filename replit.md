@@ -948,7 +948,15 @@ Changelog:
   * Reduced input area background padding from p-3 to px-3 py-2 for more compact appearance
   * Decreased textarea minimum height from 80px to 40px for streamlined text input
   * Updated shadow styling from shadow-md to shadow-sm for subtle, less prominent visual effect
-  * Applied minimalistic design to both text and voice input modes consistently
+  * Applied minimalistic design to both text and voice input modes
+- July 3, 2025. Critical turn state corruption fix for conversation thread reopening:
+  * Fixed corrupted turn state in conversation 96 where current_turn was incorrectly assigned to last message sender
+  * Database analysis revealed turn should be opposite of last message sender (person who responds next, not who just sent)
+  * Corrected turn from thetobyclarkshow@gmail.com to toby@gowithclark.com based on message chronology
+  * Specific "Reopen Thread" button for "What's something you've learned about yourself recently?" now works correctly
+  * Turn state corruption was causing incorrect turn passing behavior only for this conversation thread
+  * All other conversation threads had correct turn states and functioned properly
+  * Database integrity maintained with proper turn assignment ensuring accurate conversation flow consistently
   * Enhanced voice message debugging system with comprehensive error tracking and validation logging
   * Fixed LSP error in voice message endpoint by properly declaring audioFileUrl variable before usage
 - July 3, 2025. Ultra-minimal bottom input positioning:
