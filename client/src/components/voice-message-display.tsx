@@ -27,11 +27,17 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
       return;
     }
 
-    // Enhanced URL validation and construction for initial load
+    // Simplified URL validation and construction for initial load
     let audioUrl = message.audioFileUrl;
     if (!audioUrl.startsWith('http')) {
-      audioUrl = audioUrl.replace(/^\/+/, '');
-      audioUrl = `${window.location.origin}/uploads/${audioUrl.replace(/^uploads\//, '')}`;
+      // If it's a relative path starting with /uploads/, use it directly
+      if (audioUrl.startsWith('/uploads/')) {
+        audioUrl = `${window.location.origin}${audioUrl}`;
+      } else {
+        // Otherwise, add the /uploads/ prefix
+        const filename = audioUrl.replace(/^\/+/, '').replace(/^uploads\//, '');
+        audioUrl = `${window.location.origin}/uploads/${filename}`;
+      }
     }
 
     // Set the computed URL if different
@@ -112,15 +118,19 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        // Enhanced URL handling with proper cleanup and reconstruction
+        // Simplified URL construction for audio files
         let audioUrl = message.audioFileUrl;
         
-        // Clean up any double slashes and ensure proper path
+        // Ensure proper URL construction
         if (!audioUrl.startsWith('http')) {
-          // Remove any leading slashes to avoid double slashes
-          audioUrl = audioUrl.replace(/^\/+/, '');
-          // Construct proper absolute URL
-          audioUrl = `${window.location.origin}/uploads/${audioUrl.replace(/^uploads\//, '')}`;
+          // If it's a relative path starting with /uploads/, use it directly
+          if (audioUrl.startsWith('/uploads/')) {
+            audioUrl = `${window.location.origin}${audioUrl}`;
+          } else {
+            // Otherwise, add the /uploads/ prefix
+            const filename = audioUrl.replace(/^\/+/, '').replace(/^uploads\//, '');
+            audioUrl = `${window.location.origin}/uploads/${filename}`;
+          }
         }
         
         console.log('Constructed audio URL:', audioUrl);
@@ -141,13 +151,26 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           });
           
           if (!testResponse.ok) {
-            throw new Error(`Audio file not accessible: ${testResponse.status}`);
+            // Audio file missing - show transcription as fallback
+            if (message.transcription && message.transcription !== '[Transcription unavailable - audio only]') {
+              setError(`Audio file not found (${testResponse.status}). Transcription available: "${message.transcription}"`);
+              return;
+            } else {
+              throw new Error(`Audio file not accessible: ${testResponse.status}`);
+            }
           }
           
           console.log('Audio file accessibility confirmed');
         } catch (fetchError) {
           console.error('Audio file fetch test failed:', fetchError);
-          throw new Error(`Cannot access audio file: ${(fetchError as Error)?.message || 'Network error'}`);
+          
+          // If we have transcription, show it as fallback
+          if (message.transcription && message.transcription !== '[Transcription unavailable - audio only]') {
+            setError(`Audio file unavailable. Transcription: "${message.transcription}"`);
+            return;
+          } else {
+            throw new Error(`Cannot access audio file: ${(fetchError as Error)?.message || 'Network error'}`);
+          }
         }
 
         // Wait for audio to be loadable with enhanced error handling
@@ -328,14 +351,18 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           src={(() => {
             if (!message.audioFileUrl) return '';
             
-            // Enhanced URL construction matching the fixed togglePlayback logic
+            // Simplified URL construction matching the fixed togglePlayback logic
             let audioUrl = message.audioFileUrl;
             
             if (!audioUrl.startsWith('http')) {
-              // Remove any leading slashes to avoid double slashes
-              audioUrl = audioUrl.replace(/^\/+/, '');
-              // Construct proper absolute URL
-              audioUrl = `${window.location.origin}/uploads/${audioUrl.replace(/^uploads\//, '')}`;
+              // If it's a relative path starting with /uploads/, use it directly
+              if (audioUrl.startsWith('/uploads/')) {
+                audioUrl = `${window.location.origin}${audioUrl}`;
+              } else {
+                // Otherwise, add the /uploads/ prefix
+                const filename = audioUrl.replace(/^\/+/, '').replace(/^uploads\//, '');
+                audioUrl = `${window.location.origin}/uploads/${filename}`;
+              }
             }
             
             return audioUrl;
@@ -358,8 +385,14 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
             if (!message.audioFileUrl) return 'No URL';
             let audioUrl = message.audioFileUrl;
             if (!audioUrl.startsWith('http')) {
-              audioUrl = audioUrl.replace(/^\/+/, '');
-              audioUrl = `${window.location.origin}/uploads/${audioUrl.replace(/^uploads\//, '')}`;
+              // If it's a relative path starting with /uploads/, use it directly
+              if (audioUrl.startsWith('/uploads/')) {
+                audioUrl = `${window.location.origin}${audioUrl}`;
+              } else {
+                // Otherwise, add the /uploads/ prefix
+                const filename = audioUrl.replace(/^\/+/, '').replace(/^uploads\//, '');
+                audioUrl = `${window.location.origin}/uploads/${filename}`;
+              }
             }
             return audioUrl;
           })()}</div>

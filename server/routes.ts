@@ -318,7 +318,7 @@ const audioUpload = multer({
 });
 
 // Ensure uploads directory exists
-const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+const uploadsDir = path.join(process.cwd(), 'uploads');
 async function ensureUploadsDir() {
   try {
     await fs.access(uploadsDir);
@@ -339,40 +339,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(securityHeaders);
   app.use(requestLogger);
   
-  // Serve static files from public directory
-  app.use(express.static(path.join(process.cwd(), 'public')));
-  
-  // Serve uploaded files with proper headers for audio playback
-  app.use('/uploads', async (req, res, next) => {
-    try {
-      // Remove leading slash from req.path to avoid double slashes
-      const relativePath = req.path.startsWith('/') ? req.path.slice(1) : req.path;
-      const filePath = path.join(process.cwd(), 'public', 'uploads', relativePath);
-      
-      console.log('Serving audio file:', {
-        requestPath: req.path,
-        relativePath,
-        fullFilePath: filePath,
-        url: req.url,
-        method: req.method
-      });
-      
-      // Check if file exists before trying to serve it
-      try {
-        await fs.access(filePath);
-      } catch (error) {
-        console.error(`Audio file not found: ${filePath}`);
-        return res.status(404).json({ 
-          message: 'Audio file not found',
-          path: req.path,
-          debug: process.env.NODE_ENV === 'development' ? { filePath, relativePath } : undefined
-        });
-      }
-      
+  // Serve uploaded files with proper headers for audio playback (before general static)
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
+    setHeaders: (res, path) => {
       // Set appropriate headers for audio files with proper MIME type detection
       const audioExtensions = {
         '.webm': 'audio/webm',
-        '.mp3': 'audio/mpeg',
+        '.mp3': 'audio/mpeg', 
         '.wav': 'audio/wav',
         '.mp4': 'audio/mp4',
         '.ogg': 'audio/ogg',
@@ -380,42 +353,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         '.aac': 'audio/aac'
       };
       
-      const fileExt = path.extname(req.path).toLowerCase();
+      const fileExt = path.substring(path.lastIndexOf('.')).toLowerCase();
       if (audioExtensions[fileExt as keyof typeof audioExtensions]) {
         res.setHeader('Content-Type', audioExtensions[fileExt as keyof typeof audioExtensions]);
         res.setHeader('Accept-Ranges', 'bytes');
-        res.setHeader('Cache-Control', 'public, max-age=86400'); // 1 day cache
+        res.setHeader('Cache-Control', 'public, max-age=86400');
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', 'Range');
       }
-      
-      // Send file with proper error handling
-      res.sendFile(filePath, (err) => {
-        if (err) {
-          console.error('File serving error:', {
-            error: err.message,
-            statusCode: (err as any).status || (err as any).statusCode,
-            path: filePath
-          });
-          
-          if (!res.headersSent) {
-            res.status((err as any).status || 500).json({ 
-              message: 'Failed to serve audio file',
-              debug: process.env.NODE_ENV === 'development' ? err.message : undefined
-            });
-          }
-        } else {
-          console.log(`Successfully served audio file: ${filePath}`);
-        }
-      });
-    } catch (error) {
-      console.error('Uploads middleware error:', error);
-      if (!res.headersSent) {
-        res.status(500).json({ message: 'Internal server error' });
-      }
     }
-  });
+  }));
+  
+  // Serve static files from public directory (after uploads)
+  app.use(express.static(path.join(process.cwd(), 'public')));
 
   // CRITICAL: Universal invitation routes for both development and production
   app.get("/invitation", (req, res, next) => {
