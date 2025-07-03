@@ -86,8 +86,11 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           ? message.audioFileUrl 
           : `/${message.audioFileUrl}`;
         
-        if (audioRef.current.src !== audioUrl) {
-          audioRef.current.src = audioUrl;
+        // Ensure we have the full URL for proper loading
+        const fullAudioUrl = audioUrl.startsWith('http') ? audioUrl : `${window.location.origin}${audioUrl}`;
+        
+        if (audioRef.current.src !== fullAudioUrl) {
+          audioRef.current.src = fullAudioUrl;
         }
 
         // Check if audio is loaded
@@ -234,16 +237,18 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
         {/* Audio Element with Enhanced Debugging */}
         <audio
           ref={audioRef}
-          src={message.audioFileUrl?.startsWith('/') 
-            ? message.audioFileUrl 
-            : `/${message.audioFileUrl || ''}`}
+          src={(() => {
+            const audioUrl = message.audioFileUrl?.startsWith('/') 
+              ? message.audioFileUrl 
+              : `/${message.audioFileUrl || ''}`;
+            return audioUrl.startsWith('http') ? audioUrl : `${window.location.origin}${audioUrl}`;
+          })()}
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleEnded}
           onError={handleLoadError}
           onLoadStart={handleLoadStart}
           onCanPlay={handleCanPlayEvent}
           preload="metadata"
-          crossOrigin="anonymous"
           onLoadedMetadata={() => console.log('Audio metadata loaded')}
           onLoadedData={() => console.log('Audio data loaded')}
         />
