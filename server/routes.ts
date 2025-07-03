@@ -3137,7 +3137,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate secure filename with timestamp and random string
       const timestamp = Date.now();
       const randomString = Math.random().toString(36).substring(2, 15);
-      const fileExtension = req.file.mimetype.split('/')[1] || 'webm';
+      
+      // Map MIME types to proper file extensions
+      const mimeToExtension: { [key: string]: string } = {
+        'audio/webm': 'webm',
+        'audio/mp4': 'm4a',
+        'audio/wav': 'wav',
+        'audio/ogg': 'ogg',
+        'audio/mpeg': 'mp3'
+      };
+      
+      const fileExtension = mimeToExtension[req.file.mimetype as string] || 'webm';
       const fileName = `voice_${timestamp}_${randomString}.${fileExtension}`;
       audioPath = path.join(uploadsDir, fileName);
       
