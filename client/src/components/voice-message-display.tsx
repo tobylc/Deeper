@@ -18,75 +18,38 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Handle initial audio loading state with enhanced error handling
+  // Handle initial audio loading state
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !message.audioFileUrl) {
       setIsLoading(false);
-      setError(message.audioFileUrl ? null : 'No audio file URL');
       return;
-    }
-
-    // Simplified URL validation and construction for initial load
-    let audioUrl = message.audioFileUrl;
-    if (!audioUrl.startsWith('http')) {
-      // If it's a relative path starting with /uploads/, use it directly
-      if (audioUrl.startsWith('/uploads/')) {
-        audioUrl = `${window.location.origin}${audioUrl}`;
-      } else {
-        // Otherwise, add the /uploads/ prefix
-        const filename = audioUrl.replace(/^\/+/, '').replace(/^uploads\//, '');
-        audioUrl = `${window.location.origin}/uploads/${filename}`;
-      }
-    }
-
-    // Set the computed URL if different
-    if (audio.src !== audioUrl) {
-      audio.src = audioUrl;
     }
 
     // Check if audio is already loaded
     if (audio.readyState >= 2) { // HAVE_CURRENT_DATA or higher
       setIsLoading(false);
-      setError(null);
       return;
     }
 
-    // Set up event listeners for loading with better error detection
+    // Set up event listeners for loading
     const handleCanPlay = () => {
       setIsLoading(false);
       setError(null);
-      if (process.env.NODE_ENV === 'development') {
-
-      }
     };
 
-    const handleError = (e: Event) => {
+    const handleError = () => {
       setIsLoading(false);
-      const errorMsg = `Audio load error: ${(e.target as HTMLAudioElement)?.error?.message || 'Unknown error'}`;
-      setError(errorMsg);
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Initial audio load error:', errorMsg);
-      }
-    };
-
-    const handleLoadStart = () => {
-      setIsLoading(true);
-      setError(null);
+      setError('Unable to load audio file');
     };
 
     audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('error', handleError);
-    audio.addEventListener('loadstart', handleLoadStart);
-
-    // Force initial load
-    audio.load();
 
     // Cleanup
     return () => {
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('error', handleError);
-      audio.removeEventListener('loadstart', handleLoadStart);
     };
   }, [message.audioFileUrl]);
 
@@ -98,23 +61,17 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
 
   const togglePlayback = async () => {
     if (!audioRef.current) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Audio ref not available');
-      }
+      console.error('Audio ref not available');
       return;
     }
 
     if (!message.audioFileUrl) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('No audio URL available');
-      }
+      console.error('No audio URL available');
       setError('Audio file not available');
       return;
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Attempting to play audio from URL:', message.audioFileUrl);
-    }
+    console.log('Attempting to play audio from URL:', message.audioFileUrl);
 
     try {
       setError(null);
@@ -124,130 +81,43 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        // Simplified URL construction for audio files
-        let audioUrl = message.audioFileUrl;
-        
-        // Ensure proper URL construction
-        if (!audioUrl.startsWith('http')) {
-          // If it's a relative path starting with /uploads/, use it directly
-          if (audioUrl.startsWith('/uploads/')) {
-            audioUrl = `${window.location.origin}${audioUrl}`;
-          } else {
-            // Otherwise, add the /uploads/ prefix
-            const filename = audioUrl.replace(/^\/+/, '').replace(/^uploads\//, '');
-            audioUrl = `${window.location.origin}/uploads/${filename}`;
-          }
+        // Force reload audio source if needed
+        if (audioRef.current.src !== message.audioFileUrl) {
+          audioRef.current.src = message.audioFileUrl;
         }
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Constructed audio URL:', audioUrl);
-        }
-        
-        // Always force a fresh load to avoid cache issues
-        const audio = audioRef.current;
-        audio.src = '';
-        audio.load(); // Clear current source
-        
-        // Set new source and force reload
-        audio.src = audioUrl;
-        
-        // Check network connectivity to the audio file first
-        try {
-          const testResponse = await fetch(audioUrl, { 
-            method: 'HEAD',
-            cache: 'no-cache'
+
+        // Check if audio is loaded
+        if (audioRef.current.readyState < 2) {
+  
+          await new Promise((resolve, reject) => {
+            const audio = audioRef.current!;
+            const timeoutId = setTimeout(() => {
+              audio.removeEventListener('canplay', onCanPlay);
+              audio.removeEventListener('error', onError);
+              reject(new Error('Audio load timeout'));
+            }, 10000); // 10 second timeout
+
+            const onCanPlay = () => {
+              clearTimeout(timeoutId);
+              audio.removeEventListener('canplay', onCanPlay);
+              audio.removeEventListener('error', onError);
+              resolve(void 0);
+            };
+            const onError = () => {
+              clearTimeout(timeoutId);
+              audio.removeEventListener('canplay', onCanPlay);
+              audio.removeEventListener('error', onError);
+              reject(new Error('Failed to load audio'));
+            };
+            audio.addEventListener('canplay', onCanPlay);
+            audio.addEventListener('error', onError);
+            audio.load();
           });
-          
-          if (!testResponse.ok) {
-            // Audio file missing - show transcription as fallback
-            if (message.transcription && message.transcription !== '[Transcription unavailable - audio only]') {
-              setError(`Audio file not found (${testResponse.status}). Transcription available: "${message.transcription}"`);
-              return;
-            } else {
-              throw new Error(`Audio file not accessible: ${testResponse.status}`);
-            }
-          }
-          
-          if (process.env.NODE_ENV === 'development') {
-            console.log('Audio file accessibility confirmed');
-          }
-        } catch (fetchError) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error('Audio file fetch test failed:', fetchError);
-          }
-          
-          // If we have transcription, show it as fallback
-          if (message.transcription && message.transcription !== '[Transcription unavailable - audio only]') {
-            setError(`Audio file unavailable. Transcription: "${message.transcription}"`);
-            return;
-          } else {
-            throw new Error(`Cannot access audio file: ${(fetchError as Error)?.message || 'Network error'}`);
-          }
         }
 
-        // Wait for audio to be loadable with enhanced error handling
-        await new Promise((resolve, reject) => {
-          const timeoutId = setTimeout(() => {
-            audio.removeEventListener('canplay', onCanPlay);
-            audio.removeEventListener('canplaythrough', onCanPlayThrough);
-            audio.removeEventListener('error', onError);
-            audio.removeEventListener('loadstart', onLoadStart);
-            console.error('Audio load timeout after 15 seconds');
-            reject(new Error('Audio load timeout - file may be corrupted or network issues'));
-          }, 15000); // Extended timeout for better reliability
+        await audioRef.current.play();
+        setIsPlaying(true);
 
-          const onCanPlay = () => {
-            console.log('Audio canplay event fired');
-            clearTimeout(timeoutId);
-            audio.removeEventListener('canplay', onCanPlay);
-            audio.removeEventListener('canplaythrough', onCanPlayThrough);
-            audio.removeEventListener('error', onError);
-            audio.removeEventListener('loadstart', onLoadStart);
-            resolve(void 0);
-          };
-          
-          const onCanPlayThrough = () => {
-            console.log('Audio canplaythrough event fired');
-            clearTimeout(timeoutId);
-            audio.removeEventListener('canplay', onCanPlay);
-            audio.removeEventListener('canplaythrough', onCanPlayThrough);
-            audio.removeEventListener('error', onError);
-            audio.removeEventListener('loadstart', onLoadStart);
-            resolve(void 0);
-          };
-          
-          const onError = (e: Event) => {
-            console.error('Audio loading error:', e);
-            clearTimeout(timeoutId);
-            audio.removeEventListener('canplay', onCanPlay);
-            audio.removeEventListener('canplaythrough', onCanPlayThrough);
-            audio.removeEventListener('error', onError);
-            audio.removeEventListener('loadstart', onLoadStart);
-            reject(new Error(`Audio load failed: ${(e.target as HTMLAudioElement)?.error?.message || 'Unknown audio error'}`));
-          };
-          
-          const onLoadStart = () => {
-            console.log('Audio load started');
-          };
-          
-          audio.addEventListener('canplay', onCanPlay);
-          audio.addEventListener('canplaythrough', onCanPlayThrough);
-          audio.addEventListener('error', onError);
-          audio.addEventListener('loadstart', onLoadStart);
-          
-          // Force load
-          audio.load();
-        });
-
-        // Attempt playback with user gesture handling
-        try {
-          await audioRef.current.play();
-          setIsPlaying(true);
-          console.log('Audio playback started successfully');
-        } catch (playError) {
-          console.error('Play method failed:', playError);
-          throw new Error(`Playback failed: ${(playError as Error)?.message || 'Unknown playback error'}`);
-        }
       }
     } catch (err: any) {
       console.error('Audio playback error:', err);
@@ -357,67 +227,29 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           </div>
         </div>
 
-        {/* Audio Element with Enhanced Debugging and Fixed URL Construction */}
+        {/* Audio Element with Enhanced Debugging */}
         <audio
           ref={audioRef}
-          src={(() => {
-            if (!message.audioFileUrl) return '';
-            
-            // Simplified URL construction matching the fixed togglePlayback logic
-            let audioUrl = message.audioFileUrl;
-            
-            if (!audioUrl.startsWith('http')) {
-              // If it's a relative path starting with /uploads/, use it directly
-              if (audioUrl.startsWith('/uploads/')) {
-                audioUrl = `${window.location.origin}${audioUrl}`;
-              } else {
-                // Otherwise, add the /uploads/ prefix
-                const filename = audioUrl.replace(/^\/+/, '').replace(/^uploads\//, '');
-                audioUrl = `${window.location.origin}/uploads/${filename}`;
-              }
-            }
-            
-            return audioUrl;
-          })()}
+          src={message.audioFileUrl || ''}
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleEnded}
           onError={handleLoadError}
           onLoadStart={handleLoadStart}
           onCanPlay={handleCanPlayEvent}
           preload="metadata"
+          crossOrigin="anonymous"
           onLoadedMetadata={() => console.log('Audio metadata loaded')}
           onLoadedData={() => console.log('Audio data loaded')}
-          crossOrigin="anonymous"
         />
         
-        {/* Enhanced Debug Info - Always show for debugging voice issues */}
+        {/* Debug Info - Always show for debugging voice issues */}
         <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
-          <div>Original Audio URL: {message.audioFileUrl}</div>
-          <div>Computed Audio URL: {(() => {
-            if (!message.audioFileUrl) return 'No URL';
-            let audioUrl = message.audioFileUrl;
-            if (!audioUrl.startsWith('http')) {
-              // If it's a relative path starting with /uploads/, use it directly
-              if (audioUrl.startsWith('/uploads/')) {
-                audioUrl = `${window.location.origin}${audioUrl}`;
-              } else {
-                // Otherwise, add the /uploads/ prefix
-                const filename = audioUrl.replace(/^\/+/, '').replace(/^uploads\//, '');
-                audioUrl = `${window.location.origin}/uploads/${filename}`;
-              }
-            }
-            return audioUrl;
-          })()}</div>
+          <div>Audio URL: {message.audioFileUrl}</div>
           <div>Duration: {message.audioDuration}s</div>
           <div>Error: {error || 'None'}</div>
           <div>Loading: {isLoading ? 'Yes' : 'No'}</div>
-          <div>Playing: {isPlaying ? 'Yes' : 'No'}</div>
           <div>Audio Ready State: {audioRef.current?.readyState}</div>
           <div>Audio Network State: {audioRef.current?.networkState}</div>
-          <div>Audio Current Time: {audioRef.current?.currentTime}</div>
-          <div>Audio Duration: {audioRef.current?.duration}</div>
-          <div>Audio Source: {audioRef.current?.src}</div>
-          <div>Window Origin: {window.location.origin}</div>
         </div>
       </Card>
 

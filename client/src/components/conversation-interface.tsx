@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,6 @@ import VoiceRecorder from '@/components/voice-recorder';
 import VoiceMessageDisplay from '@/components/voice-message-display';
 import TranscriptionProgress from '@/components/transcription-progress';
 import ThoughtfulResponsePopup from '@/components/thoughtful-response-popup';
-import FloatingWaitingText from '@/components/floating-waiting-text';
 import type { Message } from '@shared/schema';
 
 interface User {
@@ -78,8 +77,6 @@ const ConversationInterface = memo(function ConversationInterface({
   const [showTranscriptionProgress, setShowTranscriptionProgress] = useState(false);
   const [isTranscriptionComplete, setIsTranscriptionComplete] = useState(false);
   const [isConversationExpanded, setIsConversationExpanded] = useState(false);
-  const [showFloatingText, setShowFloatingText] = useState(true);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   // Check if this is inviter's first question to bypass timer completely
@@ -137,8 +134,8 @@ const ConversationInterface = memo(function ConversationInterface({
       const formData = new FormData();
       formData.append('audio', audioBlob, 'voice-message.webm');
       formData.append('senderEmail', currentUserEmail);
-      // ALL voice messages should always be treated as responses, never questions
-      formData.append('type', 'response');
+      // Voice messages use the same type logic as text messages
+      formData.append('type', nextMessageType);
       formData.append('duration', duration.toString());
 
       // Send voice message to backend for AI transcription
@@ -217,26 +214,6 @@ const ConversationInterface = memo(function ConversationInterface({
     };
   }, [hasStartedResponse, responseStartTime]);
 
-  // Scroll detection to hide/show floating text
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
-
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
-      const threshold = 50; // pixels from bottom
-      const isNearBottom = scrollHeight - scrollTop - clientHeight <= threshold;
-      
-      setShowFloatingText(isNearBottom);
-    };
-
-    scrollContainer.addEventListener('scroll', handleScroll);
-    // Initial check
-    handleScroll();
-
-    return () => scrollContainer.removeEventListener('scroll', handleScroll);
-  }, []);
-
   // Calculate remaining time for thoughtful response timer with error handling
   const getRemainingTime = useCallback(() => {
     try {
@@ -292,7 +269,7 @@ const ConversationInterface = memo(function ConversationInterface({
   return (
     <div className="h-full flex flex-col">
       {/* Messages Container - flex-1 to take remaining space */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-8 min-h-0 relative bg-gradient-to-br from-amber-50/40 via-yellow-50/30 to-orange-50/20 pb-24">
+      <div className="flex-1 overflow-y-auto p-8 min-h-0 relative bg-gradient-to-br from-amber-50/40 via-yellow-50/30 to-orange-50/20">
         {/* Wood desk texture background */}
         <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(ellipse_at_center,_rgba(139,69,19,0.4)_0%,_transparent_70%)]" />
         
@@ -429,126 +406,164 @@ const ConversationInterface = memo(function ConversationInterface({
         )}
       </div>
 
-      {/* Floating Waiting Text when not user's turn and user is at bottom */}
-      {!isMyTurn && showFloatingText && (
-        <FloatingWaitingText className="absolute inset-x-0 bottom-4" />
-      )}
-
-      {/* Static Minimalistic Input Area at Bottom */}
+      {/* Fixed Input Area at Bottom - Only visible when it's user's turn */}
       {isMyTurn && (
         <div className="flex-shrink-0">
-          {/* Message Mode Toggle - Thin and minimal */}
-          <div className="flex items-center justify-center space-x-2 mb-0.5 px-1">
+          {/* Message Mode Toggle */}
+          <div className="flex items-center justify-center space-x-2 pt-4 mb-4 px-4">
             <button
-              onClick={() => setMessageMode('text')}
+              onClick={() => {
+                try {
+                  setMessageMode('text');
+                } catch (error) {
+                  console.error('Error switching to text mode:', error);
+                }
+              }}
+              aria-pressed={messageMode === 'text'}
+              aria-label="Switch to text message mode"
               className={cn(
-                "inline-flex items-center gap-1 h-6 rounded px-2 text-xs font-medium transition-colors",
+                "inline-flex items-center justify-center gap-2 h-9 rounded-md px-3 text-sm font-medium transition-all duration-200",
+                "border-0 outline-0 ring-0 shadow-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0",
+                "disabled:pointer-events-none disabled:opacity-50",
                 messageMode === 'text' 
-                  ? "bg-ocean text-white" 
-                  : "text-slate-500 hover:text-slate-700"
+                  ? "bg-ocean text-white shadow-ocean/20" 
+                  : "text-slate-600 hover:bg-slate-50"
               )}
               disabled={isSending}
             >
-              <Type className="w-3 h-3" />
-              Text
+              <Type className="w-4 h-4 mr-2" aria-hidden="true" />
+              Write Text
             </button>
             <button
-              onClick={() => setMessageMode('voice')}
+              onClick={() => {
+                try {
+                  setMessageMode('voice');
+                } catch (error) {
+                  console.error('Error switching to voice mode:', error);
+                }
+              }}
+              aria-pressed={messageMode === 'voice'}
+              aria-label="Switch to voice message mode"
               className={cn(
-                "inline-flex items-center gap-1 h-6 rounded px-2 text-xs font-medium transition-colors",
+                "inline-flex items-center justify-center gap-2 h-9 rounded-md px-3 text-sm font-medium transition-all duration-200",
+                "border-0 outline-0 ring-0 shadow-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0",
+                "disabled:pointer-events-none disabled:opacity-50",
                 messageMode === 'voice' 
-                  ? "bg-[#4FACFE] text-white" 
-                  : "text-slate-500 hover:text-slate-700"
+                  ? "bg-white text-[#4FACFE] shadow-lg hover:bg-slate-50" 
+                  : "text-[#4FACFE] hover:bg-slate-50"
               )}
               disabled={isSending}
             >
-              <Mic className="w-3 h-3" />
-              Voice
+              <Mic className="w-4 h-4 mr-2" />
+              Record Voice
             </button>
           </div>
 
-          {/* Input Surface - Thin and Static */}
-          <div className="px-1 pb-0">
+          {/* Input Surface */}
+          <div className="relative">
             {messageMode === 'text' ? (
-              /* Thin Text Input */
-              <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-0.5">
-                <div className="flex space-x-2">
-                  <Textarea
-                    value={newMessage}
-                    onChange={(e) => {
-                      setNewMessage(e.target.value);
-                      if (!isInviterFirstQuestion() && !isNewQuestionAfterExchange() && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
-                        onTimerStart();
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        if (canSendNow()) {
-                          onSendMessage();
-                        } else {
-                          setShowThoughtfulResponsePopup(true);
+              /* Text Writing Surface */
+              <div className="relative bg-gradient-to-br from-white via-ocean/5 to-ocean/8 p-6 pb-4 border border-ocean/20 shadow-md rounded-t-sm">
+                <div className="flex space-x-4">
+                  <div className="flex-1">
+                    <Textarea
+                      value={newMessage}
+                      onChange={(e) => {
+                        try {
+                          setNewMessage(e.target.value);
+                          // Only start timer if this is not inviter's first question AND not a new question that creates threads
+                          if (!isInviterFirstQuestion() && !isNewQuestionAfterExchange() && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
+                            onTimerStart();
+                          }
+                        } catch (error) {
+                          console.error('Error handling message input:', error);
                         }
+                      }}
+                      onKeyDown={(e) => {
+                        try {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            // Skip timer validation for inviter's first question
+                            if (canSendNow()) {
+                              onSendMessage();
+                            } else {
+                              setShowThoughtfulResponsePopup(true);
+                            }
+                          }
+                        } catch (error) {
+                          console.error('Error handling key press:', error);
+                        }
+                      }}
+                      placeholder={
+                        nextMessageType === 'question' 
+                          ? "What would you like to explore together?"
+                          : "Express what's in your heart..."
                       }
-                    }}
-                    placeholder={
-                      nextMessageType === 'question' 
-                        ? "What would you like to explore together?"
-                        : "Express what's in your heart..."
-                    }
-                    className="flex-1 min-h-[32px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-400 focus:ring-0 text-sm leading-relaxed p-0"
-                    disabled={isSending}
-                  />
-                  <div className="flex flex-col justify-center items-center">
+                      className="min-h-[120px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-500 focus:ring-0 text-base leading-relaxed p-0"
+                      disabled={isSending}
+                      aria-label="Message composition area"
+                      aria-describedby="message-help"
+                    />
+                  </div>
+                  <div className="flex flex-col items-center justify-between py-2">
                     <Button
                       onClick={() => {
-                        if (canSendNow()) {
-                          onSendMessage();
-                        } else {
-                          setShowThoughtfulResponsePopup(true);
+                        try {
+                          // Skip timer validation for inviter's first question
+                          if (canSendNow()) {
+                            onSendMessage();
+                          } else {
+                            setShowThoughtfulResponsePopup(true);
+                          }
+                        } catch (error) {
+                          console.error('Error sending message:', error);
                         }
                       }}
                       disabled={!newMessage.trim() || isSending}
                       size="sm"
+                      aria-label={isSending ? "Sending message..." : "Send message"}
                       className={cn(
-                        "w-6 h-6 rounded-full shadow-sm transition-all duration-200",
+                        "w-12 h-12 rounded-full shadow-lg transition-all duration-200",
                         "bg-gradient-to-br from-ocean to-ocean/80 hover:from-ocean/90 hover:to-ocean",
+                        "hover:shadow-xl hover:scale-105 active:scale-95",
+                        "focus:outline-none focus:ring-2 focus:ring-ocean/50 focus:ring-offset-2",
                         !newMessage.trim() || isSending 
                           ? "opacity-50 cursor-not-allowed" 
                           : "cursor-pointer"
                       )}
                     >
                       {isSending ? (
-                        <div className="w-2 h-2 border border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
-                        <Send className="h-2 w-2" />
+                        <Send className="h-5 w-5" />
                       )}
                     </Button>
-                    {!isInviterFirstQuestion() && hasStartedResponse && !canSendNow() && (
-                      <span className="text-xs text-slate-400 font-mono mt-1">
-                        {formatTime(getRemainingTime())}
-                      </span>
-                    )}
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-slate-600">Share</span>
+                      {!isInviterFirstQuestion() && hasStartedResponse && !canSendNow() && (
+                        <span className="text-xs text-slate-500 font-mono">
+                          {formatTime(getRemainingTime())}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             ) : (
-              /* Thin Voice Recorder */
-              <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-0.5">
-                <VoiceRecorder
-                  onSendVoiceMessage={handleVoiceMessageSend}
-                  onRecordingStart={onRecordingStart}
-                  disabled={isSending}
-                  canSendMessage={true}
-                  hasStartedResponse={hasStartedResponse}
-                  responseStartTime={responseStartTime}
-                  onTimerStart={onTimerStart}
-                  messages={messages}
-                  connection={connection}
-                  currentUserEmail={currentUserEmail}
-                  nextMessageType={nextMessageType}
-                />
-              </div>
+              /* Voice Recording Surface */
+              <VoiceRecorder
+                onSendVoiceMessage={handleVoiceMessageSend}
+                onRecordingStart={onRecordingStart}
+                disabled={isSending}
+                canSendMessage={true}
+                hasStartedResponse={hasStartedResponse}
+                responseStartTime={responseStartTime}
+                onTimerStart={onTimerStart}
+                messages={messages}
+                connection={connection}
+                currentUserEmail={currentUserEmail}
+                nextMessageType={nextMessageType}
+              />
             )}
           </div>
         </div>

@@ -1016,10 +1016,7 @@ export default function ConversationPage() {
             {!isMyTurn && (
               <>
                 <HypnoticOrbs className="absolute inset-0 z-0" />
-                {/* Only show floating text when there are no messages or when messages don't fill the screen */}
-                {(!messages || messages.length === 0 || messages.length < 3) && (
-                  <FloatingWaitingText className="absolute inset-0 z-30" />
-                )}
+                <FloatingWaitingText className="absolute inset-0 z-30" />
               </>
             )}
             <ConversationInterface 

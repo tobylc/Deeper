@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from 'react';
+import React, { memo } from 'react';
 import { cn } from '@/lib/utils';
 
 interface FloatingWaitingTextProps {
@@ -8,98 +8,54 @@ interface FloatingWaitingTextProps {
   'aria-label'?: string;
 }
 
-interface TypewriterTextProps {
-  text: string;
-  speed?: number;
-  className?: string;
-  onComplete?: () => void;
-}
-
-/**
- * TypewriterText Component
- * 
- * Creates a realistic typewriter effect with character-by-character reveal
- */
-const TypewriterText = memo<TypewriterTextProps>(function TypewriterText({ 
-  text, 
-  speed = 120, 
-  className,
-  onComplete 
-}) {
-  const [displayedText, setDisplayedText] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    if (currentIndex < text.length) {
-      const timer = setTimeout(() => {
-        setDisplayedText(prev => prev + text[currentIndex]);
-        setCurrentIndex(prev => prev + 1);
-      }, speed);
-
-      return () => clearTimeout(timer);
-    } else if (onComplete) {
-      onComplete();
-    }
-  }, [currentIndex, text, speed, onComplete]);
-
-  // Reset when text changes
-  useEffect(() => {
-    setDisplayedText('');
-    setCurrentIndex(0);
-  }, [text]);
-
-  return (
-    <span className={className}>
-      {displayedText}
-      {currentIndex < text.length && (
-        <span className="typewriter-cursor">|</span>
-      )}
-    </span>
-  );
-});
-
 /**
  * FloatingWaitingText Component
  * 
- * Displays professional typewriter-style waiting text with realistic
- * character-by-character animation and vintage typewriter aesthetic
+ * Displays beautifully animated floating text that integrates with hypnotic orbs
+ * during waiting states in conversations. Includes gentle floating animations,
+ * rotation effects, and glowing text shadows for a mesmerizing experience.
  */
 const FloatingWaitingText = memo<FloatingWaitingTextProps>(function FloatingWaitingText({ 
   className,
   'aria-label': ariaLabel = 'Waiting for response'
 }) {
-  const [showSubtext, setShowSubtext] = useState(false);
-
   return (
     <div 
       className={cn(
-        "absolute inset-x-0 bottom-20 flex items-end justify-center pointer-events-none z-10 pb-8",
+        "absolute inset-x-0 bottom-0 flex items-end justify-center pointer-events-none z-30 pb-8",
         className
       )}
       role="status"
       aria-label={ariaLabel}
       aria-live="polite"
     >
-      {/* Typewriter waiting text */}
-      <div className="text-center max-w-3xl px-4">
-        <div className="typewriter-container">
-          <h2 className="typewriter-text typewriter-main">
-            <TypewriterText 
-              text="Their turn to write"
-              speed={100}
-              onComplete={() => setShowSubtext(true)}
-            />
-          </h2>
-          
-          {showSubtext && (
-            <p className="typewriter-text typewriter-sub">
-              <TypewriterText 
-                text="Waiting for their thoughtful response..."
-                speed={80}
-              />
-            </p>
-          )}
-        </div>
+      {/* Main waiting text - floating and gently moving */}
+      <div className="text-center max-w-4xl px-4">
+        <h2 
+          className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-serif text-slate-700/80 mb-2 sm:mb-3 select-none"
+          style={{
+            animation: 'intrigueFloat 8s ease-in-out infinite, intriguePulse 6s ease-in-out infinite',
+            willChange: 'transform, opacity, text-shadow',
+            backfaceVisibility: 'hidden' as const,
+            transformOrigin: 'center center'
+          }}
+          aria-hidden="true"
+        >
+          Their turn to write
+        </h2>
+        
+        <p 
+          className="text-lg sm:text-xl md:text-xl lg:text-2xl font-light text-slate-600/70 select-none"
+          style={{
+            animation: 'intrigueFloat 10s ease-in-out infinite 2s, subtleIntrigue 7s ease-in-out infinite 1s',
+            willChange: 'transform, opacity, text-shadow',
+            backfaceVisibility: 'hidden' as const,
+            transformOrigin: 'center center'
+          }}
+          aria-hidden="true"
+        >
+          Waiting for their thoughtful response...
+        </p>
       </div>
 
       {/* Screen reader only text for accessibility */}
