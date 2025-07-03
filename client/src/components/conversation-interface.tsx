@@ -410,7 +410,7 @@ const ConversationInterface = memo(function ConversationInterface({
       {isMyTurn && (
         <div className="flex-shrink-0">
           {/* Message Mode Toggle - Thin and minimal */}
-          <div className="flex items-center justify-center space-x-2 mb-1 px-4">
+          <div className="flex items-center justify-center space-x-2 mb-0.5 px-1">
             <button
               onClick={() => setMessageMode('text')}
               className={cn(
@@ -440,10 +440,10 @@ const ConversationInterface = memo(function ConversationInterface({
           </div>
 
           {/* Input Surface - Thin and Static */}
-          <div className="px-2 pb-1">
+          <div className="px-1 pb-0">
             {messageMode === 'text' ? (
               /* Thin Text Input */
-              <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-1">
+              <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-0.5">
                 <div className="flex space-x-2">
                   <Textarea
                     value={newMessage}
@@ -506,7 +506,7 @@ const ConversationInterface = memo(function ConversationInterface({
               </div>
             ) : (
               /* Thin Voice Recorder */
-              <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-1">
+              <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-0.5">
                 <VoiceRecorder
                   onSendVoiceMessage={handleVoiceMessageSend}
                   onRecordingStart={onRecordingStart}
