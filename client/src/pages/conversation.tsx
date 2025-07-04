@@ -435,6 +435,35 @@ export default function ConversationPage() {
     },
   });
 
+  // Create new conversation thread mutation
+  const createNewThreadMutation = useMutation({
+    mutationFn: async (question: string) => {
+      if (!conversation?.connectionId) {
+        throw new Error("Connection ID not available");
+      }
+      const response = await apiRequest("POST", `/api/connections/${conversation.connectionId}/conversations`, {
+        firstMessage: question.trim(),
+        type: "question"
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      console.log('[NEW_THREAD] New thread created successfully:', data.conversationId);
+      handleNewThreadCreated(data.conversationId);
+      toast({
+        title: "New conversation started!",
+        description: "Your question has started a new conversation thread",
+      });
+    },
+    onError: (error) => {
+      console.error('[NEW_THREAD] Failed to create new thread:', error);
+      toast({
+        title: "Unable to start new conversation",
+        description: "Please try again",
+      });
+    }
+  });
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
@@ -691,10 +720,17 @@ export default function ConversationPage() {
     // Determine message type: if from question suggestions, always use "question"
     const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
     
-    sendMessageMutation.mutate({
-      content: messageContent,
-      type: messageType,
-    });
+    // If this is a question, create a new conversation thread
+    if (messageType === 'question') {
+      console.log('[NEW_THREAD] Creating new conversation thread for question');
+      createNewThreadMutation.mutate(messageContent);
+    } else {
+      // For responses, send to current thread
+      sendMessageMutation.mutate({
+        content: messageContent,
+        type: messageType,
+      });
+    }
 
     // Reset response tracking and question suggestion flag
     setResponseStartTime(null);

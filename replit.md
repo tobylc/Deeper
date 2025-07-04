@@ -957,6 +957,13 @@ Changelog:
   * Removed obsolete onQuestionSelect callback that was just populating text input instead of creating threads
   * All question suggestions now automatically create new conversation threads and move current thread to left column
   * Complete restoration of proper conversation threading behavior ensuring new questions start new conversation threads
+- July 4, 2025. Universal new thread creation system for ALL question types:
+  * Fixed critical issue where manually typed questions were adding to existing threads instead of creating new ones
+  * Enhanced proceedWithSending logic to detect ANY question type and automatically create new conversation threads
+  * Added createNewThreadMutation to conversation page for universal thread creation capability
+  * ALL questions now create new threads: question suggestions, manually typed questions, voice recorded questions
+  * Restored onQuestionSelect callback for text input population while maintaining automatic thread creation for sending
+  * Complete universal threading system ensures EVERY new question starts a NEW conversation thread regardless of input method
 - July 3, 2025. Critical conversation logic fixes and duplicate typewriter text resolution:
   * Fixed critical issue where text responses were incorrectly labeled as "new questions" creating unwanted conversation threads
   * Updated getNextMessageType() function to return 'response' as default instead of 'question' for regular text input
