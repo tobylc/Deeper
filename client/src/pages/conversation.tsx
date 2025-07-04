@@ -442,10 +442,7 @@ export default function ConversationPage() {
         throw new Error("Connection ID not available");
       }
       const response = await apiRequest("POST", `/api/connections/${conversation.connectionId}/conversations/with-question`, {
-        question: question.trim(),
-        participant1Email: conversation.participant1Email,
-        participant2Email: conversation.participant2Email,
-        relationshipType: conversation.relationshipType
+        question: question.trim()
       });
       return response.json();
     },
@@ -731,17 +728,21 @@ export default function ConversationPage() {
     // Determine message type: if from question suggestions, always use "question"
     const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
     
+    console.log('[PROCEED_WITH_SENDING] ===============================');
     console.log('[PROCEED_WITH_SENDING] Message type:', messageType);
     console.log('[PROCEED_WITH_SENDING] isFromQuestionSuggestions:', isFromQuestionSuggestions);
     console.log('[PROCEED_WITH_SENDING] nextMessageType:', nextMessageType);
     console.log('[PROCEED_WITH_SENDING] messageContent:', messageContent);
+    console.log('[PROCEED_WITH_SENDING] conversation?.connectionId:', conversation?.connectionId);
+    console.log('[PROCEED_WITH_SENDING] selectedConversationId:', selectedConversationId);
+    console.log('[PROCEED_WITH_SENDING] ===============================');
     
     // If this is a question, create a new conversation thread
     if (messageType === 'question') {
-      console.log('[NEW_THREAD] Creating new conversation thread for question');
+      console.log('[NEW_THREAD] ✓ Creating new conversation thread for question');
       createNewThreadMutation.mutate(messageContent);
     } else {
-      console.log('[EXISTING_THREAD] Sending message to current thread');
+      console.log('[EXISTING_THREAD] ⚠️ Sending message to current thread');
       // For responses, send to current thread
       sendMessageMutation.mutate({
         content: messageContent,
