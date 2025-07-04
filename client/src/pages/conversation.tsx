@@ -450,12 +450,21 @@ export default function ConversationPage() {
       return response.json();
     },
     onSuccess: (data) => {
-      console.log('[NEW_THREAD] New thread created successfully:', data.conversationId);
-      handleNewThreadCreated(data.conversationId);
-      toast({
-        title: "New conversation started!",
-        description: "Your question has started a new conversation thread",
-      });
+      console.log('[NEW_THREAD] New thread created successfully:', data);
+      const conversationId = data.conversation?.id;
+      if (conversationId) {
+        handleNewThreadCreated(conversationId);
+        toast({
+          title: "New conversation started!",
+          description: "Your question has started a new conversation thread",
+        });
+      } else {
+        console.error('[NEW_THREAD] No conversation ID in response:', data);
+        toast({
+          title: "Error creating conversation",
+          description: "Please try again",
+        });
+      }
     },
     onError: (error) => {
       console.error('[NEW_THREAD] Failed to create new thread:', error);
@@ -833,6 +842,12 @@ export default function ConversationPage() {
 
   const handleNewThreadCreated = (conversationId: number) => {
     console.log('[HANDLE_NEW_THREAD] Switching to new conversation:', conversationId);
+    
+    // Validate conversationId before proceeding
+    if (!conversationId || isNaN(conversationId)) {
+      console.error('[HANDLE_NEW_THREAD] Invalid conversation ID:', conversationId);
+      return;
+    }
     
     // Switch to the new conversation thread automatically
     setSelectedConversationId(conversationId);

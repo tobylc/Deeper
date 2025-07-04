@@ -1,0 +1,406 @@
+Connection confirmed
+index-Dc7_4KhO.js:48  GET https://joindeeper.com/api/users/notification-preference/undefined 400 (Bad Request)
+_e @ index-Dc7_4KhO.js:48
+queryFn @ index-Dc7_4KhO.js:448
+a @ index-Dc7_4KhO.js:48
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+(anonymous) @ index-Dc7_4KhO.js:40
+setTimeout
+i @ index-Dc7_4KhO.js:48
+s @ index-Dc7_4KhO.js:48
+batch @ index-Dc7_4KhO.js:48
+ui @ index-Dc7_4KhO.js:48
+setData @ index-Dc7_4KhO.js:48
+onSuccess @ index-Dc7_4KhO.js:48
+f @ index-Dc7_4KhO.js:48
+Promise.then
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+eA @ index-Dc7_4KhO.js:40
+j @ index-Dc7_4KhO.js:25
+k @ index-Dc7_4KhO.js:25Understand this error
+index-Dc7_4KhO.js:435 [WebSocket] Subscribed to dashboard updates
+index-Dc7_4KhO.js:48  GET https://joindeeper.com/api/conversations/undefined/messages 500 (Internal Server Error)
+_e @ index-Dc7_4KhO.js:48
+queryFn @ index-Dc7_4KhO.js:448
+a @ index-Dc7_4KhO.js:48
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+(anonymous) @ index-Dc7_4KhO.js:40
+setTimeout
+i @ index-Dc7_4KhO.js:48
+s @ index-Dc7_4KhO.js:48
+batch @ index-Dc7_4KhO.js:48
+ui @ index-Dc7_4KhO.js:48
+setData @ index-Dc7_4KhO.js:48
+onSuccess @ index-Dc7_4KhO.js:48
+f @ index-Dc7_4KhO.js:48
+Promise.then
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+eA @ index-Dc7_4KhO.js:40
+j @ index-Dc7_4KhO.js:25
+k @ index-Dc7_4KhO.js:25Understand this error
+index-Dc7_4KhO.js:448 Messages loading error: Error: 500: {"message":"Failed to fetch messages"}
+    at DA (index-Dc7_4KhO.js:48:42832)
+    at async _e (index-Dc7_4KhO.js:48:43033)
+    at async queryFn (index-Dc7_4KhO.js:448:44543)
+queryFn @ index-Dc7_4KhO.js:448
+await in queryFn
+a @ index-Dc7_4KhO.js:48
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+(anonymous) @ index-Dc7_4KhO.js:40
+setTimeout
+i @ index-Dc7_4KhO.js:48
+s @ index-Dc7_4KhO.js:48
+batch @ index-Dc7_4KhO.js:48
+ui @ index-Dc7_4KhO.js:48
+setData @ index-Dc7_4KhO.js:48
+onSuccess @ index-Dc7_4KhO.js:48
+f @ index-Dc7_4KhO.js:48
+Promise.then
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+eA @ index-Dc7_4KhO.js:40
+j @ index-Dc7_4KhO.js:25
+k @ index-Dc7_4KhO.js:25Understand this error
+index-Dc7_4KhO.js:48  GET https://joindeeper.com/api/conversations/undefined 500 (Internal Server Error)
+_e @ index-Dc7_4KhO.js:48
+queryFn @ index-Dc7_4KhO.js:448
+a @ index-Dc7_4KhO.js:48
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+(anonymous) @ index-Dc7_4KhO.js:40
+setTimeout
+i @ index-Dc7_4KhO.js:48
+s @ index-Dc7_4KhO.js:48
+batch @ index-Dc7_4KhO.js:48
+ui @ index-Dc7_4KhO.js:48
+setData @ index-Dc7_4KhO.js:48
+onSuccess @ index-Dc7_4KhO.js:48
+f @ index-Dc7_4KhO.js:48
+Promise.then
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+eA @ index-Dc7_4KhO.js:40
+j @ index-Dc7_4KhO.js:25
+k @ index-Dc7_4KhO.js:25Understand this error
+index-Dc7_4KhO.js:448 Conversation loading error: Error: 500: {"message":"Failed to fetch conversation"}
+    at DA (index-Dc7_4KhO.js:48:42832)
+    at async _e (index-Dc7_4KhO.js:48:43033)
+    at async queryFn (index-Dc7_4KhO.js:448:42898)
+queryFn @ index-Dc7_4KhO.js:448
+await in queryFn
+a @ index-Dc7_4KhO.js:48
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+(anonymous) @ index-Dc7_4KhO.js:40
+setTimeout
+i @ index-Dc7_4KhO.js:48
+s @ index-Dc7_4KhO.js:48
+batch @ index-Dc7_4KhO.js:48
+ui @ index-Dc7_4KhO.js:48
+setData @ index-Dc7_4KhO.js:48
+onSuccess @ index-Dc7_4KhO.js:48
+f @ index-Dc7_4KhO.js:48
+Promise.then
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+eA @ index-Dc7_4KhO.js:40
+j @ index-Dc7_4KhO.js:25
+k @ index-Dc7_4KhO.js:25Understand this error
+index-Dc7_4KhO.js:48  GET https://joindeeper.com/api/conversations/undefined 500 (Internal Server Error)
+_e @ index-Dc7_4KhO.js:48
+queryFn @ index-Dc7_4KhO.js:448
+a @ index-Dc7_4KhO.js:48
+v @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+Promise.then
+(anonymous) @ index-Dc7_4KhO.js:48
+Promise.catch
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+(anonymous) @ index-Dc7_4KhO.js:40
+setTimeout
+i @ index-Dc7_4KhO.js:48
+s @ index-Dc7_4KhO.js:48
+batch @ index-Dc7_4KhO.js:48
+ui @ index-Dc7_4KhO.js:48
+setData @ index-Dc7_4KhO.js:48
+onSuccess @ index-Dc7_4KhO.js:48
+f @ index-Dc7_4KhO.js:48
+Promise.then
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+eA @ index-Dc7_4KhO.js:40
+j @ index-Dc7_4KhO.js:25
+k @ index-Dc7_4KhO.js:25Understand this error
+index-Dc7_4KhO.js:448 Conversation loading error: Error: 500: {"message":"Failed to fetch conversation"}
+    at DA (index-Dc7_4KhO.js:48:42832)
+    at async _e (index-Dc7_4KhO.js:48:43033)
+    at async queryFn (index-Dc7_4KhO.js:448:42898)
+queryFn @ index-Dc7_4KhO.js:448
+await in queryFn
+a @ index-Dc7_4KhO.js:48
+v @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+Promise.then
+(anonymous) @ index-Dc7_4KhO.js:48
+Promise.catch
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+(anonymous) @ index-Dc7_4KhO.js:40
+setTimeout
+i @ index-Dc7_4KhO.js:48
+s @ index-Dc7_4KhO.js:48
+batch @ index-Dc7_4KhO.js:48
+ui @ index-Dc7_4KhO.js:48
+setData @ index-Dc7_4KhO.js:48
+onSuccess @ index-Dc7_4KhO.js:48
+f @ index-Dc7_4KhO.js:48
+Promise.then
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+eA @ index-Dc7_4KhO.js:40
+j @ index-Dc7_4KhO.js:25
+k @ index-Dc7_4KhO.js:25Understand this error
+index-Dc7_4KhO.js:448 Conversation error: Error: 500: {"message":"Failed to fetch conversation"}
+    at DA (index-Dc7_4KhO.js:48:42832)
+    at async _e (index-Dc7_4KhO.js:48:43033)
+    at async queryFn (index-Dc7_4KhO.js:448:42898)
+ZB @ index-Dc7_4KhO.js:448
+eb @ index-Dc7_4KhO.js:38
+ey @ index-Dc7_4KhO.js:40
+oA @ index-Dc7_4KhO.js:40
+nA @ index-Dc7_4KhO.js:40
+PD @ index-Dc7_4KhO.js:40
+sh @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+(anonymous) @ index-Dc7_4KhO.js:40
+setTimeout
+i @ index-Dc7_4KhO.js:48
+s @ index-Dc7_4KhO.js:48
+batch @ index-Dc7_4KhO.js:48
+ui @ index-Dc7_4KhO.js:48
+l @ index-Dc7_4KhO.js:48
+h @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+Promise.catch
+v @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+Promise.then
+(anonymous) @ index-Dc7_4KhO.js:48
+Promise.catch
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+(anonymous) @ index-Dc7_4KhO.js:40
+setTimeout
+i @ index-Dc7_4KhO.js:48
+s @ index-Dc7_4KhO.js:48
+batch @ index-Dc7_4KhO.js:48
+ui @ index-Dc7_4KhO.js:48
+setData @ index-Dc7_4KhO.js:48
+onSuccess @ index-Dc7_4KhO.js:48
+f @ index-Dc7_4KhO.js:48
+Promise.then
+v @ index-Dc7_4KhO.js:48
+start @ index-Dc7_4KhO.js:48
+fetch @ index-Dc7_4KhO.js:48
+Oc @ index-Dc7_4KhO.js:48
+onSubscribe @ index-Dc7_4KhO.js:48
+subscribe @ index-Dc7_4KhO.js:48
+(anonymous) @ index-Dc7_4KhO.js:48
+jC @ index-Dc7_4KhO.js:38
+Ip @ index-Dc7_4KhO.js:40
+Ss @ index-Dc7_4KhO.js:40
+Sj @ index-Dc7_4KhO.js:40
+Ia @ index-Dc7_4KhO.js:38
+CD @ index-Dc7_4KhO.js:40
+Va @ index-Dc7_4KhO.js:40
+eA @ index-Dc7_4KhO.js:40
+j @ index-Dc7_4KhO.js:25
+k @ index-Dc7_4KhO.js:25Understand this error
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
