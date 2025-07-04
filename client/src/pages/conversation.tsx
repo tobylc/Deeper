@@ -29,6 +29,7 @@ export default function ConversationPage() {
   const [, setLocation] = useLocation();
   const { id } = useParams<{ id: string }>();
   const [newMessage, setNewMessage] = useState("");
+  const [isFromQuestionSuggestions, setIsFromQuestionSuggestions] = useState(false);
   const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
   const [showThreadsView, setShowThreadsView] = useState(false);
   const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
@@ -666,46 +667,17 @@ export default function ConversationPage() {
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
     
-    // NEVER show timer popup for inviter's first question
-    const isInviterFirstQuestion = messages.length === 0 && 
-                                   connection?.inviterEmail === user?.email &&
-                                   nextMessageType === 'question';
+    // Determine message type: if from question suggestions, always use "question"
+    const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
     
-    if (isInviterFirstQuestion) {
-      // Skip all timer logic and send immediately for inviter's first question
+    // Questions always send immediately (no timer)
+    if (messageType === 'question') {
       proceedWithSending(newMessage);
       return;
     }
     
-    // NEVER show timer popup for new questions that will create new conversation threads
-    const isNewQuestionAfterExchange = nextMessageType === 'question' && messages.length > 0 && (() => {
-      const hasQuestion = messages.some(msg => msg.type === 'question');
-      const hasResponse = messages.some(msg => msg.type === 'response');
-      
-      // Find the most recent question
-      let lastQuestionIndex = -1;
-      for (let i = messages.length - 1; i >= 0; i--) {
-        if (messages[i].type === 'question') {
-          lastQuestionIndex = i;
-          break;
-        }
-      }
-      
-      // Check if the last question has been responded to
-      const lastQuestionHasResponse = lastQuestionIndex !== -1 ? 
-        messages.slice(lastQuestionIndex + 1).some(msg => msg.type === 'response') : false;
-      
-      return hasQuestion && hasResponse && lastQuestionHasResponse;
-    })();
-    
-    if (isNewQuestionAfterExchange) {
-      // Skip all timer logic for new questions that create new threads
-      proceedWithSending(newMessage);
-      return;
-    }
-    
-    // Check if enough time has passed for thoughtful response (only for non-first questions)
-    if (hasStartedResponse && !checkResponseTime()) {
+    // For responses, check timer requirements
+    if (messageType === 'response' && hasStartedResponse && !checkResponseTime()) {
       setPendingMessage(newMessage);
       setShowThoughtfulResponsePopup(true);
       return;
@@ -716,16 +688,20 @@ export default function ConversationPage() {
   };
 
   const proceedWithSending = (messageContent: string) => {
+    // Determine message type: if from question suggestions, always use "question"
+    const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
+    
     sendMessageMutation.mutate({
       content: messageContent,
-      type: nextMessageType,
+      type: messageType,
     });
 
-    // Reset response tracking
+    // Reset response tracking and question suggestion flag
     setResponseStartTime(null);
     setHasStartedResponse(false);
     setPendingMessage("");
     setNewMessage("");
+    setIsFromQuestionSuggestions(false);
   };
 
   const handleThoughtfulResponseProceed = () => {
@@ -784,6 +760,7 @@ export default function ConversationPage() {
 
   const handleQuestionSelect = (question: string) => {
     setNewMessage(question);
+    setIsFromQuestionSuggestions(true); // Mark this message as coming from question suggestions
   };
 
   const handleThreadSelect = async (conversationId: number) => {
@@ -1017,50 +994,21 @@ export default function ConversationPage() {
               newMessage={newMessage}
               setNewMessage={(message: string) => {
                 setNewMessage(message);
-                // NEVER start timer for inviter's first question - check this first
-                const messagesArray = Array.isArray(messages) ? messages : [];
-                const isInviterFirstQuestion = messagesArray.length === 0 && 
-                                               connection?.inviterEmail === user?.email &&
-                                               nextMessageType === 'question';
                 
-                if (isInviterFirstQuestion) {
-                  // Skip all timer logic for inviter's first question
-                  return;
+                // Reset question suggestion flag when user manually types
+                if (isFromQuestionSuggestions) {
+                  setIsFromQuestionSuggestions(false);
                 }
                 
-                // NEVER start timer for new questions that will create new conversation threads
-                const isNewQuestionAfterExchange = nextMessageType === 'question' && messagesArray.length > 0 && (() => {
-                  const hasQuestion = messagesArray.some(msg => msg.type === 'question');
-                  const hasResponse = messagesArray.some(msg => msg.type === 'response');
-                  
-                  // Find the most recent question
-                  let lastQuestionIndex = -1;
-                  for (let i = messagesArray.length - 1; i >= 0; i--) {
-                    if (messagesArray[i].type === 'question') {
-                      lastQuestionIndex = i;
-                      break;
-                    }
+                // Only start timer for responses (not questions)
+                if (nextMessageType === 'response') {
+                  if (message.trim() && !hasStartedResponse) {
+                    setHasStartedResponse(true);
+                    setResponseStartTime(new Date());
+                  } else if (!message.trim() && hasStartedResponse) {
+                    setHasStartedResponse(false);
+                    setResponseStartTime(null);
                   }
-                  
-                  // Check if the last question has been responded to
-                  const lastQuestionHasResponse = lastQuestionIndex !== -1 ? 
-                    messagesArray.slice(lastQuestionIndex + 1).some(msg => msg.type === 'response') : false;
-                  
-                  return hasQuestion && hasResponse && lastQuestionHasResponse;
-                })();
-                
-                if (isNewQuestionAfterExchange) {
-                  // Skip all timer logic for new questions that create new threads
-                  return;
-                }
-                
-                // Start timer when user begins typing (only for non-first questions)
-                if (message.trim() && !hasStartedResponse) {
-                  setHasStartedResponse(true);
-                  setResponseStartTime(new Date());
-                } else if (!message.trim() && hasStartedResponse) {
-                  setHasStartedResponse(false);
-                  setResponseStartTime(null);
                 }
               }}
               onSendMessage={handleSendMessage}
@@ -1068,12 +1016,14 @@ export default function ConversationPage() {
               onRecordingStart={handleRecordingStart}
               isSending={sendMessageMutation.isPending}
               nextMessageType={nextMessageType}
+              isFromQuestionSuggestions={isFromQuestionSuggestions}
               conversationId={selectedConversationId || 0}
               hasStartedResponse={hasStartedResponse}
               responseStartTime={responseStartTime}
               onTimerStart={() => {
                 // Only start timer for responses (never for questions)
-                if (nextMessageType === 'response') {
+                const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
+                if (messageType === 'response') {
                   setHasStartedResponse(true);
                   setResponseStartTime(new Date());
                 }

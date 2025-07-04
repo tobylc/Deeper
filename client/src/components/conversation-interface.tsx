@@ -50,6 +50,7 @@ interface ConversationInterfaceProps {
   responseStartTime?: Date | null;
   onTimerStart?: () => void;
   conversationId?: number;
+  isFromQuestionSuggestions?: boolean;
 }
 
 const ConversationInterface = memo(function ConversationInterface({ 
@@ -70,7 +71,8 @@ const ConversationInterface = memo(function ConversationInterface({
   conversationId,
   hasStartedResponse = false,
   responseStartTime = null,
-  onTimerStart
+  onTimerStart,
+  isFromQuestionSuggestions = false
 }: ConversationInterfaceProps) {
   const [messageMode, setMessageMode] = useState<'text' | 'voice'>('text');
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -245,13 +247,16 @@ const ConversationInterface = memo(function ConversationInterface({
 
   // Production-ready message sending validation with comprehensive error handling
   const canSendNow = useCallback(() => {
+    // Determine actual message type: if from question suggestions, always use "question"
+    const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
+    
     // Always allow questions immediately (no timer for any questions)
-    if (nextMessageType === 'question') {
+    if (messageType === 'question') {
       return true;
     }
     
     // For responses: apply 10-minute thoughtful response timer
-    if (nextMessageType === 'response') {
+    if (messageType === 'response') {
       if (!hasStartedResponse) {
         return true; // Timer hasn't started yet
       }
@@ -263,7 +268,7 @@ const ConversationInterface = memo(function ConversationInterface({
     
     // For follow-ups and other message types, allow sending immediately
     return true;
-  }, [nextMessageType, hasStartedResponse, getRemainingTime]);
+  }, [nextMessageType, isFromQuestionSuggestions, hasStartedResponse, getRemainingTime]);
 
   return (
     <div className="h-full flex flex-col">
@@ -451,7 +456,8 @@ const ConversationInterface = memo(function ConversationInterface({
                     onChange={(e) => {
                       setNewMessage(e.target.value);
                       // Start thoughtful response timer ONLY for responses (not questions)
-                      if (nextMessageType === 'response' && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
+                      const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
+                      if (messageType === 'response' && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
                         onTimerStart();
                       }
                     }}
@@ -498,7 +504,7 @@ const ConversationInterface = memo(function ConversationInterface({
                         <Send className="h-2 w-2" />
                       )}
                     </Button>
-                    {nextMessageType === 'response' && hasStartedResponse && !canSendNow() && (
+                    {!isFromQuestionSuggestions && nextMessageType === 'response' && hasStartedResponse && !canSendNow() && (
                       <span className="text-xs text-slate-400 font-mono mt-1">
                         {formatTime(getRemainingTime())}
                       </span>
@@ -521,6 +527,7 @@ const ConversationInterface = memo(function ConversationInterface({
                   connection={connection}
                   currentUserEmail={currentUserEmail}
                   nextMessageType={nextMessageType}
+                  isFromQuestionSuggestions={isFromQuestionSuggestions}
                 />
               </div>
             )}

@@ -17,6 +17,7 @@ interface VoiceRecorderProps {
   connection?: any;
   currentUserEmail?: string;
   nextMessageType?: 'question' | 'response' | 'follow up';
+  isFromQuestionSuggestions?: boolean;
 }
 
 export default function VoiceRecorder({ 
@@ -31,7 +32,8 @@ export default function VoiceRecorder({
   messages = [],
   connection,
   currentUserEmail,
-  nextMessageType
+  nextMessageType,
+  isFromQuestionSuggestions = false
 }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -105,13 +107,16 @@ export default function VoiceRecorder({
   };
 
   const canSendNow = () => {
+    // Determine actual message type: if from question suggestions, always use "question"
+    const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
+    
     // Always allow questions immediately (no timer for any questions)
-    if (nextMessageType === 'question') {
+    if (messageType === 'question') {
       return true;
     }
     
     // For responses: apply 10-minute thoughtful response timer
-    if (nextMessageType === 'response') {
+    if (messageType === 'response') {
       if (!hasStartedResponse) {
         return true; // Timer hasn't started yet
       }
@@ -138,7 +143,8 @@ export default function VoiceRecorder({
       onRecordingStart?.();
       
       // Trigger timer only for responses (not questions)
-      if (nextMessageType === 'response' && onTimerStart && !hasStartedResponse) {
+      const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
+      if (messageType === 'response' && onTimerStart && !hasStartedResponse) {
         onTimerStart();
       }
 
@@ -297,7 +303,8 @@ export default function VoiceRecorder({
 
   const handleSendAttempt = async () => {
     // Check timer requirements only for responses
-    if (nextMessageType === 'response' && hasStartedResponse && !canSendNow()) {
+    const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
+    if (messageType === 'response' && hasStartedResponse && !canSendNow()) {
       setShowThoughtfulResponseTimer(true);
       return;
     }
@@ -458,7 +465,7 @@ export default function VoiceRecorder({
               <Send className="w-3 h-3" />
             </Button>
             {/* Timer countdown for responses only */}
-            {nextMessageType === 'response' && hasStartedResponse && !canSendNow() && (
+            {!isFromQuestionSuggestions && nextMessageType === 'response' && hasStartedResponse && !canSendNow() && (
               <span className="text-xs text-slate-500 font-mono">
                 {formatTime(getRemainingTime())}
               </span>

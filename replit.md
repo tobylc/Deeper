@@ -943,6 +943,13 @@ Changelog:
   * Updated both text and voice messaging components with consistent timer enforcement
   * Timer now shows only for responses: questions (including first questions and new thread questions) send immediately
   * Complete timer system clarity ensures proper turn-based conversation flow without timer interference on question creation
+- July 3, 2025. Critical question suggestion message type fix for proper conversation flow:
+  * Fixed issue where question suggestions from right column were incorrectly labeled as "response" type
+  * Added isFromQuestionSuggestions flag to track messages originating from question suggestions component
+  * All actions from right column (curated questions, AI questions, custom questions) now always treated as "question" type
+  * Enhanced ConversationInterface and VoiceRecorder components with question suggestion detection
+  * Timer logic correctly bypassed for all question suggestions regardless of conversation history
+  * Complete message type integrity ensures proper conversation threading and turn-based flow
 - July 3, 2025. Critical conversation logic fixes and duplicate typewriter text resolution:
   * Fixed critical issue where text responses were incorrectly labeled as "new questions" creating unwanted conversation threads
   * Updated getNextMessageType() function to return 'response' as default instead of 'question' for regular text input
