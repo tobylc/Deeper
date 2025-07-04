@@ -30,9 +30,10 @@ interface QuestionSuggestionsProps {
   canUseRightColumn: boolean;
   canCreateNewThread: boolean;
   nextMessageType: 'question' | 'response';
+  onQuestionSelect: (question: string) => void;
 }
 
-export default function QuestionSuggestions({ relationshipType, userRole, otherUserRole, isMyTurn, otherParticipant, connectionId, onNewThreadCreated, canUseRightColumn, canCreateNewThread, nextMessageType }: QuestionSuggestionsProps) {
+export default function QuestionSuggestions({ relationshipType, userRole, otherUserRole, isMyTurn, otherParticipant, connectionId, onNewThreadCreated, canUseRightColumn, canCreateNewThread, nextMessageType, onQuestionSelect }: QuestionSuggestionsProps) {
   const [currentSet, setCurrentSet] = useState(0);
   const [aiQuestions, setAiQuestions] = useState<string[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -91,17 +92,9 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
 
 
 
-  // Create new conversation thread with selected question
+  // Populate text input with selected question for editing
   const handleQuestionSelect = (question: string) => {
     try {
-      console.log('[QUESTION_SUGGESTIONS] handleQuestionSelect called with:', {
-        question: question?.substring(0, 50) + '...',
-        canUseRightColumn,
-        canCreateNewThread,
-        isMyTurn,
-        nextMessageType
-      });
-      
       // Validate question content
       if (!question || !question.trim()) {
         console.error('[QUESTION_SUGGESTIONS] Empty question selected');
@@ -110,14 +103,12 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
       
       // Check if user can use right column
       if (!canUseRightColumn) {
-        console.log('[QUESTION_SUGGESTIONS] Showing exchange required popup - canUseRightColumn is false');
         setShowExchangeRequiredPopup(true);
         return;
       }
       
-      // Create new thread with this question automatically
-      console.log('[QUESTION_SUGGESTIONS] Creating new thread with selected question');
-      createNewThreadMutation.mutate(question.trim());
+      // Populate the text input with the selected question for editing
+      onQuestionSelect(question.trim());
       
       // Mark this question as shown to prevent duplicate suggestions
       setShownQuestions(prev => new Set([...Array.from(prev), question]));

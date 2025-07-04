@@ -1043,6 +1043,7 @@ export default function ConversationPage() {
               canUseRightColumn={canUseRightColumn}
               canCreateNewThread={canCreateNewThread}
               nextMessageType={nextMessageType}
+              onQuestionSelect={handleQuestionSelect}
             />
           </div>
         </div>
