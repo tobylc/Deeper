@@ -1012,7 +1012,6 @@ export default function ConversationPage() {
                 }
               }}
               onSendMessage={handleSendMessage}
-              onQuestionSelect={handleQuestionSelect}
               onRecordingStart={handleRecordingStart}
               isSending={sendMessageMutation.isPending}
               nextMessageType={nextMessageType}
@@ -1037,7 +1036,6 @@ export default function ConversationPage() {
               relationshipType={conversation.relationshipType}
               userRole={currentUserRole || ''}
               otherUserRole={otherUserRole || ''}
-              onQuestionSelect={handleQuestionSelect}
               isMyTurn={isMyTurn}
               otherParticipant={otherParticipant || ''}
               connectionId={conversation.connectionId}

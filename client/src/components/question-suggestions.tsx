@@ -23,7 +23,6 @@ interface QuestionSuggestionsProps {
   relationshipType: string;
   userRole: string;
   otherUserRole: string;
-  onQuestionSelect: (question: string) => void;
   isMyTurn: boolean;
   otherParticipant: string;
   connectionId: number;
@@ -33,7 +32,7 @@ interface QuestionSuggestionsProps {
   nextMessageType: 'question' | 'response';
 }
 
-export default function QuestionSuggestions({ relationshipType, userRole, otherUserRole, onQuestionSelect, isMyTurn, otherParticipant, connectionId, onNewThreadCreated, canUseRightColumn, canCreateNewThread, nextMessageType }: QuestionSuggestionsProps) {
+export default function QuestionSuggestions({ relationshipType, userRole, otherUserRole, isMyTurn, otherParticipant, connectionId, onNewThreadCreated, canUseRightColumn, canCreateNewThread, nextMessageType }: QuestionSuggestionsProps) {
   const [currentSet, setCurrentSet] = useState(0);
   const [aiQuestions, setAiQuestions] = useState<string[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -52,23 +51,47 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   const { user } = useAuth();
   const { toast } = useToast();
   
-  // Removed automatic thread creation - all questions should populate text input for user editing
+  // Create new thread mutation for question suggestions
+  const createNewThreadMutation = useMutation({
+    mutationFn: async (question: string) => {
+      const response = await apiRequest("POST", `/api/connections/${connectionId}/conversations`, {
+        firstMessage: question.trim(),
+        type: "question"
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      console.log('[QUESTION_SUGGESTIONS] New thread created successfully:', data.conversationId);
+      onNewThreadCreated(data.conversationId);
+      setNewQuestionText("");
+      setShowNewQuestionDialog(false);
+      toast({
+        title: "New conversation started!",
+        description: "Your question has started a new conversation thread",
+      });
+    },
+    onError: (error) => {
+      console.error('[QUESTION_SUGGESTIONS] Failed to create new thread:', error);
+      toast({
+        title: "Unable to start new conversation",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    }
+  });
 
-  // Handle custom question text by populating it into the main input for editing
+  // Handle custom question text by creating new thread
   const handleCreateNewThread = () => {
     if (!newQuestionText.trim()) {
       return;
     }
     
-    // Populate the custom question into the main input for user editing
-    onQuestionSelect(newQuestionText.trim());
-    setNewQuestionText("");
-    setShowNewQuestionDialog(false);
+    createNewThreadMutation.mutate(newQuestionText.trim());
   };
 
 
 
-  // Always populate question into text box first for user editing and manual sending
+  // Create new conversation thread with selected question
   const handleQuestionSelect = (question: string) => {
     try {
       console.log('[QUESTION_SUGGESTIONS] handleQuestionSelect called with:', {
@@ -92,19 +115,9 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         return;
       }
       
-      // Validate required callback function
-      if (!onQuestionSelect) {
-        console.error('[QUESTION_SUGGESTIONS] Missing onQuestionSelect callback');
-        toast({
-          title: "Unable to select question",
-          description: "Please refresh the page and try again.",
-        });
-        return;
-      }
-      
-      // ALWAYS populate question into text box for user editing - never auto-send
-      console.log('[QUESTION_SUGGESTIONS] Populating question into text input for editing');
-      onQuestionSelect(question.trim());
+      // Create new thread with this question automatically
+      console.log('[QUESTION_SUGGESTIONS] Creating new thread with selected question');
+      createNewThreadMutation.mutate(question.trim());
       
       // Mark this question as shown to prevent duplicate suggestions
       setShownQuestions(prev => new Set([...Array.from(prev), question]));

@@ -42,7 +42,7 @@ interface ConversationInterfaceProps {
   newMessage: string;
   setNewMessage: (message: string) => void;
   onSendMessage: () => void;
-  onQuestionSelect: (question: string) => void;
+
   onRecordingStart: () => void;
   isSending: boolean;
   nextMessageType: 'question' | 'response';
@@ -64,7 +64,6 @@ const ConversationInterface = memo(function ConversationInterface({
   newMessage,
   setNewMessage,
   onSendMessage,
-  onQuestionSelect,
   onRecordingStart,
   isSending,
   nextMessageType,

@@ -950,6 +950,13 @@ Changelog:
   * Enhanced ConversationInterface and VoiceRecorder components with question suggestion detection
   * Timer logic correctly bypassed for all question suggestions regardless of conversation history
   * Complete message type integrity ensures proper conversation threading and turn-based flow
+- July 4, 2025. Critical thread creation logic restoration for question suggestions:
+  * Fixed broken thread creation system where question suggestions were adding messages to existing threads instead of creating new ones
+  * Restored automatic new thread creation for ALL right column actions (curated questions, AI suggestions, custom questions)
+  * Implemented createNewThreadMutation in QuestionSuggestions component to properly create conversation threads
+  * Removed obsolete onQuestionSelect callback that was just populating text input instead of creating threads
+  * All question suggestions now automatically create new conversation threads and move current thread to left column
+  * Complete restoration of proper conversation threading behavior ensuring new questions start new conversation threads
 - July 3, 2025. Critical conversation logic fixes and duplicate typewriter text resolution:
   * Fixed critical issue where text responses were incorrectly labeled as "new questions" creating unwanted conversation threads
   * Updated getNextMessageType() function to return 'response' as default instead of 'question' for regular text input
