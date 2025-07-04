@@ -55,21 +55,29 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   // Create new thread mutation for question suggestions
   const createNewThreadMutation = useMutation({
     mutationFn: async (question: string) => {
-      const response = await apiRequest("POST", `/api/connections/${connectionId}/conversations`, {
-        firstMessage: question.trim(),
-        type: "question"
+      const response = await apiRequest("POST", `/api/connections/${connectionId}/conversations/with-question`, {
+        question: question.trim()
       });
       return response.json();
     },
     onSuccess: (data) => {
-      console.log('[QUESTION_SUGGESTIONS] New thread created successfully:', data.conversationId);
-      onNewThreadCreated(data.conversationId);
-      setNewQuestionText("");
-      setShowNewQuestionDialog(false);
-      toast({
-        title: "New conversation started!",
-        description: "Your question has started a new conversation thread",
-      });
+      console.log('[QUESTION_SUGGESTIONS] New thread created successfully:', data);
+      const conversationId = data.conversation?.id;
+      if (conversationId) {
+        onNewThreadCreated(conversationId);
+        setNewQuestionText("");
+        setShowNewQuestionDialog(false);
+        toast({
+          title: "New conversation started!",
+          description: "Your question has started a new conversation thread",
+        });
+      } else {
+        console.error('[QUESTION_SUGGESTIONS] No conversation ID in response:', data);
+        toast({
+          title: "Error creating conversation",
+          description: "Please try again",
+        });
+      }
     },
     onError: (error) => {
       console.error('[QUESTION_SUGGESTIONS] Failed to create new thread:', error);
@@ -92,7 +100,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
 
 
 
-  // Populate text input with selected question for editing
+  // Create new thread directly when question is selected
   const handleQuestionSelect = (question: string) => {
     try {
       // Validate question content
@@ -107,8 +115,8 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         return;
       }
       
-      // Populate the text input with the selected question for editing
-      onQuestionSelect(question.trim());
+      // Create new conversation thread with the selected question
+      createNewThreadMutation.mutate(question.trim());
       
       // Mark this question as shown to prevent duplicate suggestions
       setShownQuestions(prev => new Set([...Array.from(prev), question]));

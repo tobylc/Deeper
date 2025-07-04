@@ -3679,7 +3679,7 @@ Format each as a complete question they can use to begin this important conversa
     async (req: any, res) => {
     try {
       const connectionId = parseInt(req.params.connectionId);
-      const { question, participant1Email, participant2Email, relationshipType } = req.body;
+      const { question } = req.body;
       const userId = req.user.claims?.sub || req.user.id;
       const currentUser = await storage.getUser(userId);
       
