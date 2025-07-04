@@ -441,9 +441,11 @@ export default function ConversationPage() {
       if (!conversation?.connectionId) {
         throw new Error("Connection ID not available");
       }
-      const response = await apiRequest("POST", `/api/connections/${conversation.connectionId}/conversations`, {
-        firstMessage: question.trim(),
-        type: "question"
+      const response = await apiRequest("POST", `/api/connections/${conversation.connectionId}/conversations/with-question`, {
+        question: question.trim(),
+        participant1Email: conversation.participant1Email,
+        participant2Email: conversation.participant2Email,
+        relationshipType: conversation.relationshipType
       });
       return response.json();
     },
@@ -830,9 +832,16 @@ export default function ConversationPage() {
   };
 
   const handleNewThreadCreated = (conversationId: number) => {
+    console.log('[HANDLE_NEW_THREAD] Switching to new conversation:', conversationId);
+    
     // Switch to the new conversation thread automatically
     setSelectedConversationId(conversationId);
     setNewMessage(""); // Clear any existing message
+    
+    // Invalidate queries to ensure fresh data for the new conversation
+    queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] });
+    queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
+    queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
     
     // Update the URL to reflect the new conversation
     setLocation(`/conversation/${conversationId}`);
