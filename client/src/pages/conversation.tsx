@@ -731,11 +731,17 @@ export default function ConversationPage() {
     // Determine message type: if from question suggestions, always use "question"
     const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
     
+    console.log('[PROCEED_WITH_SENDING] Message type:', messageType);
+    console.log('[PROCEED_WITH_SENDING] isFromQuestionSuggestions:', isFromQuestionSuggestions);
+    console.log('[PROCEED_WITH_SENDING] nextMessageType:', nextMessageType);
+    console.log('[PROCEED_WITH_SENDING] messageContent:', messageContent);
+    
     // If this is a question, create a new conversation thread
     if (messageType === 'question') {
       console.log('[NEW_THREAD] Creating new conversation thread for question');
       createNewThreadMutation.mutate(messageContent);
     } else {
+      console.log('[EXISTING_THREAD] Sending message to current thread');
       // For responses, send to current thread
       sendMessageMutation.mutate({
         content: messageContent,
@@ -806,8 +812,10 @@ export default function ConversationPage() {
   };
 
   const handleQuestionSelect = (question: string) => {
+    console.log('[QUESTION_SELECT] Selected question:', question);
     setNewMessage(question);
     setIsFromQuestionSuggestions(true); // Mark this message as coming from question suggestions
+    console.log('[QUESTION_SELECT] Set isFromQuestionSuggestions to true');
   };
 
   const handleThreadSelect = async (conversationId: number) => {
