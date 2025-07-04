@@ -100,7 +100,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
 
 
 
-  // Create new thread directly when question is selected
+  // Populate text input with selected question for editing
   const handleQuestionSelect = (question: string) => {
     try {
       // Validate question content
@@ -115,8 +115,8 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         return;
       }
       
-      // Create new conversation thread with the selected question
-      createNewThreadMutation.mutate(question.trim());
+      // Populate the text input with the selected question for editing
+      onQuestionSelect(question.trim());
       
       // Mark this question as shown to prevent duplicate suggestions
       setShownQuestions(prev => new Set([...Array.from(prev), question]));

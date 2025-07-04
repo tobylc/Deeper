@@ -933,6 +933,13 @@ Changelog:
   * Added comprehensive debugging to conversation queries for production turn state tracking
   * Complete elimination of race conditions and caching issues that were causing turn modifications
   * Production-ready thread reopening system with absolute turn state preservation guarantee
+- July 4, 2025. Question suggestion workflow correction for text input population:
+  * Fixed QuestionSuggestions component to populate text input instead of creating threads immediately
+  * Right column question suggestions now properly populate the input field for user editing before sending
+  * Maintained automatic thread creation when questions are actually sent via proceedWithSending logic
+  * Backend endpoint updated to derive participant data from connection instead of requiring request body parameters
+  * Question suggestions workflow: click suggestion → populate text → user edits if needed → send → creates new thread
+  * Restored proper user control over question editing while maintaining automatic thread creation functionality
 - June 30, 2025. Critical database corruption resolution and turn state integrity restoration:
   * Identified root cause: Database had corrupted turn states where current_turn was assigned to users who had just sent messages
   * Performed comprehensive database analysis comparing actual message history with stored turn assignments
