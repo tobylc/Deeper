@@ -32,7 +32,7 @@ export class WebSocketManager {
         return;
       }
 
-      console.log(`[WebSocket] Client connected: ${userEmail}`);
+
 
       // Add client to tracking
       if (!this.clients.has(userEmail)) {
@@ -54,7 +54,7 @@ export class WebSocketManager {
 
       // Handle disconnection
       ws.on('close', () => {
-        console.log(`[WebSocket] Client disconnected: ${userEmail}`);
+
         this.removeClient(userEmail, client);
       });
 
@@ -79,7 +79,7 @@ export class WebSocketManager {
         });
         break;
       default:
-        console.log(`[WebSocket] Unknown message type: ${message.type}`);
+
     }
   }
 
@@ -101,7 +101,7 @@ export class WebSocketManager {
       try {
         client.ws.send(JSON.stringify(data));
       } catch (error) {
-        console.error('[WebSocket] Failed to send message to client:', error);
+
       }
     }
   }

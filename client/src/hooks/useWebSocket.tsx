@@ -75,22 +75,22 @@ export function useWebSocket() {
       };
 
       wsRef.current.onerror = (error) => {
-        console.error('[WebSocket] Error:', error);
+
       };
 
     } catch (error) {
-      console.error('[WebSocket] Failed to create connection:', error);
+
     }
   };
 
   const handleWebSocketMessage = (message: WebSocketMessage) => {
     switch (message.type) {
       case 'connection_confirmed':
-        console.log('[WebSocket] Connection confirmed');
+
         break;
 
       case 'dashboard_subscribed':
-        console.log('[WebSocket] Subscribed to dashboard updates');
+
         break;
 
       case 'new_message':
@@ -102,12 +102,12 @@ export function useWebSocket() {
         break;
 
       case 'conversation_update':
-        console.log('[WebSocket] Received conversation_update:', message.data);
+
         handleConversationUpdate(message.data);
         break;
 
       case 'test_notification':
-        console.log('[WebSocket] Received test notification:', message.data);
+
         toast({
           title: "WebSocket Test",
           description: "Test notification received successfully!",
@@ -119,14 +119,14 @@ export function useWebSocket() {
         break;
 
       default:
-        console.log('[WebSocket] Unknown message type:', message.type, 'Data:', message.data);
+
     }
   };
 
   const handleNewMessage = (data: any) => {
     if (!data) return;
 
-    console.log('[WebSocket] New message received:', data);
+
 
     // CRITICAL FIX: Force immediate refresh of conversation data for real-time sync
     // Invalidate and immediately refetch all relevant queries

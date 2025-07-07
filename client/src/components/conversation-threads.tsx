@@ -122,7 +122,6 @@ function StackedConversation({
                 variant="outline"
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log('[THREAD_REOPEN] Pure navigation - reopening thread', conversation.id);
                   onClick(); // Thread reopening is just navigation - no validation needed
                 }}
                 className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400 rounded-lg"
@@ -196,12 +195,7 @@ export default function ConversationThreads({
   });
 
   const conversations = conversationData?.conversations || [];
-  
-  // Debug logging for production troubleshooting
-  console.log('[CONVERSATION_THREADS] Connection ID:', connectionId);
-  console.log('[CONVERSATION_THREADS] Raw API response:', conversationData);
-  console.log('[CONVERSATION_THREADS] Conversations array:', conversations);
-  console.log('[CONVERSATION_THREADS] Selected conversation ID:', selectedConversationId);
+
 
   // Fetch message counts for each conversation
   const { data: messageCounts = {} } = useQuery({
@@ -238,10 +232,7 @@ export default function ConversationThreads({
         })
     : [];
 
-  // Debug logging for filtered conversations
-  console.log('[CONVERSATION_THREADS] Filtered conversations for left column:', sortedConversations);
-  console.log('[CONVERSATION_THREADS] Total conversations before filter:', conversations.length);
-  console.log('[CONVERSATION_THREADS] Total conversations after filter:', sortedConversations.length);
+
 
   if (isLoading) {
     return (
@@ -292,7 +283,6 @@ export default function ConversationThreads({
               isSelected={false} // Never selected since active conversation is hidden
               onClick={() => {
                 // Thread reopening is PURE NAVIGATION - never consumes user's turn
-                console.log('[THREAD_REOPEN] Pure navigation action - no turn validation required');
                 onThreadSelect(conversation.id);
               }}
               currentUserEmail={currentUserEmail}

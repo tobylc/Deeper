@@ -2464,7 +2464,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Conversation not found" });
       }
 
-      console.log(`[THREAD_REOPEN] Pure navigation: User ${currentUser.email} switching to thread ${conversationId}`);
+
 
       // Send WebSocket notification for real-time synchronization (no database changes)
       try {

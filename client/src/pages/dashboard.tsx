@@ -589,7 +589,7 @@ export default function Dashboard() {
                                     setLocation(`/conversation/${conversation.id}`);
                                   }, 500);
                                 } else {
-                                  console.error("No conversation ID in response:", conversation);
+
                                   toast({
                                     title: "Error",
                                     description: "Failed to create conversation - no ID returned",
@@ -597,7 +597,7 @@ export default function Dashboard() {
                                   });
                                 }
                               } catch (error: any) {
-                                console.error("Conversation creation error:", error);
+
                                 toast({
                                   title: "Error",
                                   description: `Failed to start conversation: ${error?.message || 'Unknown error'}`,

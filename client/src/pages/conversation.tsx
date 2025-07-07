@@ -411,7 +411,7 @@ export default function ConversationPage() {
       setNewMessage("");
     },
     onError: (error: any) => {
-      console.error("Send message error:", error);
+
       
       // Parse error response to check for trial expiration
       let errorData;
@@ -447,7 +447,7 @@ export default function ConversationPage() {
       return response.json();
     },
     onSuccess: (data) => {
-      console.log('[NEW_THREAD] New thread created successfully:', data);
+
       const conversationId = data.conversation?.id;
       if (conversationId) {
         handleNewThreadCreated(conversationId);
@@ -510,7 +510,7 @@ export default function ConversationPage() {
   }
 
   if (conversationError || messagesError) {
-    console.error('Conversation error:', conversationError || messagesError);
+
     return (
       <div className="min-h-screen bg-gradient-radial from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="bg-[#1B2137]/90 backdrop-blur-md p-8 rounded-2xl shadow-lg text-center border border-[#4FACFE]/30">
@@ -615,7 +615,7 @@ export default function ConversationPage() {
       
       return false;
     } catch (error) {
-      console.error('[CONVERSATION] Error checking last question response:', error);
+
       return false;
     }
   };
@@ -627,15 +627,7 @@ export default function ConversationPage() {
     messages.some(msg => msg && msg.type === 'question') && 
     messages.some(msg => msg && msg.type === 'response');
 
-  // Debug logging for exchange detection
-  console.log('[EXCHANGE_DEBUG] Messages array:', messages?.map(m => ({ 
-    type: m?.type, 
-    format: m?.messageFormat, 
-    sender: m?.senderEmail, 
-    content: m?.content?.substring(0, 30) 
-  })));
-  console.log('[EXCHANGE_DEBUG] hasCompleteExchange:', hasCompleteExchange);
-  console.log('[EXCHANGE_DEBUG] canCreateNewThread:', hasCompleteExchange && !lastQuestionNeedsResponse);
+
 
   // Production-ready right column validation with comprehensive error handling
   const checkCanUseRightColumn = () => {
