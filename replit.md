@@ -24,6 +24,8 @@ The following basic logic rules are fundamental to the application and must be p
 
 8. **Right Column Rule**: ANY ACTION that is initiated from the "right column" should ALWAYS BE TREATED AS "question" NOT a "response".
 
+9. **Thread Navigation Rule**: When a user clicks on "Reopen Thread" from any past conversation on the left column - this should NEVER COUNT AS THE USER'S "TURN". This should always simply be a "navigational" issue that populates the middle column with the "reopened thread" and gives the user the ability to use their "turn" to respond to the "past thread". A user can click the "Reopen Thread" on as many past conversations as they choose and it should NEVER COUNT AS THEIR "TURN"!
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -1209,7 +1211,8 @@ Changelog:
   * Fixed timer logic to ensure questions from right column NEVER trigger thoughtful response timer
   * Enhanced setNewMessage callback to check isFromQuestionSuggestions flag before starting timer
   * Ensured identical conversation logic for both inviter and invitee users - no role-based differences
-  * Documented 8 core conversation logic rules that must be preserved without explicit permission
+  * Documented 9 core conversation logic rules that must be preserved without explicit permission
+  * Added 9th rule: Thread navigation/reopening NEVER counts as user's turn - pure navigation only
   * Verified real-time WebSocket synchronization maintains <1 second update delay between users
   * Confirmed timer only applies to responses, never to questions regardless of source
   * All right column actions (curated, AI, custom questions) properly treated as questions
