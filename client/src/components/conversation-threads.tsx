@@ -82,11 +82,8 @@ function StackedConversation({
         isSelected ? 'ring-2 ring-gray-400' : ''
       }`}
       onClick={() => {
-        if (isMyTurn) {
-          onClick();
-        } else {
-          onWaitingClick();
-        }
+        // Thread reopening is PURE NAVIGATION - never consumes user's turn
+        onClick();
       }}
     >
       {shouldStack && !isExpanded && (
@@ -294,12 +291,9 @@ export default function ConversationThreads({
               conversation={conversation}
               isSelected={false} // Never selected since active conversation is hidden
               onClick={() => {
-                // Only allow thread selection if it's the user's turn
-                if (isMyTurn) {
-                  onThreadSelect(conversation.id);
-                } else {
-                  setShowWaitingPopup(true);
-                }
+                // Thread reopening is PURE NAVIGATION - never consumes user's turn
+                console.log('[THREAD_REOPEN] Pure navigation action - no turn validation required');
+                onThreadSelect(conversation.id);
               }}
               currentUserEmail={currentUserEmail}
               isMyTurn={isMyTurn}
