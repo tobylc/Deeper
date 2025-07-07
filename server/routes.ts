@@ -2334,20 +2334,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // SIMPLIFIED: Thread reopening is just navigation - minimal validation needed
-      // Only block if the current thread has an unanswered question from the OTHER user
+      // CORE RULE #10: New Question Response Requirement
+      // ANY new question must receive a response before ANY OTHER ACTION can be performed
       if (currentConversationId && currentConversationId !== conversationId) {
         const currentMessages = await storage.getMessages(currentConversationId);
         if (currentMessages.length > 0) {
           const lastMessage = currentMessages[currentMessages.length - 1];
           
-          // Only block if there's an unanswered question from the OTHER user that needs a response
-          if (lastMessage.type === 'question' && lastMessage.senderEmail !== currentUser.email) {
-            return res.json({ 
-              canReopen: false, 
-              reason: "respond_to_question",
-              message: "Must respond to the current question before reopening previous threads" 
-            });
+          // Block if there's ANY unanswered question (not just from the other user)
+          // This enforces that new questions must receive responses before thread navigation
+          if (lastMessage.type === 'question') {
+            // Check if this question has been responded to
+            const hasResponse = currentMessages.length > 1 && 
+              currentMessages.some((msg, index) => {
+                return index > currentMessages.findIndex(m => m.id === lastMessage.id) && 
+                       msg.type === 'response';
+              });
+            
+            if (!hasResponse) {
+              const questionSender = lastMessage.senderEmail === currentUser.email ? 'You' : 'The other person';
+              return res.json({ 
+                canReopen: false, 
+                reason: "respond_to_question",
+                message: `${questionSender} asked a question that must be responded to before reopening other threads` 
+              });
+            }
           }
         }
       }

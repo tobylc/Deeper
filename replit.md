@@ -26,6 +26,8 @@ The following basic logic rules are fundamental to the application and must be p
 
 9. **Thread Navigation Rule**: When a user clicks on "Reopen Thread" from any past conversation on the left column - this should NEVER COUNT AS THE USER'S "TURN". This should always simply be a "navigational" issue that populates the middle column with the "reopened thread" and gives the user the ability to use their "turn" to respond to the "past thread". A user can click the "Reopen Thread" on as many past conversations as they choose and it should NEVER COUNT AS THEIR "TURN"!
 
+10. **New Question Response Requirement**: When there is a "new question" that is asked by either user - this "new question" must receive a "response" by the other user before ANY OTHER ACTION can be performed. This includes "reopening thread" from the left column.
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -963,6 +965,15 @@ Changelog:
   * Thread reopening now works as pure navigation action without consuming user turns
   * All secret keys verified and configured for production deployment
   * Production-ready application with minimal logging overhead and clean error handling
+- July 7, 2025. Core conversation logic rule #10 implementation:
+  * Added 10th fundamental rule: New questions must receive responses before ANY other actions
+  * Enhanced backend API validation to block thread reopening when unanswered questions exist
+  * Updated frontend ConversationThreads component with async validation for thread reopening
+  * Implemented comprehensive question-response checking in /api/conversations/:id/can-reopen/:targetId endpoint
+  * Added appropriate popup messaging when users attempt blocked actions (RespondFirstPopup)
+  * Question suggestions component already enforced through existing canUseRightColumn validation
+  * Complete enforcement ensures no navigation or question creation until current questions are answered
+  * Production-ready implementation maintaining all previous conversation logic rules while adding new restriction
 - July 4, 2025. Question suggestion workflow correction for text input population:
   * Fixed QuestionSuggestions component to populate text input instead of creating threads immediately
   * Right column question suggestions now properly populate the input field for user editing before sending

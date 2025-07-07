@@ -120,9 +120,30 @@ function StackedConversation({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.stopPropagation();
-                  onClick(); // Thread reopening is just navigation - no validation needed
+                  
+                  // CORE RULE #10: Check if thread reopening is allowed
+                  try {
+                    const response = await fetch(`/api/conversations/${selectedConversationId}/can-reopen/${conversation.id}`, {
+                      credentials: 'include'
+                    });
+                    const result = await response.json();
+                    
+                    if (result.canReopen) {
+                      onClick(); // Thread reopening allowed
+                    } else {
+                      // Show appropriate popup based on the reason
+                      if (result.reason === 'respond_to_question') {
+                        setShowRespondFirstPopup(true);
+                      } else {
+                        setShowWaitingPopup(true);
+                      }
+                    }
+                  } catch (error) {
+                    // Fallback to allowing reopening if check fails
+                    onClick();
+                  }
                 }}
                 className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400 rounded-lg"
               >
@@ -281,9 +302,28 @@ export default function ConversationThreads({
               key={conversation.id}
               conversation={conversation}
               isSelected={false} // Never selected since active conversation is hidden
-              onClick={() => {
-                // Thread reopening is PURE NAVIGATION - never consumes user's turn
-                onThreadSelect(conversation.id);
+              onClick={async () => {
+                // CORE RULE #10: Check if thread reopening is allowed
+                try {
+                  const response = await fetch(`/api/conversations/${selectedConversationId}/can-reopen/${conversation.id}`, {
+                    credentials: 'include'
+                  });
+                  const result = await response.json();
+                  
+                  if (result.canReopen) {
+                    onThreadSelect(conversation.id); // Thread reopening allowed
+                  } else {
+                    // Show appropriate popup based on the reason
+                    if (result.reason === 'respond_to_question') {
+                      setShowRespondFirstPopup(true);
+                    } else {
+                      setShowWaitingPopup(true);
+                    }
+                  }
+                } catch (error) {
+                  // Fallback to allowing reopening if check fails
+                  onThreadSelect(conversation.id);
+                }
               }}
               currentUserEmail={currentUserEmail}
               isMyTurn={isMyTurn}

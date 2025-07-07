@@ -644,7 +644,7 @@ export default function ConversationPage() {
       // Allow right column usage when it's user's turn and no unanswered questions
       return true;
     } catch (error) {
-      console.error('[CONVERSATION] Error validating right column access:', error);
+
       return false; // Safe default
     }
   };
@@ -665,21 +665,12 @@ export default function ConversationPage() {
       
       return true;
     } catch (error) {
-      console.error('[CONVERSATION] Error validating new thread creation:', error);
+
       return false;
     }
   };
 
   const canCreateNewThread = checkCanCreateNewThread();
-
-  // Debug logging for validation states
-  console.log('[EXCHANGE_DEBUG] Validation states:', {
-    isMyTurn,
-    lastQuestionNeedsResponse,
-    hasCompleteExchange,
-    canUseRightColumn,
-    canCreateNewThread
-  });
 
 
 
@@ -809,10 +800,8 @@ export default function ConversationPage() {
   };
 
   const handleQuestionSelect = (question: string) => {
-    console.log('[QUESTION_SELECT] Selected question:', question);
     setNewMessage(question);
     setIsFromQuestionSuggestions(true); // Mark this message as coming from question suggestions
-    console.log('[QUESTION_SELECT] Set isFromQuestionSuggestions to true');
   };
 
   const handleThreadSelect = async (conversationId: number) => {

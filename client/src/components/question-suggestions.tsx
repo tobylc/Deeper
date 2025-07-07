@@ -105,7 +105,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
     try {
       // Validate question content
       if (!question || !question.trim()) {
-        console.error('[QUESTION_SUGGESTIONS] Empty question selected');
+
         return;
       }
       
@@ -122,7 +122,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
       setShownQuestions(prev => new Set([...Array.from(prev), question]));
       
     } catch (error) {
-      console.error('[QUESTION_SUGGESTIONS] Error in handleQuestionSelect:', error);
+
       toast({
         title: "Unable to select question",
         description: "An unexpected error occurred. Please try again.",
