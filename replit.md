@@ -4,6 +4,26 @@
 
 Deeper is a production-ready full-stack web application designed to facilitate meaningful connections and conversations between people. The platform enables users to invite others to private conversation spaces where they can engage in structured dialogue based on their relationship type (parent-child, romantic partners, friends, etc.). The application provides curated question suggestions to help deepen relationships through thoughtful exchanges.
 
+## Core Conversation Logic (DO NOT MODIFY WITHOUT EXPLICIT PERMISSION)
+
+The following basic logic rules are fundamental to the application and must be preserved across all code changes:
+
+1. **Inviter First Question**: The inviter ALWAYS asks the FIRST INITIAL QUESTION - which does NOT require a "thoughtful timer".
+
+2. **Exchange Requirement**: A full "exchange" must take place between users on the initial question as well as when all other "new questions" are asked by either user. An "exchange" is defined by a "question and response". After the exchange is made - either user is able to "ask a new question" when it is their "turn".
+
+3. **Turn-Based System**: Each user receives one "turn" at a time. After they use their turn - it is passed on to the other user. At no time can both users have a "turn" at the same time.
+
+4. **Real-Time Synchronization**: The "conversation pages" for each user must always stay in sync with each other. Once a user exercises their "turn" - the system should "auto sync" within 1 second with no delay.
+
+5. **Response Timer Rule**: All "responses" should have the attached "thoughtful timer" shown (10-minute requirement).
+
+6. **Question Timer Rule**: NO "questions" should have the "thoughtful timer" attached.
+
+7. **Question Suggestion Behavior**: When a user chooses to "ask a new question" during their turn - they can click on the "New Question" button at the top of the right column or click any curated or AI suggestions from the right column. When clicking any "suggestions" the "suggested question" should be populated in the text box in the middle column so that the user can edit the question before sending the question to the other user.
+
+8. **Right Column Rule**: ANY ACTION that is initiated from the "right column" should ALWAYS BE TREATED AS "question" NOT a "response".
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -1185,6 +1205,15 @@ Changelog:
   * Trial subscriptions maintain 7-day trial period with tier updates only after payment confirmation
   * Enhanced webhook handlers with proper tier benefits mapping for secure subscription management
   * Complete payment verification flow ensuring users only get upgraded plans after successful payment
+- July 7, 2025. Core conversation logic standardization and timer fixes:
+  * Fixed timer logic to ensure questions from right column NEVER trigger thoughtful response timer
+  * Enhanced setNewMessage callback to check isFromQuestionSuggestions flag before starting timer
+  * Ensured identical conversation logic for both inviter and invitee users - no role-based differences
+  * Documented 8 core conversation logic rules that must be preserved without explicit permission
+  * Verified real-time WebSocket synchronization maintains <1 second update delay between users
+  * Confirmed timer only applies to responses, never to questions regardless of source
+  * All right column actions (curated, AI, custom questions) properly treated as questions
+  * Complete conversation logic integrity maintained across all user interactions
 ```
 
 ## User Preferences
