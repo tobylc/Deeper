@@ -818,8 +818,8 @@ export default function ConversationPage() {
 
   const handleQuestionSelect = (question: string) => {
     console.log('[QUESTION_SELECT] Selected question:', question);
-    setNewMessage(question);
-    setIsFromQuestionSuggestions(true); // Mark this message as coming from question suggestions
+    setIsFromQuestionSuggestions(true); // Mark this message as coming from question suggestions FIRST
+    setNewMessage(question); // Then set the message text
     console.log('[QUESTION_SELECT] Set isFromQuestionSuggestions to true');
   };
 
@@ -1065,19 +1065,16 @@ export default function ConversationPage() {
               connection={connection}
 
               newMessage={newMessage}
-              setNewMessage={(message: string) => {
+              setNewMessage={(message: string, userTyping = false) => {
                 setNewMessage(message);
                 
-                // Reset question suggestion flag when user manually types
-                if (isFromQuestionSuggestions) {
+                // Reset question suggestion flag when user manually types (not when question is populated)
+                if (userTyping && isFromQuestionSuggestions) {
                   setIsFromQuestionSuggestions(false);
                 }
                 
-                // Determine if this is actually a response that needs timer
-                const isActualResponse = nextMessageType === 'response' && !isFromQuestionSuggestions;
-                
                 // Only start timer for actual responses (NOT questions from suggestions)
-                if (isActualResponse) {
+                if (nextMessageType === 'response' && !isFromQuestionSuggestions) {
                   if (message.trim() && !hasStartedResponse) {
                     setHasStartedResponse(true);
                     setResponseStartTime(new Date());
