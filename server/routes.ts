@@ -3832,24 +3832,19 @@ Format each as a complete question they can use to begin this important conversa
         });
       }
       
-      // Use existing conversation instead of creating new ones
-      let conversation;
-      if (existingConversations.length > 0) {
-        // Use the existing conversation for this connection
-        conversation = existingConversations[0];
-      } else {
-        // Create the first (and only) conversation for this connection
-        const conversationData = {
-          connectionId,
-          participant1Email: connection.inviterEmail,
-          participant2Email: connection.inviteeEmail,
-          relationshipType: connection.relationshipType,
-          currentTurn: connection.inviterEmail, // Inviter always gets first turn
-          status: 'active',
-          isMainThread: true
-        };
-        conversation = await storage.createConversation(conversationData);
-      }
+      // ALWAYS create a new conversation thread for questions from right column
+      const conversationData = {
+        connectionId,
+        participant1Email: connection.inviterEmail,
+        participant2Email: connection.inviteeEmail,
+        relationshipType: connection.relationshipType,
+        currentTurn: connection.inviterEmail, // Inviter always gets first turn
+        status: 'active',
+        isMainThread: existingConversations.length === 0 // First conversation is main thread
+      };
+      const conversation = await storage.createConversation(conversationData);
+      
+      console.log('[NEW_THREAD_API] ✓ Created new conversation thread:', conversation.id);
       
       // Immediately create the first message (question) - always from inviter
       const messageData = {

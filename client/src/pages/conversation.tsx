@@ -739,14 +739,7 @@ export default function ConversationPage() {
     // Determine message type: if from question suggestions, always use "question"
     const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
     
-    console.log('[PROCEED_WITH_SENDING] ===============================');
-    console.log('[PROCEED_WITH_SENDING] Message type:', messageType);
-    console.log('[PROCEED_WITH_SENDING] isFromQuestionSuggestions:', isFromQuestionSuggestions);
-    console.log('[PROCEED_WITH_SENDING] nextMessageType:', nextMessageType);
-    console.log('[PROCEED_WITH_SENDING] messageContent:', messageContent);
-    console.log('[PROCEED_WITH_SENDING] conversation?.connectionId:', conversation?.connectionId);
-    console.log('[PROCEED_WITH_SENDING] selectedConversationId:', selectedConversationId);
-    console.log('[PROCEED_WITH_SENDING] ===============================');
+
     
     // If this is a question, create a new conversation thread
     if (messageType === 'question') {
