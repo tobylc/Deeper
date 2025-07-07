@@ -3683,6 +3683,12 @@ Format each as a complete question they can use to begin this important conversa
       const userId = req.user.claims?.sub || req.user.id;
       const currentUser = await storage.getUser(userId);
       
+      console.log('[NEW_THREAD_API] ===============================');
+      console.log('[NEW_THREAD_API] Request received - connectionId:', connectionId);
+      console.log('[NEW_THREAD_API] Question:', question);
+      console.log('[NEW_THREAD_API] User:', currentUser?.email);
+      console.log('[NEW_THREAD_API] ===============================');
+      
       if (!currentUser) {
         return res.status(403).json({ message: "Access denied" });
       }

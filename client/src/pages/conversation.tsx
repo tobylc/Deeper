@@ -465,9 +465,20 @@ export default function ConversationPage() {
     },
     onError: (error) => {
       console.error('[NEW_THREAD] Failed to create new thread:', error);
+      
+      // Parse error response to get specific error details
+      let errorData;
+      try {
+        errorData = JSON.parse(error.message);
+        console.log('[NEW_THREAD] Error details:', errorData);
+      } catch {
+        errorData = { message: error.message };
+      }
+      
+      // Show specific error message from backend
       toast({
         title: "Unable to start new conversation",
-        description: "Please try again",
+        description: errorData.message || "Please try again",
       });
     }
   });
