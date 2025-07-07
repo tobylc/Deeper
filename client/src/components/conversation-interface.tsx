@@ -40,7 +40,7 @@ interface ConversationInterfaceProps {
   relationshipType: string;
   connection?: Connection;
   newMessage: string;
-  setNewMessage: (message: string, userTyping?: boolean) => void;
+  setNewMessage: (message: string) => void;
   onSendMessage: () => void;
 
   onRecordingStart: () => void;
@@ -453,9 +453,10 @@ const ConversationInterface = memo(function ConversationInterface({
                   <Textarea
                     value={newMessage}
                     onChange={(e) => {
-                      setNewMessage(e.target.value, true); // userTyping = true when user actually types
-                      // Don't start timer for questions from suggestions
-                      if (!isFromQuestionSuggestions && nextMessageType === 'response' && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
+                      setNewMessage(e.target.value);
+                      // Start thoughtful response timer ONLY for responses (not questions)
+                      const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
+                      if (messageType === 'response' && !hasStartedResponse && e.target.value.trim() && onTimerStart) {
                         onTimerStart();
                       }
                     }}
