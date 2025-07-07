@@ -1073,8 +1073,11 @@ export default function ConversationPage() {
                   setIsFromQuestionSuggestions(false);
                 }
                 
-                // Only start timer for responses (not questions)
-                if (nextMessageType === 'response') {
+                // Determine if this is actually a response that needs timer
+                const isActualResponse = nextMessageType === 'response' && !isFromQuestionSuggestions;
+                
+                // Only start timer for actual responses (NOT questions from suggestions)
+                if (isActualResponse) {
                   if (message.trim() && !hasStartedResponse) {
                     setHasStartedResponse(true);
                     setResponseStartTime(new Date());
