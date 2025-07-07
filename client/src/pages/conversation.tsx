@@ -551,9 +551,10 @@ export default function ConversationPage() {
         : conversation.currentTurn === user.email)
     : false;
   
-  // Simplified message type validation: Only question or response
+  // CORE RULES: Message type determination based on conversation state
   const getNextMessageType = (): 'question' | 'response' => {
     try {
+      // CORE RULE #1: Empty conversation, inviter always starts with a question
       if (!messages || !Array.isArray(messages) || messages.length === 0) return 'question';
       
       // Find the most recent question in the conversation
@@ -565,7 +566,7 @@ export default function ConversationPage() {
         }
       }
       
-      // If there's a question without a response, only allow responses
+      // CORE RULE #2: If there's a question without a response, only allow responses
       if (lastQuestionIndex !== -1) {
         const messagesAfterLastQuestion = messages.slice(lastQuestionIndex + 1);
         const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg && msg.type === 'response');
@@ -575,12 +576,10 @@ export default function ConversationPage() {
         }
       }
       
-      // CRITICAL FIX: After questions are answered, ALL text input should be follow-up responses
-      // New questions can ONLY be created via right column suggestions or "Ask New Question" button
-      // Regular text input should always be treated as follow-up responses to continue the conversation
+      // CORE RULE #7: After questions are answered, text input creates follow-up responses
+      // New questions ONLY via right column suggestions or "Ask New Question" button
       return 'response';
     } catch (error) {
-      console.error('[CONVERSATION] Error determining next message type:', error);
       return 'response'; // Safe default to prevent accidental new thread creation
     }
   };
@@ -592,9 +591,11 @@ export default function ConversationPage() {
     ? messages.some(msg => msg && msg.type === 'response' && msg.senderEmail === user?.email)
     : false;
 
-  // Production-ready validation: EVERY question requires a response before new questions
+  // CORE RULE #1: Inviter ALWAYS asks the FIRST INITIAL QUESTION without restrictions
+  // CORE RULE #10: After initial question, new questions need responses before other actions
   const checkLastQuestionNeedsResponse = () => {
     try {
+      // RULE #1: Empty conversations (first message) never need responses - inviter starts freely
       if (!messages || !Array.isArray(messages) || messages.length === 0) return false;
       
       // Find the most recent question in current conversation
@@ -629,43 +630,45 @@ export default function ConversationPage() {
 
 
 
-  // Production-ready right column validation with comprehensive error handling
+  // CORE RULES VALIDATION: Right column availability based on fundamental conversation logic
   const checkCanUseRightColumn = () => {
     try {
       // Safety checks for required data
       if (!conversation || !user?.email || !messages || !Array.isArray(messages)) return false;
       
-      // Basic turn validation
+      // CORE RULE #1: Inviter ALWAYS gets first turn in empty conversation (no restrictions)
+      if (messages.length === 0 && conversation.participant1Email === user.email) return true;
+      
+      // Basic turn validation for non-empty conversations
       if (!isMyTurn) return false;
       
-      // Block right column if current conversation has unanswered question
-      if (lastQuestionNeedsResponse) return false;
+      // CORE RULE #10: Block right column if current conversation has unanswered question (but not for first message)
+      if (messages.length > 0 && lastQuestionNeedsResponse) return false;
       
       // Allow right column usage when it's user's turn and no unanswered questions
       return true;
     } catch (error) {
-
       return false; // Safe default
     }
   };
 
   const canUseRightColumn = checkCanUseRightColumn();
   
-  // Enhanced validation for new thread creation
+  // CORE RULES VALIDATION: New thread creation based on exchange requirements
   const checkCanCreateNewThread = () => {
     try {
       // Safety checks for required data
       if (!conversation || !user?.email || !messages || !Array.isArray(messages)) return false;
       
-      // Must have complete exchange in current conversation
+      // CORE RULE #2: Must have complete exchange before creating new threads (not applicable to first message)
+      if (messages.length === 0) return false; // Can't create new thread if no initial conversation exists
       if (!hasCompleteExchange) return false;
       
-      // Must not have unanswered questions in current conversation
+      // CORE RULE #10: Must not have unanswered questions in current conversation
       if (lastQuestionNeedsResponse) return false;
       
       return true;
     } catch (error) {
-
       return false;
     }
   };
@@ -701,7 +704,8 @@ export default function ConversationPage() {
     // Determine message type: if from question suggestions, always use "question"
     const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
     
-    // Questions always send immediately (no timer)
+    // CORE RULE #1: Inviter's first question always sends immediately (no timer)
+    // CORE RULE #6: NO questions should have the thoughtful timer attached
     if (messageType === 'question') {
       proceedWithSending(newMessage);
       return;
@@ -722,15 +726,22 @@ export default function ConversationPage() {
     // Determine message type: if from question suggestions, always use "question"
     const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
     
-
+    // CORE RULE #1: Inviter's first message ALWAYS goes to current conversation, never creates new thread
+    const isFirstMessage = messages.length === 0;
+    const isInviterFirstMessage = isFirstMessage && conversation.participant1Email === user?.email;
     
-    // If this is a question, create a new conversation thread
-    if (messageType === 'question') {
-      console.log('[NEW_THREAD] ✓ Creating new conversation thread for question');
+    // CORE RULE #1: First message by inviter should always be sent to current conversation
+    if (isInviterFirstMessage || messageType === 'response') {
+      // Send to current conversation thread
+      sendMessageMutation.mutate({
+        content: messageContent,
+        type: messageType,
+      });
+    } else if (messageType === 'question' && !isFirstMessage) {
+      // Only create new thread for questions AFTER the initial exchange
       createNewThreadMutation.mutate(messageContent);
     } else {
-      console.log('[EXISTING_THREAD] ⚠️ Sending message to current thread');
-      // For responses, send to current thread
+      // Fallback: send to current thread
       sendMessageMutation.mutate({
         content: messageContent,
         type: messageType,
