@@ -447,9 +447,9 @@ const ConversationInterface = memo(function ConversationInterface({
           {/* Input Surface - Thin and Static */}
           <div className="px-1 pb-0">
             {messageMode === 'text' ? (
-              /* Thin Text Input */
-              <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-0.5">
-                <div className="flex space-x-2">
+              /* Text Input with Proper Border Containment */
+              <div className="bg-white border-2 border-slate-300 rounded-lg shadow-sm">
+                <div className="flex items-start space-x-2 p-3">
                   <Textarea
                     value={newMessage}
                     onChange={(e) => {
@@ -475,7 +475,7 @@ const ConversationInterface = memo(function ConversationInterface({
                         ? "What would you like to explore together?"
                         : "Express what's in your heart..."
                     }
-                    className="flex-1 min-h-[32px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-400 focus:ring-0 text-sm leading-relaxed p-0"
+                    className="flex-1 min-h-[32px] max-h-[120px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-400 focus:ring-0 focus:outline-none text-sm leading-relaxed p-0"
                     disabled={isSending}
                   />
                   <div className="flex flex-col justify-center items-center">
@@ -512,8 +512,8 @@ const ConversationInterface = memo(function ConversationInterface({
                 </div>
               </div>
             ) : (
-              /* Thin Voice Recorder */
-              <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-0.5">
+              /* Voice Recorder with Matching Border */
+              <div className="bg-white border-2 border-slate-300 rounded-lg shadow-sm p-3">
                 <VoiceRecorder
                   onSendVoiceMessage={handleVoiceMessageSend}
                   onRecordingStart={onRecordingStart}
