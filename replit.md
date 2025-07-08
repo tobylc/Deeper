@@ -1005,6 +1005,11 @@ Changelog:
   * Added proper padding (p-3) inside border container to ensure content stays within boundaries
   * Applied consistent border styling to both text input and voice recorder modes
   * Improved layout alignment and added max-height constraint for better user experience
+- July 8, 2025. Turn indicator badges for conversation threads:
+  * Added turn indicator badges to the right side of each conversation thread in the left column
+  * Badges show "Your Turn" in green for user's turn, "Their Turn" in gray for other participant's turn
+  * Positioned badges inside the thread border with consistent styling and minimum width
+  * Enhanced user awareness of turn status across all conversation threads
 - July 4, 2025. Question suggestion workflow correction for text input population:
   * Fixed QuestionSuggestions component to populate text input instead of creating threads immediately
   * Right column question suggestions now properly populate the input field for user editing before sending
