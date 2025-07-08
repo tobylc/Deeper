@@ -475,7 +475,7 @@ const ConversationInterface = memo(function ConversationInterface({
                         ? "What would you like to explore together?"
                         : "Express what's in your heart..."
                     }
-                    className="flex-1 min-h-[32px] max-h-[120px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-400 focus:ring-0 focus:outline-none text-sm leading-relaxed p-0"
+                    className="conversation-textarea flex-1 min-h-[32px] max-h-[120px] resize-none border-0 bg-transparent text-slate-800 placeholder:text-slate-400 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none focus-visible:ring-0 focus-visible:outline-none focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-offset-0 text-sm leading-relaxed p-0"
                     disabled={isSending}
                   />
                   <div className="flex flex-col justify-center items-center">

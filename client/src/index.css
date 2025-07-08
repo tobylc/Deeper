@@ -373,6 +373,24 @@
     border-color: transparent;
   }
 
+  /* Remove all focus styles from conversation textarea */
+  .conversation-textarea {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    ring: none !important;
+  }
+
+  .conversation-textarea:focus,
+  .conversation-textarea:focus-visible,
+  .conversation-textarea:active {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    ring: none !important;
+    ring-offset: 0 !important;
+  }
+
   .message-bubble.other {
     background: hsl(var(--muted));
     color: hsl(var(--foreground));
