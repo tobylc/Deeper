@@ -8,7 +8,7 @@ export function generateThreadTitle(questionContent: string): string {
   const cleaned = questionContent.trim();
   
   // If it's already short enough, use it as-is
-  if (cleaned.length <= 50) {
+  if (cleaned.length <= 35) {
     return cleaned;
   }
   
@@ -31,9 +31,9 @@ export function generateThreadTitle(questionContent: string): string {
     // Start with question word
     title = words[0];
     
-    // Add important words until we reach a good length
+    // Add important words until we reach a good length (max 5 words for conciseness)
     let wordCount = 1;
-    for (let i = 1; i < words.length && wordCount < 8; i++) {
+    for (let i = 1; i < words.length && wordCount < 5; i++) {
       const word = words[i].toLowerCase().replace(/[^\w]/g, '');
       if (!isCommonWord(word) || word.length > 4) {
         title += ' ' + words[i];
@@ -41,24 +41,24 @@ export function generateThreadTitle(questionContent: string): string {
       }
     }
   } else {
-    // Extract key phrases for non-question format
-    title = importantWords.slice(0, 6).join(' ');
+    // Extract key phrases for non-question format (max 4 words)
+    title = importantWords.slice(0, 4).join(' ');
   }
   
   // Clean up the title
   title = title.replace(/[.!?]+$/, ''); // Remove trailing punctuation
   title = title.trim();
   
-  // If still too long, truncate intelligently
-  if (title.length > 50) {
-    const truncated = title.substring(0, 47);
+  // If still too long, truncate intelligently (target max 35 chars)
+  if (title.length > 35) {
+    const truncated = title.substring(0, 32);
     const lastSpace = truncated.lastIndexOf(' ');
-    title = (lastSpace > 20 ? truncated.substring(0, lastSpace) : truncated) + '...';
+    title = (lastSpace > 15 ? truncated.substring(0, lastSpace) : truncated) + '...';
   }
   
   // Ensure it's not empty
   if (!title || title.length < 3) {
-    title = cleaned.substring(0, 47) + (cleaned.length > 47 ? '...' : '');
+    title = cleaned.substring(0, 32) + (cleaned.length > 32 ? '...' : '');
   }
   
   return title;
@@ -92,7 +92,7 @@ export function generateRelationshipSpecificTitle(questionContent: string, relat
   if (prefixes && !containsRelationshipContext(baseTitle, relationshipType)) {
     // Choose prefix based on question content
     const prefix = chooseBestPrefix(baseTitle, prefixes);
-    if (prefix && (baseTitle.length + prefix.length + 1) <= 50) {
+    if (prefix && (baseTitle.length + prefix.length + 1) <= 40) {
       return `${prefix} ${baseTitle}`;
     }
   }
