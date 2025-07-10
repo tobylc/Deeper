@@ -136,21 +136,40 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
     const fallbackQuestions = getGeneralRelationshipQuestions(relationshipType);
     const allQuestions = roleSpecificQuestions.length > 0 ? roleSpecificQuestions : fallbackQuestions;
     
-    // Shuffle questions for randomness
+    // Always shuffle questions for randomness - each page load shows different questions
     const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
     setAvailableQuestions(shuffled);
+    
+    // Reset shown questions when relationship type or role changes
+    setShownQuestions(new Set());
+    setCurrentQuestions([]);
   }, [relationshipType, userRole]);
 
   // Get next set of questions that haven't been shown
   const getNextQuestions = (count: number = 5): string[] => {
     const unshownQuestions = availableQuestions.filter(q => !shownQuestions.has(q));
     
-    // If we're running low on unshown questions, generate more via AI
-    if (unshownQuestions.length < count * 2) {
-      generateMoreCuratedQuestions();
+    // If we have unshown curated questions, use them
+    if (unshownQuestions.length >= count) {
+      const nextQuestions = unshownQuestions.slice(0, count);
+      setShownQuestions(prev => new Set([...Array.from(prev), ...nextQuestions]));
+      return nextQuestions;
     }
     
-    const nextQuestions = unshownQuestions.slice(0, count);
+    // If we're running low on unshown questions, reshuffle all questions
+    if (unshownQuestions.length < count && availableQuestions.length >= count) {
+      // Reset and reshuffle all questions
+      const reshuffled = [...availableQuestions].sort(() => Math.random() - 0.5);
+      setAvailableQuestions(reshuffled);
+      setShownQuestions(new Set());
+      
+      const nextQuestions = reshuffled.slice(0, count);
+      setShownQuestions(prev => new Set([...Array.from(prev), ...nextQuestions]));
+      return nextQuestions;
+    }
+    
+    // Return what we have if less than requested count
+    const nextQuestions = unshownQuestions.slice(0, Math.min(count, unshownQuestions.length));
     setShownQuestions(prev => new Set([...Array.from(prev), ...nextQuestions]));
     return nextQuestions;
   };
@@ -167,31 +186,6 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   const shuffleQuestions = () => {
     const newQuestions = getNextQuestions(5);
     setCurrentQuestions(newQuestions);
-  };
-
-  // Generate more curated questions via AI when running low
-  const generateMoreCuratedQuestions = async () => {
-    try {
-      const response = await fetch('/api/ai/generate-questions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          relationshipType, 
-          userRole,
-          otherUserRole,
-          count: 10,
-          excludeQuestions: Array.from(shownQuestions)
-        })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const newQuestions = data.questions || [];
-        setAvailableQuestions(prev => [...prev, ...newQuestions]);
-      }
-    } catch (error) {
-      console.error('Failed to generate more questions:', error);
-    }
   };
 
   const generateAIQuestions = async () => {
