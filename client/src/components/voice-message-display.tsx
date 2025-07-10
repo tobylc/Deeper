@@ -420,40 +420,34 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           onLoadStart={handleLoadStart}
           onCanPlay={handleCanPlayEvent}
           preload="metadata"
-          onLoadedMetadata={() => console.log('Audio metadata loaded')}
-          onLoadedData={() => console.log('Audio data loaded')}
+          onLoadedMetadata={() => process.env.NODE_ENV === 'development' && console.log('Audio metadata loaded')}
+          onLoadedData={() => process.env.NODE_ENV === 'development' && console.log('Audio data loaded')}
           crossOrigin="anonymous"
         />
         
-        {/* Enhanced Debug Info - Always show for debugging voice issues */}
-        <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
-          <div>Original Audio URL: {message.audioFileUrl}</div>
-          <div>Computed Audio URL: {(() => {
-            if (!message.audioFileUrl) return 'No URL';
-            let audioUrl = message.audioFileUrl;
-            if (!audioUrl.startsWith('http')) {
-              // If it's a relative path starting with /uploads/, use it directly
-              if (audioUrl.startsWith('/uploads/')) {
-                audioUrl = `${window.location.origin}${audioUrl}`;
-              } else {
-                // Otherwise, add the /uploads/ prefix
-                const filename = audioUrl.replace(/^\/+/, '').replace(/^uploads\//, '');
-                audioUrl = `${window.location.origin}/uploads/${filename}`;
+        {/* Debug Info - Show only in development */}
+        {process.env.NODE_ENV === 'development' && error && (
+          <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
+            <div>Original Audio URL: {message.audioFileUrl}</div>
+            <div>Computed Audio URL: {(() => {
+              if (!message.audioFileUrl) return 'No URL';
+              let audioUrl = message.audioFileUrl;
+              if (!audioUrl.startsWith('http')) {
+                if (audioUrl.startsWith('/uploads/')) {
+                  audioUrl = `${window.location.origin}${audioUrl}`;
+                } else {
+                  const filename = audioUrl.replace(/^\/+/, '').replace(/^uploads\//, '');
+                  audioUrl = `${window.location.origin}/uploads/${filename}`;
+                }
               }
-            }
-            return audioUrl;
-          })()}</div>
-          <div>Duration: {message.audioDuration}s</div>
-          <div>Error: {error || 'None'}</div>
-          <div>Loading: {isLoading ? 'Yes' : 'No'}</div>
-          <div>Playing: {isPlaying ? 'Yes' : 'No'}</div>
-          <div>Audio Ready State: {audioRef.current?.readyState}</div>
-          <div>Audio Network State: {audioRef.current?.networkState}</div>
-          <div>Audio Current Time: {audioRef.current?.currentTime}</div>
-          <div>Audio Duration: {audioRef.current?.duration}</div>
-          <div>Audio Source: {audioRef.current?.src}</div>
-          <div>Window Origin: {window.location.origin}</div>
-        </div>
+              return audioUrl;
+            })()}</div>
+            <div>Duration: {message.audioDuration}s</div>
+            <div>Error: {error}</div>
+            <div>Audio Ready State: {audioRef.current?.readyState}</div>
+            <div>Audio Network State: {audioRef.current?.networkState}</div>
+          </div>
+        )}
       </Card>
 
       {/* Transcription */}
