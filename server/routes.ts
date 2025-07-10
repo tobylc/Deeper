@@ -2771,7 +2771,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // If there's a question without a response, only allow responses
           if (lastQuestionIndex !== -1) {
             const messagesAfterLastQuestion = existingMessages.slice(lastQuestionIndex + 1);
-            const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg.type === 'response');
+            
+            // Enhanced response detection: check for both text and voice responses
+            const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => {
+              return msg.type === 'response' || 
+                     (msg.messageFormat === 'voice' && msg.type !== 'question') ||
+                     // Also check for follow-up messages that aren't questions
+                     (msg.type !== 'question' && msg.senderEmail !== existingMessages[lastQuestionIndex].senderEmail);
+            });
             
             // If the last question hasn't been responded to, only allow responses
             if (!hasResponseToLastQuestion && messageData.type === 'question') {
@@ -3755,7 +3762,15 @@ Format each as a complete question they can use to begin this important conversa
             // If there's a question, check if it has a response
             if (lastQuestionIndex !== -1) {
               const messagesAfterLastQuestion = messages.slice(lastQuestionIndex + 1);
-              const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => msg.type === 'response');
+              
+              // Enhanced response detection: check for both text and voice responses
+              const hasResponseToLastQuestion = messagesAfterLastQuestion.some(msg => {
+                // Accept both 'response' type messages and voice messages (which should be responses)
+                return msg.type === 'response' || 
+                       (msg.messageFormat === 'voice' && msg.type !== 'question') ||
+                       // Also check for follow-up messages that aren't questions
+                       (msg.type !== 'question' && msg.senderEmail !== messages[lastQuestionIndex].senderEmail);
+              });
               
               if (!hasResponseToLastQuestion) {
                 hasUnansweredQuestion = true;
@@ -3794,7 +3809,14 @@ Format each as a complete question they can use to begin this important conversa
             try {
               const messages = await storage.getMessagesByConversationId(conv.id);
               const hasQuestion = messages.some(msg => msg.type === 'question');
-              const hasResponse = messages.some(msg => msg.type === 'response');
+              
+              // Enhanced response detection: check for both text and voice responses
+              const hasResponse = messages.some(msg => {
+                return msg.type === 'response' || 
+                       (msg.messageFormat === 'voice' && msg.type !== 'question') ||
+                       // Also accept any non-question message from different sender as response
+                       (msg.type !== 'question');
+              });
               
               // Enhanced debug logging for exchange validation
               console.log(`[EXCHANGE_DEBUG] Conversation ${conv.id} (${conv.title || 'untitled'}):`, {
