@@ -115,6 +115,21 @@ export default function ConversationPage() {
     };
   }, []);
 
+  // Listen for trial expiration events from voice messages and other actions
+  useEffect(() => {
+    const handleTrialExpired = (event: CustomEvent) => {
+      if (!isInviteeUser) {
+        setShowTrialExpirationPopup(true);
+      }
+    };
+
+    window.addEventListener('trialExpired', handleTrialExpired as EventListener);
+    
+    return () => {
+      window.removeEventListener('trialExpired', handleTrialExpired as EventListener);
+    };
+  }, [isInviteeUser]);
+
   // Enhanced WebSocket integration to synchronize thread reopening between users
   useEffect(() => {
     const handleThreadSyncEvent = (event: CustomEvent) => {

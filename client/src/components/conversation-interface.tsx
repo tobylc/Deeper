@@ -175,18 +175,46 @@ const ConversationInterface = memo(function ConversationInterface({
         setMessageMode('text');
       }, 2000);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending voice message:', error);
       setShowTranscriptionProgress(false);
       setIsTranscriptionComplete(false);
       
-      // Show user-friendly error without triggering error boundary
+      // Parse error response to check for trial expiration
+      let errorData;
+      try {
+        if (error.message && error.message.includes('Failed to send voice message')) {
+          const errorText = error.message.split(' - ')[1]; // Extract the response text after the status code
+          if (errorText) {
+            errorData = JSON.parse(errorText);
+          } else {
+            errorData = { message: error.message };
+          }
+        } else {
+          errorData = { message: error.message };
+        }
+      } catch {
+        errorData = { message: error.message };
+      }
+      
+      // Check if this is a trial expiration error and trigger popup
+      if (errorData.type === "TRIAL_EXPIRED" || (errorData.message && errorData.message.includes("trial has expired"))) {
+        // Trigger trial expiration popup via custom event since we don't have direct access to the state setter
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          const trialExpiredEvent = new CustomEvent('trialExpired', {
+            detail: { action: 'voice_messaging' }
+          });
+          window.dispatchEvent(trialExpiredEvent);
+        }
+        return;
+      }
+      
+      // For other errors, show user-friendly error without triggering error boundary
       if (typeof window !== 'undefined' && window.dispatchEvent) {
         const toast = new CustomEvent('showToast', {
           detail: {
             title: 'Voice message error',
-            description: 'There was an issue sending your voice message. Please try again.',
-            variant: 'destructive'
+            description: errorData.message || 'There was an issue sending your voice message. Please try again.',
           }
         });
         window.dispatchEvent(toast);
