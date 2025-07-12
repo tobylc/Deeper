@@ -109,11 +109,19 @@ function StackedConversation({
   
   return (
     <Card 
-      className={`cursor-pointer transition-all duration-200 rounded-lg ${shouldStack ? 'relative' : ''} ${borderStyle} bg-white hover:bg-gray-50 ${
+      className={`transition-all duration-200 rounded-lg ${shouldStack ? 'relative' : ''} ${borderStyle} ${
+        isCheckingReopen
+          ? 'bg-slate-50 cursor-wait opacity-75'
+          : canReopen === false
+          ? 'bg-slate-50 cursor-not-allowed opacity-60'
+          : canReopen === true
+          ? 'bg-white hover:bg-gray-50 cursor-pointer'
+          : 'bg-white hover:bg-gray-50 cursor-pointer'
+      } ${
         isSelected ? 'ring-2 ring-gray-400' : ''
       }`}
       onClick={() => {
-        // Thread reopening is PURE NAVIGATION - never consumes user's turn
+        // Thread reopening validation handled in parent onClick
         onClick();
       }}
     >
@@ -129,13 +137,19 @@ function StackedConversation({
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-1">
-              <MessageSquare className="w-3 h-3 text-slate-500 flex-shrink-0" />
-              <h4 className="text-xs font-medium text-slate-800 truncate">
+              <MessageSquare className={`w-3 h-3 flex-shrink-0 ${
+                canReopen === false ? 'text-slate-300' : 'text-slate-500'
+              }`} />
+              <h4 className={`text-xs font-medium truncate ${
+                canReopen === false ? 'text-slate-400' : 'text-slate-800'
+              }`}>
                 {conversation.title || conversation.topic}
               </h4>
             </div>
             
-            <div className="flex items-center space-x-2 text-xs text-slate-500">
+            <div className={`flex items-center space-x-2 text-xs ${
+              canReopen === false ? 'text-slate-300' : 'text-slate-500'
+            }`}>
               <Users className="w-3 h-3" />
               <span>{conversation.messageCount} messages</span>
               {conversation.lastMessageAt && (
@@ -228,7 +242,9 @@ function StackedConversation({
             <Badge 
               variant="outline"
               className={`text-xs px-2 py-1 text-center min-w-[60px] ${
-                conversation.currentTurn === currentUserEmail 
+                canReopen === false
+                  ? 'bg-slate-50 text-slate-300 border-slate-200'
+                  : conversation.currentTurn === currentUserEmail 
                   ? 'bg-green-50 text-green-700 border-green-200' 
                   : 'bg-gray-50 text-gray-600 border-gray-200'
               }`}
@@ -384,7 +400,31 @@ export default function ConversationThreads({
               key={conversation.id}
               conversation={conversation}
               isSelected={false} // Never selected since active conversation is hidden
-              onClick={() => onThreadSelect(conversation.id)}
+              onClick={async () => {
+                // CORE RULES #10, #11, #12: Check if thread reopening is allowed
+                try {
+                  const response = await fetch(`/api/conversations/${conversation.id}/can-reopen?currentConversationId=${selectedConversationId}`, {
+                    credentials: 'include'
+                  });
+                  const result = await response.json();
+                  
+                  if (result.canReopen) {
+                    onThreadSelect(conversation.id); // Thread reopening allowed
+                  } else {
+                    // Show appropriate popup based on the reason
+                    if (result.reason === 'respond_to_question') {
+                      setShowRespondFirstPopup(true);
+                    } else if (result.reason === 'not_your_turn') {
+                      setShowWaitingPopup(true);
+                    } else {
+                      setShowWaitingPopup(true);
+                    }
+                  }
+                } catch (error) {
+                  // Fallback to allowing reopening if check fails
+                  onThreadSelect(conversation.id);
+                }
+              }}
               onThreadSelect={onThreadSelect}
               currentUserEmail={currentUserEmail}
               isMyTurn={isMyTurn}
