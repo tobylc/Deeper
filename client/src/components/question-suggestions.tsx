@@ -17,6 +17,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import ExchangeRequiredPopup from "@/components/exchange-required-popup";
+import TrialExpirationPopup from "@/components/trial-expiration-popup";
 import { HypnoticOrbs } from "@/components/hypnotic-orbs";
 
 interface QuestionSuggestionsProps {
@@ -47,6 +48,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   const [isGeneratingCustomAI, setIsGeneratingCustomAI] = useState(false);
   const [showCustomModal, setShowCustomModal] = useState(false);
   const [showExchangeRequiredPopup, setShowExchangeRequiredPopup] = useState(false);
+  const [showTrialExpirationPopup, setShowTrialExpirationPopup] = useState(false);
   
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -81,10 +83,40 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
     },
     onError: (error) => {
       console.error('[QUESTION_SUGGESTIONS] Failed to create new thread:', error);
+      
+      // Parse error response to check for trial expiration
+      let errorData;
+      try {
+        // Handle cases where error message includes HTTP status code prefix (e.g., "403: {json}")
+        let errorMessage = error.message || "";
+        
+        // Extract JSON part if there's a status code prefix
+        const jsonMatch = errorMessage.match(/\d{3}:\s*(\{.*\})/);
+        if (jsonMatch) {
+          errorMessage = jsonMatch[1];
+        }
+        
+        errorData = JSON.parse(errorMessage);
+      } catch {
+        // If JSON parsing fails, check if the raw message contains trial expiration indicators
+        const errorMessage = error.message || "";
+        errorData = { 
+          message: errorMessage,
+          type: errorMessage.includes("TRIAL_EXPIRED") ? "TRIAL_EXPIRED" : undefined
+        };
+      }
+      
+      // Show trial expiration popup for trial expired errors
+      if (errorData.type === "TRIAL_EXPIRED" || (errorData.message && errorData.message.includes("trial has expired"))) {
+        console.log('[QUESTION_SUGGESTIONS] Showing trial expiration popup');
+        setShowTrialExpirationPopup(true);
+        return;
+      }
+      
+      // For other errors, show a nicer toast (not destructive red)
       toast({
         title: "Unable to start new conversation",
-        description: "Please try again",
-        variant: "destructive"
+        description: errorData.message || "Please try again",
       });
     }
   });
@@ -541,6 +573,13 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         onClose={() => setShowExchangeRequiredPopup(false)}
         nextMessageType={nextMessageType}
         relationshipType={relationshipType}
+      />
+
+      {/* Trial Expiration Popup */}
+      <TrialExpirationPopup
+        isOpen={showTrialExpirationPopup}
+        onClose={() => setShowTrialExpirationPopup(false)}
+        action="create_conversation"
       />
     </div>
   );

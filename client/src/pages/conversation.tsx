@@ -442,18 +442,33 @@ export default function ConversationPage() {
       setNewMessage("");
     },
     onError: (error: any) => {
-
+      console.error('[CONVERSATION] Message sending error:', error);
       
       // Parse error response to check for trial expiration
       let errorData;
       try {
-        errorData = JSON.parse(error.message);
+        // Handle cases where error message includes HTTP status code prefix (e.g., "403: {json}")
+        let errorMessage = error.message || "";
+        
+        // Extract JSON part if there's a status code prefix
+        const jsonMatch = errorMessage.match(/\d{3}:\s*(\{.*\})/);
+        if (jsonMatch) {
+          errorMessage = jsonMatch[1];
+        }
+        
+        errorData = JSON.parse(errorMessage);
       } catch {
-        errorData = { message: error.message };
+        // If JSON parsing fails, check if the raw message contains trial expiration indicators
+        const errorMessage = error.message || "";
+        errorData = { 
+          message: errorMessage,
+          type: errorMessage.includes("TRIAL_EXPIRED") ? "TRIAL_EXPIRED" : undefined
+        };
       }
       
       // Show beautiful trial expiration popup for trial expired errors (but not for invitee users)
       if ((errorData.type === "TRIAL_EXPIRED" || (errorData.message && errorData.message.includes("trial has expired"))) && !isInviteeUser) {
+        console.log('[CONVERSATION] Showing trial expiration popup');
         setShowTrialExpirationPopup(true);
         return;
       }
@@ -511,16 +526,37 @@ export default function ConversationPage() {
     onError: (error) => {
       console.error('[NEW_THREAD] Failed to create new thread:', error);
       
-      // Parse error response to get specific error details
+      // Parse error response to check for trial expiration
       let errorData;
       try {
-        errorData = JSON.parse(error.message);
+        // Handle cases where error message includes HTTP status code prefix (e.g., "403: {json}")
+        let errorMessage = error.message || "";
+        
+        // Extract JSON part if there's a status code prefix
+        const jsonMatch = errorMessage.match(/\d{3}:\s*(\{.*\})/);
+        if (jsonMatch) {
+          errorMessage = jsonMatch[1];
+        }
+        
+        errorData = JSON.parse(errorMessage);
         console.log('[NEW_THREAD] Error details:', errorData);
       } catch {
-        errorData = { message: error.message };
+        // If JSON parsing fails, check if the raw message contains trial expiration indicators
+        const errorMessage = error.message || "";
+        errorData = { 
+          message: errorMessage,
+          type: errorMessage.includes("TRIAL_EXPIRED") ? "TRIAL_EXPIRED" : undefined
+        };
       }
       
-      // Show specific error message from backend
+      // Show beautiful trial expiration popup for trial expired errors (but not for invitee users)
+      if ((errorData.type === "TRIAL_EXPIRED" || (errorData.message && errorData.message.includes("trial has expired"))) && !isInviteeUser) {
+        console.log('[NEW_THREAD] Showing trial expiration popup');
+        setShowTrialExpirationPopup(true);
+        return;
+      }
+      
+      // For other errors, show a nicer toast (not destructive red)
       toast({
         title: "Unable to start new conversation",
         description: errorData.message || "Please try again",
