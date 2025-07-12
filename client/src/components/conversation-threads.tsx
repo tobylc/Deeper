@@ -44,6 +44,7 @@ function StackedConversation({
   conversation, 
   isSelected, 
   onClick, 
+  onThreadSelect,
   currentUserEmail, 
   isMyTurn,
   isInviter,
@@ -55,6 +56,7 @@ function StackedConversation({
   conversation: Conversation;
   isSelected: boolean;
   onClick: () => void;
+  onThreadSelect: (conversationId: number) => void;
   currentUserEmail: string;
   isMyTurn: boolean;
   isInviter: boolean;
@@ -64,8 +66,37 @@ function StackedConversation({
   index: number;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [canReopen, setCanReopen] = useState<boolean | null>(null);
+  const [isCheckingReopen, setIsCheckingReopen] = useState(false);
+  
   // Remove stacked effect for conversations with more than 3 messages
   const shouldStack = false;
+
+  // Check if this thread can be reopened for visual feedback
+  useEffect(() => {
+    const checkCanReopen = async () => {
+      if (!selectedConversationId || conversation.id === selectedConversationId) {
+        setCanReopen(true);
+        return;
+      }
+
+      setIsCheckingReopen(true);
+      try {
+        const response = await fetch(`/api/conversations/${conversation.id}/can-reopen?currentConversationId=${selectedConversationId}`, {
+          credentials: 'include'
+        });
+        const result = await response.json();
+        setCanReopen(result.canReopen);
+      } catch (error) {
+        // Default to allowing if check fails
+        setCanReopen(true);
+      } finally {
+        setIsCheckingReopen(false);
+      }
+    };
+
+    checkCanReopen();
+  }, [conversation.id, selectedConversationId, isMyTurn]);
 
   // Rotating border colors: ocean blue, amber, dark navy
   const borderColors = [
@@ -115,17 +146,40 @@ function StackedConversation({
               )}
             </div>
             
-            {/* Reopen Thread Button - Pure Navigation Only */}
+            {/* Reopen Thread Button - Visual feedback based on availability */}
             <div className="mt-2">
               <Button
                 size="sm"
                 variant="outline"
+                disabled={canReopen === false || isCheckingReopen}
                 onClick={async (e) => {
                   e.stopPropagation();
                   
-                  // CORE RULES #10, #11, #12: Check if thread reopening is allowed
+                  // If we already know it can't be reopened, show appropriate popup
+                  if (canReopen === false) {
+                    // Re-check the reason for blocking
+                    try {
+                      const response = await fetch(`/api/conversations/${conversation.id}/can-reopen?currentConversationId=${selectedConversationId}`, {
+                        credentials: 'include'
+                      });
+                      const result = await response.json();
+                      
+                      if (result.reason === 'respond_to_question') {
+                        onRespondFirstClick();
+                      } else if (result.reason === 'not_your_turn') {
+                        onWaitingClick();
+                      } else {
+                        onWaitingClick();
+                      }
+                    } catch (error) {
+                      onWaitingClick();
+                    }
+                    return;
+                  }
+                  
+                  // CORE RULES #10, #11, #12: Double-check if thread reopening is allowed
                   try {
-                    const response = await fetch(`/api/conversations/${conversationId}/can-reopen?currentConversationId=${selectedConversationId}`, {
+                    const response = await fetch(`/api/conversations/${conversation.id}/can-reopen?currentConversationId=${selectedConversationId}`, {
                       credentials: 'include'
                     });
                     const result = await response.json();
@@ -135,11 +189,11 @@ function StackedConversation({
                     } else {
                       // Show appropriate popup based on the reason
                       if (result.reason === 'respond_to_question') {
-                        setShowRespondFirstPopup(true);
+                        onRespondFirstClick();
                       } else if (result.reason === 'not_your_turn') {
-                        setShowWaitingPopup(true);
+                        onWaitingClick();
                       } else {
-                        setShowWaitingPopup(true);
+                        onWaitingClick();
                       }
                     }
                   } catch (error) {
@@ -147,10 +201,24 @@ function StackedConversation({
                     onThreadSelect(conversation.id);
                   }
                 }}
-                className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400 rounded-lg"
+                className={`text-xs px-2 py-1 h-6 rounded-lg transition-all duration-200 ${
+                  isCheckingReopen
+                    ? 'border-slate-200 text-slate-400 bg-slate-50'
+                    : canReopen === false
+                    ? 'border-slate-200 text-slate-400 bg-slate-50 opacity-50 cursor-not-allowed'
+                    : canReopen === true
+                    ? 'border-ocean text-ocean hover:text-white hover:bg-ocean hover:border-ocean shadow-sm'
+                    : 'border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400'
+                }`}
               >
-                <RotateCcw className="w-3 h-3 mr-1" />
-                Reopen Thread
+                <RotateCcw className={`w-3 h-3 mr-1 ${
+                  isCheckingReopen 
+                    ? 'animate-spin' 
+                    : canReopen === false 
+                    ? 'opacity-50' 
+                    : ''
+                }`} />
+                {isCheckingReopen ? 'Checking...' : 'Reopen Thread'}
               </Button>
             </div>
           </div>
@@ -316,29 +384,8 @@ export default function ConversationThreads({
               key={conversation.id}
               conversation={conversation}
               isSelected={false} // Never selected since active conversation is hidden
-              onClick={async () => {
-                // CORE RULE #10: Check if thread reopening is allowed
-                try {
-                  const response = await fetch(`/api/conversations/${selectedConversationId}/can-reopen/${conversation.id}`, {
-                    credentials: 'include'
-                  });
-                  const result = await response.json();
-                  
-                  if (result.canReopen) {
-                    onThreadSelect(conversation.id); // Thread reopening allowed
-                  } else {
-                    // Show appropriate popup based on the reason
-                    if (result.reason === 'respond_to_question') {
-                      setShowRespondFirstPopup(true);
-                    } else {
-                      setShowWaitingPopup(true);
-                    }
-                  }
-                } catch (error) {
-                  // Fallback to allowing reopening if check fails
-                  onThreadSelect(conversation.id);
-                }
-              }}
+              onClick={() => onThreadSelect(conversation.id)}
+              onThreadSelect={onThreadSelect}
               currentUserEmail={currentUserEmail}
               isMyTurn={isMyTurn}
               isInviter={isInviter}
