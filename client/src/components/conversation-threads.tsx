@@ -238,17 +238,19 @@ function StackedConversation({
           </div>
           
           <div className="flex flex-col items-end space-y-1">
-            {/* Turn indicator badge */}
+            {/* Turn indicator badge - Fixed logic for stacked conversations */}
             <Badge 
               variant="outline"
               className={`text-xs px-2 py-1 text-center min-w-[60px] ${
                 canReopen === false
                   ? 'bg-slate-50 text-slate-300 border-slate-200'
-                  : conversation.currentTurn === currentUserEmail 
+                  : conversation.currentTurn === currentUserEmail
                   ? 'bg-green-50 text-green-700 border-green-200' 
                   : 'bg-gray-50 text-gray-600 border-gray-200'
               }`}
             >
+              {/* Debug: Add console log to check currentTurn value */}
+              {console.log('[TURN_DEBUG] Conversation ID:', conversation.id, 'currentTurn:', conversation.currentTurn, 'currentUserEmail:', currentUserEmail)}
               {conversation.currentTurn === currentUserEmail ? 'Your Turn' : 'Their Turn'}
             </Badge>
             
