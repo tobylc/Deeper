@@ -46,9 +46,19 @@ The following basic logic rules are fundamental to the application and must be p
    - Code: `onThreadSelect()` updates URL and conversation state only
 
 10. **✅ IMPLEMENTED - New Question Response Requirement**: When there is a "new question" that is asked by either user - this "new question" must receive a "response" by the other user before ANY OTHER ACTION can be performed. This includes "reopening thread" from the left column.
-    - Code: `/api/conversations/:id/can-reopen/:targetId` endpoint validates before thread reopening
+    - Code: `/api/conversations/:id/can-reopen` endpoint validates before thread reopening
     - Code: `lastQuestionNeedsResponse` blocks right column usage until response received
     - Code: Frontend validation with appropriate popup messaging for blocked actions
+
+11. **✅ IMPLEMENTED - Complete Exchange Requirement for Thread Reopening**: When there are multiple past conversation threads on the left side column BUT the "current thread" in the middle column has not completed a full "exchange" between the users, the user in "turn" must add at least one response to the question before being able to reopen other threads.
+    - Code: `/api/conversations/:id/can-reopen` endpoint checks for complete question-response exchanges
+    - Code: `hasQuestions && !hasResponses` validation blocks thread reopening
+    - Code: RespondFirstPopup shown when user attempts premature thread switching
+
+12. **✅ IMPLEMENTED - Turn-Based Thread Reopening Restriction**: Neither user should be able to "reopen thread" from the left column UNLESS IT IS THEIR TURN! Users attempting to reopen threads when not their turn receive appropriate waiting notifications.
+    - Code: `currentConversation.currentTurn !== currentUser.email` validation in can-reopen endpoint
+    - Code: `not_your_turn` reason triggers WaitingTurnPopup display
+    - Code: Frontend conversation-threads component handles turn-based validation
 
 ## System Architecture
 
@@ -964,6 +974,14 @@ Changelog:
   * Removed turn-based blocking from conversation threads component for thread reopening actions
   * Production deployment now preserves exact turn state during thread navigation between both users
   * Complete turn preservation system ensuring thread reopening never modifies whose turn it is in conversations
+- July 12, 2025. Enhanced conversation logic rules #11 and #12 implementation:
+  * CORE RULE #11: Added complete exchange requirement for thread reopening - users must respond to current questions before accessing other threads
+  * CORE RULE #12: Implemented turn-based thread reopening restriction - only users whose turn it is can reopen previous conversation threads
+  * Enhanced `/api/conversations/:id/can-reopen` endpoint with comprehensive validation for both turn state and exchange completion
+  * Updated frontend conversation-threads component to handle new validation reasons with appropriate popup messaging
+  * Added production-ready error handling for `not_your_turn` and `respond_to_question` scenarios
+  * Thread reopening now enforces strict turn-based conversation flow while maintaining complete exchange requirements
+  * Users attempting premature thread switching receive contextual feedback through existing WaitingTurnPopup and RespondFirstPopup components
 - June 30, 2025. Production-level duplicate endpoint consolidation for thread reopening:
   * Identified and fixed root cause: frontend was calling TWO different thread reopening endpoints
   * Removed duplicate /api/conversations/:conversationId/switch-active endpoint that lacked comprehensive turn preservation

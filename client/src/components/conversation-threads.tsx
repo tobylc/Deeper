@@ -123,26 +123,28 @@ function StackedConversation({
                 onClick={async (e) => {
                   e.stopPropagation();
                   
-                  // CORE RULE #10: Check if thread reopening is allowed
+                  // CORE RULES #10, #11, #12: Check if thread reopening is allowed
                   try {
-                    const response = await fetch(`/api/conversations/${selectedConversationId}/can-reopen/${conversation.id}`, {
+                    const response = await fetch(`/api/conversations/${conversationId}/can-reopen?currentConversationId=${selectedConversationId}`, {
                       credentials: 'include'
                     });
                     const result = await response.json();
                     
                     if (result.canReopen) {
-                      onClick(); // Thread reopening allowed
+                      onThreadSelect(conversation.id); // Thread reopening allowed
                     } else {
                       // Show appropriate popup based on the reason
                       if (result.reason === 'respond_to_question') {
                         setShowRespondFirstPopup(true);
+                      } else if (result.reason === 'not_your_turn') {
+                        setShowWaitingPopup(true);
                       } else {
                         setShowWaitingPopup(true);
                       }
                     }
                   } catch (error) {
                     // Fallback to allowing reopening if check fails
-                    onClick();
+                    onThreadSelect(conversation.id);
                   }
                 }}
                 className="text-xs px-2 py-1 h-6 border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400 rounded-lg"

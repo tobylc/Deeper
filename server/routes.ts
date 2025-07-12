@@ -2334,11 +2334,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // CORE RULE #10: New Question Response Requirement
-      // ANY new question must receive a response before ANY OTHER ACTION can be performed
+      // CORE RULE #12: Turn Requirement for Thread Reopening
+      // Neither user should be able to "reopen thread" UNLESS IT IS THEIR TURN!
+      if (currentConversationId && currentConversationId !== conversationId) {
+        const currentConversation = await storage.getConversation(currentConversationId);
+        if (currentConversation && currentConversation.currentTurn !== currentUser.email) {
+          return res.json({ 
+            canReopen: false, 
+            reason: "not_your_turn",
+            message: "You can only reopen threads when it's your turn" 
+          });
+        }
+      }
+
+      // CORE RULE #11: Current Thread Must Have Complete Exchange
+      // When there are multiple past conversation threads BUT the "current thread" in the middle column 
+      // has not completed a full "exchange" between the users, the user in "turn" must respond first
       if (currentConversationId && currentConversationId !== conversationId) {
         const currentMessages = await storage.getMessages(currentConversationId);
         if (currentMessages.length > 0) {
+          // Check if the current thread has a complete question-response exchange
+          const hasQuestions = currentMessages.some(msg => msg.type === 'question');
+          const hasResponses = currentMessages.some(msg => msg.type === 'response');
+          
+          // If there are questions but no responses, require response first
+          if (hasQuestions && !hasResponses) {
+            return res.json({ 
+              canReopen: false, 
+              reason: "respond_to_question",
+              message: "You must respond to the current question before reopening other threads" 
+            });
+          }
+          
+          // CORE RULE #10: New Question Response Requirement
+          // ANY new question must receive a response before ANY OTHER ACTION can be performed
           const lastMessage = currentMessages[currentMessages.length - 1];
           
           // Block if there's ANY unanswered question (not just from the other user)
