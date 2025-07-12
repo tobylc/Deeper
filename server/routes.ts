@@ -181,20 +181,47 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
 async function handlePaymentIntentSuccess(paymentIntent: Stripe.PaymentIntent) {
   try {
+    console.log(`[WEBHOOK] Processing payment intent success for $${paymentIntent.amount_received / 100}`);
+    
     // Check if this is a $4.95 discount payment
-    if (paymentIntent.amount === 495) {
+    if (paymentIntent.amount_received === 495) {
+      console.log(`[WEBHOOK] Detected $4.95 discount payment, finding associated subscription`);
+      
       // Find the subscription associated with this payment
       const invoices = await stripe.invoices.list({
         limit: 100
       });
       
-      // Find invoice by payment intent metadata
+      // Find invoice by payment intent
       const matchingInvoice = invoices.data.find(invoice => 
         (invoice as any).payment_intent === paymentIntent.id
       );
       
       if (matchingInvoice && (matchingInvoice as any).subscription) {
+        console.log(`[WEBHOOK] Found matching subscription: ${(matchingInvoice as any).subscription}`);
         await handleDiscountPaymentUpgrade((matchingInvoice as any).subscription as string);
+      } else {
+        console.log(`[WEBHOOK] No matching subscription found for payment intent ${paymentIntent.id}`);
+        
+        // Alternative: try to find subscription by customer
+        if (paymentIntent.customer) {
+          console.log(`[WEBHOOK] Trying to find subscription by customer: ${paymentIntent.customer}`);
+          const subscriptions = await stripe.subscriptions.list({
+            customer: paymentIntent.customer as string,
+            limit: 10
+          });
+          
+          // Find the most recent subscription
+          const recentSubscription = subscriptions.data.find(sub => 
+            sub.metadata?.discount_applied === '50' || 
+            sub.metadata?.payment_intent_id === paymentIntent.id
+          );
+          
+          if (recentSubscription) {
+            console.log(`[WEBHOOK] Found subscription by customer: ${recentSubscription.id}`);
+            await handleDiscountPaymentUpgrade(recentSubscription.id);
+          }
+        }
       }
     }
   } catch (error) {
@@ -219,7 +246,7 @@ async function handleDiscountPaymentUpgrade(subscriptionId: string) {
       return;
     }
     
-    console.log(`[DISCOUNT-UPGRADE] Upgrading user ${userId} from ${user.subscriptionTier} to advanced`);
+    console.log(`[DISCOUNT-UPGRADE] Current user status: ${user.subscriptionTier}/${user.subscriptionStatus}, upgrading to advanced`);
     
     // Upgrade to Advanced tier for $4.95 payment
     await storage.updateUserSubscription(userId, {
@@ -231,10 +258,19 @@ async function handleDiscountPaymentUpgrade(subscriptionId: string) {
       subscriptionExpiresAt: undefined
     });
     
-    console.log(`[DISCOUNT-UPGRADE] Successfully upgraded user ${userId} to advanced tier`);
+    console.log(`[DISCOUNT-UPGRADE] Successfully upgraded user ${userId} to advanced tier - checking result`);
+    
+    // Verify the upgrade was successful
+    const updatedUser = await storage.getUser(userId);
+    if (updatedUser) {
+      console.log(`[DISCOUNT-UPGRADE] Verification - User ${userId} now has tier: ${updatedUser.subscriptionTier}, status: ${updatedUser.subscriptionStatus}, maxConnections: ${updatedUser.maxConnections}`);
+    } else {
+      console.error(`[DISCOUNT-UPGRADE] Could not verify upgrade for user ${userId}`);
+    }
     
   } catch (error) {
     console.error(`[DISCOUNT-UPGRADE] Error upgrading discount subscription: ${error}`);
+    console.error(`[DISCOUNT-UPGRADE] Stack trace:`, error instanceof Error ? error.stack : 'Unknown error');
   }
 }
 
@@ -1634,6 +1670,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         case 'payment_intent.succeeded':
           const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          console.log(`[WEBHOOK] Payment intent succeeded: ${paymentIntent.id}, amount: $${paymentIntent.amount_received / 100}`);
           await handlePaymentIntentSuccess(paymentIntent);
           break;
 

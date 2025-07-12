@@ -58,10 +58,17 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
             description: error.message || "Please check your payment details and try again",
           });
         } else {
+          console.log('[CHECKOUT] Payment succeeded - processing upgrade');
+          
+          // Show success message
           toast({
-            title: "Advanced Plan Activated",
-            description: "Payment successful! Your Advanced plan is now active.",
+            title: "🎉 Payment Successful!",
+            description: "Your Advanced plan has been activated. Redirecting to dashboard...",
+            className: "bg-gradient-to-r from-green-50 to-green-100 border-green-200 text-green-800"
           });
+          
+          // Set marker for dashboard success notification
+          localStorage.setItem('paymentSuccess', 'true');
           
           // Check payment status and upgrade if needed (webhook fallback)
           setTimeout(async () => {
@@ -71,18 +78,26 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
               
               if (checkResponse.ok) {
                 const result = await checkResponse.json();
+                console.log('[CHECKOUT] Payment status check result:', result);
+                
                 if (result.upgraded) {
                   console.log('[CHECKOUT] Subscription upgraded via fallback check');
                 }
               }
               
-              // Refresh page to show updated subscription status
-              window.location.reload();
+              // Redirect to dashboard after processing
+              setTimeout(() => {
+                window.location.href = '/dashboard?from=checkout';
+              }, 1000);
+              
             } catch (error) {
               console.warn('Payment status check failed:', error);
-              window.location.reload();
+              // Still redirect to dashboard even if check fails
+              setTimeout(() => {
+                window.location.href = '/dashboard?from=checkout';
+              }, 1000);
             }
-          }, 3000);
+          }, 2000);
           
           onSuccess();
         }

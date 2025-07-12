@@ -23,6 +23,7 @@ import { getRoleDisplayInfo, getDashboardSectionTitle } from "@shared/role-displ
 import { TrialStatus } from "@/components/trial-status";
 import { SubscriptionEnforcement } from "@/components/subscription-enforcement";
 import AdminCleanup from "@/components/admin-cleanup";
+import { PaymentSuccessNotification } from "@/components/payment-success-notification";
 import { InviteeUpgradeBanner } from "@/components/invitee-upgrade-banner";
 
 export default function Dashboard() {
@@ -241,6 +242,9 @@ export default function Dashboard() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Payment Success Notification */}
+        <PaymentSuccessNotification />
+        
         {/* Invitee Upgrade Banner */}
         <InviteeUpgradeBanner />
 
