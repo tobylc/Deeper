@@ -126,19 +126,34 @@ export function useWebSocket() {
   const handleNewMessage = (data: any) => {
     if (!data) return;
 
+    console.log('[WebSocket] Processing new message for immediate sync:', data);
 
-
-    // CRITICAL FIX: Force immediate refresh of conversation data for real-time sync
-    // Invalidate and immediately refetch all relevant queries
+    // ENHANCED IMMEDIATE SYNC: Multi-phase approach for instant synchronization
+    // PHASE 1: Immediate cache invalidation
     queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
     queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
     queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
     queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
 
-    // Force immediate refetch to ensure both users see changes instantly
-    queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
-    queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] });
-    queryClient.refetchQueries({ queryKey: ['/api/connections'] });
+    // PHASE 2: Parallel immediate refetch for instant UI updates
+    Promise.all([
+      queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}`] }),
+      queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}/messages`] }),
+      queryClient.refetchQueries({ queryKey: ['/api/connections'] }),
+      queryClient.refetchQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] })
+    ]).then(() => {
+      console.log('[WebSocket] Enhanced new message sync completed');
+    });
+
+    // PHASE 3: Connection-specific sync if available
+    if (data.connectionId) {
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations/message-counts`] });
+        queryClient.refetchQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
+        queryClient.refetchQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations/message-counts`] });
+      }, 25); // Ultra-fast sync for conversation threads
+    }
 
     // Show toast notification
     toast({
@@ -164,19 +179,33 @@ export function useWebSocket() {
 
     // CRITICAL FIX: Handle turn updates to synchronize both users
     if (data.action === 'turn_updated') {
-      console.log('[WebSocket] Turn updated - forcing immediate conversation data refresh for both users');
+      console.log('[WebSocket] Turn updated - ENHANCED immediate conversation data refresh for both users');
       
-      // Force immediate refresh of conversation data to sync turn information
+      // ENHANCED TURN SYNC: Multi-phase parallel approach for instant turn updates
       if (data.conversationId) {
-        // Invalidate and immediately refetch conversation data
-        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
-        queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}`] });
+        // PHASE 1: Immediate conversation state refresh
+        Promise.all([
+          queryClient.invalidateQueries({ queryKey: [`/api/conversations/${data.conversationId}`] }),
+          queryClient.invalidateQueries({ queryKey: ['/api/connections'] }),
+          queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] })
+        ]).then(() => {
+          // PHASE 2: Parallel refetch for instant UI updates
+          return Promise.all([
+            queryClient.refetchQueries({ queryKey: [`/api/conversations/${data.conversationId}`] }),
+            queryClient.refetchQueries({ queryKey: ['/api/connections'] }),
+            queryClient.refetchQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] })
+          ]);
+        }).then(() => {
+          console.log('[WebSocket] Enhanced turn update sync completed');
+        });
         
-        // Also force refresh dashboard and conversation lists
-        queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
-        queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
-        queryClient.refetchQueries({ queryKey: ['/api/connections'] });
-        queryClient.refetchQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+        // PHASE 3: Connection-specific conversation threads sync
+        if (data.connectionId) {
+          setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
+            queryClient.refetchQueries({ queryKey: [`/api/connections/${data.connectionId}/conversations`] });
+          }, 10); // Ultra-fast thread list sync
+        }
       }
       return; // Exit early - no toast needed for turn updates
     }

@@ -399,18 +399,34 @@ export default function ConversationPage() {
           description: "Your question has started a new conversation thread",
         });
       } else {
-        // Regular message sent to existing conversation - FORCE IMMEDIATE SYNC
+        // Regular message sent to existing conversation - ENHANCED IMMEDIATE SYNC
         const conversationId = selectedConversationId || id;
         
-        // Invalidate queries for immediate cache refresh
+        // PHASE 1: Immediate local cache invalidation
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] });
         queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
         queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
         
-        // Force immediate refetch to ensure sender sees updated turn status instantly
-        queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}`] });
-        queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
+        // PHASE 2: Force immediate refetch with no delay
+        Promise.all([
+          queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}`] }),
+          queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] }),
+          queryClient.refetchQueries({ queryKey: ['/api/connections'] }),
+          queryClient.refetchQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] })
+        ]).then(() => {
+          console.log('[SYNC] Immediate sync completed successfully');
+        });
+        
+        // PHASE 3: Enhanced sync for conversation threads if available
+        if (conversation?.connectionId) {
+          setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations`] });
+            queryClient.invalidateQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations/message-counts`] });
+            queryClient.refetchQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations`] });
+            queryClient.refetchQueries({ queryKey: [`/api/connections/${conversation.connectionId}/conversations/message-counts`] });
+          }, 50); // Minimal delay for thread sync
+        }
         
         toast({
           title: "Message sent!",
@@ -462,10 +478,24 @@ export default function ConversationPage() {
       return response.json();
     },
     onSuccess: (data) => {
-
       const conversationId = data.conversation?.id;
       if (conversationId) {
         handleNewThreadCreated(conversationId);
+        
+        // ENHANCED IMMEDIATE SYNC for new thread creation
+        Promise.all([
+          queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] }),
+          queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] }),
+          queryClient.invalidateQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] }),
+          queryClient.invalidateQueries({ queryKey: ['/api/connections'] })
+        ]).then(() => {
+          queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}`] });
+          queryClient.refetchQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
+          queryClient.refetchQueries({ queryKey: [`/api/conversations/by-email/${user?.email}`] });
+          queryClient.refetchQueries({ queryKey: ['/api/connections'] });
+          console.log('[SYNC] New thread immediate sync completed');
+        });
+        
         toast({
           title: "New conversation started!",
           description: "Your question has started a new conversation thread",
@@ -963,63 +993,13 @@ export default function ConversationPage() {
                 <Grid3X3 className="w-3 h-3 mr-1" />
                 Questions
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={async () => {
-                  try {
-                    // Test basic WebSocket connectivity
-                    const wsTestResponse = await fetch('/api/websocket/test');
-                    const wsData = await wsTestResponse.json();
-                    console.log('[WEBSOCKET_TEST] WebSocket test results:', wsData);
-                    
-                    // Test thread synchronization if we have an active conversation
-                    if (conversation?.connectionId && selectedConversationId) {
-                      console.log('[SYNC_TEST] Testing thread synchronization...');
-                      const syncResponse = await fetch(`/api/connections/${conversation.connectionId}/switch-active-thread`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ conversationId: selectedConversationId })
-                      });
-                      
-                      if (syncResponse.ok) {
-                        console.log('[SYNC_TEST] Thread sync notification sent successfully');
-                        toast({
-                          title: "Synchronization Test Complete",
-                          description: `WebSocket: ${wsData.currentUserConnected ? 'Connected' : 'Disconnected'}, Thread sync: Sent`,
-                        });
-                      } else {
-                        console.error('[SYNC_TEST] Thread sync failed:', syncResponse.status);
-                        toast({
-                          title: "Sync Test Results",
-                          description: `WebSocket: ${wsData.currentUserConnected ? 'OK' : 'Failed'}, Thread sync: Failed`,
-                          variant: "destructive"
-                        });
-                      }
-                    } else {
-                      toast({
-                        title: "WebSocket Test",
-                        description: `Connected: ${wsData.currentUserConnected}, Users: ${wsData.connectionCount}`,
-                      });
-                    }
-                  } catch (error) {
-                    console.error('[WEBSOCKET_TEST] Error:', error);
-                    toast({
-                      title: "Test Failed",
-                      description: "Check console for details",
-                      variant: "destructive"
-                    });
-                  }
-                }}
-                className="text-xs px-2 py-1"
-              >
-                Test Sync
-              </Button>
-              <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-500' : 'bg-red-500'}`} 
-                   title={`WebSocket: ${wsConnected ? 'Connected' : `Disconnected (${connectionAttempts} attempts)`}`} />
-              <span className="text-xs text-gray-500">
-                {wsConnected ? 'Live' : 'Offline'}
-              </span>
+              <div className="flex items-center space-x-1">
+                <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-500' : 'bg-red-500'}`} 
+                     title={`WebSocket: ${wsConnected ? 'Connected' : `Disconnected (${connectionAttempts} attempts)`}`} />
+                <span className="text-xs text-gray-500">
+                  {wsConnected ? 'Live' : 'Offline'}
+                </span>
+              </div>
               <Badge variant={isMyTurn ? "default" : "outline"} className="text-xs">
                 {isMyTurn ? "Your turn" : "Their turn"}
               </Badge>
