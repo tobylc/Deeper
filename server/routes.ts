@@ -2353,41 +2353,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (currentConversationId && currentConversationId !== conversationId) {
         const currentMessages = await storage.getMessages(currentConversationId);
         if (currentMessages.length > 0) {
-          // Check if the current thread has a complete question-response exchange
+          // ENHANCED RULE #11: Check for unanswered questions in chronological order
+          // Find the most recent question in the conversation
+          let lastQuestionIndex = -1;
+          let lastQuestion = null;
+          
+          for (let i = currentMessages.length - 1; i >= 0; i--) {
+            if (currentMessages[i].type === 'question') {
+              lastQuestionIndex = i;
+              lastQuestion = currentMessages[i];
+              break;
+            }
+          }
+          
+          // If there's a question in the current conversation, check if it has been answered
+          if (lastQuestionIndex !== -1 && lastQuestion) {
+            const messagesAfterQuestion = currentMessages.slice(lastQuestionIndex + 1);
+            
+            // Look for any response from the person who DIDN'T ask the question
+            const hasResponseFromOtherPerson = messagesAfterQuestion.some(msg => {
+              return msg.senderEmail !== lastQuestion.senderEmail && 
+                     (msg.type === 'response' || msg.type === 'followup');
+            });
+            
+            // If no response from the other person, block thread reopening
+            if (!hasResponseFromOtherPerson) {
+              console.log(`[THREAD-REOPEN] Blocking - Last question from ${lastQuestion.senderEmail} has no response from other person`);
+              console.log(`[THREAD-REOPEN] Current user: ${currentUser.email}, Question sender: ${lastQuestion.senderEmail}`);
+              console.log(`[THREAD-REOPEN] Messages after question: ${messagesAfterQuestion.length}`);
+              
+              return res.json({ 
+                canReopen: false, 
+                reason: "respond_to_question",
+                message: "The current question must be answered before reopening other threads" 
+              });
+            }
+          }
+          
+          // Additional check: if the current conversation has only questions and no responses at all
           const hasQuestions = currentMessages.some(msg => msg.type === 'question');
           const hasResponses = currentMessages.some(msg => msg.type === 'response');
           
-          // If there are questions but no responses, require response first
           if (hasQuestions && !hasResponses) {
+            console.log(`[THREAD-REOPEN] Blocking - Conversation has questions but no responses at all`);
             return res.json({ 
               canReopen: false, 
               reason: "respond_to_question",
               message: "You must respond to the current question before reopening other threads" 
             });
-          }
-          
-          // CORE RULE #10: New Question Response Requirement
-          // ANY new question must receive a response before ANY OTHER ACTION can be performed
-          const lastMessage = currentMessages[currentMessages.length - 1];
-          
-          // Block if there's ANY unanswered question (not just from the other user)
-          // This enforces that new questions must receive responses before thread navigation
-          if (lastMessage.type === 'question') {
-            // Check if this question has been responded to
-            const hasResponse = currentMessages.length > 1 && 
-              currentMessages.some((msg, index) => {
-                return index > currentMessages.findIndex(m => m.id === lastMessage.id) && 
-                       msg.type === 'response';
-              });
-            
-            if (!hasResponse) {
-              const questionSender = lastMessage.senderEmail === currentUser.email ? 'You' : 'The other person';
-              return res.json({ 
-                canReopen: false, 
-                reason: "respond_to_question",
-                message: `${questionSender} asked a question that must be responded to before reopening other threads` 
-              });
-            }
           }
         }
       }
