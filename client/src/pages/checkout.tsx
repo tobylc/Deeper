@@ -73,31 +73,47 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
           // Check payment status and upgrade if needed (webhook fallback)
           setTimeout(async () => {
             try {
-              console.log('[CHECKOUT] Checking payment status for webhook fallback');
-              const checkResponse = await apiRequest("POST", "/api/subscription/check-payment-status", {});
+              console.log('[CHECKOUT] ======== STARTING PAYMENT VERIFICATION ========');
+              const checkResponse = await fetch('/api/subscription/check-payment-status', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              });
               
               if (checkResponse.ok) {
                 const result = await checkResponse.json();
                 console.log('[CHECKOUT] Payment status check result:', result);
                 
                 if (result.upgraded) {
-                  console.log('[CHECKOUT] Subscription upgraded via fallback check');
+                  console.log('[CHECKOUT] ✅ Subscription upgraded via fallback check');
+                  
+                  // Force a brief delay to ensure database consistency
+                  setTimeout(() => {
+                    window.location.href = '/dashboard?from=checkout';
+                  }, 1500);
+                } else {
+                  console.log('[CHECKOUT] ⚠️ No upgrade detected, redirecting anyway');
+                  setTimeout(() => {
+                    window.location.href = '/dashboard?from=checkout';
+                  }, 1000);
                 }
+              } else {
+                console.error('[CHECKOUT] Payment check failed with status:', checkResponse.status);
+                setTimeout(() => {
+                  window.location.href = '/dashboard?from=checkout';
+                }, 1000);
               }
               
-              // Redirect to dashboard after processing
-              setTimeout(() => {
-                window.location.href = '/dashboard?from=checkout';
-              }, 1000);
-              
             } catch (error) {
-              console.warn('Payment status check failed:', error);
+              console.error('[CHECKOUT] Payment status check error:', error);
               // Still redirect to dashboard even if check fails
               setTimeout(() => {
                 window.location.href = '/dashboard?from=checkout';
               }, 1000);
             }
-          }, 2000);
+          }, 3000); // Increased delay to allow webhook processing
           
           onSuccess();
         }
