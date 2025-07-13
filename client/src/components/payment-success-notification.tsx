@@ -17,27 +17,51 @@ export function PaymentSuccessNotification() {
         // Check if user just upgraded from URL parameters or localStorage
         const urlParams = new URLSearchParams(window.location.search);
         const fromCheckout = urlParams.get('from') === 'checkout';
+        const hasDiscountPayment = urlParams.get('payment_success') === 'true' && urlParams.get('discount') === 'true';
         const paymentSuccess = localStorage.getItem('paymentSuccess');
         
-        if (fromCheckout || paymentSuccess) {
+        if (fromCheckout || paymentSuccess || hasDiscountPayment) {
           console.log('[PAYMENT_SUCCESS] Checking for successful payment upgrade');
+          console.log('[PAYMENT_SUCCESS] From checkout:', fromCheckout);
+          console.log('[PAYMENT_SUCCESS] Has discount payment:', hasDiscountPayment);
           
           // Clean up markers
           localStorage.removeItem('paymentSuccess');
-          if (fromCheckout) {
+          if (fromCheckout || hasDiscountPayment) {
             window.history.replaceState({}, '', window.location.pathname);
           }
           
-          // First try to trigger payment status check to upgrade account if needed
-          console.log('[PAYMENT_SUCCESS] Triggering payment status check for potential upgrade');
+          // For discount payments, more aggressive checking
+          const maxAttempts = hasDiscountPayment ? 5 : 2;
+          let upgraded = false;
           
-          await fetch('/api/subscription/check-payment-status', {
-            method: 'POST',
-            credentials: 'include'
-          });
-          
-          // Wait a moment for upgrade to process, then check trial status
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            console.log(`[PAYMENT_SUCCESS] Attempt ${attempt}/${maxAttempts} - Triggering payment status check`);
+            
+            try {
+              const checkResponse = await fetch('/api/subscription/check-payment-status', {
+                method: 'POST',
+                credentials: 'include'
+              });
+              
+              if (checkResponse.ok) {
+                const checkResult = await checkResponse.json();
+                console.log(`[PAYMENT_SUCCESS] Check result:`, checkResult);
+                
+                if (checkResult.upgraded) {
+                  upgraded = true;
+                  break;
+                }
+              }
+            } catch (error) {
+              console.error(`[PAYMENT_SUCCESS] Check attempt ${attempt} failed:`, error);
+            }
+            
+            // Wait before next attempt (longer for later attempts)
+            if (attempt < maxAttempts && !upgraded) {
+              await new Promise(resolve => setTimeout(resolve, attempt * 1500));
+            }
+          }
           
           // Check if user has Advanced plan
           const response = await fetch('/api/trial-status', {

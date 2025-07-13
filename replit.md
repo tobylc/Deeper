@@ -1316,6 +1316,15 @@ Changelog:
   * Confirmed timer only applies to responses, never to questions regardless of source
   * All right column actions (curated, AI, custom questions) properly treated as questions
   * Complete conversation logic integrity maintained across all user interactions
+- July 13, 2025. Enhanced payment processing for 50% discount subscriptions:
+  * Fixed critical issue where $4.95 discount payments succeed but accounts remain in trial status
+  * Enhanced checkout flow to include payment_success and discount URL parameters for better tracking
+  * Improved PaymentSuccessNotification with aggressive retry logic (5 attempts for discount payments)
+  * Added comprehensive payment verification fallbacks checking invoice, metadata, and recent payment intents
+  * Enhanced check-payment-status endpoint to find successful payments through multiple methods
+  * Added subscription price ID checking to identify discount subscriptions more reliably
+  * Implemented subscription status checking (active/incomplete) as additional upgrade trigger
+  * Complete payment verification system ensures successful $4.95 payments always upgrade to Advanced tier
 ```
 
 ## User Preferences

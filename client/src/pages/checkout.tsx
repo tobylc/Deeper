@@ -47,7 +47,7 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
         const { error } = await stripe.confirmPayment({
           elements,
           confirmParams: {
-            return_url: `${window.location.origin}/dashboard`,
+            return_url: `${window.location.origin}/dashboard?payment_success=true&discount=true`,
           },
         });
 
