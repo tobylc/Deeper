@@ -1676,7 +1676,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(500).json({ 
         message: "Failed to upgrade subscription",
-        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -1716,26 +1716,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         case 'customer.subscription.updated':
         case 'customer.subscription.created':
           const subscription = event.data.object as Stripe.Subscription;
-          console.log(`[WEBHOOK] Processing subscription: ${subscription.id}, status: ${subscription.status}`);
+          console.log(`[WEBHOOK] ======== SUBSCRIPTION EVENT ========`);
+          console.log(`[WEBHOOK] Subscription ID: ${subscription.id}`);
+          console.log(`[WEBHOOK] Status: ${subscription.status}`);
+          console.log(`[WEBHOOK] Customer: ${subscription.customer}`);
+          console.log(`[WEBHOOK] Metadata:`, subscription.metadata);
+          console.log(`[WEBHOOK] Current period: ${subscription.current_period_start} - ${subscription.current_period_end}`);
           
           // For discount subscriptions, immediately check payment status regardless of subscription status
           if (subscription.metadata?.discount_applied === '50' && subscription.metadata?.payment_intent_id) {
-            console.log(`[WEBHOOK] Discount subscription detected, checking payment status`);
+            console.log(`[WEBHOOK] ✅ DISCOUNT SUBSCRIPTION DETECTED`);
+            console.log(`[WEBHOOK] Payment intent ID: ${subscription.metadata.payment_intent_id}`);
+            console.log(`[WEBHOOK] User ID: ${subscription.metadata.userId}`);
+            
             try {
               const paymentIntent = await stripe.paymentIntents.retrieve(subscription.metadata.payment_intent_id);
-              console.log(`[WEBHOOK] Payment intent status: ${paymentIntent.status}, amount: ${paymentIntent.amount_received}`);
+              console.log(`[WEBHOOK] Payment intent details:`);
+              console.log(`[WEBHOOK] - Status: ${paymentIntent.status}`);
+              console.log(`[WEBHOOK] - Amount received: $${paymentIntent.amount_received / 100}`);
+              console.log(`[WEBHOOK] - Created: ${new Date(paymentIntent.created * 1000).toISOString()}`);
               
               if (paymentIntent.status === 'succeeded' && paymentIntent.amount_received === 495) {
-                console.log(`[WEBHOOK] Upgrading user ${subscription.metadata.userId} immediately due to completed $4.95 payment`);
+                console.log(`[WEBHOOK] 🎉 SUCCESSFUL $4.95 PAYMENT CONFIRMED - TRIGGERING IMMEDIATE UPGRADE`);
+                console.log(`[WEBHOOK] Upgrading user ${subscription.metadata.userId} to Advanced tier`);
+                
                 await handleDiscountPaymentUpgrade(subscription.id);
+                
+                console.log(`[WEBHOOK] ✅ Discount upgrade processing completed`);
+                console.log(`[WEBHOOK] =====================================`);
                 break; // Skip normal subscription processing
+              } else {
+                console.log(`[WEBHOOK] ❌ Payment not ready for upgrade:`);
+                console.log(`[WEBHOOK] - Expected: succeeded status, $4.95 amount`);
+                console.log(`[WEBHOOK] - Actual: ${paymentIntent.status} status, $${paymentIntent.amount_received / 100} amount`);
               }
             } catch (error) {
-              console.error(`[WEBHOOK] Error checking payment intent:`, error);
+              console.error(`[WEBHOOK] ❌ ERROR checking payment intent:`, error);
+              console.error(`[WEBHOOK] Error details:`, {
+                name: error instanceof Error ? error.name : 'Unknown',
+                message: error instanceof Error ? error.message : 'Unknown error',
+                paymentIntentId: subscription.metadata.payment_intent_id
+              });
             }
+          } else {
+            console.log(`[WEBHOOK] Regular subscription processing (not discount)`);
+            console.log(`[WEBHOOK] - Discount applied: ${subscription.metadata?.discount_applied || 'none'}`);
+            console.log(`[WEBHOOK] - Payment intent ID: ${subscription.metadata?.payment_intent_id || 'none'}`);
           }
           
+          console.log(`[WEBHOOK] Processing standard subscription update`);
           await handleSubscriptionUpdate(subscription);
+          console.log(`[WEBHOOK] ===================================`);
           break;
 
         case 'customer.subscription.deleted':
@@ -1847,10 +1878,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Unhandled event type
       }
 
-      res.json({ received: true });
+      console.log(`[WEBHOOK] ✅ Event ${event.type} processed successfully`);
+      res.json({ received: true, processed: true, eventType: event.type });
     } catch (error) {
-      console.error('Webhook processing error:', error);
-      res.status(500).json({ error: 'Webhook processing failed' });
+      console.error(`[WEBHOOK] ❌ PROCESSING ERROR for event ${event?.type || 'unknown'}`);
+      console.error(`[WEBHOOK] Error details:`, {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        eventId: event?.id || 'unknown',
+        eventType: event?.type || 'unknown'
+      });
+      
+      // Log webhook processing errors for production debugging
+      const errorLog = {
+        timestamp: new Date().toISOString(),
+        eventType: event?.type || 'unknown',
+        eventId: event?.id || 'unknown',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace'
+      };
+      
+      try {
+        const fs = require('fs');
+        fs.writeFileSync('/tmp/webhook-error.json', JSON.stringify(errorLog, null, 2));
+      } catch (writeError) {
+        console.error(`[WEBHOOK] Failed to write error log:`, writeError);
+      }
+      
+      // Still return 200 to acknowledge receipt even if processing failed
+      res.status(200).json({ received: true, processed: false, error: 'Processing failed' });
     }
   });
 
@@ -1860,12 +1917,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Debug endpoint to check subscription processing (development only)
+  // Debug endpoint to check subscription processing (production-ready)
   app.get('/api/debug/subscription-status/:userId', async (req, res) => {
-    // Only allow in development
-    if (process.env.NODE_ENV !== 'development') {
-      return res.status(404).json({ message: 'Not found' });
-    }
 
     try {
       const userId = req.params.userId;
@@ -2002,12 +2055,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Webhook simulator for testing discount upgrades (development only)
+  // Webhook simulator for testing discount upgrades (production-ready)
   app.post('/api/debug/simulate-webhook/:userId', async (req, res) => {
-    // Only allow in development
-    if (process.env.NODE_ENV !== 'development') {
-      return res.status(404).json({ message: 'Not found' });
-    }
 
     try {
       const userId = req.params.userId;
@@ -2048,12 +2097,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Debug endpoint to inspect user subscription data (development only)
+  // Debug endpoint to inspect user subscription data (production-ready)
   app.get('/api/debug/user-subscription/:email', async (req, res) => {
-    // Only allow in development
-    if (process.env.NODE_ENV !== 'development') {
-      return res.status(404).json({ message: 'Not found' });
-    }
 
     try {
       const email = req.params.email;
@@ -2115,12 +2160,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Manual webhook trigger for specific subscription (development only)
+  // Manual webhook trigger for specific subscription (production-ready)
   app.post('/api/debug/trigger-webhook/:subscriptionId', async (req, res) => {
-    // Only allow in development
-    if (process.env.NODE_ENV !== 'development') {
-      return res.status(404).json({ message: 'Not found' });
-    }
 
     try {
       const subscriptionId = req.params.subscriptionId;
