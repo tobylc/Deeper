@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Crown, Sparkles } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function PaymentSuccessNotification() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [hasCheckedPayment, setHasCheckedPayment] = useState(false);
 
   useEffect(() => {
@@ -54,6 +56,21 @@ export function PaymentSuccessNotification() {
                 if (checkResult.upgraded) {
                   upgraded = true;
                   console.log(`[PAYMENT_SUCCESS] ✅ Upgrade detected on attempt ${attempt}`);
+                  
+                  // Immediately invalidate all cached data to refresh the UI
+                  console.log(`[PAYMENT_SUCCESS] Invalidating all cached data to refresh UI`);
+                  await queryClient.invalidateQueries();
+                  
+                  // Force refetch of specific critical queries
+                  await queryClient.refetchQueries({ queryKey: ['/api/trial-status'] });
+                  await queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
+                  
+                  // As a final measure, reload the page after a short delay to ensure all UI updates
+                  setTimeout(() => {
+                    console.log(`[PAYMENT_SUCCESS] Reloading page to ensure UI consistency`);
+                    window.location.reload();
+                  }, 2000);
+                  
                   break;
                 }
               } else {
@@ -79,6 +96,15 @@ export function PaymentSuccessNotification() {
           
           if (response.ok) {
             const trialStatus = await response.json();
+            console.log(`[PAYMENT_SUCCESS] Final trial status check:`, trialStatus);
+            
+            // Always invalidate cache after checking trial status to ensure UI refresh
+            console.log(`[PAYMENT_SUCCESS] Invalidating cache to ensure UI reflects database state`);
+            await queryClient.invalidateQueries();
+            
+            // Force refetch of critical user data
+            await queryClient.refetchQueries({ queryKey: ['/api/trial-status'] });
+            await queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
             
             if (trialStatus.subscriptionTier === 'advanced') {
               // Show success notification
@@ -98,6 +124,9 @@ export function PaymentSuccessNotification() {
                   duration: 6000
                 });
               }, 2000);
+            } else {
+              console.log(`[PAYMENT_SUCCESS] User tier is not advanced: ${trialStatus.subscriptionTier}`);
+              console.log(`[PAYMENT_SUCCESS] Subscription status: ${trialStatus.subscriptionStatus}`);
             }
           }
         }
