@@ -13,6 +13,7 @@ import { eq, or, and, sql, desc } from "drizzle-orm";
 export interface IStorage {
   // Users
   getUser(id: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
@@ -77,6 +78,11 @@ export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const allUsers = await db.select().from(users);
+    return allUsers;
   }
 
   async createUser(userData: InsertUser): Promise<User> {
@@ -189,6 +195,10 @@ export class DatabaseStorage implements IStorage {
     phoneVerified?: boolean;
     notificationPreference?: string;
   }): Promise<User | undefined> {
+    console.log(`[STORAGE] ======== UPDATING USER SUBSCRIPTION ========`);
+    console.log(`[STORAGE] User ID: ${userId}`);
+    console.log(`[STORAGE] Input data:`, JSON.stringify(subscriptionData, null, 2));
+    
     const updateData: any = {
       subscriptionTier: subscriptionData.subscriptionTier,
       subscriptionStatus: subscriptionData.subscriptionStatus,
@@ -215,12 +225,36 @@ export class DatabaseStorage implements IStorage {
       updateData.notificationPreference = subscriptionData.notificationPreference;
     }
 
-    const [user] = await db
-      .update(users)
-      .set(updateData)
-      .where(eq(users.id, userId))
-      .returning();
-    return user || undefined;
+    console.log(`[STORAGE] Final update data:`, JSON.stringify(updateData, null, 2));
+
+    try {
+      const [user] = await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, userId))
+        .returning();
+      
+      console.log(`[STORAGE] Database update completed. Returned user:`, user ? {
+        id: user.id,
+        email: user.email,
+        subscriptionTier: user.subscriptionTier,
+        subscriptionStatus: user.subscriptionStatus,
+        maxConnections: user.maxConnections,
+        stripeSubscriptionId: user.stripeSubscriptionId,
+        updatedAt: user.updatedAt
+      } : 'NULL');
+      
+      return user || undefined;
+    } catch (error) {
+      console.error(`[STORAGE] Database update failed:`, error);
+      console.error(`[STORAGE] Error details:`, {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        userId,
+        updateData
+      });
+      throw error;
+    }
   }
 
   // Connections

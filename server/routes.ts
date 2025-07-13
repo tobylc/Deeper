@@ -233,18 +233,20 @@ async function handleDiscountPaymentUpgrade(subscriptionId: string) {
   try {
     console.log(`[DISCOUNT-UPGRADE] ======== PROCESSING DISCOUNT UPGRADE ========`);
     console.log(`[DISCOUNT-UPGRADE] Subscription ID: ${subscriptionId}`);
+    console.log(`[DISCOUNT-UPGRADE] Timestamp: ${new Date().toISOString()}`);
     
     const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
       expand: ['latest_invoice.payment_intent']
     });
     
     console.log(`[DISCOUNT-UPGRADE] Subscription status: ${subscription.status}`);
-    console.log(`[DISCOUNT-UPGRADE] Subscription metadata:`, subscription.metadata);
+    console.log(`[DISCOUNT-UPGRADE] Subscription metadata:`, JSON.stringify(subscription.metadata, null, 2));
     
     const userId = subscription.metadata?.userId;
     
     if (!userId) {
       console.log(`[DISCOUNT-UPGRADE] ERROR: No userId found in subscription metadata`);
+      console.log(`[DISCOUNT-UPGRADE] Available metadata keys:`, Object.keys(subscription.metadata || {}));
       return;
     }
     
@@ -259,8 +261,33 @@ async function handleDiscountPaymentUpgrade(subscriptionId: string) {
     console.log(`[DISCOUNT-UPGRADE] Current tier: ${user.subscriptionTier}`);
     console.log(`[DISCOUNT-UPGRADE] Current status: ${user.subscriptionStatus}`);
     console.log(`[DISCOUNT-UPGRADE] Current maxConnections: ${user.maxConnections}`);
+    console.log(`[DISCOUNT-UPGRADE] Current stripeSubscriptionId: ${user.stripeSubscriptionId}`);
+    
+    // Check if payment was actually successful before upgrading
+    const latestInvoice = subscription.latest_invoice as any;
+    if (latestInvoice) {
+      console.log(`[DISCOUNT-UPGRADE] Latest invoice amount: $${latestInvoice.amount_paid / 100}`);
+      console.log(`[DISCOUNT-UPGRADE] Payment intent status: ${latestInvoice.payment_intent?.status}`);
+      
+      if (latestInvoice.amount_paid !== 495) {
+        console.log(`[DISCOUNT-UPGRADE] WARNING: Expected $4.95 payment but found $${latestInvoice.amount_paid / 100}`);
+      }
+      
+      if (latestInvoice.payment_intent?.status !== 'succeeded') {
+        console.log(`[DISCOUNT-UPGRADE] WARNING: Payment intent not succeeded: ${latestInvoice.payment_intent?.status}`);
+      }
+    }
     
     // Upgrade to Advanced tier for $4.95 payment
+    console.log(`[DISCOUNT-UPGRADE] Calling storage.updateUserSubscription with:`, {
+      subscriptionTier: 'advanced',
+      subscriptionStatus: 'active',
+      maxConnections: 3,
+      stripeCustomerId: nullToUndefined(user.stripeCustomerId),
+      stripeSubscriptionId: subscriptionId,
+      subscriptionExpiresAt: undefined
+    });
+    
     const upgradeResult = await storage.updateUserSubscription(userId, {
       subscriptionTier: 'advanced',
       subscriptionStatus: 'active', 
@@ -270,20 +297,40 @@ async function handleDiscountPaymentUpgrade(subscriptionId: string) {
       subscriptionExpiresAt: undefined
     });
     
-    console.log(`[DISCOUNT-UPGRADE] Database update result:`, upgradeResult ? 'SUCCESS' : 'FAILED');
+    console.log(`[DISCOUNT-UPGRADE] Database update returned:`, upgradeResult);
+    console.log(`[DISCOUNT-UPGRADE] Database update result type:`, typeof upgradeResult);
+    console.log(`[DISCOUNT-UPGRADE] Database update success:`, upgradeResult ? 'TRUE' : 'FALSE');
     
-    // Verify the upgrade was successful
+    // Wait a moment and then verify the upgrade was successful
+    await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
+    
     const updatedUser = await storage.getUser(userId);
     if (updatedUser) {
       console.log(`[DISCOUNT-UPGRADE] AFTER upgrade verification:`);
       console.log(`[DISCOUNT-UPGRADE] New tier: ${updatedUser.subscriptionTier}`);
       console.log(`[DISCOUNT-UPGRADE] New status: ${updatedUser.subscriptionStatus}`);
       console.log(`[DISCOUNT-UPGRADE] New maxConnections: ${updatedUser.maxConnections}`);
+      console.log(`[DISCOUNT-UPGRADE] New stripeSubscriptionId: ${updatedUser.stripeSubscriptionId}`);
+      console.log(`[DISCOUNT-UPGRADE] Updated at: ${updatedUser.updatedAt}`);
       
-      if (updatedUser.subscriptionTier === 'advanced') {
-        console.log(`[DISCOUNT-UPGRADE] ✅ SUCCESS: User ${userId} successfully upgraded to Advanced tier`);
+      if (updatedUser.subscriptionTier === 'advanced' && updatedUser.subscriptionStatus === 'active') {
+        console.log(`[DISCOUNT-UPGRADE] ✅ SUCCESS: User ${userId} (${user.email}) successfully upgraded to Advanced tier`);
       } else {
-        console.log(`[DISCOUNT-UPGRADE] ❌ FAILURE: User ${userId} upgrade failed - still showing ${updatedUser.subscriptionTier}`);
+        console.log(`[DISCOUNT-UPGRADE] ❌ FAILURE: User ${userId} upgrade failed`);
+        console.log(`[DISCOUNT-UPGRADE] Expected: tier=advanced, status=active`);
+        console.log(`[DISCOUNT-UPGRADE] Actual: tier=${updatedUser.subscriptionTier}, status=${updatedUser.subscriptionStatus}`);
+        
+        // Try to upgrade again with more explicit parameters
+        console.log(`[DISCOUNT-UPGRADE] Attempting secondary upgrade...`);
+        const secondUpgrade = await storage.updateUserSubscription(userId, {
+          subscriptionTier: 'advanced',
+          subscriptionStatus: 'active',
+          maxConnections: 3,
+          stripeCustomerId: user.stripeCustomerId || undefined,
+          stripeSubscriptionId: subscriptionId,
+          subscriptionExpiresAt: undefined
+        });
+        console.log(`[DISCOUNT-UPGRADE] Secondary upgrade result:`, secondUpgrade);
       }
     } else {
       console.error(`[DISCOUNT-UPGRADE] ❌ CRITICAL ERROR: Could not retrieve user ${userId} after upgrade attempt`);
@@ -294,6 +341,11 @@ async function handleDiscountPaymentUpgrade(subscriptionId: string) {
   } catch (error) {
     console.error(`[DISCOUNT-UPGRADE] ❌ CRITICAL ERROR during upgrade:`, error);
     console.error(`[DISCOUNT-UPGRADE] Stack trace:`, error instanceof Error ? error.stack : 'Unknown error');
+    console.error(`[DISCOUNT-UPGRADE] Error details:`, {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      subscriptionId
+    });
   }
 }
 
@@ -1807,6 +1859,341 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+
+  // Debug endpoint to check subscription processing (development only)
+  app.get('/api/debug/subscription-status/:userId', async (req, res) => {
+    // Only allow in development
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+
+    try {
+      const userId = req.params.userId;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      let stripeSubscription = null;
+      if (user.stripeSubscriptionId) {
+        try {
+          stripeSubscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, {
+            expand: ['latest_invoice.payment_intent']
+          });
+        } catch (error) {
+          console.error('Error fetching Stripe subscription:', error);
+        }
+      }
+
+      return res.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          subscriptionTier: user.subscriptionTier,
+          subscriptionStatus: user.subscriptionStatus,
+          maxConnections: user.maxConnections,
+          stripeCustomerId: user.stripeCustomerId,
+          stripeSubscriptionId: user.stripeSubscriptionId,
+          trialStartedAt: user.trialStartedAt,
+          subscriptionExpiresAt: user.subscriptionExpiresAt
+        },
+        stripeSubscription: stripeSubscription ? {
+          id: stripeSubscription.id,
+          status: stripeSubscription.status,
+          metadata: stripeSubscription.metadata,
+          latest_invoice: stripeSubscription.latest_invoice ? {
+            amount_paid: (stripeSubscription.latest_invoice as any).amount_paid,
+            payment_intent: (stripeSubscription.latest_invoice as any).payment_intent ? {
+              status: (stripeSubscription.latest_invoice as any).payment_intent.status,
+              amount_received: (stripeSubscription.latest_invoice as any).payment_intent.amount_received
+            } : null
+          } : null
+        } : null
+      });
+    } catch (error) {
+      console.error('Debug subscription status error:', error);
+      res.status(500).json({ message: 'Internal error' });
+    }
+  });
+
+  // Manual upgrade endpoint for fixing subscription issues (development only)
+  app.post('/api/debug/force-upgrade/:userId', async (req, res) => {
+    // Only allow in development
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+
+    try {
+      const userId = req.params.userId;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      console.log(`[MANUAL-UPGRADE] Manually upgrading user ${userId} to Advanced tier`);
+      console.log(`[MANUAL-UPGRADE] Current tier: ${user.subscriptionTier}, status: ${user.subscriptionStatus}`);
+
+      // Force upgrade to Advanced tier
+      const upgradeResult = await storage.updateUserSubscription(userId, {
+        subscriptionTier: 'advanced',
+        subscriptionStatus: 'active',
+        maxConnections: 3,
+        stripeCustomerId: user.stripeCustomerId || undefined,
+        stripeSubscriptionId: user.stripeSubscriptionId || undefined,
+        subscriptionExpiresAt: undefined
+      });
+
+      console.log(`[MANUAL-UPGRADE] Upgrade result:`, upgradeResult ? 'SUCCESS' : 'FAILED');
+
+      // Verify the upgrade
+      const updatedUser = await storage.getUser(userId);
+      
+      return res.json({
+        success: !!upgradeResult,
+        before: {
+          tier: user.subscriptionTier,
+          status: user.subscriptionStatus,
+          maxConnections: user.maxConnections
+        },
+        after: updatedUser ? {
+          tier: updatedUser.subscriptionTier,
+          status: updatedUser.subscriptionStatus,
+          maxConnections: updatedUser.maxConnections
+        } : null,
+        message: upgradeResult ? 'User successfully upgraded to Advanced tier' : 'Upgrade failed'
+      });
+    } catch (error) {
+      console.error('Manual upgrade error:', error);
+      res.status(500).json({ message: 'Internal error', error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // List all users for debugging (development only)
+  app.get('/api/debug/users', async (req, res) => {
+    // Only allow in development
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+
+    try {
+      const allUsers = await storage.getAllUsers();
+      
+      const usersWithSubscriptions = allUsers.map(user => ({
+        id: user.id,
+        email: user.email,
+        subscriptionTier: user.subscriptionTier,
+        subscriptionStatus: user.subscriptionStatus,
+        maxConnections: user.maxConnections,
+        stripeCustomerId: user.stripeCustomerId,
+        stripeSubscriptionId: user.stripeSubscriptionId,
+        trialStartedAt: user.trialStartedAt,
+        subscriptionExpiresAt: user.subscriptionExpiresAt
+      }));
+
+      return res.json({
+        total: usersWithSubscriptions.length,
+        users: usersWithSubscriptions
+      });
+    } catch (error) {
+      console.error('Debug users list error:', error);
+      res.status(500).json({ message: 'Internal error' });
+    }
+  });
+
+  // Webhook simulator for testing discount upgrades (development only)
+  app.post('/api/debug/simulate-webhook/:userId', async (req, res) => {
+    // Only allow in development
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+
+    try {
+      const userId = req.params.userId;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeSubscriptionId) {
+        return res.status(404).json({ message: 'User not found or no subscription ID' });
+      }
+
+      console.log(`[WEBHOOK-SIMULATOR] ======== SIMULATING DISCOUNT UPGRADE WEBHOOK ========`);
+      console.log(`[WEBHOOK-SIMULATOR] User: ${user.email} (${userId})`);
+      console.log(`[WEBHOOK-SIMULATOR] Subscription ID: ${user.stripeSubscriptionId}`);
+      
+      // Manually trigger the discount upgrade process
+      await handleDiscountPaymentUpgrade(user.stripeSubscriptionId);
+      
+      // Check the result
+      const updatedUser = await storage.getUser(userId);
+      
+      return res.json({
+        success: true,
+        user: user.email,
+        before: {
+          tier: user.subscriptionTier,
+          status: user.subscriptionStatus,
+          maxConnections: user.maxConnections
+        },
+        after: updatedUser ? {
+          tier: updatedUser.subscriptionTier,
+          status: updatedUser.subscriptionStatus,
+          maxConnections: updatedUser.maxConnections
+        } : null,
+        upgraded: updatedUser?.subscriptionTier === 'advanced' && updatedUser?.subscriptionStatus === 'active'
+      });
+    } catch (error) {
+      console.error('Webhook simulation error:', error);
+      res.status(500).json({ message: 'Simulation failed', error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Debug endpoint to inspect user subscription data (development only)
+  app.get('/api/debug/user-subscription/:email', async (req, res) => {
+    // Only allow in development
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+
+    try {
+      const email = req.params.email;
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Get Stripe subscription if it exists
+      let stripeSubscription = null;
+      if (user.stripeSubscriptionId) {
+        try {
+          stripeSubscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, {
+            expand: ['latest_invoice.payment_intent']
+          });
+        } catch (stripeError) {
+          console.error('Error fetching Stripe subscription:', stripeError);
+        }
+      }
+
+      return res.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          subscriptionTier: user.subscriptionTier,
+          subscriptionStatus: user.subscriptionStatus,
+          maxConnections: user.maxConnections,
+          stripeCustomerId: user.stripeCustomerId,
+          stripeSubscriptionId: user.stripeSubscriptionId,
+          subscriptionExpiresAt: user.subscriptionExpiresAt,
+          trialStartedAt: user.trialStartedAt,
+          trialExpiresAt: user.trialExpiresAt,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        },
+        stripe: stripeSubscription ? {
+          id: stripeSubscription.id,
+          status: stripeSubscription.status,
+          metadata: stripeSubscription.metadata,
+          current_period_start: stripeSubscription.current_period_start,
+          current_period_end: stripeSubscription.current_period_end,
+          latest_invoice: stripeSubscription.latest_invoice ? {
+            id: (stripeSubscription.latest_invoice as any).id,
+            amount_paid: (stripeSubscription.latest_invoice as any).amount_paid,
+            payment_intent: (stripeSubscription.latest_invoice as any).payment_intent ? {
+              id: (stripeSubscription.latest_invoice as any).payment_intent.id,
+              status: (stripeSubscription.latest_invoice as any).payment_intent.status,
+              amount_received: (stripeSubscription.latest_invoice as any).payment_intent.amount_received
+            } : null
+          } : null
+        } : null
+      });
+    } catch (error) {
+      console.error('Debug user subscription error:', error);
+      res.status(500).json({ message: 'Internal error' });
+    }
+  });
+
+  // Manual webhook trigger for specific subscription (development only)
+  app.post('/api/debug/trigger-webhook/:subscriptionId', async (req, res) => {
+    // Only allow in development
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+
+    try {
+      const subscriptionId = req.params.subscriptionId;
+      const { eventType = 'customer.subscription.created' } = req.body;
+      
+      console.log(`[WEBHOOK-TRIGGER] ======== MANUAL WEBHOOK TRIGGER ========`);
+      console.log(`[WEBHOOK-TRIGGER] Subscription ID: ${subscriptionId}`);
+      console.log(`[WEBHOOK-TRIGGER] Event Type: ${eventType}`);
+      
+      // Retrieve the subscription from Stripe
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+        expand: ['latest_invoice.payment_intent']
+      });
+      
+      console.log(`[WEBHOOK-TRIGGER] Retrieved subscription:`, {
+        id: subscription.id,
+        status: subscription.status,
+        metadata: subscription.metadata
+      });
+      
+      // Simulate the webhook event
+      const mockEvent = {
+        type: eventType,
+        data: {
+          object: subscription
+        }
+      };
+      
+      // Process based on event type
+      switch (eventType) {
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+          await handleSubscriptionUpdate(subscription);
+          break;
+        
+        case 'discount_payment_upgrade':
+          await handleDiscountPaymentUpgrade(subscriptionId);
+          break;
+          
+        default:
+          return res.status(400).json({ message: 'Unsupported event type' });
+      }
+      
+      // Check the result
+      const userId = subscription.metadata?.userId;
+      if (userId) {
+        const updatedUser = await storage.getUser(userId);
+        return res.json({
+          success: true,
+          eventType,
+          subscriptionId,
+          userId,
+          user: updatedUser ? {
+            email: updatedUser.email,
+            tier: updatedUser.subscriptionTier,
+            status: updatedUser.subscriptionStatus,
+            maxConnections: updatedUser.maxConnections
+          } : null
+        });
+      }
+      
+      return res.json({
+        success: true,
+        eventType,
+        subscriptionId,
+        message: 'Webhook processed but no user found'
+      });
+      
+    } catch (error) {
+      console.error('Manual webhook trigger error:', error);
+      res.status(500).json({ message: 'Webhook trigger failed', error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
 
   // Get subscription status
   app.get('/api/subscriptions/status', isAuthenticated, async (req: any, res) => {
