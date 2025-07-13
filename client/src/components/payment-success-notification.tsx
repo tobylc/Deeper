@@ -57,19 +57,16 @@ export function PaymentSuccessNotification() {
                   upgraded = true;
                   console.log(`[PAYMENT_SUCCESS] ✅ Upgrade detected on attempt ${attempt}`);
                   
-                  // Immediately invalidate all cached data to refresh the UI
-                  console.log(`[PAYMENT_SUCCESS] Invalidating all cached data to refresh UI`);
+                  // Wait a moment to ensure backend has fully processed the upgrade
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                  
+                  // Smoothly refresh the UI by invalidating cached data
+                  console.log(`[PAYMENT_SUCCESS] Refreshing UI data after successful upgrade`);
                   await queryClient.invalidateQueries();
                   
-                  // Force refetch of specific critical queries
+                  // Force refetch of specific critical queries to ensure immediate UI updates
                   await queryClient.refetchQueries({ queryKey: ['/api/trial-status'] });
                   await queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
-                  
-                  // As a final measure, reload the page after a short delay to ensure all UI updates
-                  setTimeout(() => {
-                    console.log(`[PAYMENT_SUCCESS] Reloading page to ensure UI consistency`);
-                    window.location.reload();
-                  }, 2000);
                   
                   break;
                 }
@@ -98,20 +95,16 @@ export function PaymentSuccessNotification() {
             const trialStatus = await response.json();
             console.log(`[PAYMENT_SUCCESS] Final trial status check:`, trialStatus);
             
-            // Always invalidate cache after checking trial status to ensure UI refresh
-            console.log(`[PAYMENT_SUCCESS] Invalidating cache to ensure UI reflects database state`);
-            await queryClient.invalidateQueries();
-            
-            // Force refetch of critical user data
-            await queryClient.refetchQueries({ queryKey: ['/api/trial-status'] });
-            await queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
+            // Final cache refresh to ensure UI consistency
+            console.log(`[PAYMENT_SUCCESS] Final UI refresh to ensure consistency`);
+            await queryClient.invalidateQueries({ queryKey: ['/api/trial-status'] });
+            await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
             
             if (trialStatus.subscriptionTier === 'advanced') {
-              // Show success notification
+              // Show success notification with application's standard styling
               toast({
                 title: "🎉 Welcome to Advanced!",
                 description: "Your payment was successful. You now have access to 3 connections and all premium features!",
-                className: "bg-gradient-to-r from-green-50 to-green-100 border-green-200 text-green-800",
                 duration: 8000
               });
               
@@ -120,7 +113,6 @@ export function PaymentSuccessNotification() {
                 toast({
                   title: "✨ Advanced Plan Activated",
                   description: "Start inviting up to 3 people for deeper conversations!",
-                  className: "bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200 text-blue-800",
                   duration: 6000
                 });
               }, 2000);
