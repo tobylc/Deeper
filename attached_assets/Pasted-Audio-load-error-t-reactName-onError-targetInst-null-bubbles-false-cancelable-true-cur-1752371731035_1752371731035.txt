@@ -1,0 +1,100 @@
+Audio load error:
+t
+
+_reactName: "onError"
+
+_targetInst: null
+
+bubbles: false
+
+cancelable: true
+
+currentTarget: null
+
+defaultPrevented: false
+
+eventPhase: 2
+
+isDefaultPrevented: function()
+
+isPropagationStopped: function()
+
+isTrusted: true
+
+nativeEvent: Event {isTrusted: true, type: "error", target: <audio>, currentTarget: null, eventPhase: 0, …}
+
+target: <audio>
+
+timeStamp: 21294097
+
+type: "error"
+
+t Prototype
+
+constructor: function(r,n,i,a,s)
+
+isPersistent()
+
+persist()
+
+preventDefault()
+
+stopPropagation()
+
+Object Prototype
+
+__defineGetter__(propertyName, getterFunction)
+
+__defineSetter__(propertyName, setterFunction)
+
+__lookupGetter__(propertyName)
+
+__lookupSetter__(propertyName)
+
+constructor: function()
+
+hasOwnProperty(propertyName)
+
+isPrototypeOf(property)
+
+propertyIsEnumerable(propertyName)
+
+toLocaleString()
+
+toString()
+
+valueOf()
+Audio loading error:
+Event
+
+bubbles: false
+
+cancelBubble: false
+
+cancelable: true
+
+composed: false
+
+currentTarget: null
+
+defaultPrevented: false
+
+eventPhase: 0
+
+isTrusted: true
+
+returnValue: true
+
+srcElement: <audio>
+
+target: <audio>
+
+timeStamp: 21294097
+
+type: "error"
+
+Event Prototype
+Audio playback error:
+Error: Audio load failed: Unknown audio error
+k — index-NOfDSZd4.js:23172
+WebSocket connection to 'wss://joindeeper.com/ws?email=toby%40gowithclark.com&userId=ae0b5abd-2cd0-4f05-9d06-b7dcd16265d4' failed: The network connection was lost.[WebSocket] Disconnected:1006""[WebSocket] Reconnecting in 1000ms (attempt 1)[TURN_DEBUG] Conversation ID:102"currentTurn:""thetobyclarkshow@gmail.com""currentUserEmail:""toby@gowithclark.com"[TURN_DEBUG] Conversation ID:105"currentTurn:""thetobyclarkshow@gmail.com""currentUserEmail:""toby@gowithclark.com"[TURN_DEBUG] Conversation ID:104"currentTurn:""thetobyclarkshow@gmail.com""currentUserEmail:""toby@gowithclark.com"[TURN_DEBUG] Conversation ID:103"currentTurn:""thetobyclarkshow@gmail.com""currentUserEmail:""toby@gowithclark.com"[WebSocket] Attempting to connect to:"wss://joindeeper.com/ws?email=toby%40gowithclark.com&userId=ae0b5abd-2cd0-4f05-9d06-b7dcd16265d4"[TURN_DEBUG] Conversation ID:102"currentTurn:""thetobyclarkshow@gmail.com""currentUserEmail:""toby@gowithclark.com"[TURN_DEBUG] Conversation ID:105"currentTurn:""thetobyclarkshow@gmail.com""currentUserEmail:""toby@gowithclark.com"[TURN_DEBUG] Conversation ID:104"currentTurn:""thetobyclarkshow@gmail.com""currentUserEmail:""toby@gowithclark.com"[TURN_DEBUG] Conversation ID:103"currentTurn:""thetobyclarkshow@gmail.com""currentUserEmail:""toby@gowithclark.com"[WebSocket] Connected successfully[WebSocket] Sent dashboard subscription request[TURN_DEBUG] Conversation ID:102"currentTurn:""thetobyclarkshow@gmail.com""currentUserEmail:""toby@gowithclark.com"[TURN_DEBUG] Conversation ID:105"currentTurn:""thetobyclarkshow@gmail.com""currentUserEmail:""toby@gowithclark.com"[TURN_DEBUG] Conversation ID:104"currentTurn:""thetobyclarkshow@gmail.com""currentUserEmail:""toby@gowithclark.com"[TURN_DEBUG] Conversation ID:103"currentTurn:""thetobyclarkshow@gmail.com""currentUserEmail:""toby@gowithclark.com"
