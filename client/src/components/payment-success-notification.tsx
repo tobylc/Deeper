@@ -47,11 +47,19 @@ export function PaymentSuccessNotification() {
               if (checkResponse.ok) {
                 const checkResult = await checkResponse.json();
                 console.log(`[PAYMENT_SUCCESS] Check result:`, checkResult);
+                console.log(`[PAYMENT_SUCCESS] Check result upgraded:`, checkResult.upgraded);
+                console.log(`[PAYMENT_SUCCESS] Check result tier:`, checkResult.tier);
+                console.log(`[PAYMENT_SUCCESS] Check result message:`, checkResult.message);
                 
                 if (checkResult.upgraded) {
                   upgraded = true;
+                  console.log(`[PAYMENT_SUCCESS] ✅ Upgrade detected on attempt ${attempt}`);
                   break;
                 }
+              } else {
+                console.error(`[PAYMENT_SUCCESS] Check response not ok:`, checkResponse.status, checkResponse.statusText);
+                const errorText = await checkResponse.text();
+                console.error(`[PAYMENT_SUCCESS] Error response:`, errorText);
               }
             } catch (error) {
               console.error(`[PAYMENT_SUCCESS] Check attempt ${attempt} failed:`, error);

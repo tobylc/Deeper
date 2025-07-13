@@ -1,0 +1,33 @@
+dashboard?payment_success=true&discount=true&payment_intent=pi_3RkWfuJk5EQAqG1W1CldtfoI&payment_intent_client_secret=pi_3RkWfuJk5EQAqG1W1CldtfoI_secret_MamuKZ6CzIjgF8JFpKmLVNj84&redirect_status=succeeded:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.Understand this error
+content.js:30 Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+index-iPwpZIsh.js:435 [WebSocket] Attempting to connect to: wss://joindeeper.com/ws?email=thetobyclarkshow%40gmail.com&userId=google_107906065894691225512
+index-iPwpZIsh.js:435 [WebSocket] Connected successfully
+index-iPwpZIsh.js:435 [WebSocket] Sent dashboard subscription request
+index-iPwpZIsh.js:435 [PAYMENT_SUCCESS] Checking for successful payment upgrade
+index-iPwpZIsh.js:435 [PAYMENT_SUCCESS] From checkout: false
+index-iPwpZIsh.js:435 [PAYMENT_SUCCESS] Has discount payment: true
+index-iPwpZIsh.js:435 [PAYMENT_SUCCESS] Attempt 1/5 - Triggering payment status check
+index-iPwpZIsh.js:435 [PAYMENT_SUCCESS] Check result: Object
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+dom.js?token=922637-693488-282106:893 initEternlDomAPI: domId 431602-467454-456903 true
+initEternlDomAPI @ dom.js?token=922637-693488-282106:893Understand this warning
+dom.js?token=922637-693488-282106:894 initEternlDomAPI: href https://m.stripe.network/inner.html#url=https%3A%2F%2Fjoindeeper.com%2Fdashboard&title=&referrer=https%3A%2F%2Fjoindeeper.com%2Fcheckout%2Fadvanced%3Fdiscount%3D50&muid=ebea5655-8fb2-4980-9e83-719a9117012a7d696a&sid=4003b698-cace-456f-929d-ae498b878bb6c2d9a3&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=922637-693488-282106:894Understand this warning
+dom.js?token=30926-113315-764939:893 initEternlDomAPI: domId 799483-765256-686732 true
+initEternlDomAPI @ dom.js?token=30926-113315-764939:893Understand this warning
+dom.js?token=30926-113315-764939:894 initEternlDomAPI: href https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.ht
