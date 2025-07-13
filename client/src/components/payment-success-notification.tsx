@@ -28,6 +28,17 @@ export function PaymentSuccessNotification() {
             window.history.replaceState({}, '', window.location.pathname);
           }
           
+          // First try to trigger payment status check to upgrade account if needed
+          console.log('[PAYMENT_SUCCESS] Triggering payment status check for potential upgrade');
+          
+          await fetch('/api/subscription/check-payment-status', {
+            method: 'POST',
+            credentials: 'include'
+          });
+          
+          // Wait a moment for upgrade to process, then check trial status
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           // Check if user has Advanced plan
           const response = await fetch('/api/trial-status', {
             method: 'GET',

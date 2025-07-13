@@ -2376,17 +2376,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if subscription has a successful payment but user isn't upgraded
       const latestInvoice = subscription.latest_invoice as any;
       const isDiscountSubscription = subscription.metadata?.discount_applied === '50';
+      const paymentIntentId = subscription.metadata?.payment_intent_id;
       
       console.log(`[PAYMENT_CHECK] Latest invoice details:`);
       console.log(`[PAYMENT_CHECK] - Invoice ID: ${latestInvoice?.id}`);
       console.log(`[PAYMENT_CHECK] - Amount paid: ${latestInvoice?.amount_paid}`);
       console.log(`[PAYMENT_CHECK] - Payment intent status: ${latestInvoice?.payment_intent?.status}`);
       console.log(`[PAYMENT_CHECK] - Is discount subscription: ${isDiscountSubscription}`);
+      console.log(`[PAYMENT_CHECK] - Payment intent ID in metadata: ${paymentIntentId}`);
       
-      if (latestInvoice?.payment_intent?.status === 'succeeded' && 
-          latestInvoice.amount_paid === 495 && 
-          isDiscountSubscription &&
-          user.subscriptionTier !== 'advanced') {
+      // Check payment intent from metadata if available
+      let metadataPaymentIntent = null;
+      if (paymentIntentId) {
+        try {
+          metadataPaymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+          console.log(`[PAYMENT_CHECK] Metadata payment intent: status=${metadataPaymentIntent.status}, amount=${metadataPaymentIntent.amount_received}`);
+        } catch (error) {
+          console.error(`[PAYMENT_CHECK] Error retrieving metadata payment intent:`, error);
+        }
+      }
+      
+      // Check if either the invoice payment intent or metadata payment intent shows successful $4.95 payment
+      const hasSuccessfulPayment = 
+        (latestInvoice?.payment_intent?.status === 'succeeded' && latestInvoice.amount_paid === 495) ||
+        (metadataPaymentIntent?.status === 'succeeded' && metadataPaymentIntent.amount_received === 495);
+      
+      if (hasSuccessfulPayment && isDiscountSubscription && user.subscriptionTier !== 'advanced') {
         
         console.log(`[PAYMENT_CHECK] ✅ FOUND SUCCESSFUL $4.95 PAYMENT - UPGRADING USER`);
         console.log(`[PAYMENT_CHECK] User ${userId} needs upgrade from ${user.subscriptionTier} to advanced`);
@@ -2420,8 +2435,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } else {
         console.log(`[PAYMENT_CHECK] No upgrade needed:`);
-        console.log(`[PAYMENT_CHECK] - Payment succeeded: ${latestInvoice?.payment_intent?.status === 'succeeded'}`);
-        console.log(`[PAYMENT_CHECK] - Amount is $4.95: ${latestInvoice?.amount_paid === 495}`);
+        console.log(`[PAYMENT_CHECK] - Has successful payment: ${hasSuccessfulPayment}`);
+        console.log(`[PAYMENT_CHECK] - Invoice payment succeeded: ${latestInvoice?.payment_intent?.status === 'succeeded'}`);
+        console.log(`[PAYMENT_CHECK] - Invoice amount is $4.95: ${latestInvoice?.amount_paid === 495}`);
+        console.log(`[PAYMENT_CHECK] - Metadata payment succeeded: ${metadataPaymentIntent?.status === 'succeeded'}`);
+        console.log(`[PAYMENT_CHECK] - Metadata payment amount is $4.95: ${metadataPaymentIntent?.amount_received === 495}`);
         console.log(`[PAYMENT_CHECK] - Is discount subscription: ${isDiscountSubscription}`);
         console.log(`[PAYMENT_CHECK] - User not already advanced: ${user.subscriptionTier !== 'advanced'}`);
       }
