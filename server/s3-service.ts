@@ -72,8 +72,8 @@ export class S3Service {
       Body: buffer,
       ContentType: mimeType,
       CacheControl: 'public, max-age=31536000', // 1 year cache
-      // Make files publicly readable for audio playback
-      ACL: 'public-read',
+      // Note: Removed ACL as bucket may not have ACL permissions enabled
+      // Files will be publicly accessible via bucket policy instead
       Metadata: {
         'upload-source': 'deeper-voice-messages',
         'upload-timestamp': Date.now().toString()
