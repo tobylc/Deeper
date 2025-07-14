@@ -4610,26 +4610,9 @@ Format each as a complete question they can use to begin this important conversa
                        (msg.type !== 'question');
               });
               
-              // Enhanced debug logging for exchange validation
-              console.log(`[EXCHANGE_DEBUG] Conversation ${conv.id} (${conv.title || 'untitled'}):`, {
-                messageCount: messages.length,
-                messageTypes: messages.map(m => ({ 
-                  type: m.type, 
-                  format: m.messageFormat, 
-                  sender: m.senderEmail,
-                  content: m.content?.substring(0, 30) + '...'
-                })),
-                hasQuestion,
-                hasResponse,
-                hasExchange: hasQuestion && hasResponse
-              });
-              
               if (hasQuestion && hasResponse) {
-                console.log(`[EXCHANGE_DEBUG] ✓ Found complete exchange in conversation ${conv.id}`);
                 hasAnyCompleteExchange = true;
                 break;
-              } else {
-                console.log(`[EXCHANGE_DEBUG] ✗ No complete exchange in conversation ${conv.id}: hasQuestion=${hasQuestion}, hasResponse=${hasResponse}`);
               }
             } catch (messageError) {
               console.error(`[THREAD_VALIDATION] Error checking complete exchange for conversation ${conv.id}:`, messageError);
