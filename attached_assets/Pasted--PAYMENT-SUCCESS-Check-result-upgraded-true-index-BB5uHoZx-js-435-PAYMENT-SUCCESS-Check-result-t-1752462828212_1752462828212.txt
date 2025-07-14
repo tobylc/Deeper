@@ -1,0 +1,34 @@
+[PAYMENT_SUCCESS] Check result upgraded: true
+index-BB5uHoZx.js:435 [PAYMENT_SUCCESS] Check result tier: advanced
+index-BB5uHoZx.js:435 [PAYMENT_SUCCESS] Check result message: Advanced plan activated!
+index-BB5uHoZx.js:435 [PAYMENT_SUCCESS] ✅ Upgrade detected on attempt 1
+index-BB5uHoZx.js:435 [PAYMENT_SUCCESS] Refreshing UI data after successful upgrade
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+injectLeap.js:2 [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+ [Report Only] Refused to compile or instantiate WebAssembly module because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+dom.js?token=686162-489990-928674:893 initEternlDomAPI: domId 451528-240449-407030 true
+initEternlDomAPI @ dom.js?token=686162-489990-928674:893Understand this warning
+dom.js?token=686162-489990-928674:894 initEternlDomAPI: href https://m.stripe.network/inner.html#url=https%3A%2F%2Fjoindeeper.com%2Fdashboard&title=&referrer=https%3A%2F%2Fjoindeeper.com%2Fcheckout%2Fadvanced%3Fdiscount%3D50&muid=ebea5655-8fb2-4980-9e83-719a9117012a7d696a&sid=2ce00695-cf0c-4814-b097-f781576433b2a14123&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=686162-489990-928674:894Understand this warning
+dom.js?token=37691-92704-903527:893 initEternlDomAPI: domId 751872-43186-261463 true
+initEternlDomAPI @ dom.js?token=37691-92704-903527:893Understand this warning
+dom.js?token=37691-92704-903527:894 initEternlDomAPI: href https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fjoindeeper.com%2Fdashboard&title=&referrer=https%3A%2F%2Fjoindeeper.com%2Fcheckout%2Fadvanced%3Fdiscount%3D50&muid=ebea5655-8fb2-4980-9e83-719a9117012a7d696a&sid=2ce00695-cf0c-4814-b097-f781576433b2a14123&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=37691-92704-903527:894Understand this warning
+index-BB5uHoZx.js:435 [WebSocket] Disconnected: 1000 User initiated disconnect
+index-BB5uHoZx.js:435 [PAYMENT_SUCCESS] Final trial status check: Object
+index-BB5uHoZx.js:435 [PAYMENT_SUCCESS] Final UI refresh to ensure consistency
+index-BB5uHoZx.js:435 [WebSocket] Attempting to connect to: wss://joindeeper.com/ws?email=thetobyclarkshow%40gmail.com&userId=google_107906065894691225512
+index-BB5uHoZx.js:435 [WebSocket] Connected successfully

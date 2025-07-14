@@ -58,64 +58,8 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
             description: error.message || "Please check your payment details and try again",
           });
         } else {
-          console.log('[CHECKOUT] Payment succeeded - processing upgrade');
-          
-          // Show success message
-          toast({
-            title: "🎉 Payment Successful!",
-            description: "Your Advanced plan has been activated. Redirecting to dashboard...",
-            className: "bg-gradient-to-r from-green-50 to-green-100 border-green-200 text-green-800"
-          });
-          
-          // Set marker for dashboard success notification
-          localStorage.setItem('paymentSuccess', 'true');
-          
-          // Check payment status and upgrade if needed (webhook fallback)
-          setTimeout(async () => {
-            try {
-              console.log('[CHECKOUT] ======== STARTING PAYMENT VERIFICATION ========');
-              const checkResponse = await fetch('/api/subscription/check-payment-status', {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                  'Content-Type': 'application/json'
-                }
-              });
-              
-              if (checkResponse.ok) {
-                const result = await checkResponse.json();
-                console.log('[CHECKOUT] Payment status check result:', result);
-                
-                if (result.upgraded) {
-                  console.log('[CHECKOUT] ✅ Subscription upgraded via fallback check');
-                  
-                  // Force a brief delay to ensure database consistency
-                  setTimeout(() => {
-                    window.location.href = '/dashboard?from=checkout';
-                  }, 1500);
-                } else {
-                  console.log('[CHECKOUT] ⚠️ No upgrade detected, redirecting anyway');
-                  setTimeout(() => {
-                    window.location.href = '/dashboard?from=checkout';
-                  }, 1000);
-                }
-              } else {
-                console.error('[CHECKOUT] Payment check failed with status:', checkResponse.status);
-                setTimeout(() => {
-                  window.location.href = '/dashboard?from=checkout';
-                }, 1000);
-              }
-              
-            } catch (error) {
-              console.error('[CHECKOUT] Payment status check error:', error);
-              // Still redirect to dashboard even if check fails
-              setTimeout(() => {
-                window.location.href = '/dashboard?from=checkout';
-              }, 1000);
-            }
-          }, 3000); // Increased delay to allow webhook processing
-          
-          onSuccess();
+          console.log('[CHECKOUT] Payment succeeded - Stripe will redirect to dashboard');
+          // No additional processing needed here - Stripe will redirect and PaymentSuccessNotification component will handle verification
         }
       } else {
         console.log('[CHECKOUT] Processing trial subscription with confirmSetup');

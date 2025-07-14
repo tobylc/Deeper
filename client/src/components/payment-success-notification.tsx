@@ -5,14 +5,14 @@ import { CheckCircle, Crown, Sparkles } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 export function PaymentSuccessNotification() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [hasCheckedPayment, setHasCheckedPayment] = useState(false);
 
   useEffect(() => {
-    // Only check once per session
-    if (!user || hasCheckedPayment) return;
+    // Wait for authentication to complete before checking payment
+    if (authLoading || !user || hasCheckedPayment) return;
 
     const checkPaymentSuccess = async () => {
       try {
@@ -129,10 +129,10 @@ export function PaymentSuccessNotification() {
       }
     };
 
-    // Check after a short delay to allow page to load
-    const timer = setTimeout(checkPaymentSuccess, 1000);
+    // Check after a delay to allow authentication and backend processing to complete
+    const timer = setTimeout(checkPaymentSuccess, 2000);
     return () => clearTimeout(timer);
-  }, [user, hasCheckedPayment, toast]);
+  }, [user, authLoading, hasCheckedPayment, toast]);
 
   return null; // This component doesn't render anything visible
 }
