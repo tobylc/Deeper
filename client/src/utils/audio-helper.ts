@@ -8,15 +8,17 @@ export interface AudioLoadResult {
 
 /**
  * Centralized audio URL construction with consistent logic
+ * Handles both S3 URLs and local uploads
  */
 export function constructAudioUrl(audioFileUrl: string): string {
   if (!audioFileUrl) return '';
   
-  // If already a full URL, return as-is
+  // If already a full URL (S3 or other external), return as-is
   if (audioFileUrl.startsWith('http')) {
     return audioFileUrl;
   }
   
+  // Handle local uploads (legacy fallback)
   // Clean the URL and ensure proper /uploads/ prefix
   let cleanUrl = audioFileUrl.replace(/^\/+/, '');
   
@@ -25,23 +27,38 @@ export function constructAudioUrl(audioFileUrl: string): string {
     cleanUrl = `uploads/${cleanUrl}`;
   }
   
-  // Construct full URL with current origin
+  // Construct full URL with current origin for local files
   return `${window.location.origin}/${cleanUrl}`;
 }
 
 /**
  * Test if an audio file is accessible with retry logic
+ * Enhanced for S3 URLs with better error handling and CORS support
  */
 export async function testAudioFileAccess(audioUrl: string, retries = 2): Promise<AudioLoadResult> {
+  const isS3Url = audioUrl.startsWith('http') && !audioUrl.includes(window.location.origin);
+  
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const response = await fetch(audioUrl, { 
+      // Enhanced timeout and CORS handling for S3 URLs
+      const controller = new AbortController();
+      const timeoutMs = isS3Url ? 10000 : 5000; // Longer timeout for S3
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+      const fetchOptions: RequestInit = {
         method: 'HEAD',
         cache: 'no-cache',
-        credentials: 'same-origin' // Include session cookies
-      });
+        signal: controller.signal,
+        // Use CORS mode for external S3 URLs, same-origin for local files
+        mode: isS3Url ? 'cors' : 'same-origin',
+        credentials: isS3Url ? 'omit' : 'same-origin'
+      };
+
+      const response = await fetch(audioUrl, fetchOptions);
+      clearTimeout(timeoutId);
       
       if (response.ok) {
+        console.log(`[AUDIO_HELPER] Audio file accessible (${isS3Url ? 'S3' : 'local'}) on attempt ${attempt + 1}`);
         return { success: true };
       }
       
@@ -49,7 +66,7 @@ export async function testAudioFileAccess(audioUrl: string, retries = 2): Promis
       if (response.status === 401 || response.status === 403) {
         return { 
           success: false, 
-          error: 'Authentication required to access audio file',
+          error: `Authentication required to access audio file (${response.status})`,
           canUseFallback: true
         };
       }
@@ -58,36 +75,55 @@ export async function testAudioFileAccess(audioUrl: string, retries = 2): Promis
       if (response.status === 404) {
         return { 
           success: false, 
-          error: 'Audio file not found',
+          error: 'Audio file not found - may have been moved or deleted',
           canUseFallback: true
         };
       }
       
-      // Other HTTP errors
-      return { 
-        success: false, 
-        error: `Audio file unavailable (${response.status})`,
-        canUseFallback: true
-      };
-      
-    } catch (error) {
-      // Network error - retry if we have attempts left
-      if (attempt < retries) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1))); // Progressive delay
-        continue;
+      // For S3 URLs, try GET fallback if HEAD fails with other errors
+      if (isS3Url && attempt === retries) {
+        try {
+          const fallbackController = new AbortController();
+          const fallbackTimeoutId = setTimeout(() => fallbackController.abort(), 5000);
+          
+          const fallbackResponse = await fetch(audioUrl, {
+            method: 'GET',
+            cache: 'no-cache',
+            signal: fallbackController.signal,
+            mode: 'cors',
+            credentials: 'omit'
+          });
+          
+          clearTimeout(fallbackTimeoutId);
+          
+          if (fallbackResponse.ok) {
+            console.log(`[AUDIO_HELPER] S3 audio file accessible via GET fallback`);
+            return { success: true };
+          }
+        } catch (fallbackError) {
+          console.warn(`[AUDIO_HELPER] S3 GET fallback failed:`, fallbackError);
+        }
       }
       
-      return { 
-        success: false, 
-        error: 'Network error accessing audio file',
-        canUseFallback: true
-      };
+      // Other HTTP errors
+      console.warn(`[AUDIO_HELPER] Audio file unavailable (${response.status}) on attempt ${attempt + 1}`);
+      
+    } catch (error) {
+      console.warn(`[AUDIO_HELPER] Audio access test failed on attempt ${attempt + 1}:`, error);
+      
+      // Network error - retry if we have attempts left
+      if (attempt < retries) {
+        const delay = isS3Url ? 2000 * (attempt + 1) : 1000 * (attempt + 1); // Longer delays for S3
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
     }
   }
   
+  const storageType = isS3Url ? 'S3 storage' : 'local storage';
   return { 
     success: false, 
-    error: 'Failed to access audio file after retries',
+    error: `Audio file not accessible from ${storageType} after ${retries + 1} attempts`,
     canUseFallback: true
   };
 }

@@ -35,6 +35,7 @@ import { runUserCleanup } from "./cleanup-duplicate-users";
 import { setupAdminRoutes } from "./admin-routes";
 
 import { generateRelationshipSpecificTitle } from "./thread-naming";
+import { s3Service } from "./s3-service";
 import OpenAI from "openai";
 import Stripe from "stripe";
 
@@ -3720,34 +3721,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const fileExtension = mimeToExtension[req.file.mimetype as string] || 'webm';
       const fileName = `voice_${timestamp}_${randomString}.${fileExtension}`;
-      audioPath = path.join(uploadsDir, fileName);
       
-      // Save audio file securely with enhanced logging
+      // Save audio file with persistent storage (S3 if configured, local as fallback)
+      let audioFileUrl: string;
+      
       try {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Saving audio file to:', audioPath);
-          console.log('Audio file size:', req.file.size);
-          console.log('Audio file type:', req.file.mimetype);
+        if (s3Service.isS3Configured()) {
+          // Use S3 for persistent storage in production
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Uploading audio file to S3:', fileName);
+            console.log('Audio file size:', req.file.size);
+            console.log('Audio file type:', req.file.mimetype);
+          }
+          
+          audioFileUrl = await s3Service.uploadAudioFile(
+            req.file.buffer, 
+            fileName, 
+            req.file.mimetype
+          );
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Audio file uploaded to S3 successfully:', audioFileUrl);
+          }
+        } else {
+          // Fallback to local storage (with warning about persistence)
+          console.warn('[AUDIO_STORAGE] S3 not configured - using local storage (files may not persist across deployments)');
+          
+          audioPath = path.join(uploadsDir, fileName);
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Saving audio file locally:', audioPath);
+            console.log('Audio file size:', req.file.size);
+            console.log('Audio file type:', req.file.mimetype);
+          }
+          
+          await fs.writeFile(audioPath, req.file.buffer);
+          
+          // Verify file was written
+          const stats = await fs.stat(audioPath);
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Audio file saved locally. Size:', stats.size);
+            console.log('Audio file path:', audioPath);
+          }
+          
+          audioFileUrl = `/uploads/${fileName}`;
         }
         
-        await fs.writeFile(audioPath, req.file.buffer);
-        
-        // Verify file was written
-        const stats = await fs.stat(audioPath);
-        
         if (process.env.NODE_ENV === 'development') {
-          console.log('Audio file saved successfully. Size:', stats.size);
-          console.log('Audio file path:', audioPath);
+          console.log('Final audio URL:', audioFileUrl);
         }
       } catch (fileError) {
-        console.error("File save error:", fileError);
-        return res.status(500).json({ message: "Failed to save audio file" });
-      }
-      
-      const audioFileUrl = `/uploads/${fileName}`;
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Audio URL will be:', audioFileUrl);
+        console.error("Audio file storage error:", fileError);
+        return res.status(500).json({ 
+          message: "Failed to save audio file",
+          details: process.env.NODE_ENV === 'development' ? fileError : undefined
+        });
       }
 
       // Transcribe audio using OpenAI Whisper with production-ready error handling
@@ -3758,48 +3787,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.warn('OpenAI API key not configured, skipping transcription');
           transcription = '[Transcription unavailable - audio only]';
         } else {
-          const fs_node = await import('fs');
+          // For transcription, we always use the buffer from memory (works for both S3 and local)
+          // Create a File-like object from the buffer for OpenAI API
+          const audioFile = new File([req.file.buffer], fileName, { 
+            type: req.file.mimetype 
+          });
           
-          // Check if audio file exists and is readable
-          try {
-            await fs_node.promises.access(audioPath, fs_node.constants.R_OK);
-          } catch (accessError) {
-            console.error('Audio file not accessible for transcription:', accessError);
-            transcription = '[Transcription failed - file access error]';
+          // Add timeout and error handling for transcription
+          const transcriptionResponse = await Promise.race([
+            openai.audio.transcriptions.create({
+              file: audioFile,
+              model: "whisper-1",
+              response_format: "text",
+              language: "en" // Optimize for English
+            }),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Transcription timeout')), 30000) // 30 second timeout
+            )
+          ]);
+          
+          transcription = typeof transcriptionResponse === 'string' 
+            ? transcriptionResponse.trim() 
+            : '[Transcription failed - invalid response]';
+            
+          // Validate transcription length for security
+          if (transcription.length > 5000) {
+            transcription = transcription.substring(0, 5000) + '... [truncated]';
           }
           
-          if (!transcription) {
-            // Create read stream with error handling
-            const audioStream = fs_node.createReadStream(audioPath);
-            
-            // Add timeout and error handling for transcription
-            const transcriptionResponse = await Promise.race([
-              openai.audio.transcriptions.create({
-                file: audioStream,
-                model: "whisper-1",
-                response_format: "text",
-                language: "en" // Optimize for English
-              }),
-              new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Transcription timeout')), 30000) // 30 second timeout
-              )
-            ]);
-            
-            transcription = typeof transcriptionResponse === 'string' 
-              ? transcriptionResponse.trim() 
-              : '[Transcription failed - invalid response]';
-              
-            // Validate transcription length for security
-            if (transcription.length > 5000) {
-              transcription = transcription.substring(0, 5000) + '... [truncated]';
-            }
-            
-            // Clean up transcription text
-            transcription = transcription.replace(/[^\w\s\.,\?!'";\-:()]/g, '').trim();
-            
-            if (!transcription || transcription.length < 3) {
-              transcription = '[Audio detected but transcription unclear]';
-            }
+          // Clean up transcription text
+          transcription = transcription.replace(/[^\w\s\.,\?!'";\-:()]/g, '').trim();
+          
+          if (!transcription || transcription.length < 3) {
+            transcription = '[Audio detected but transcription unclear]';
           }
         }
       } catch (error: any) {
@@ -3928,23 +3948,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      // Verify audio file exists before responding
-      try {
-        await fs.access(audioPath);
-        console.log('Audio file confirmed accessible at:', audioPath);
-      } catch (accessError) {
-        console.error('Audio file not accessible after creation:', accessError);
-        return res.status(500).json({ message: "Audio file creation failed" });
-      }
-
       res.json({
         ...message,
         message: "Voice message sent successfully",
         audioFileUrl: audioFileUrl,
         debug: process.env.NODE_ENV === 'development' ? {
-          audioPath,
+          audioPath: s3Service.isS3Configured() ? 'S3 Storage' : audioPath,
           audioFileUrl,
-          fileSize: req.file.size
+          fileSize: req.file.size,
+          storageType: s3Service.isS3Configured() ? 'S3' : 'Local'
         } : undefined
       });
     } catch (error: any) {
@@ -4997,6 +5009,53 @@ Format each as a complete question they can use to begin this important conversa
     } catch (error) {
       console.error("Get notification preference error:", error);
       res.status(500).json({ message: "Failed to get notification preference" });
+    }
+  });
+
+  // Admin endpoint to check S3 storage configuration and status
+  app.get("/api/admin/storage-status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims?.sub || req.user.id;
+      const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(e => e.trim()) || [];
+      
+      // Check if user is an admin
+      if (!adminEmails.includes(userId)) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Check S3 configuration
+      const isS3Configured = s3Service.isS3Configured();
+      let s3Status = { success: false, message: "S3 not configured" };
+      
+      if (isS3Configured) {
+        try {
+          s3Status = await s3Service.testConnection();
+        } catch (error) {
+          s3Status = { 
+            success: false, 
+            message: `S3 connection failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
+          };
+        }
+      }
+
+      // Get environment variables status (without exposing values)
+      const envStatus = {
+        AWS_ACCESS_KEY_ID: !!process.env.AWS_ACCESS_KEY_ID,
+        AWS_SECRET_ACCESS_KEY: !!process.env.AWS_SECRET_ACCESS_KEY,
+        AWS_REGION: !!process.env.AWS_REGION,
+        AWS_S3_BUCKET: !!process.env.AWS_S3_BUCKET
+      };
+
+      res.json({
+        storageType: isS3Configured ? "S3" : "Local Filesystem",
+        s3Configured: isS3Configured,
+        s3Status,
+        environmentVariables: envStatus,
+        warning: !isS3Configured ? "Audio files stored locally may not persist across deployments" : undefined
+      });
+    } catch (error) {
+      console.error("Storage status check error:", error);
+      res.status(500).json({ message: "Failed to check storage status" });
     }
   });
 

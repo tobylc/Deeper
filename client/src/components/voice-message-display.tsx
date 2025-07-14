@@ -39,10 +39,11 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
     setIsPlaying(false);
     setCurrentTime(0);
 
-    // Test audio file accessibility first
+    // Test audio file accessibility first with enhanced S3 support
     const audioUrl = constructAudioUrl(message.audioFileUrl);
+    console.log('[VOICE_MESSAGE] Testing audio URL accessibility:', audioUrl);
     
-    testAudioFileAccess(audioUrl).then((result) => {
+    testAudioFileAccess(audioUrl, 3).then((result) => { // Increased retries for S3 latency
       if (!result.success) {
         setIsLoading(false);
         
