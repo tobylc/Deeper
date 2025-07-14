@@ -197,7 +197,7 @@ const ConversationInterface = memo(function ConversationInterface({
         errorData = { message: error.message };
       }
       
-      // Check if this is a trial expiration error and trigger popup
+      // Check if this is a trial expiration or subscription canceled error and trigger popup
       if (errorData.type === "TRIAL_EXPIRED" || (errorData.message && errorData.message.includes("trial has expired"))) {
         // Trigger trial expiration popup via custom event since we don't have direct access to the state setter
         if (typeof window !== 'undefined' && window.dispatchEvent) {
@@ -205,6 +205,18 @@ const ConversationInterface = memo(function ConversationInterface({
             detail: { action: 'voice_messaging' }
           });
           window.dispatchEvent(trialExpiredEvent);
+        }
+        return;
+      }
+      
+      // Check if this is a subscription canceled error and trigger popup
+      if (errorData.type === "SUBSCRIPTION_CANCELED" || (errorData.message && errorData.message.includes("subscription has been canceled"))) {
+        // Trigger subscription canceled popup via custom event
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          const subscriptionCanceledEvent = new CustomEvent('subscriptionCanceled', {
+            detail: { action: 'voice_messaging' }
+          });
+          window.dispatchEvent(subscriptionCanceledEvent);
         }
         return;
       }

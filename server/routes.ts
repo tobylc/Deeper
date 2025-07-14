@@ -2767,6 +2767,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
+      // Check if user is an invitee (should have permanent free access)
+      const isInviteeUser = await storage.isUserInvitee(currentUser.email!);
+      
+      // Enforce subscription restrictions for conversation creation (but not for invitee users)
+      if (!isInviteeUser) {
+        // Block conversation creation if subscription is canceled (from refunds/cancellations)
+        if (currentUser.subscriptionStatus === 'canceled') {
+          return res.status(403).json({ 
+            type: 'SUBSCRIPTION_CANCELED',
+            message: "Your subscription has been canceled. Choose a subscription plan to continue conversations.",
+            subscriptionTier: currentUser.subscriptionTier,
+            subscriptionStatus: currentUser.subscriptionStatus,
+            requiresUpgrade: true
+          });
+        }
+        
+        const trialStatus = await storage.checkTrialStatus(currentUser.id);
+        
+        // Block conversation creation if trial has expired and user doesn't have paid subscription
+        if (trialStatus.isExpired && (currentUser.subscriptionTier === 'trial' || currentUser.subscriptionTier === 'free')) {
+          await storage.expireTrialUser(currentUser.id);
+          return res.status(403).json({ 
+            type: 'TRIAL_EXPIRED',
+            message: "Your 7-day free trial has expired. Choose a subscription plan to continue conversations.",
+            subscriptionTier: currentUser.subscriptionTier,
+            subscriptionStatus: currentUser.subscriptionStatus,
+            requiresUpgrade: true
+          });
+        }
+      }
+
       // Check if a conversation already exists for this connection
       const existingConversations = await storage.getConversationsByConnection(connectionId);
       if (existingConversations.length > 0) {
@@ -3171,8 +3202,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user is an invitee (should have permanent free access)
       const isInviteeUser = await storage.isUserInvitee(currentUser.email!);
       
-      // Enforce trial expiration for conversation creation (but not for invitee users)
+      // Enforce subscription restrictions for conversation creation (but not for invitee users)
       if (!isInviteeUser) {
+        // Block conversation creation if subscription is canceled (from refunds/cancellations)
+        if (currentUser.subscriptionStatus === 'canceled') {
+          return res.status(403).json({ 
+            type: 'SUBSCRIPTION_CANCELED',
+            message: "Your subscription has been canceled. Choose a subscription plan to continue conversations.",
+            subscriptionTier: currentUser.subscriptionTier,
+            subscriptionStatus: currentUser.subscriptionStatus,
+            requiresUpgrade: true
+          });
+        }
+        
         const trialStatus = await storage.checkTrialStatus(currentUser.id);
         
         // Block all conversation creation actions if trial has expired and user doesn't have paid subscription
@@ -3381,9 +3423,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user is an invitee (should have permanent free access)
       const isInviteeUser = await storage.isUserInvitee(senderUser.email!);
       
-      // Enforce trial expiration for messaging (but not for invitee users)
+      // Enforce subscription restrictions for messaging (but not for invitee users)
       if (!isInviteeUser) {
         const trialStatus = await storage.checkTrialStatus(senderUser.id);
+        
+        // Block messaging if subscription is canceled (from refunds/cancellations)
+        if (senderUser.subscriptionStatus === 'canceled') {
+          return res.status(403).json({ 
+            type: 'SUBSCRIPTION_CANCELED',
+            message: "Your subscription has been canceled. Choose a subscription plan to continue conversations.",
+            subscriptionTier: senderUser.subscriptionTier,
+            subscriptionStatus: senderUser.subscriptionStatus,
+            requiresUpgrade: true
+          });
+        }
         
         // Block all messaging actions if trial has expired and user doesn't have paid subscription
         if (trialStatus.isExpired && (senderUser.subscriptionTier === 'trial' || senderUser.subscriptionTier === 'free')) {
@@ -3650,9 +3703,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user is an invitee (should have permanent free access)
       const isInviteeUser = await storage.isUserInvitee(user.email!);
       
-      // Enforce trial expiration for voice messaging (but not for invitee users)
+      // Enforce subscription restrictions for voice messaging (but not for invitee users)
       if (!isInviteeUser) {
         const trialStatus = await storage.checkTrialStatus(user.id);
+        
+        // Block messaging if subscription is canceled (from refunds/cancellations)
+        if (user.subscriptionStatus === 'canceled') {
+          return res.status(403).json({ 
+            type: 'SUBSCRIPTION_CANCELED',
+            message: "Your subscription has been canceled. Choose a subscription plan to continue conversations.",
+            subscriptionTier: user.subscriptionTier,
+            subscriptionStatus: user.subscriptionStatus,
+            requiresUpgrade: true
+          });
+        }
         
         // Block all voice messaging actions if trial has expired and user doesn't have paid subscription
         if (trialStatus.isExpired && (user.subscriptionTier === 'trial' || user.subscriptionTier === 'free')) {
@@ -4411,8 +4475,19 @@ Format each as a complete question they can use to begin this important conversa
       // Check if user is an invitee (should have permanent free access)
       const isInviteeUser = await storage.isUserInvitee(currentUser.email!);
       
-      // Enforce trial expiration for conversation creation (but not for invitee users)
+      // Enforce subscription restrictions for conversation creation (but not for invitee users)
       if (!isInviteeUser) {
+        // Block conversation creation if subscription is canceled (from refunds/cancellations)
+        if (currentUser.subscriptionStatus === 'canceled') {
+          return res.status(403).json({ 
+            type: 'SUBSCRIPTION_CANCELED',
+            message: "Your subscription has been canceled. Choose a subscription plan to continue conversations.",
+            subscriptionTier: currentUser.subscriptionTier,
+            subscriptionStatus: currentUser.subscriptionStatus,
+            requiresUpgrade: true
+          });
+        }
+        
         const trialStatus = await storage.checkTrialStatus(currentUser.id);
         
         // Block all conversation creation actions if trial has expired and user doesn't have paid subscription

@@ -129,6 +129,8 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
         const errorData = error.response?.data || error;
         if (errorData.type === 'TRIAL_EXPIRED' && !isInviteeUser) {
           setShowTrialExpirationPopup(true);
+        } else if (errorData.type === 'SUBSCRIPTION_CANCELED' && !isInviteeUser) {
+          setShowTrialExpirationPopup(true); // Reuse the same popup for upgrade flow
         } else if (errorData.type === 'SUBSCRIPTION_LIMIT') {
           toast({
             title: "Connection Limit Reached",

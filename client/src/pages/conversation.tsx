@@ -130,6 +130,21 @@ export default function ConversationPage() {
     };
   }, [isInviteeUser]);
 
+  // Listen for subscription canceled events from voice messages and other actions
+  useEffect(() => {
+    const handleSubscriptionCanceled = (event: CustomEvent) => {
+      if (!isInviteeUser) {
+        setShowTrialExpirationPopup(true); // Reuse the same popup for now, as it handles upgrade flow
+      }
+    };
+
+    window.addEventListener('subscriptionCanceled', handleSubscriptionCanceled as EventListener);
+    
+    return () => {
+      window.removeEventListener('subscriptionCanceled', handleSubscriptionCanceled as EventListener);
+    };
+  }, [isInviteeUser]);
+
   // Enhanced WebSocket integration to synchronize thread reopening between users
   useEffect(() => {
     const handleThreadSyncEvent = (event: CustomEvent) => {
@@ -473,6 +488,13 @@ export default function ConversationPage() {
         return;
       }
       
+      // Show trial expiration popup for subscription canceled errors (but not for invitee users)
+      if ((errorData.type === "SUBSCRIPTION_CANCELED" || (errorData.message && errorData.message.includes("subscription has been canceled"))) && !isInviteeUser) {
+        console.log('[CONVERSATION] Showing trial expiration popup for canceled subscription');
+        setShowTrialExpirationPopup(true); // Reuse the same popup for upgrade flow
+        return;
+      }
+      
       // For other errors, still show a nicer toast (not destructive red)
       toast({
         title: "Unable to send message",
@@ -553,6 +575,13 @@ export default function ConversationPage() {
       if ((errorData.type === "TRIAL_EXPIRED" || (errorData.message && errorData.message.includes("trial has expired"))) && !isInviteeUser) {
         console.log('[NEW_THREAD] Showing trial expiration popup');
         setShowTrialExpirationPopup(true);
+        return;
+      }
+      
+      // Show trial expiration popup for subscription canceled errors (but not for invitee users)
+      if ((errorData.type === "SUBSCRIPTION_CANCELED" || (errorData.message && errorData.message.includes("subscription has been canceled"))) && !isInviteeUser) {
+        console.log('[NEW_THREAD] Showing trial expiration popup for canceled subscription');
+        setShowTrialExpirationPopup(true); // Reuse the same popup for upgrade flow
         return;
       }
       

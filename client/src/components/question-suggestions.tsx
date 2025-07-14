@@ -113,6 +113,13 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
         return;
       }
       
+      // Show trial expiration popup for subscription canceled errors
+      if (errorData.type === "SUBSCRIPTION_CANCELED" || (errorData.message && errorData.message.includes("subscription has been canceled"))) {
+        console.log('[QUESTION_SUGGESTIONS] Showing trial expiration popup for canceled subscription');
+        setShowTrialExpirationPopup(true); // Reuse the same popup for upgrade flow
+        return;
+      }
+      
       // For other errors, show a nicer toast (not destructive red)
       toast({
         title: "Unable to start new conversation",
