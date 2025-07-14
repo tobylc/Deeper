@@ -990,7 +990,15 @@ Changelog:
   * Added admin endpoint (/api/admin/storage-status) for monitoring storage configuration and S3 connectivity
   * Voice messages now persist permanently in S3 cloud storage instead of ephemeral local filesystem
   * Maintained backward compatibility with existing local uploads while preventing future persistence issues
-  * Enhanced VoiceMessageDisplay component with improved S3 URL handling and retry logic
+  * Enhanced VoiceMessageDisplay component with improved error handling and S3 URL construction
+- July 14, 2025. S3 ACL permissions issue resolution and bucket policy implementation:
+  * Fixed critical "Failed to save audio file" error caused by ACL permissions conflict in S3 uploads
+  * Removed problematic ACL: 'public-read' setting from S3Service that modern buckets typically reject
+  * Created comprehensive S3 bucket policy template for proper public read access to audio files
+  * Updated S3_STORAGE_SETUP.md documentation with detailed bucket policy configuration instructions
+  * Enhanced S3Service to use bucket policies instead of ACLs for public file access
+  * Resolved voice message upload failures with proper AWS S3 bucket configuration
+  * Production-ready S3 storage system now fully operational with correct permissions modeloved S3 URL handling and retry logic
   * Complete solution ensures audio messages remain accessible even after application restarts and deployments
   * Application now fully optimized for production deployment with minimal logging overhead
 - June 30, 2025. Critical thread reopening turn logic fix implemented:
