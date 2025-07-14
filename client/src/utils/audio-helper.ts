@@ -51,7 +51,12 @@ export async function testAudioFileAccess(audioUrl: string, retries = 2): Promis
         signal: controller.signal,
         // Use CORS mode for external S3 URLs, same-origin for local files
         mode: isS3Url ? 'cors' : 'same-origin',
-        credentials: isS3Url ? 'omit' : 'same-origin'
+        credentials: isS3Url ? 'omit' : 'same-origin',
+        // Add headers for S3 CORS compatibility
+        headers: isS3Url ? {
+          'Accept': 'audio/*',
+          'Cache-Control': 'no-cache'
+        } : {}
       };
 
       const response = await fetch(audioUrl, fetchOptions);
@@ -91,7 +96,11 @@ export async function testAudioFileAccess(audioUrl: string, retries = 2): Promis
             cache: 'no-cache',
             signal: fallbackController.signal,
             mode: 'cors',
-            credentials: 'omit'
+            credentials: 'omit',
+            headers: {
+              'Accept': 'audio/*',
+              'Cache-Control': 'no-cache'
+            }
           });
           
           clearTimeout(fallbackTimeoutId);

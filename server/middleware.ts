@@ -99,6 +99,25 @@ export function securityHeaders(req: Request, res: Response, next: NextFunction)
   res.header('X-Frame-Options', 'DENY');
   res.header('X-XSS-Protection', '1; mode=block');
   res.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Enhanced CSP for S3 audio files and external resources
+  const cspPolicy = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
+    "style-src 'self' 'unsafe-inline' https:",
+    "img-src 'self' data: https:",
+    "font-src 'self' data: https:",
+    // Allow audio from S3 and local uploads
+    "media-src 'self' https://*.s3.*.amazonaws.com https://*.amazonaws.com blob: data:",
+    "connect-src 'self' https://*.s3.*.amazonaws.com https://*.amazonaws.com https: wss: ws:",
+    // Allow web workers and blob URLs for audio processing
+    "worker-src 'self' blob:",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'"
+  ].join('; ');
+  
+  res.header('Content-Security-Policy', cspPolicy);
   next();
 }
 

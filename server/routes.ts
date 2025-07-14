@@ -5134,6 +5134,43 @@ Format each as a complete question they can use to begin this important conversa
     }
   });
 
+  // Test voice message endpoint for debugging CSP and S3 issues
+  app.post('/api/test/voice-message', async (req, res) => {
+    try {
+      const { testAudioUrl } = req.body;
+      
+      if (!testAudioUrl) {
+        return res.status(400).json({ error: 'testAudioUrl is required' });
+      }
+      
+      // Test audio URL accessibility
+      const testResult = await fetch(testAudioUrl, { 
+        method: 'HEAD',
+        headers: {
+          'User-Agent': 'Deeper-Voice-Test/1.0'
+        }
+      });
+      
+      const response = {
+        audioUrl: testAudioUrl,
+        accessible: testResult.ok,
+        status: testResult.status,
+        statusText: testResult.statusText,
+        headers: Object.fromEntries(testResult.headers.entries()),
+        s3Configured: s3Service.isS3Configured(),
+        timestamp: new Date().toISOString()
+      };
+      
+      res.json(response);
+    } catch (error) {
+      console.error('Voice message test failed:', error);
+      res.status(500).json({ 
+        error: 'Test failed',
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

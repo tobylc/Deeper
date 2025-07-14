@@ -282,6 +282,9 @@ export default function VoiceMessageDisplay({ message, isCurrentUser, className 
           onCanPlay={handleCanPlayEvent}
           preload="metadata"
           crossOrigin="anonymous"
+          // Enhanced CSP compatibility for S3 audio files
+          controlsList="nodownload"
+          disablePictureInPicture
         />
         
         {/* Debug Info - Show only in development */}
