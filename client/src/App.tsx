@@ -59,6 +59,10 @@ class ErrorBoundary extends Component<
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  
+  // Check if this is a Stripe redirect
+  const urlParams = new URLSearchParams(window.location.search);
+  const isStripeRedirect = urlParams.get('payment_success') === 'true';
 
   // Enhanced global error handler for unhandled promise rejections
   useEffect(() => {
@@ -110,7 +114,9 @@ function Router() {
           <div className="w-16 h-16 rounded-full bg-gradient-to-r from-ocean to-teal flex items-center justify-center p-3 mx-auto mb-4">
             <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </div>
-          <p className="text-slate-300">Loading...</p>
+          <p className="text-slate-300">
+            {isStripeRedirect ? 'Processing payment...' : 'Loading...'}
+          </p>
         </div>
       </div>
     );
@@ -126,7 +132,10 @@ function Router() {
       
       <Route path="/checkout/:tier" component={Checkout} />
       
-      {!isAuthenticated ? (
+      {/* Special handling for Stripe redirects - always show dashboard for payment success */}
+      {isStripeRedirect && window.location.pathname === '/dashboard' ? (
+        <Route path="/dashboard" component={Dashboard} />
+      ) : !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
           <Route path="/features" component={Features} />
