@@ -68,22 +68,22 @@ function ConversationStack({
   const stackCount = conversations.length;
   
   return (
-    <Card className="relative transition-all duration-200 rounded-lg border-slate-300 border-2 bg-white hover:bg-gray-50 cursor-pointer">
+    <Card className="relative transition-all duration-200 rounded-lg border-amber-200 border-2 bg-gradient-to-br from-amber-50 to-white hover:from-amber-100 hover:to-gray-50 cursor-pointer shadow-sm">
       {/* Stack effect - multiple papers underneath */}
-      <div className="absolute -bottom-1 -right-1 w-full h-full border-2 border-gray-200 rounded-lg rotate-1"></div>
-      <div className="absolute -bottom-0.5 -right-0.5 w-full h-full border-2 border-gray-100 rounded-lg rotate-0.5"></div>
+      <div className="absolute -bottom-1 -right-1 w-full h-full border-2 border-amber-100 rounded-lg rotate-1 bg-white shadow-sm"></div>
+      <div className="absolute -bottom-0.5 -right-0.5 w-full h-full border-2 border-amber-50 rounded-lg rotate-0.5 bg-white shadow-sm"></div>
       
       <CardContent className="p-3 relative">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-1">
-              <Layers className="w-3 h-3 text-slate-500 flex-shrink-0" />
-              <h4 className="text-xs font-medium text-slate-800">
+              <Layers className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <h4 className="text-sm font-semibold text-slate-800">
                 {stackCount} Older Conversations
               </h4>
             </div>
             
-            <div className="text-xs text-slate-500 mb-2">
+            <div className="text-xs text-slate-600 mb-2">
               Most recent: {topConversation.title || topConversation.topic || 'Untitled conversation'}
             </div>
             
@@ -94,10 +94,10 @@ function ConversationStack({
                 e.stopPropagation();
                 setIsExpanded(!isExpanded);
               }}
-              className="text-xs px-2 py-1 h-6 rounded-lg border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400"
+              className="text-xs px-3 py-1 h-7 rounded-lg border-amber-300 text-amber-700 hover:text-amber-800 hover:border-amber-400 bg-white hover:bg-amber-50 font-medium"
             >
               {isExpanded ? <ChevronUp className="w-3 h-3 mr-1" /> : <ChevronDown className="w-3 h-3 mr-1" />}
-              {isExpanded ? 'Collapse' : 'Expand Stack'}
+              {isExpanded ? 'Collapse Stack' : 'Expand Stack'}
             </Button>
           </div>
           
@@ -382,8 +382,6 @@ function StackedConversation({
                   : 'bg-gray-50 text-gray-600 border-gray-200'
               }`}
             >
-              {/* Debug: Add console log to check currentTurn value */}
-              {console.log('[TURN_DEBUG] Conversation ID:', conversation.id, 'currentTurn:', conversation.currentTurn, 'currentUserEmail:', currentUserEmail)}
               {conversation.currentTurn === currentUserEmail ? 'Your Turn' : 'Their Turn'}
             </Badge>
             
@@ -513,9 +511,10 @@ export default function ConversationThreads({
   const maxVisibleConversations = Math.max(2, Math.floor(availableHeight / CONVERSATION_ITEM_HEIGHT));
   
   // Determine which conversations to show individually vs stack
+  // For better UX: Show recent conversations individually, stack oldest ones at the top
   const shouldUseStacking = sortedConversations.length > maxVisibleConversations;
   const conversationsToShow = shouldUseStacking 
-    ? sortedConversations.slice(0, maxVisibleConversations - 1) // Reserve space for stack
+    ? sortedConversations.slice(0, maxVisibleConversations - 1) // Most recent conversations shown individually
     : sortedConversations;
   const conversationsToStack = shouldUseStacking 
     ? sortedConversations.slice(maxVisibleConversations - 1) // Oldest conversations to stack
@@ -544,7 +543,17 @@ export default function ConversationThreads({
       <div className="flex-shrink-0 mb-3">
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-sm font-semibold text-slate-800">Previous Conversations</h3>
+          {sortedConversations.length > 0 && (
+            <Badge variant="outline" className="text-xs px-2 py-1 bg-slate-50 text-slate-600 border-slate-200">
+              {sortedConversations.length} total
+            </Badge>
+          )}
         </div>
+        {shouldUseStacking && (
+          <p className="text-xs text-slate-500">
+            Recent conversations shown individually • Older conversations stacked above
+          </p>
+        )}
       </div>
 
       {/* Conversations List */}
@@ -566,7 +575,21 @@ export default function ConversationThreads({
           </Card>
         ) : (
           <>
-            {/* Show individual conversations (newest first) */}
+            {/* Show stacked conversations (oldest conversations) at the top */}
+            {conversationsToStack.length > 0 && (
+              <ConversationStack
+                conversations={conversationsToStack}
+                onThreadSelect={onThreadSelect}
+                currentUserEmail={currentUserEmail}
+                isMyTurn={isMyTurn}
+                isInviter={isInviter}
+                selectedConversationId={selectedConversationId}
+                onWaitingClick={() => setShowWaitingPopup(true)}
+                onRespondFirstClick={() => setShowRespondFirstPopup(true)}
+              />
+            )}
+            
+            {/* Show individual conversations (newest first) below the stack */}
             {conversationsToShow.map((conversation: Conversation, index: number) => (
               <StackedConversation
                 key={conversation.id}
@@ -607,20 +630,6 @@ export default function ConversationThreads({
                 index={index}
               />
             ))}
-            
-            {/* Show stacked conversations (oldest conversations) */}
-            {conversationsToStack.length > 0 && (
-              <ConversationStack
-                conversations={conversationsToStack}
-                onThreadSelect={onThreadSelect}
-                currentUserEmail={currentUserEmail}
-                isMyTurn={isMyTurn}
-                isInviter={isInviter}
-                selectedConversationId={selectedConversationId}
-                onWaitingClick={() => setShowWaitingPopup(true)}
-                onRespondFirstClick={() => setShowRespondFirstPopup(true)}
-              />
-            )}
           </>
         )}
       </div>
