@@ -2872,6 +2872,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const conversations = await storage.getConversationsByConnection(connectionId);
       
+      // Fix conversation titles for any conversations that don't have proper titles
+      const { generateRelationshipSpecificTitle } = await import('./thread-naming');
+      for (const conversation of conversations) {
+        if (!conversation.title || conversation.title === 'Untitled conversation') {
+          try {
+            const messages = await storage.getMessages(conversation.id);
+            const firstQuestion = messages.find(msg => msg.type === 'question');
+            if (firstQuestion) {
+              const threadTitle = generateRelationshipSpecificTitle(
+                firstQuestion.content,
+                conversation.relationshipType
+              );
+              await storage.updateConversationTitle(conversation.id, threadTitle);
+              conversation.title = threadTitle; // Update the local object for response
+            }
+          } catch (error) {
+            console.error(`Error generating title for conversation ${conversation.id}:`, error);
+          }
+        }
+      }
+      
       // Determine active conversation (most recently active)
       const sortedConversations = conversations.sort((a, b) => {
         const aTime = new Date(a.lastActivityAt || a.createdAt || 0).getTime();

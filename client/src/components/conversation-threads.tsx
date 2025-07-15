@@ -84,7 +84,7 @@ function ConversationStack({
             </div>
             
             <div className="text-xs text-slate-600 mb-2">
-              Most recent: {topConversation.title || topConversation.topic || 'Untitled conversation'}
+              Most recent: {topConversation.title || 'Untitled conversation'}
             </div>
             
             <Button
@@ -116,7 +116,7 @@ function ConversationStack({
                     <div className="flex items-center space-x-2 mb-1">
                       <MessageSquare className="w-3 h-3 text-slate-400 flex-shrink-0" />
                       <span className="text-xs font-medium text-slate-700 truncate">
-                        {conversation.title || conversation.topic || 'Untitled conversation'}
+                        {conversation.title || 'Untitled conversation'}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2 text-xs text-slate-500">
@@ -276,7 +276,7 @@ function StackedConversation({
               <h4 className={`text-xs font-medium truncate ${
                 canReopen === false ? 'text-slate-400' : 'text-slate-800'
               }`}>
-                {conversation.title || conversation.topic}
+                {conversation.title || 'Untitled conversation'}
               </h4>
             </div>
             
@@ -371,18 +371,16 @@ function StackedConversation({
           </div>
           
           <div className="flex flex-col items-end space-y-1">
-            {/* Turn indicator badge - Fixed logic for stacked conversations */}
+            {/* Turn indicator badge - Show "Your Turn" for all past conversations since user can reopen them */}
             <Badge 
               variant="outline"
               className={`text-xs px-2 py-1 text-center min-w-[60px] ${
                 canReopen === false
                   ? 'bg-slate-50 text-slate-300 border-slate-200'
-                  : conversation.currentTurn === currentUserEmail
-                  ? 'bg-green-50 text-green-700 border-green-200' 
-                  : 'bg-gray-50 text-gray-600 border-gray-200'
+                  : 'bg-green-50 text-green-700 border-green-200'
               }`}
             >
-              {conversation.currentTurn === currentUserEmail ? 'Your Turn' : 'Their Turn'}
+              Your Turn
             </Badge>
             
             {/* Stack expansion control */}
