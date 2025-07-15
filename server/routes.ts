@@ -5154,6 +5154,35 @@ Format each as a complete question they can use to begin this important conversa
     }
   });
 
+  // Test S3 connectivity endpoint for debugging uploads
+  app.get('/api/test/s3-connection', async (req, res) => {
+    try {
+      console.log('[S3_TEST] Testing S3 connection...');
+      const testResult = await s3Service.testConnection();
+      console.log('[S3_TEST] Test result:', testResult);
+      
+      const response = {
+        s3Configured: s3Service.isS3Configured(),
+        connectionTest: testResult,
+        timestamp: new Date().toISOString(),
+        environment: {
+          region: process.env.AWS_REGION,
+          bucket: process.env.AWS_S3_BUCKET,
+          hasAccessKey: !!process.env.AWS_ACCESS_KEY_ID,
+          hasSecretKey: !!process.env.AWS_SECRET_ACCESS_KEY
+        }
+      };
+      
+      res.json(response);
+    } catch (error) {
+      console.error('[S3_TEST] S3 connection test failed:', error);
+      res.status(500).json({ 
+        error: 'S3 test failed',
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

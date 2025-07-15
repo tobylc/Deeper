@@ -28,7 +28,7 @@ export class S3Service {
       });
       this.bucketName = config.bucketName;
       this.isConfigured = true;
-      console.log('[S3] S3 service configured successfully');
+      console.log(`[S3] S3 service configured successfully - Region: ${config.region}, Bucket: ${config.bucketName}`);
     } else {
       console.warn('[S3] S3 not configured - falling back to local storage');
       this.isConfigured = false;
@@ -81,7 +81,9 @@ export class S3Service {
     });
 
     try {
-      await this.s3Client.send(command);
+      console.log(`[S3] Attempting upload to bucket: ${this.bucketName}, key: ${key}`);
+      const result = await this.s3Client.send(command);
+      console.log(`[S3] Upload command completed successfully, ETag: ${result.ETag}`);
       
       // Return the public URL for the uploaded file
       const publicUrl = `https://${this.bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
@@ -89,7 +91,15 @@ export class S3Service {
       console.log(`[S3] Audio file uploaded successfully: ${fileName} -> ${publicUrl}`);
       return publicUrl;
     } catch (error) {
-      console.error('[S3] Upload failed:', error);
+      console.error('[S3] Upload failed with detailed error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        name: error instanceof Error ? error.name : 'Unknown',
+        code: (error as any)?.code,
+        statusCode: (error as any)?.statusCode,
+        region: process.env.AWS_REGION,
+        bucket: this.bucketName,
+        key: key
+      });
       throw new Error(`Failed to upload audio file to S3: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -115,6 +125,56 @@ export class S3Service {
     } catch (error) {
       console.error('[S3] Failed to generate presigned URL:', error);
       throw new Error(`Failed to generate presigned URL: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Test S3 connectivity by attempting a simple operation
+   */
+  async testConnection(): Promise<{ success: boolean; error?: string; details?: any }> {
+    if (!this.isConfigured) {
+      return { success: false, error: 'S3 not configured' };
+    }
+
+    try {
+      // Test with a small upload operation
+      const testKey = `test/connection-test-${Date.now()}.txt`;
+      const testBuffer = Buffer.from('S3 connection test');
+      
+      const command = new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: testKey,
+        Body: testBuffer,
+        ContentType: 'text/plain',
+      });
+
+      const result = await this.s3Client.send(command);
+      console.log(`[S3] Connection test successful, ETag: ${result.ETag}`);
+      
+      // Clean up test file immediately
+      try {
+        await this.s3Client.send(new DeleteObjectCommand({
+          Bucket: this.bucketName,
+          Key: testKey,
+        }));
+      } catch (cleanupError) {
+        console.warn(`[S3] Failed to clean up test file: ${cleanupError}`);
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('[S3] Connection test failed:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: {
+          name: error instanceof Error ? error.name : 'Unknown',
+          code: (error as any)?.code,
+          statusCode: (error as any)?.statusCode,
+          region: process.env.AWS_REGION,
+          bucket: this.bucketName
+        }
+      };
     }
   }
 
