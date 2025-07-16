@@ -1001,14 +1001,6 @@ Changelog:
   * Production-ready S3 storage system now fully operational with correct permissions modeloved S3 URL handling and retry logic
   * Complete solution ensures audio messages remain accessible even after application restarts and deployments
   * Application now fully optimized for production deployment with minimal logging overhead
-- July 16, 2025. CRITICAL SECURITY FIX: Subscription bypass vulnerability patched:
-  * Fixed critical security flaw where isUserInvitee logic was bypassing ALL subscription restrictions for invited users
-  * Previous implementation allowed any user who was ever invited to have permanent unlimited free access forever
-  * Removed isInviteeUser bypass logic from all endpoints: message sending, voice messages, conversation creation, and new thread creation
-  * Now ALL users (including invitees) are properly restricted by their subscription tier and trial status
-  * Trial expired users can no longer send messages, create conversations, or perform any actions regardless of invitation history
-  * Subscription enforcement now properly validates trial status, expiration dates, and payment status for every user action
-  * Production-ready subscription system ensuring proper tier restrictions and payment enforcement across entire application
 - June 30, 2025. Critical thread reopening turn logic fix implemented:
   * Fixed critical bug where "Reopen Thread" button incorrectly counted as user's turn and passed conversation to other user
   * Enhanced thread reopening to be pure navigation action without any turn state modification
