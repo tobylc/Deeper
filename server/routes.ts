@@ -5187,6 +5187,53 @@ Format each as a complete question they can use to begin this important conversa
     }
   });
 
+  // Debug endpoint to test trial expiration logic
+  app.get('/api/debug/trial-status/:userId', async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      console.log('[DEBUG_TRIAL] Testing trial status for user:', userId);
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      console.log('[DEBUG_TRIAL] User data loaded:', {
+        userId: user.id,
+        email: user.email,
+        subscriptionTier: user.subscriptionTier,
+        subscriptionStatus: user.subscriptionStatus,
+        trialExpiresAt: user.trialExpiresAt
+      });
+      
+      const trialStatus = await storage.checkTrialStatus(userId);
+      const now = new Date();
+      
+      const response = {
+        userId,
+        email: user.email,
+        subscriptionTier: user.subscriptionTier,
+        subscriptionStatus: user.subscriptionStatus,
+        trialExpiresAt: user.trialExpiresAt,
+        trialStartedAt: user.trialStartedAt,
+        serverTime: now.toISOString(),
+        trialExpiresAtUTC: user.trialExpiresAt?.toISOString(),
+        isExpiredCalculation: user.trialExpiresAt ? now > user.trialExpiresAt : false,
+        trialStatusResult: trialStatus,
+        timeDiffMilliseconds: user.trialExpiresAt ? now.getTime() - user.trialExpiresAt.getTime() : null
+      };
+      
+      console.log('[DEBUG_TRIAL] Response:', JSON.stringify(response, null, 2));
+      res.json(response);
+    } catch (error) {
+      console.error('[DEBUG_TRIAL] Trial status test failed:', error);
+      res.status(500).json({ 
+        error: 'Trial status test failed',
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

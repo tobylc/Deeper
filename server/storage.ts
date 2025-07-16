@@ -503,8 +503,25 @@ export class DatabaseStorage implements IStorage {
     }
 
     const now = new Date();
-    const isExpired = now > user.trialExpiresAt;
-    const daysRemaining = Math.max(0, Math.ceil((user.trialExpiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+    // CRITICAL FIX: Ensure trialExpiresAt is a proper Date object for comparison
+    const trialExpirationDate = new Date(user.trialExpiresAt);
+    const isExpired = now > trialExpirationDate;
+    const daysRemaining = Math.max(0, Math.ceil((trialExpirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+    // CRITICAL DEBUG: Log trial expiration check details
+    console.log('[TRIAL_DEBUG] Trial status check:', {
+      userId: user.id,
+      email: user.email,
+      subscriptionTier: user.subscriptionTier,
+      subscriptionStatus: user.subscriptionStatus,
+      trialExpiresAt: user.trialExpiresAt,
+      trialExpirationDateISO: trialExpirationDate.toISOString(),
+      serverTimeNow: now,
+      serverTimeNowISO: now.toISOString(),
+      isExpired,
+      daysRemaining,
+      timeDiffMs: now.getTime() - trialExpirationDate.getTime()
+    });
 
     return { isExpired, daysRemaining, user };
   }

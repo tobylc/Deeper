@@ -29,13 +29,8 @@ export function TrialStatus() {
     }
   });
 
-  // Check if user was invited by someone else (is an invitee)
-  const { data: connections = [] } = useQuery<Connection[]>({
-    queryKey: [`/api/connections/${user?.email}`],
-    enabled: !!user?.email,
-  });
-
-  const isInviteeUser = connections.some(c => c.inviteeEmail === user?.email);
+  // CRITICAL FIX: Removed invitee bypass logic that was allowing unlimited free access
+  // All users must now follow proper subscription tier restrictions
 
   // Fallback to user data when API fails but user is authenticated
   if (isLoading && !error) {
@@ -87,26 +82,8 @@ export function TrialStatus() {
   }
 
   if (isExpiredTrial || effectiveTrialStatus.isExpired) {
-    // For invitee users, show free status without any upgrade options
-    if (isInviteeUser) {
-      return (
-        <div className="mt-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-slate-600">Current Plan</span>
-            </div>
-            <Badge variant="secondary" className="bg-slate-200 text-slate-700">
-              free forever
-            </Badge>
-          </div>
-          <div className="mt-2 text-xs text-slate-500">
-            You have permanent access through your connection
-          </div>
-        </div>
-      );
-    }
-
-    // For regular users, show trial expired
+    // CRITICAL FIX: All users (including invitees) must show trial expired status
+    // Previous logic was bypassing subscription enforcement for invitees
     return (
       <>
         <div className="mt-4">
