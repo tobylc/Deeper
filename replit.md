@@ -202,6 +202,20 @@ The following basic logic rules are fundamental to the application and must be p
 - **Analytics Dashboard**: Real-time metrics for user engagement and system performance
 - **Graceful Shutdown**: Proper server shutdown handling for deployment scenarios
 
+## Core App Logic (CRITICAL - DO NOT MODIFY)
+
+### Subscription Model
+
+13. **✅ IMPLEMENTED - Invitee Free Forever Access**: ALL "INVITEE" USERS have "FREE FOREVER" ACCOUNTS as long as they are ONLY an "INVITEE" from another user. If an "invitee" user ever wants to become an "inviter" then they must sign up for a free trial or paid subscription and their account will be treated as an "inviter" account.
+    - Code: `isInviteeUser` logic checks connection status throughout application
+    - Code: Trial expiration enforcement bypassed for invitee users
+    - Code: `subscriptionTier: 'free'` and `subscriptionStatus: 'forever'` for invitees
+
+14. **✅ IMPLEMENTED - Unlimited Invitee Connections**: All users may have an "unlimited" amount of "invitee" connections (user as the "invitee"). But all "inviter" users are required to have a trial/paid subscription to have the corresponding amount of "inviter" connections added to their account.
+    - Code: Connection limits only enforced for inviter users in `/api/connections` endpoint
+    - Code: Invitee users have unlimited incoming connection acceptance
+    - Code: Trial expiration blocks inviter actions but not invitee participation
+
 ## Changelog
 ```
 Changelog:
@@ -958,6 +972,17 @@ Changelog:
   * Production-ready real-time synchronization ensuring perfect conversation state consistency between all participants
   * Reduced floating waiting text size by 50% as requested - main heading from text-4xl-7xl to text-2xl-4xl, subtitle from text-xl-4xl to text-lg-2xl
   * Complete timer bypass system ensures smooth conversation initiation without timer interference
+- July 16, 2025. Critical trial expiration system overhaul and invitee/inviter logic consistency fixes:
+  * Fixed database trailing space bug causing incorrect subscription_tier comparisons throughout application
+  * Updated trial expiration enforcement to use `.trim()` for all subscription tier comparisons
+  * Implemented consistent invitee user detection using connection status across all subscription endpoints
+  * Replaced legacy `isUserInvitee()` method calls with direct connection checking for accurate invitee detection
+  * Fixed all trial expiration endpoints to properly identify invitee users and bypass subscription restrictions
+  * Corrected subscription status from "inactive" to "active" for trial users in production
+  * Enhanced CSP headers with proper frame-src permissions for Stripe payment integration
+  * Fixed variable naming conflicts in server routes preventing compilation errors
+  * Trial expiration system now accurately blocks expired inviter users while preserving invitee free access
+  * Complete subscription enforcement consistency across messaging, voice recording, and conversation creation endpoints
 - June 27, 2025. Voice message error handling fix:
   * Fixed "something went wrong" error that occurred when sending voice recordings
   * Enhanced voice message error handling to prevent unhandled promise rejections from triggering error boundary

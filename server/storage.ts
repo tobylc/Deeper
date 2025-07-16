@@ -491,22 +491,36 @@ export class DatabaseStorage implements IStorage {
     const user = await this.getUser(userId);
     if (!user) return { isExpired: true, daysRemaining: 0, user: undefined };
 
+    // Clean up subscription tier to handle potential trailing spaces
+    const cleanTier = user.subscriptionTier?.trim();
+
     // If user has paid subscription, trial doesn't apply
-    if (user.subscriptionTier !== 'trial') {
+    if (cleanTier && !['trial', 'free'].includes(cleanTier)) {
       return { isExpired: false, daysRemaining: 0, user };
     }
 
-    if (!user.trialExpiresAt) {
-      // Initialize trial if not set
-      const updatedUser = await this.initializeTrial(userId);
-      return { isExpired: false, daysRemaining: 7, user: updatedUser };
+    // For invitee users (free forever), never expired
+    if (cleanTier === 'free' && user.subscriptionStatus === 'forever') {
+      return { isExpired: false, daysRemaining: 0, user };
     }
 
-    const now = new Date();
-    const isExpired = now > user.trialExpiresAt;
-    const daysRemaining = Math.max(0, Math.ceil((user.trialExpiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+    // For trial users, check expiration
+    if (cleanTier === 'trial') {
+      if (!user.trialExpiresAt) {
+        // Initialize trial if not set
+        const updatedUser = await this.initializeTrial(userId);
+        return { isExpired: false, daysRemaining: 7, user: updatedUser };
+      }
 
-    return { isExpired, daysRemaining, user };
+      const now = new Date();
+      const isExpired = now > user.trialExpiresAt;
+      const daysRemaining = Math.max(0, Math.ceil((user.trialExpiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+      return { isExpired, daysRemaining, user };
+    }
+
+    // For free users without trial or unknown status, consider expired
+    return { isExpired: true, daysRemaining: 0, user };
   }
 
   async expireTrialUser(userId: string): Promise<User | undefined> {

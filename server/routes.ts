@@ -1209,32 +1209,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "User email not found" });
       }
 
-      // Check trial status and subscription limits before allowing connection creation
-      const trialStatus = await storage.checkTrialStatus(currentUser.id);
+      // Check if user is an invitee (has free forever access)
+      const userConnections = await storage.getConnectionsByEmail(currentUser.email!);
+      const isInviteeUser = userConnections.some(c => c.inviteeEmail === currentUser.email);
       
-      // Block all actions if trial has expired and user doesn't have paid subscription
-      if (trialStatus.isExpired && currentUser.subscriptionTier === 'trial') {
-        await storage.expireTrialUser(currentUser.id);
-        return res.status(403).json({ 
-          message: "Your 7-day free trial has expired. Choose a subscription plan to continue using Deeper.", 
-          type: "TRIAL_EXPIRED",
-          subscriptionTier: currentUser.subscriptionTier,
-          requiresUpgrade: true
-        });
-      }
-
-      const initiatedConnectionsCount = await storage.getInitiatedConnectionsCount(currentUser.email);
-      const userMaxConnections = currentUser.maxConnections || 1;
-      
-      if (initiatedConnectionsCount >= userMaxConnections) {
-        return res.status(403).json({ 
-          message: "Connection limit reached. Upgrade your plan to invite more people.", 
-          type: "SUBSCRIPTION_LIMIT",
-          currentCount: initiatedConnectionsCount,
-          maxAllowed: userMaxConnections,
-          subscriptionTier: currentUser.subscriptionTier || 'trial',
-          requiresUpgrade: true
-        });
+      // For inviter users, check trial status and subscription limits
+      if (!isInviteeUser) {
+        const trialStatus = await storage.checkTrialStatus(currentUser.id);
+        
+        // Block all actions if trial has expired and user doesn't have paid subscription
+        if (trialStatus.isExpired && currentUser.subscriptionTier?.trim() === 'trial') {
+          await storage.expireTrialUser(currentUser.id);
+          return res.status(403).json({ 
+            message: "Your 7-day free trial has expired. Choose a subscription plan to continue using Deeper.", 
+            type: "TRIAL_EXPIRED",
+            subscriptionTier: currentUser.subscriptionTier?.trim(),
+            requiresUpgrade: true
+          });
+        }
+        
+        // Check connection limits for inviter users
+        const initiatedConnectionsCount = await storage.getInitiatedConnectionsCount(currentUser.email!);
+        const userMaxConnections = currentUser.maxConnections || 1;
+        
+        if (initiatedConnectionsCount >= userMaxConnections) {
+          return res.status(403).json({ 
+            message: "Connection limit reached. Upgrade your plan to invite more people.", 
+            type: "SUBSCRIPTION_LIMIT",
+            currentCount: initiatedConnectionsCount,
+            maxAllowed: userMaxConnections,
+            subscriptionTier: currentUser.subscriptionTier?.trim() || 'trial',
+            requiresUpgrade: true
+          });
+        }
       }
 
       const connectionData = {
@@ -2767,8 +2774,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      // Check if user is an invitee (should have permanent free access)
-      const isInviteeUser = await storage.isUserInvitee(currentUser.email!);
+      // Check if user is an invitee (has free forever access)
+      const existingConnections = await storage.getConnectionsByEmail(currentUser.email!);
+      const isInviteeUser = existingConnections.some(c => c.inviteeEmail === currentUser.email);
       
       // Enforce subscription restrictions for conversation creation (but not for invitee users)
       if (!isInviteeUser) {
@@ -2786,12 +2794,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const trialStatus = await storage.checkTrialStatus(currentUser.id);
         
         // Block conversation creation if trial has expired and user doesn't have paid subscription
-        if (trialStatus.isExpired && (currentUser.subscriptionTier === 'trial' || currentUser.subscriptionTier === 'free')) {
+        if (trialStatus.isExpired && currentUser.subscriptionTier?.trim() === 'trial') {
           await storage.expireTrialUser(currentUser.id);
           return res.status(403).json({ 
             type: 'TRIAL_EXPIRED',
             message: "Your 7-day free trial has expired. Choose a subscription plan to continue conversations.",
-            subscriptionTier: currentUser.subscriptionTier,
+            subscriptionTier: currentUser.subscriptionTier?.trim(),
             subscriptionStatus: currentUser.subscriptionStatus,
             requiresUpgrade: true
           });
@@ -3220,8 +3228,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      // Check if user is an invitee (should have permanent free access)
-      const isInviteeUser = await storage.isUserInvitee(currentUser.email!);
+      // Check if user is an invitee (has free forever access)
+      const existingConnections = await storage.getConnectionsByEmail(currentUser.email!);
+      const isInviteeUser = existingConnections.some(c => c.inviteeEmail === currentUser.email);
       
       // Enforce subscription restrictions for conversation creation (but not for invitee users)
       if (!isInviteeUser) {
@@ -3239,12 +3248,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const trialStatus = await storage.checkTrialStatus(currentUser.id);
         
         // Block all conversation creation actions if trial has expired and user doesn't have paid subscription
-        if (trialStatus.isExpired && (currentUser.subscriptionTier === 'trial' || currentUser.subscriptionTier === 'free')) {
+        if (trialStatus.isExpired && currentUser.subscriptionTier?.trim() === 'trial') {
           await storage.expireTrialUser(currentUser.id);
           return res.status(403).json({ 
             type: 'TRIAL_EXPIRED',
             message: "Your 7-day free trial has expired. Choose a subscription plan to continue conversations.",
-            subscriptionTier: currentUser.subscriptionTier,
+            subscriptionTier: currentUser.subscriptionTier?.trim(),
             subscriptionStatus: currentUser.subscriptionStatus,
             requiresUpgrade: true
           });
@@ -3441,8 +3450,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "User not found" });
       }
 
-      // Check if user is an invitee (should have permanent free access)
-      const isInviteeUser = await storage.isUserInvitee(senderUser.email!);
+      // Check if user is an invitee (has free forever access)
+      const existingConnections = await storage.getConnectionsByEmail(senderUser.email!);
+      const isInviteeUser = existingConnections.some(c => c.inviteeEmail === senderUser.email);
       
       // Enforce subscription restrictions for messaging (but not for invitee users)
       if (!isInviteeUser) {
@@ -3460,12 +3470,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Block all messaging actions if trial has expired and user doesn't have paid subscription
-        if (trialStatus.isExpired && (senderUser.subscriptionTier === 'trial' || senderUser.subscriptionTier === 'free')) {
+        if (trialStatus.isExpired && senderUser.subscriptionTier?.trim() === 'trial') {
           await storage.expireTrialUser(senderUser.id);
           return res.status(403).json({ 
             type: 'TRIAL_EXPIRED',
             message: "Your 7-day free trial has expired. Choose a subscription plan to continue conversations.",
-            subscriptionTier: senderUser.subscriptionTier,
+            subscriptionTier: senderUser.subscriptionTier?.trim(),
             subscriptionStatus: senderUser.subscriptionStatus,
             requiresUpgrade: true
           });
@@ -3721,8 +3731,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Not authorized to send messages as this user" });
       }
 
-      // Check if user is an invitee (should have permanent free access)
-      const isInviteeUser = await storage.isUserInvitee(user.email!);
+      // Check if user is an invitee (has free forever access)
+      const existingConnections = await storage.getConnectionsByEmail(user.email!);
+      const isInviteeUser = existingConnections.some(c => c.inviteeEmail === user.email);
       
       // Enforce subscription restrictions for voice messaging (but not for invitee users)
       if (!isInviteeUser) {
@@ -3740,12 +3751,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Block all voice messaging actions if trial has expired and user doesn't have paid subscription
-        if (trialStatus.isExpired && (user.subscriptionTier === 'trial' || user.subscriptionTier === 'free')) {
+        if (trialStatus.isExpired && user.subscriptionTier?.trim() === 'trial') {
           await storage.expireTrialUser(user.id);
           return res.status(403).json({ 
             type: 'TRIAL_EXPIRED',
             message: "Your 7-day free trial has expired. Choose a subscription plan to continue conversations.",
-            subscriptionTier: user.subscriptionTier,
+            subscriptionTier: user.subscriptionTier?.trim(),
             subscriptionStatus: user.subscriptionStatus,
             requiresUpgrade: true
           });
@@ -4493,8 +4504,9 @@ Format each as a complete question they can use to begin this important conversa
         return res.status(403).json({ message: "Access denied" });
       }
 
-      // Check if user is an invitee (should have permanent free access)
-      const isInviteeUser = await storage.isUserInvitee(currentUser.email!);
+      // Check if user is an invitee (has free forever access)
+      const existingConnections = await storage.getConnectionsByEmail(currentUser.email!);
+      const isInviteeUser = existingConnections.some(c => c.inviteeEmail === currentUser.email);
       
       // Enforce subscription restrictions for conversation creation (but not for invitee users)
       if (!isInviteeUser) {
@@ -4512,12 +4524,12 @@ Format each as a complete question they can use to begin this important conversa
         const trialStatus = await storage.checkTrialStatus(currentUser.id);
         
         // Block all conversation creation actions if trial has expired and user doesn't have paid subscription
-        if (trialStatus.isExpired && (currentUser.subscriptionTier === 'trial' || currentUser.subscriptionTier === 'free')) {
+        if (trialStatus.isExpired && currentUser.subscriptionTier?.trim() === 'trial') {
           await storage.expireTrialUser(currentUser.id);
           return res.status(403).json({ 
             type: 'TRIAL_EXPIRED',
             message: "Your 7-day free trial has expired. Choose a subscription plan to continue conversations.",
-            subscriptionTier: currentUser.subscriptionTier,
+            subscriptionTier: currentUser.subscriptionTier?.trim(),
             subscriptionStatus: currentUser.subscriptionStatus,
             requiresUpgrade: true
           });
