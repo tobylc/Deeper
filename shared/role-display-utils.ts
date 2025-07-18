@@ -14,16 +14,16 @@ export interface RoleDisplayInfo {
  */
 export function getRoleDisplayInfo(
   relationshipType: string, 
-  userRole: string | null | undefined, 
-  otherUserRole: string | null | undefined
+  inviterRole: string | null | undefined, 
+  inviteeRole: string | null | undefined
 ): RoleDisplayInfo {
-  // If we have specific roles, use them for personalized display
-  if (userRole && otherUserRole) {
+  // If we have specific roles, use them for personalized display with proper formatting
+  if (inviterRole && inviteeRole) {
     return {
-      userRole,
-      otherUserRole,
-      relationshipDisplay: `${userRole}/${otherUserRole}`,
-      conversationContext: `${userRole.toLowerCase()} and ${otherUserRole.toLowerCase()}`
+      userRole: inviterRole,
+      otherUserRole: inviteeRole,
+      relationshipDisplay: `${inviterRole} - ${inviteeRole}`, // Changed from "/" to " - " to match user's expectation
+      conversationContext: `${inviterRole.toLowerCase()} and ${inviteeRole.toLowerCase()}`
     };
   }
   
@@ -46,7 +46,7 @@ export function getInvitationText(
   relationshipType: string
 ): string {
   if (inviterRole && inviteeRole) {
-    return `meaningful ${inviterRole.toLowerCase()}/${inviteeRole.toLowerCase()} conversations`;
+    return `meaningful ${inviterRole.toLowerCase()} - ${inviteeRole.toLowerCase()} conversations`;
   }
   
   const safeRelationshipType = relationshipType || 'connection';
@@ -62,7 +62,7 @@ export function getConversationHeaderText(
   relationshipType: string
 ): string {
   if (userRole && otherUserRole) {
-    return `${userRole}/${otherUserRole} Conversation`;
+    return `${userRole} - ${otherUserRole} Conversation`;
   }
   
   const safeRelationshipType = relationshipType || 'Connection';
@@ -79,7 +79,7 @@ export function getEmailSubjectWithRoles(
   relationshipType: string
 ): string {
   if (inviterRole && inviteeRole) {
-    return `${action} - ${inviterRole}/${inviteeRole} Connection on Deeper`;
+    return `${action} - ${inviterRole} - ${inviteeRole} Connection on Deeper`;
   }
   
   const safeRelationshipType = relationshipType || 'Connection';
@@ -97,7 +97,7 @@ export function getDashboardSectionTitle(
 ): string {
   const safeRelationshipType = relationshipType || 'Connection';
   const roleDisplay = userRole && otherUserRole 
-    ? `${userRole}/${otherUserRole}` 
+    ? `${userRole} - ${otherUserRole}` 
     : safeRelationshipType;
     
   switch (section) {

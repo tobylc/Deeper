@@ -184,21 +184,57 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
     setCurrentQuestions([]);
   }, [relationshipType, userRole]);
 
-  // Get next set of questions that haven't been shown
+  // Fresh shuffle on every page load/refresh - ensures new questions every time
+  useEffect(() => {
+    // Add a secondary shuffle effect that runs on component mount to ensure fresh questions
+    const performFreshShuffle = () => {
+      const roleSpecificQuestions = getRoleSpecificQuestions(relationshipType, userRole);
+      const fallbackQuestions = getGeneralRelationshipQuestions(relationshipType);
+      const allQuestions = roleSpecificQuestions.length > 0 ? roleSpecificQuestions : fallbackQuestions;
+      
+      if (allQuestions.length > 0) {
+        // Use timestamp as additional randomization factor
+        const timestamp = Date.now();
+        const extraRandomized = [...allQuestions].sort(() => {
+          // Use timestamp + random for better randomization
+          return (Math.random() + (timestamp % 1000) / 1000) - 0.5;
+        });
+        
+        setAvailableQuestions(extraRandomized);
+        setShownQuestions(new Set());
+        setCurrentQuestions([]);
+      }
+    };
+
+    // Run fresh shuffle on component mount
+    performFreshShuffle();
+  }, []); // Empty dependency array to run only on mount
+
+  // Get next set of questions that haven't been shown - ENHANCED for maximum variety
   const getNextQuestions = (count: number = 5): string[] => {
     const unshownQuestions = availableQuestions.filter(q => !shownQuestions.has(q));
     
-    // If we have unshown curated questions, use them
+    // If we have enough unshown questions, use them with additional randomization
     if (unshownQuestions.length >= count) {
-      const nextQuestions = unshownQuestions.slice(0, count);
+      // Extra shuffle for variety
+      const extraShuffled = [...unshownQuestions].sort(() => Math.random() - 0.5);
+      const nextQuestions = extraShuffled.slice(0, count);
       setShownQuestions(prev => new Set([...Array.from(prev), ...nextQuestions]));
       return nextQuestions;
     }
     
-    // If we're running low on unshown questions, reshuffle all questions
+    // If we're running low on unshown questions, implement smart rotation
     if (unshownQuestions.length < count && availableQuestions.length >= count) {
-      // Reset and reshuffle all questions
-      const reshuffled = [...availableQuestions].sort(() => Math.random() - 0.5);
+      // Reset and reshuffle all questions with enhanced randomization
+      const timestamp = Date.now();
+      const reshuffled = [...availableQuestions].sort(() => {
+        // Use multiple randomization factors for better variety
+        const factor1 = Math.random();
+        const factor2 = (timestamp % 10000) / 10000;
+        const factor3 = Math.sin(timestamp) * 0.5;
+        return (factor1 + factor2 + factor3) - 0.5;
+      });
+      
       setAvailableQuestions(reshuffled);
       setShownQuestions(new Set());
       
@@ -207,8 +243,9 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
       return nextQuestions;
     }
     
-    // Return what we have if less than requested count
-    const nextQuestions = unshownQuestions.slice(0, Math.min(count, unshownQuestions.length));
+    // Return what we have with maximum randomization
+    const shuffledRemaining = [...unshownQuestions].sort(() => Math.random() - 0.5);
+    const nextQuestions = shuffledRemaining.slice(0, Math.min(count, shuffledRemaining.length));
     setShownQuestions(prev => new Set([...Array.from(prev), ...nextQuestions]));
     return nextQuestions;
   };
@@ -223,6 +260,22 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
   }, [availableQuestions]);
   
   const shuffleQuestions = () => {
+    // Enhanced shuffle with time-based variation to ensure different questions every time
+    const timestamp = Date.now();
+    const roleSpecificQuestions = getRoleSpecificQuestions(relationshipType, userRole);
+    const fallbackQuestions = getGeneralRelationshipQuestions(relationshipType);
+    const allQuestions = roleSpecificQuestions.length > 0 ? roleSpecificQuestions : fallbackQuestions;
+    
+    // Apply fresh randomization with timestamp
+    const freshlyShuffled = [...allQuestions].sort(() => {
+      const base = Math.random();
+      const timeVariation = (timestamp % 7919) / 7919; // Use prime number for better distribution
+      return (base + timeVariation) - 0.5;
+    });
+    
+    setAvailableQuestions(freshlyShuffled);
+    setShownQuestions(new Set()); // Reset shown questions for fresh start
+    
     const newQuestions = getNextQuestions(5);
     setCurrentQuestions(newQuestions);
   };
@@ -382,7 +435,7 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
                 className="w-fit bg-amber/10 text-amber-800 border-amber/30 text-xs"
               >
                 <QuotesIcon size="xs" className="mr-1" />
-                {userRole && otherUserRole ? `${userRole}/${otherUserRole}` : relationshipType}
+                {userRole && otherUserRole ? `${userRole} - ${otherUserRole}` : relationshipType}
               </Badge>
             </CardHeader>
           </Card>
