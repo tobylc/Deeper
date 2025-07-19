@@ -189,7 +189,25 @@ This code will expire in 10 minutes. Enter it to verify your phone number.`;
       messageOptions.from = this.fromPhone;
     }
 
-    await this.client.messages.create(messageOptions);
+    try {
+      console.log('Attempting to send SMS with options:', {
+        to: phoneNumber,
+        from: messageOptions.from || 'MessagingServiceSid',
+        messagingServiceSid: this.messagingServiceSid ? 'SET' : 'NOT_SET'
+      });
+      
+      const result = await this.client.messages.create(messageOptions);
+      console.log('SMS sent successfully:', { sid: result.sid, status: result.status });
+    } catch (error: any) {
+      console.error('Twilio SMS Error Details:', {
+        error: error.message,
+        code: error.code,
+        moreInfo: error.moreInfo,
+        status: error.status,
+        details: error.details
+      });
+      throw error;
+    }
   }
 }
 
@@ -234,12 +252,23 @@ export function createSMSService(): SMSService {
   const twilioFromPhone = process.env.TWILIO_PHONE_NUMBER;
   const twilioMessagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
 
+  console.log('SMS Service Configuration Check:', {
+    accountSid: twilioAccountSid ? 'SET' : 'MISSING',
+    authToken: twilioAuthToken ? 'SET' : 'MISSING',
+    fromPhone: twilioFromPhone ? 'SET' : 'MISSING',
+    messagingServiceSid: twilioMessagingServiceSid ? 'SET' : 'MISSING',
+    nodeEnv: process.env.NODE_ENV
+  });
+
   // Use production SMS service if Twilio credentials are available
   if (twilioAccountSid && twilioAuthToken && (twilioFromPhone || twilioMessagingServiceSid)) {
+    console.log('Using ProductionSMSService with Twilio');
     return new ProductionSMSService(twilioAccountSid, twilioAuthToken, twilioFromPhone, twilioMessagingServiceSid);
   } else if (process.env.NODE_ENV === 'development') {
+    console.log('Using ConsoleSMSService (development mode)');
     return new ConsoleSMSService();
   } else {
+    console.log('Using InternalSMSService (fallback)');
     return new InternalSMSService();
   }
 }
