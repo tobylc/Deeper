@@ -1034,14 +1034,21 @@ export default function ConversationPage() {
                 <div className="text-xs text-slate-600">
                   {(() => {
                     if (connection) {
+                      console.log('[BADGE_DEBUG] Connection data:', connection);
+                      console.log('[BADGE_DEBUG] inviterRole:', connection.inviterRole);
+                      console.log('[BADGE_DEBUG] inviteeRole:', connection.inviteeRole);
+                      console.log('[BADGE_DEBUG] relationshipType:', connection.relationshipType);
+                      
                       const roleInfo = getRoleDisplayInfo(
                         connection.relationshipType, 
                         connection.inviterRole, 
                         connection.inviteeRole
                       );
+                      console.log('[BADGE_DEBUG] roleInfo result:', roleInfo);
                       return roleInfo.relationshipDisplay;
                     }
                     
+                    console.log('[BADGE_DEBUG] No connection data, using fallback:', conversation.relationshipType);
                     return conversation.relationshipType; // fallback
                   })()}
                 </div>
