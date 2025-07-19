@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Phone, Mail, Smartphone, CheckCircle, XCircle } from "lucide-react";
+import { formatPhoneNumber, extractDigitsForApi, isValidUSPhoneNumber } from "@/utils/phone-formatter";
 import type { User } from "@shared/schema";
 
 interface NotificationPreferencesProps {
@@ -18,7 +19,7 @@ export default function NotificationPreferences({ user }: NotificationPreference
   const [selectedPreference, setSelectedPreference] = useState<"email" | "sms" | "both">(
     (user.notificationPreference as "email" | "sms" | "both") || "email"
   );
-  const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber || "");
+  const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber || "+1-");
   const [verificationCode, setVerificationCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
@@ -28,9 +29,15 @@ export default function NotificationPreferences({ user }: NotificationPreference
 
   const needsPhoneSetup = (selectedPreference === "sms" || selectedPreference === "both") && !user.phoneVerified;
 
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhoneNumber(formatted);
+  };
+
   const sendVerificationMutation = useMutation({
     mutationFn: async (phoneNumber: string) => {
-      return apiRequest("POST", "/api/users/send-verification", { phoneNumber });
+      const apiPhoneNumber = extractDigitsForApi(phoneNumber);
+      return apiRequest("POST", "/api/users/send-verification", { phoneNumber: apiPhoneNumber });
     },
     onSuccess: () => {
       setCodeSent(true);
@@ -51,7 +58,11 @@ export default function NotificationPreferences({ user }: NotificationPreference
 
   const verifyPhoneMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; code: string }) => {
-      return apiRequest("POST", "/api/users/verify-phone", data);
+      const apiPhoneNumber = extractDigitsForApi(data.phoneNumber);
+      return apiRequest("POST", "/api/users/verify-phone", { 
+        phoneNumber: apiPhoneNumber, 
+        code: data.code 
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/users/by-email/${user.email}`] });
@@ -93,15 +104,15 @@ export default function NotificationPreferences({ user }: NotificationPreference
   });
 
   const handleSendVerificationCode = () => {
-    if (!phoneNumber.trim()) {
+    if (!isValidUSPhoneNumber(phoneNumber)) {
       toast({
-        title: "Phone number required",
-        description: "Please enter your phone number to receive text notifications.",
+        title: "Invalid phone number",
+        description: "Please enter a valid 10-digit US phone number.",
         variant: "destructive"
       });
       return;
     }
-    sendVerificationMutation.mutate(phoneNumber.trim());
+    sendVerificationMutation.mutate(phoneNumber);
   };
 
   const handleVerifyPhone = () => {
@@ -252,14 +263,17 @@ export default function NotificationPreferences({ user }: NotificationPreference
               <div className="space-y-3">
                 <Input
                   type="tel"
-                  placeholder="Enter your phone number"
+                  placeholder="+1-916-295-6400"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="bg-slate-800 border-slate-600 text-white"
+                  onChange={handlePhoneNumberChange}
+                  className="bg-slate-800 border-slate-600 text-white font-mono"
                 />
+                <div className="text-xs text-slate-400">
+                  Just type your 10-digit number (e.g., 9162956400)
+                </div>
                 <Button
                   onClick={handleSendVerificationCode}
-                  disabled={sendVerificationMutation.isPending || !phoneNumber.trim()}
+                  disabled={sendVerificationMutation.isPending || !isValidUSPhoneNumber(phoneNumber)}
                   className="w-full bg-[#4FACFE] hover:bg-[#4FACFE]/90"
                 >
                   {sendVerificationMutation.isPending ? "Sending..." : "Send Verification Code"}

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Phone, Mail, Smartphone, X } from "lucide-react";
+import { formatPhoneNumber, extractDigitsForApi, isValidUSPhoneNumber } from "@/utils/phone-formatter";
 
 interface NotificationPreferencePopupProps {
   conversationId: number;
@@ -21,7 +22,7 @@ export default function NotificationPreferencePopup({
   onDismiss
 }: NotificationPreferencePopupProps) {
   const [selectedPreference, setSelectedPreference] = useState<"email" | "sms" | "both">(currentPreference);
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("+1-");
   const [verificationCode, setVerificationCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
@@ -30,11 +31,16 @@ export default function NotificationPreferencePopup({
 
   const needsPhoneSetup = (selectedPreference === "sms" || selectedPreference === "both");
 
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhoneNumber(formatted);
+  };
+
   const handleSendVerificationCode = async () => {
-    if (!phoneNumber.trim()) {
+    if (!isValidUSPhoneNumber(phoneNumber)) {
       toast({
-        title: "Phone number required",
-        description: "Please enter your phone number to receive text notifications.",
+        title: "Invalid phone number",
+        description: "Please enter a valid 10-digit US phone number.",
         variant: "destructive"
       });
       return;
@@ -42,8 +48,9 @@ export default function NotificationPreferencePopup({
 
     setIsLoading(true);
     try {
+      const apiPhoneNumber = extractDigitsForApi(phoneNumber);
       const response = await apiRequest("/api/users/send-verification", "POST", {
-        phoneNumber: phoneNumber.trim()
+        phoneNumber: apiPhoneNumber
       });
 
       if (response.ok) {
@@ -84,8 +91,9 @@ export default function NotificationPreferencePopup({
 
     setIsLoading(true);
     try {
+      const apiPhoneNumber = extractDigitsForApi(phoneNumber);
       const response = await apiRequest("/api/users/verify-phone", "POST", {
-        phoneNumber: phoneNumber.trim(),
+        phoneNumber: apiPhoneNumber,
         code: verificationCode.trim()
       });
 
@@ -271,14 +279,17 @@ export default function NotificationPreferencePopup({
                   <div className="space-y-3">
                     <Input
                       type="tel"
-                      placeholder="Enter your phone number"
+                      placeholder="+1-916-295-6400"
                       value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="border-slate-300"
+                      onChange={handlePhoneNumberChange}
+                      className="border-slate-300 font-mono"
                     />
+                    <div className="text-xs text-slate-500">
+                      Just type your 10-digit number (e.g., 9162956400)
+                    </div>
                     <Button
                       onClick={handleSendVerificationCode}
-                      disabled={isLoading || !phoneNumber.trim()}
+                      disabled={isLoading || !isValidUSPhoneNumber(phoneNumber)}
                       className="w-full bg-[#4FACFE] hover:bg-[#4FACFE]/90"
                     >
                       {isLoading ? "Sending..." : "Send Verification Code"}
