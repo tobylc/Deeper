@@ -210,16 +210,20 @@ export default function ConversationPage() {
 
   // Get connection info for threading
   const { data: connection } = useQuery<Connection>({
-    queryKey: [`/api/connections/${conversation?.connectionId}`],
+    queryKey: [`/api/connections/by-id/${conversation?.connectionId}`],
     queryFn: async () => {
       try {
-        const response = await apiRequest('GET', `/api/connections/${conversation?.connectionId}`);
+        console.log('[CONNECTION_DEBUG] Fetching connection for ID:', conversation?.connectionId);
+        const response = await apiRequest('GET', `/api/connections/by-id/${conversation?.connectionId}`);
         if (!response.ok) {
+          console.log('[CONNECTION_DEBUG] Connection fetch failed:', response.status);
           return null;
         }
-        return response.json();
+        const connectionData = await response.json();
+        console.log('[CONNECTION_DEBUG] Fetched connection data:', connectionData);
+        return connectionData;
       } catch (error) {
-        console.error('Connection loading error:', error);
+        console.error('[CONNECTION_DEBUG] Connection loading error:', error);
         return null;
       }
     },

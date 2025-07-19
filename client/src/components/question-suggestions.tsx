@@ -175,6 +175,11 @@ export default function QuestionSuggestions({ relationshipType, userRole, otherU
     const fallbackQuestions = getGeneralRelationshipQuestions(relationshipType);
     const allQuestions = roleSpecificQuestions.length > 0 ? roleSpecificQuestions : fallbackQuestions;
     
+    console.log('[QUESTION_DEBUG] Initializing questions for:', { relationshipType, userRole });
+    console.log('[QUESTION_DEBUG] Role specific questions found:', roleSpecificQuestions.length);
+    console.log('[QUESTION_DEBUG] Total available questions:', allQuestions.length);
+    console.log('[QUESTION_DEBUG] First 3 questions:', allQuestions.slice(0, 3));
+    
     // Always shuffle questions for randomness - each page load shows different questions
     const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
     setAvailableQuestions(shuffled);
