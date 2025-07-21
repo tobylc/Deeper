@@ -30,7 +30,29 @@ export default function NotificationPreferences({ user }: NotificationPreference
   const needsPhoneSetup = (selectedPreference === "sms" || selectedPreference === "both") && !user.phoneVerified;
 
   const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
+    const input = e.target.value;
+    
+    // If user is trying to clear everything or backspaced to just the prefix
+    if (input === '' || input === '+' || input === '+1' || input === '+1-') {
+      setPhoneNumber('+1-');
+      return;
+    }
+    
+    // If input is shorter than current phoneNumber, user is deleting
+    if (input.length < phoneNumber.length) {
+      // Extract digits and reformat
+      const digits = input.replace(/\D/g, '');
+      if (digits.length === 0) {
+        setPhoneNumber('+1-');
+        return;
+      }
+      const formatted = formatPhoneNumber(digits);
+      setPhoneNumber(formatted);
+      return;
+    }
+    
+    // Normal input - format the number
+    const formatted = formatPhoneNumber(input);
     setPhoneNumber(formatted);
   };
 
@@ -263,13 +285,13 @@ export default function NotificationPreferences({ user }: NotificationPreference
               <div className="space-y-3">
                 <Input
                   type="tel"
-                  placeholder="+1-916-295-6400"
+                  placeholder="+1-555-123-4567"
                   value={phoneNumber}
                   onChange={handlePhoneNumberChange}
                   className="bg-slate-800 border-slate-600 text-white font-mono"
                 />
                 <div className="text-xs text-slate-400">
-                  Just type your 10-digit number (e.g., 9162956400)
+                  Just type your 10-digit number (e.g., 5551234567)
                 </div>
                 <Button
                   onClick={handleSendVerificationCode}

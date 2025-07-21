@@ -3,33 +3,41 @@
  */
 
 export function formatPhoneNumber(value: string): string {
-  // Remove all non-digit characters
+  // Handle empty input or just prefix
+  if (!value || value.length <= 3) {
+    return '+1-';
+  }
+  
+  // Extract only digits from the input (remove +, -, spaces, etc.)
   const digits = value.replace(/\D/g, '');
   
-  // Limit to 10 digits (US phone number without country code)
-  const limitedDigits = digits.slice(0, 10);
-  
-  // Format as +1-XXX-XXX-XXXX
-  if (limitedDigits.length === 0) {
+  // If no digits found, return the prefix
+  if (digits.length === 0) {
     return '+1-';
-  } else if (limitedDigits.length <= 3) {
-    return `+1-${limitedDigits}`;
-  } else if (limitedDigits.length <= 6) {
-    return `+1-${limitedDigits.slice(0, 3)}-${limitedDigits.slice(3)}`;
+  }
+  
+  // Take only the last 10 digits (in case user types country code)
+  const phoneDigits = digits.slice(-10);
+  
+  // Format based on how many digits we have
+  if (phoneDigits.length <= 3) {
+    return `+1-${phoneDigits}`;
+  } else if (phoneDigits.length <= 6) {
+    return `+1-${phoneDigits.slice(0, 3)}-${phoneDigits.slice(3)}`;
   } else {
-    return `+1-${limitedDigits.slice(0, 3)}-${limitedDigits.slice(3, 6)}-${limitedDigits.slice(6)}`;
+    return `+1-${phoneDigits.slice(0, 3)}-${phoneDigits.slice(3, 6)}-${phoneDigits.slice(6, 10)}`;
   }
 }
 
 export function extractDigitsForApi(formattedPhone: string): string {
-  // Extract just the digits and add +1 prefix for API
-  const digits = formattedPhone.replace(/\D/g, '');
+  // Extract just the digits (excluding the country code prefix)
+  const digits = formattedPhone.replace(/[^\d]/g, '');
   return `+1${digits}`;
 }
 
 export function isValidUSPhoneNumber(phoneNumber: string): boolean {
   // Remove all non-digit characters
-  const digits = phoneNumber.replace(/\D/g, '');
+  const digits = phoneNumber.replace(/[^\d]/g, '');
   
   // Check if it's exactly 10 digits (US phone number)
   return digits.length === 10;
