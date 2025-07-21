@@ -4813,9 +4813,18 @@ Format each as a complete question they can use to begin this important conversa
       // Send SMS via notification service with proper error handling
       let verificationCode: string;
       try {
+        console.log(`[SMS_DEBUG] Attempting to send verification code to: ${sanitizedPhone}`);
         verificationCode = await notificationService.sendPhoneVerification(sanitizedPhone);
+        console.log(`[SMS_DEBUG] Verification code generated successfully`);
       } catch (smsError: any) {
-        console.error("SMS sending failed:", smsError);
+        console.error("[SMS_ERROR] Detailed SMS sending error:", {
+          error: smsError,
+          message: smsError.message,
+          code: smsError.code,
+          status: smsError.status,
+          moreInfo: smsError.moreInfo,
+          stack: smsError.stack
+        });
         
         // Specific error handling for common Twilio errors
         if (smsError.code === 21211) {
@@ -4826,8 +4835,10 @@ Format each as a complete question they can use to begin this important conversa
           return res.status(400).json({ message: "Phone number is not a valid mobile number." });
         }
         
+        // Return more specific error message for debugging
+        const errorMessage = smsError.message || "Unknown SMS error";
         return res.status(503).json({ 
-          message: "SMS service temporarily unavailable. Please try again later." 
+          message: `SMS service error: ${errorMessage}. Please try again later.` 
         });
       }
 

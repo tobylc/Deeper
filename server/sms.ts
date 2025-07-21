@@ -263,13 +263,23 @@ export function createSMSService(): SMSService {
   // Use production SMS service if Twilio credentials are available
   if (twilioAccountSid && twilioAuthToken && (twilioFromPhone || twilioMessagingServiceSid)) {
     console.log('Using ProductionSMSService with Twilio');
+    console.log('Twilio Configuration:', {
+      hasAccountSid: !!twilioAccountSid,
+      hasAuthToken: !!twilioAuthToken,
+      hasFromPhone: !!twilioFromPhone,
+      hasMessagingService: !!twilioMessagingServiceSid,
+      fromPhone: twilioFromPhone,
+      messagingServiceSid: twilioMessagingServiceSid
+    });
     return new ProductionSMSService(twilioAccountSid, twilioAuthToken, twilioFromPhone, twilioMessagingServiceSid);
-  } else if (process.env.NODE_ENV === 'development') {
-    console.log('Using ConsoleSMSService (development mode)');
-    return new ConsoleSMSService();
   } else {
-    console.log('Using InternalSMSService (fallback)');
-    return new InternalSMSService();
+    console.log('Twilio credentials incomplete, using ConsoleSMSService for development');
+    console.log('Missing credentials:', {
+      accountSid: !twilioAccountSid,
+      authToken: !twilioAuthToken,
+      phoneOrService: !(twilioFromPhone || twilioMessagingServiceSid)
+    });
+    return new ConsoleSMSService();
   }
 }
 

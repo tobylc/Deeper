@@ -52,7 +52,9 @@ export default function NotificationPreferencePopup({
     setIsLoading(true);
     try {
       const apiPhoneNumber = extractDigitsForApi(phoneNumber);
-      const response = await apiRequest("/api/users/send-verification", "POST", {
+      console.log('[SMS_DEBUG] Sending verification to:', apiPhoneNumber);
+      
+      const response = await apiRequest('POST', "/api/users/send-verification", {
         phoneNumber: apiPhoneNumber
       });
 
@@ -65,16 +67,18 @@ export default function NotificationPreferencePopup({
         });
       } else {
         const error = await response.json();
+        console.error('[SMS_DEBUG] Verification send failed:', error);
         toast({
           title: "Error sending code",
           description: error.message || "Failed to send verification code. Please try again.",
           variant: "destructive"
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[SMS_DEBUG] Network error:', error);
       toast({
         title: "Error",
-        description: "Failed to send verification code. Please check your connection.",
+        description: error.message || "Failed to send verification code. Please check your connection.",
         variant: "destructive"
       });
     } finally {
