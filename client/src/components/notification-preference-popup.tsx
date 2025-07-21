@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Phone, Mail, Smartphone, X } from "lucide-react";
+import { Phone, Mail, Smartphone, X, RefreshCw } from "lucide-react";
 import { formatPhoneNumber, extractDigitsForApi, isValidUSPhoneNumber } from "@/utils/phone-formatter";
 
 interface NotificationPreferencePopupProps {
@@ -27,9 +27,21 @@ export default function NotificationPreferencePopup({
   const [isVerifying, setIsVerifying] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
   const { toast } = useToast();
 
   const needsPhoneSetup = (selectedPreference === "sms" || selectedPreference === "both");
+
+  // Countdown timer for resend button
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (resendCountdown > 0) {
+      timer = setInterval(() => {
+        setResendCountdown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCountdown]);
 
   const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
@@ -39,7 +51,7 @@ export default function NotificationPreferencePopup({
     setPhoneNumber(formatted);
   };
 
-  const handleSendVerificationCode = async () => {
+  const sendVerificationCode = async (isResend = false) => {
     if (!isValidUSPhoneNumber(phoneNumber)) {
       toast({
         title: "Invalid phone number",
@@ -61,8 +73,9 @@ export default function NotificationPreferencePopup({
       if (response.ok) {
         setCodeSent(true);
         setIsVerifying(true);
+        setResendCountdown(60); // 60 second countdown
         toast({
-          title: "Verification code sent",
+          title: isResend ? "Verification code resent" : "Verification code sent",
           description: "Check your phone for a 6-digit verification code."
         });
       } else {
@@ -85,6 +98,9 @@ export default function NotificationPreferencePopup({
       setIsLoading(false);
     }
   };
+
+  const handleSendVerificationCode = () => sendVerificationCode(false);
+  const handleResendCode = () => sendVerificationCode(true);
 
   const handleVerifyPhone = async () => {
     if (!verificationCode.trim() || verificationCode.length !== 6) {
@@ -321,19 +337,40 @@ export default function NotificationPreferencePopup({
                         disabled={isLoading || verificationCode.length !== 6}
                         className="flex-1 bg-[#4FACFE] hover:bg-[#4FACFE]/90"
                       >
-                        {isLoading ? "Verifying..." : "Verify & Save"}
+                        {isLoading ? "Verifying..." : "Verify & Continue"}
                       </Button>
                       <Button
                         onClick={() => {
                           setIsVerifying(false);
                           setCodeSent(false);
                           setVerificationCode("");
+                          setResendCountdown(0);
                         }}
                         variant="outline"
                         disabled={isLoading}
                       >
                         Back
                       </Button>
+                    </div>
+                    
+                    {/* Resend Code Button */}
+                    <div className="text-center">
+                      {resendCountdown > 0 ? (
+                        <div className="text-sm text-slate-500">
+                          Resend code in {resendCountdown}s
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={handleResendCode}
+                          disabled={isLoading}
+                          variant="ghost"
+                          size="sm"
+                          className="text-[#4FACFE] hover:text-[#4FACFE]/80 hover:bg-[#4FACFE]/10"
+                        >
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Resend Code
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}
