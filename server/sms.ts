@@ -229,9 +229,18 @@ This code will expire in 10 minutes. Enter it to verify your phone number.`;
         code: error.code,
         moreInfo: error.moreInfo,
         status: error.status,
-        details: error.details
+        details: error.details,
+        accountSid: this.accountSid?.substring(0, 10) + '...',
+        fromPhone: this.fromPhone
       });
-      throw error;
+      
+      // Handle phone number mismatch error specifically
+      if (error.message?.includes('Mismatch between the \'From\' number') || 
+          error.message?.includes('account')) {
+        throw new Error('SMS service configuration error: The phone number does not belong to the current Twilio account. Please verify your Twilio phone number and account credentials.');
+      }
+      
+      throw new Error(`SMS service temporarily unavailable: ${error.message}`);
     }
   }
 }
