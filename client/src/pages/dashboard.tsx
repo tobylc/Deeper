@@ -775,6 +775,32 @@ export default function Dashboard() {
         onClose={() => setShowSubscriptionEnforcement(false)}
         action={enforcementAction}
       />
+
+      {/* Footer */}
+      <footer className="mt-16 py-8 border-t border-slate-700 bg-slate-900/50">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center space-x-2">
+              <DeeperLogo size="sm" />
+              <span className="text-slate-400 text-sm">© 2025 Deeper. All rights reserved.</span>
+            </div>
+            <div className="flex items-center space-x-6">
+              <a 
+                href="/privacy-policy" 
+                className="text-slate-400 hover:text-ocean text-sm transition-colors"
+              >
+                Privacy Policy
+              </a>
+              <a 
+                href="mailto:support@joindeeper.com" 
+                className="text-slate-400 hover:text-ocean text-sm transition-colors"
+              >
+                Contact
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

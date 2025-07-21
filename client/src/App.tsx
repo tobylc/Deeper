@@ -15,6 +15,7 @@ import InvitationSignup from "@/pages/invitation-signup";
 import Checkout from "@/pages/checkout";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
+import { PrivacyPolicy } from "@/pages/privacy-policy";
 import { Component, ReactNode, useEffect } from "react";
 
 class ErrorBoundary extends Component<
@@ -140,6 +141,7 @@ function Router() {
           <Route path="/" component={Landing} />
           <Route path="/features" component={Features} />
           <Route path="/pricing" component={Pricing} />
+          <Route path="/privacy-policy" component={PrivacyPolicy} />
           <Route component={NotFound} />
         </>
       ) : (
@@ -150,6 +152,7 @@ function Router() {
           <Route path="/admin" component={Admin} />
           <Route path="/features" component={Features} />
           <Route path="/pricing" component={Pricing} />
+          <Route path="/privacy-policy" component={PrivacyPolicy} />
           <Route component={NotFound} />
         </>
       )}
