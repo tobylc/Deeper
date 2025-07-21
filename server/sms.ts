@@ -178,26 +178,51 @@ Continue conversation: https://deepersocial.replit.app/conversation/${params.con
     const message = `Your Deeper verification code is: ${code}
 This code will expire in 10 minutes. Enter it to verify your phone number.`;
 
-    const messageOptions: any = {
+    // Try messaging service first, fall back to phone number if it fails
+    let messageOptions: any = {
       body: message,
       to: phoneNumber
     };
 
+    // First attempt with messaging service if available
     if (this.messagingServiceSid) {
       messageOptions.messagingServiceSid = this.messagingServiceSid;
+      
+      try {
+        console.log('Attempting SMS with Messaging Service:', {
+          to: phoneNumber,
+          messagingServiceSid: this.messagingServiceSid
+        });
+        
+        const result = await this.client.messages.create(messageOptions);
+        console.log('SMS sent successfully via Messaging Service:', { sid: result.sid, status: result.status });
+        return;
+      } catch (error: any) {
+        console.warn('Messaging Service failed, falling back to phone number:', {
+          error: error.message,
+          code: error.code
+        });
+        
+        // Fall back to using phone number instead
+        messageOptions = {
+          body: message,
+          to: phoneNumber,
+          from: this.fromPhone
+        };
+      }
     } else {
       messageOptions.from = this.fromPhone;
     }
 
+    // Send using phone number (either fallback or primary method)
     try {
-      console.log('Attempting to send SMS with options:', {
+      console.log('Attempting SMS with phone number:', {
         to: phoneNumber,
-        from: messageOptions.from || 'MessagingServiceSid',
-        messagingServiceSid: this.messagingServiceSid ? 'SET' : 'NOT_SET'
+        from: this.fromPhone
       });
       
       const result = await this.client.messages.create(messageOptions);
-      console.log('SMS sent successfully:', { sid: result.sid, status: result.status });
+      console.log('SMS sent successfully via phone number:', { sid: result.sid, status: result.status });
     } catch (error: any) {
       console.error('Twilio SMS Error Details:', {
         error: error.message,
@@ -261,23 +286,28 @@ export function createSMSService(): SMSService {
   });
 
   // Use production SMS service if Twilio credentials are available
-  if (twilioAccountSid && twilioAuthToken && (twilioFromPhone || twilioMessagingServiceSid)) {
-    console.log('Using ProductionSMSService with Twilio');
+  if (twilioAccountSid && twilioAuthToken && twilioFromPhone) {
+    console.log('Using ProductionSMSService with Twilio (phone number method)');
     console.log('Twilio Configuration:', {
       hasAccountSid: !!twilioAccountSid,
       hasAuthToken: !!twilioAuthToken,
       hasFromPhone: !!twilioFromPhone,
       hasMessagingService: !!twilioMessagingServiceSid,
       fromPhone: twilioFromPhone,
-      messagingServiceSid: twilioMessagingServiceSid
+      primaryMethod: 'phone_number'
     });
+    // Pass null for messaging service to prioritize phone number
+    return new ProductionSMSService(twilioAccountSid, twilioAuthToken, twilioFromPhone, null);
+  } else if (twilioAccountSid && twilioAuthToken && twilioMessagingServiceSid) {
+    console.log('Using ProductionSMSService with Twilio (messaging service fallback)');
     return new ProductionSMSService(twilioAccountSid, twilioAuthToken, twilioFromPhone, twilioMessagingServiceSid);
   } else {
     console.log('Twilio credentials incomplete, using ConsoleSMSService for development');
     console.log('Missing credentials:', {
       accountSid: !twilioAccountSid,
       authToken: !twilioAuthToken,
-      phoneOrService: !(twilioFromPhone || twilioMessagingServiceSid)
+      hasFromPhone: !!twilioFromPhone,
+      hasMessagingService: !!twilioMessagingServiceSid
     });
     return new ConsoleSMSService();
   }
