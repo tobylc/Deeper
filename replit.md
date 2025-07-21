@@ -623,6 +623,13 @@ Changelog:
   * Created comprehensive voice message API endpoint with file upload, transcription, and storage handling
   * Integrated voice messages into existing conversation flow with proper turn management and notifications
   * Both audio playback and AI-generated text transcription displayed for optimal user experience
+- July 21, 2025. Enhanced session management and authentication handling:
+  * Updated session timeout from 7 days to 24 hours for better security and user experience
+  * Implemented automatic redirect to login page when authentication sessions expire
+  * Enhanced error handling to gracefully redirect idle users to sign-in page instead of showing error states
+  * Added comprehensive 401 authentication failure handling throughout the application
+  * Session expiration now automatically clears query cache and redirects to auth page
+  * Users are seamlessly guided back to login when accessing conversation page after idle timeout
   * Production-ready voice messaging system enhancing meaningful communication through multiple modalities
 - June 20, 2025. Thoughtful response timer system enhancement:
   * Implemented timer logic that only appears after inviter's first question to allow smooth conversation initiation

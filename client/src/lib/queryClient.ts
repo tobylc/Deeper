@@ -1,7 +1,19 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+// Declare queryClient first to avoid circular dependency
+export const queryClient = new QueryClient();
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
+    // Handle authentication failures by redirecting to login
+    if (res.status === 401) {
+      console.log('[AUTH] Session expired or invalid, redirecting to login');
+      // Clear any existing query cache
+      queryClient.clear();
+      // Redirect to auth page
+      window.location.href = '/auth';
+      return;
+    }
     const text = (await res.text()) || res.statusText;
     throw new Error(`${res.status}: ${text}`);
   }
@@ -53,17 +65,16 @@ export const getQueryFn: <T>(options: {
     }
   };
 
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      queryFn: getQueryFn({ on401: "returnNull" }),
-      refetchInterval: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
-    },
-    mutations: {
-      retry: false,
-    },
+// Configure queryClient with default options
+queryClient.setDefaultOptions({
+  queries: {
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+    retry: false,
+  },
+  mutations: {
+    retry: false,
   },
 });

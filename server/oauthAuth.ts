@@ -13,7 +13,7 @@ import { storage } from "./storage";
 console.log(`[AUTH] Setting up OAuth authentication providers`);
 
 export function getSession() {
-  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  const sessionTtl = 24 * 60 * 60 * 1000; // 24 hours
   
   // Production-ready session store with Redis fallback to memory
   let sessionStore;
