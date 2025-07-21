@@ -32,21 +32,8 @@ export default function NotificationPreferences({ user }: NotificationPreference
   const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     
-    // If user is trying to clear everything or backspaced to just the prefix
-    if (input === '' || input === '+' || input === '+1') {
-      setPhoneNumber('+1');
-      return;
-    }
-    
-    // Always extract digits and reformat to handle deletion properly
-    const digits = input.replace(/\D/g, '');
-    if (digits.length === 0) {
-      setPhoneNumber('+1');
-      return;
-    }
-    
-    // Format the number with the new digits
-    const formatted = formatPhoneNumber(digits);
+    // Always use the formatter to handle the input
+    const formatted = formatPhoneNumber(input);
     setPhoneNumber(formatted);
   };
 
