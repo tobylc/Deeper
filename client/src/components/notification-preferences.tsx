@@ -19,7 +19,7 @@ export default function NotificationPreferences({ user }: NotificationPreference
   const [selectedPreference, setSelectedPreference] = useState<"email" | "sms" | "both">(
     (user.notificationPreference as "email" | "sms" | "both") || "email"
   );
-  const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber || "+1-");
+  const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber || "+1");
   const [verificationCode, setVerificationCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
@@ -33,26 +33,20 @@ export default function NotificationPreferences({ user }: NotificationPreference
     const input = e.target.value;
     
     // If user is trying to clear everything or backspaced to just the prefix
-    if (input === '' || input === '+' || input === '+1' || input === '+1-') {
-      setPhoneNumber('+1-');
+    if (input === '' || input === '+' || input === '+1') {
+      setPhoneNumber('+1');
       return;
     }
     
-    // If input is shorter than current phoneNumber, user is deleting
-    if (input.length < phoneNumber.length) {
-      // Extract digits and reformat
-      const digits = input.replace(/\D/g, '');
-      if (digits.length === 0) {
-        setPhoneNumber('+1-');
-        return;
-      }
-      const formatted = formatPhoneNumber(digits);
-      setPhoneNumber(formatted);
+    // Always extract digits and reformat to handle deletion properly
+    const digits = input.replace(/\D/g, '');
+    if (digits.length === 0) {
+      setPhoneNumber('+1');
       return;
     }
     
-    // Normal input - format the number
-    const formatted = formatPhoneNumber(input);
+    // Format the number with the new digits
+    const formatted = formatPhoneNumber(digits);
     setPhoneNumber(formatted);
   };
 
@@ -285,7 +279,7 @@ export default function NotificationPreferences({ user }: NotificationPreference
               <div className="space-y-3">
                 <Input
                   type="tel"
-                  placeholder="+1-555-123-4567"
+                  placeholder="+1(555)123-4567"
                   value={phoneNumber}
                   onChange={handlePhoneNumberChange}
                   className="bg-slate-800 border-slate-600 text-white font-mono"

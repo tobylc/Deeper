@@ -4,28 +4,28 @@
 
 export function formatPhoneNumber(value: string): string {
   // Handle empty input or just prefix
-  if (!value || value.length <= 3) {
-    return '+1-';
+  if (!value || value.length <= 2) {
+    return '+1';
   }
   
-  // Extract only digits from the input (remove +, -, spaces, etc.)
+  // Extract only digits from the input (remove +, -, (, ), spaces, etc.)
   const digits = value.replace(/\D/g, '');
   
   // If no digits found, return the prefix
   if (digits.length === 0) {
-    return '+1-';
+    return '+1';
   }
   
   // Take only the last 10 digits (in case user types country code)
   const phoneDigits = digits.slice(-10);
   
-  // Format based on how many digits we have
+  // Format as +1(XXX)XXX-XXXX based on how many digits we have
   if (phoneDigits.length <= 3) {
-    return `+1-${phoneDigits}`;
+    return `+1(${phoneDigits}`;
   } else if (phoneDigits.length <= 6) {
-    return `+1-${phoneDigits.slice(0, 3)}-${phoneDigits.slice(3)}`;
+    return `+1(${phoneDigits.slice(0, 3)})${phoneDigits.slice(3)}`;
   } else {
-    return `+1-${phoneDigits.slice(0, 3)}-${phoneDigits.slice(3, 6)}-${phoneDigits.slice(6, 10)}`;
+    return `+1(${phoneDigits.slice(0, 3)})${phoneDigits.slice(3, 6)}-${phoneDigits.slice(6, 10)}`;
   }
 }
 
