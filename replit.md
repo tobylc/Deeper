@@ -216,6 +216,16 @@ The following basic logic rules are fundamental to the application and must be p
     - Code: Invitee users have unlimited incoming connection acceptance
     - Code: Trial expiration blocks inviter actions but not invitee participation
 
+## Known Issues
+
+### Email Notification System Status
+- **Issue**: SendGrid account has reached its credit/quota limit
+- **Impact**: Turn notifications are not being sent to users via email
+- **Error**: "Maximum credits exceeded" from SendGrid API
+- **Resolution Required**: Upgrade SendGrid plan or wait for quota reset
+- **Date Identified**: July 22, 2025
+- **System Status**: EmailService configured correctly, but hitting SendGrid limits
+
 ## Changelog
 ```
 Changelog:

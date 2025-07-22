@@ -134,7 +134,7 @@ The Deeper Team
 export class ProductionEmailService implements EmailService {
   private fromEmail: string;
 
-  constructor(apiKey: string, fromEmail: string = "deepersoc@gmail.com") {
+  constructor(apiKey: string, fromEmail: string = "notifications@deepersocial.replit.app") {
     sgMail.setApiKey(apiKey);
     this.fromEmail = fromEmail;
   }
@@ -408,10 +408,24 @@ The Deeper Team
     };
 
     try {
+      console.log(`[EMAIL] Attempting to send turn notification via SendGrid...`);
+      console.log(`[EMAIL] From: ${this.fromEmail} | To: ${params.recipientEmail} | Subject: It's your turn! ${senderName} ${actionText}`);
+      
       await sgMail.send(msg);
-      console.log(`[EMAIL] Turn notification sent to ${params.recipientEmail}`);
-    } catch (error) {
-      console.error('[EMAIL] Failed to send turn notification:', error);
+      console.log(`[EMAIL] ✅ Turn notification sent successfully to ${params.recipientEmail} via SendGrid`);
+    } catch (error: any) {
+      console.error('[EMAIL] ❌ Failed to send turn notification via SendGrid:', error);
+      if (error.response?.body) {
+        console.error('[EMAIL] SendGrid error details:', JSON.stringify(error.response.body, null, 2));
+        
+        // Check if it's a quota/credit limit issue
+        if (error.response.body.errors && error.response.body.errors.some((e: any) => 
+          e.message?.includes('Maximum credits exceeded') || e.message?.includes('quota') || e.message?.includes('limit'))) {
+          console.error('[EMAIL] 🚨 ISSUE IDENTIFIED: SendGrid account has exceeded its sending quota/credits limit');
+          console.error('[EMAIL] 💡 SOLUTION: Upgrade your SendGrid plan or wait for quota reset');
+          console.error('[EMAIL] 📧 Until resolved, turn notifications will not be delivered to users');
+        }
+      }
       throw error;
     }
   }
@@ -421,7 +435,7 @@ The Deeper Team
 export class InternalEmailService implements EmailService {
   private fromEmail: string;
 
-  constructor(fromEmail: string = "deepersoc@gmail.com") {
+  constructor(fromEmail: string = "notifications@deepersocial.replit.app") {
     this.fromEmail = fromEmail;
   }
 
@@ -711,6 +725,7 @@ export function createEmailService(): EmailService {
 
   if (sendgridApiKey) {
     console.log('[EMAIL] Using SendGrid email service for real email delivery');
+    console.log('[EMAIL] SendGrid API key configured:', sendgridApiKey ? 'Present' : 'Missing');
     return new ProductionEmailService(sendgridApiKey);
   }
 

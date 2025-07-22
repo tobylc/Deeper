@@ -3594,6 +3594,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send turn notification (email and/or SMS based on user preferences)
       try {
+        console.log(`[NOTIFICATION] Sending turn notification to ${nextTurn} from ${messageData.senderEmail}`);
         await notificationService.sendTurnNotification({
           recipientEmail: nextTurn,
           senderEmail: messageData.senderEmail,
@@ -3601,8 +3602,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           relationshipType: conversation.relationshipType,
           messageType: (messageData.type === 'question' || messageData.type === 'response') ? messageData.type : 'question'
         });
+        console.log(`[NOTIFICATION] Turn notification sent successfully to ${nextTurn}`);
       } catch (error) {
         console.error('[NOTIFICATION] Failed to send turn notification:', error);
+        console.error('[NOTIFICATION] Error details:', error);
         // Don't fail the message sending if notification fails
       }
 
@@ -5172,6 +5175,44 @@ Format each as a complete question they can use to begin this important conversa
     } catch (error) {
       console.error("Storage status check error:", error);
       res.status(500).json({ message: "Failed to check storage status" });
+    }
+  });
+
+  // Test email service endpoint for debugging email notification issues  
+  app.post('/api/test/email-service', async (req, res) => {
+    try {
+      const { testEmail } = req.body;
+      
+      if (!testEmail) {
+        return res.status(400).json({ error: 'testEmail is required' });
+      }
+
+      console.log(`[DEBUG] Testing email service with recipient: ${testEmail}`);
+      console.log(`[DEBUG] Email service type: ${process.env.SENDGRID_API_KEY ? 'ProductionEmailService (SendGrid)' : 'InternalEmailService (Database)'}`);
+
+      // Test turn notification email
+      await notificationService.sendTurnNotification({
+        recipientEmail: testEmail,
+        senderEmail: 'system@test.com',
+        conversationId: 999,
+        relationshipType: 'Test',
+        messageType: 'question'
+      });
+
+      console.log(`[DEBUG] Test notification completed for ${testEmail}`);
+
+      res.json({ 
+        success: true, 
+        message: 'Test notification sent successfully',
+        emailService: process.env.SENDGRID_API_KEY ? 'ProductionEmailService (SendGrid)' : 'InternalEmailService (Database)'
+      });
+    } catch (error) {
+      console.error('[DEBUG] Test email service error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: error instanceof Error ? error.stack : 'No stack trace'
+      });
     }
   });
 
