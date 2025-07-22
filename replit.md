@@ -239,6 +239,15 @@ The following basic logic rules are fundamental to the application and must be p
 ## Changelog
 ```
 Changelog:
+- July 22, 2025. Extended 60-day free trial implementation:
+  * Updated trial period from 7 days to 60 days throughout the application backend and frontend
+  * Changed all "Start Free Trial" buttons to "60 Day Free • no credit card required" with italic styling
+  * Modified backend initializeTrial method to set 60-day trial periods instead of 7-day periods
+  * Updated pricing page messaging to reflect new 60-day trial offer with "Upgrade within 60 days" messaging
+  * Updated all trial status displays and countdown timers to show 60-day periods
+  * Enhanced button text across pricing plans with "60 Day Free" and "no credit card required" in italics
+  * All trial references consistently show 60 days: pricing page, trial status component, subscription enforcement
+  * Complete 60-day trial system maintains existing 50% discount offer for upgrades within trial period
 - June 14, 2025. Initial setup with basic application structure
 - June 14, 2025. Production infrastructure implementation:
   * PostgreSQL database integration with Drizzle ORM
