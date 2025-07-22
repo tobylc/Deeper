@@ -1392,6 +1392,19 @@ Changelog:
   * Added subscription price ID checking to identify discount subscriptions more reliably
   * Implemented subscription status checking (active/incomplete) as additional upgrade trigger
   * Complete payment verification system ensures successful $4.95 payments always upgrade to Advanced tier
+- July 22, 2025. Facebook and Apple authentication removal and favicon implementation:
+  * Removed Facebook and Apple OAuth authentication options from frontend login/signup page
+  * Cleaned up Facebook and Apple OAuth configuration from backend oauthAuth.ts
+  * Removed Facebook references from profile image import functionality in routes.ts
+  * Updated profile image upload component to remove Facebook integration
+  * Fixed TypeScript errors related to Facebook/Apple authentication removal
+  * Implemented comprehensive favicon system with SVG and PNG formats for browser compatibility
+  * Added Deeper quotes icon logo as favicon with blue theme matching brand identity
+  * Created web app manifest.json for PWA support with proper icons and metadata
+  * Enhanced HTML meta tags with comprehensive SEO and social media sharing support
+  * Added detailed Open Graph and Twitter Card tags for rich link previews
+  * Implemented proper meta description highlighting AI-powered relationship communication platform
+  * Authentication system now only supports Google OAuth and email/password options
 ```
 
 ## User Preferences
