@@ -257,58 +257,61 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center">
-            <Mail className="w-5 h-5 mr-2" />
+          <DialogTitle className="flex items-center text-xl font-semibold">
+            <Mail className="w-6 h-6 mr-3 text-primary" />
             Send Invitation
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Their Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="someone@example.com"
-              value={formData.inviteeEmail}
-              onChange={(e) => setFormData({ ...formData, inviteeEmail: e.target.value })}
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium text-foreground">Their Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="someone@example.com"
+                value={formData.inviteeEmail}
+                onChange={(e) => setFormData({ ...formData, inviteeEmail: e.target.value })}
+                required
+                className="h-11"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="relationship">Relationship Type</Label>
-            <Select 
-              value={formData.relationshipType} 
-              onValueChange={handleRelationshipChange}
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select relationship type" />
-              </SelectTrigger>
-              <SelectContent>
-                {relationshipTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Label htmlFor="relationship" className="text-sm font-medium text-foreground">Relationship Type</Label>
+              <Select 
+                value={formData.relationshipType} 
+                onValueChange={handleRelationshipChange}
+                required
+              >
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="Select relationship type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {relationshipTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Role Selection - Only show after relationship type is selected */}
           {formData.relationshipType && (
-            <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="inviterRole">Your Role</Label>
+                <Label htmlFor="inviterRole" className="text-sm font-medium text-foreground">Your Role</Label>
                 <Select 
                   value={formData.inviterRole} 
                   onValueChange={handleInviterRoleChange}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder="What are you in this relationship?" />
                   </SelectTrigger>
                   <SelectContent>
@@ -323,13 +326,13 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
 
               {formData.inviterRole && (
                 <div className="space-y-2">
-                  <Label htmlFor="inviteeRole">Their Role</Label>
+                  <Label htmlFor="inviteeRole" className="text-sm font-medium text-foreground">Their Role</Label>
                   <Select 
                     value={formData.inviteeRole} 
                     onValueChange={handleInviteeRoleChange}
                     required
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11">
                       <SelectValue placeholder="What are they in this relationship?" />
                     </SelectTrigger>
                     <SelectContent>
@@ -346,101 +349,126 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
                   </Select>
                 </div>
               )}
-            </>
+            </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="message">Share why this invitation matters to you</Label>
-            
-            {/* Show action buttons when we have relationship details */}
-            {formData.relationshipType && formData.inviterRole && formData.inviteeRole && (
-              <div className="flex gap-3 mb-4">
-                <Button
-                  type="button"
-                  variant={messageState === 'example' && formData.personalMessage === currentExample ? "default" : "outline"}
-                  size="sm"
-                  onClick={handleUseExample}
-                  className={`flex-1 text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
-                    messageState === 'example' && formData.personalMessage === currentExample 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md' 
-                      : 'bg-white dark:bg-card border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40'
-                  }`}
-                >
-                  ✨ Use Example
-                </Button>
-                <Button
-                  type="button"
-                  variant={messageState === 'example' && formData.personalMessage !== currentExample ? "default" : "outline"}
-                  size="sm"
-                  onClick={handleEditExample}
-                  className={`flex-1 text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
-                    messageState === 'example' && formData.personalMessage !== currentExample 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md' 
-                      : 'bg-white dark:bg-card border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40'
-                  }`}
-                >
-                  ✏️ Edit Example
-                </Button>
-                <Button
-                  type="button"
-                  variant={messageState === 'custom' ? "default" : "outline"}
-                  size="sm"
-                  onClick={handleRewrite}
-                  className={`flex-1 text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
-                    messageState === 'custom' 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md' 
-                      : 'bg-white dark:bg-card border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40'
-                  }`}
-                >
-                  ✨ Write Your Own
-                </Button>
-              </div>
-            )}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="message" className="text-sm font-medium text-foreground mb-3 block">
+                Share why this invitation matters to you
+              </Label>
+              
+              {/* Show action buttons when we have relationship details */}
+              {formData.relationshipType && formData.inviterRole && formData.inviteeRole && (
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <Button
+                    type="button"
+                    variant={messageState === 'example' && formData.personalMessage === currentExample ? "default" : "outline"}
+                    size="sm"
+                    onClick={handleUseExample}
+                    className={`text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
+                      messageState === 'example' && formData.personalMessage === currentExample 
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md' 
+                        : 'bg-white dark:bg-card border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40'
+                    }`}
+                  >
+                    ✨ Use Example
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={messageState === 'example' && formData.personalMessage !== currentExample ? "default" : "outline"}
+                    size="sm"
+                    onClick={handleEditExample}
+                    className={`text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
+                      messageState === 'example' && formData.personalMessage !== currentExample 
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md' 
+                        : 'bg-white dark:bg-card border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40'
+                    }`}
+                  >
+                    ✏️ Edit Example
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={messageState === 'custom' ? "default" : "outline"}
+                    size="sm"
+                    onClick={handleRewrite}
+                    className={`text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
+                      messageState === 'custom' 
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md' 
+                        : 'bg-white dark:bg-card border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40'
+                    }`}
+                  >
+                    ✨ Write Your Own
+                  </Button>
+                </div>
+              )}
 
-            <Textarea
-              id="message"
-              placeholder={!formData.relationshipType || !formData.inviterRole || !formData.inviteeRole 
-                ? "Complete the relationship details above to see a personalized example message..." 
-                : "Your personalized invitation message will appear here..."
-              }
-              value={formData.personalMessage || 
-                     (formData.relationshipType && formData.inviterRole && formData.inviteeRole ? currentExample : "")
-              }
-              onChange={handleMessageChange}
-              className="h-32 resize-none leading-relaxed"
-            />
-            
-            {/* Show helpful text based on current state */}
-            {messageState === 'example' && (
-              <p className="text-xs text-blue-600 flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" />
-                Using example message - you can edit this text if you'd like to personalize it further
-              </p>
-            )}
+              <Textarea
+                id="message"
+                placeholder={!formData.relationshipType || !formData.inviterRole || !formData.inviteeRole 
+                  ? "Complete the relationship details above to see a personalized example message..." 
+                  : "Your personalized invitation message will appear here..."
+                }
+                value={formData.personalMessage || 
+                       (formData.relationshipType && formData.inviterRole && formData.inviteeRole ? currentExample : "")
+                }
+                onChange={handleMessageChange}
+                className="h-36 resize-none leading-relaxed text-sm"
+              />
+              
+              {/* Show helpful text based on current state */}
+              {messageState === 'example' && formData.personalMessage === currentExample && (
+                <p className="text-xs text-blue-600 flex items-center gap-2 mt-2 px-3 py-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                  <CheckCircle className="w-4 h-4" />
+                  Using example message - you can edit this text if you'd like to personalize it further
+                </p>
+              )}
+            </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-darkslate mb-2 flex items-center">
-              <CheckCircle className="w-4 h-4 mr-2 text-success" />
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-6 rounded-xl border border-blue-100 dark:border-blue-800">
+            <h4 className="font-semibold text-foreground mb-3 flex items-center text-base">
+              <CheckCircle className="w-5 h-5 mr-3 text-primary" />
               What happens next?
             </h4>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• They'll receive a beautiful email invitation</li>
-              <li>• They can accept or decline thoughtfully</li>
-              <li>• Only if both agree, the conversation space is created</li>
+            <ul className="text-sm text-muted-foreground space-y-2">
+              <li className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                They'll receive a beautiful email invitation
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                They can accept or decline thoughtfully
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                Only if both agree, the conversation space is created
+              </li>
             </ul>
           </div>
 
-          <div className="flex gap-3">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+          <div className="flex gap-4 pt-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose} 
+              className="flex-1 h-12 text-base font-medium rounded-xl"
+            >
               Cancel
             </Button>
             <Button 
               type="submit" 
               disabled={isLoading || !formData.inviteeEmail || !formData.relationshipType}
-              className="flex-1"
+              className="flex-1 h-12 text-base font-semibold rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
             >
-              {isLoading ? "Sending..." : "Send Invitation"}
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Sending...
+                </div>
+              ) : (
+                "Send Invitation"
+              )}
             </Button>
           </div>
         </form>
