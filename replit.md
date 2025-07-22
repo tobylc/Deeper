@@ -1432,14 +1432,14 @@ Changelog:
   * Added fallback to database storage if SendGrid fails for reliability
   * Turn notifications now actually reach users' email inboxes for immediate engagement
   * Complete production-ready email notification system with monitoring capabilities
-- July 22, 2025. Internal SMS notification system eliminating Twilio dependency:
-  * Created comprehensive InternalSMSService storing all SMS notifications in database
-  * Added SMS database table with complete schema for all notification types
-  * Implemented SMS storage methods in DatabaseStorage for verification, invitations, turn notifications
-  * Added `/api/internal-sms` endpoint for viewing stored SMS notifications 
-  * Updated SMS service factory to use internal system exclusively
-  * Eliminated external Twilio costs while maintaining full SMS notification functionality
-  * Production-ready internal SMS system with complete coverage: verification codes, connection management, turn alerts
+- July 22, 2025. Production Twilio SMS implementation restored for real text alerts:
+  * Restored Twilio ProductionSMSService for actual SMS delivery in production environments
+  * Updated SMS service factory to prioritize Twilio when credentials are available
+  * Enhanced ProductionSMSService with database storage for comprehensive monitoring
+  * All SMS methods now deliver real text messages via Twilio AND store in database
+  * Hybrid approach: Twilio for delivery + database for tracking and monitoring
+  * Test endpoint updated to verify real SMS delivery with Twilio configuration status
+  * Production-ready SMS system with real-world text alerts using TWILIO_MESSAGING_SERVICE_SID
 ```
 
 ## User Preferences

@@ -5269,33 +5269,27 @@ Format each as a complete question they can use to begin this important conversa
         });
       }
 
-      console.log(`[DEBUG] Testing SMS notification for ${testPhone}`);
+      console.log(`[TEST] Testing Twilio SMS notification for ${testPhone}`);
 
-      // Test the SMS verification code
+      // Test the SMS verification code with Twilio
       await smsService.sendVerificationCode(testPhone, '123456');
       
-      // Test turn notification
-      await smsService.sendTurnNotification({
-        recipientPhone: testPhone,
-        senderName: 'Test User',
-        conversationId: 1,
-        relationshipType: 'Test',
-        messageType: 'question'
-      });
-
-      console.log(`[DEBUG] Test SMS notifications completed for ${testPhone}`);
+      console.log(`[TEST] Twilio SMS notifications completed for ${testPhone}`);
 
       res.json({ 
         success: true, 
-        message: 'Test SMS notifications sent successfully',
-        smsService: 'InternalSMSService (Database)',
-        note: 'All SMS notifications are stored in internal database system'
+        message: 'Test SMS notifications sent successfully via Twilio',
+        smsService: smsService.constructor.name,
+        twilioConfigured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN),
+        messagingService: !!process.env.TWILIO_MESSAGING_SERVICE_SID,
+        note: 'Real SMS sent to actual phone number via Twilio with database storage'
       });
     } catch (error) {
-      console.error('[DEBUG] Test SMS service error:', error);
+      console.error('[TEST] Twilio SMS service error:', error);
       res.status(500).json({ 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error',
+        smsService: smsService.constructor.name,
         details: error instanceof Error ? error.stack : 'No stack trace'
       });
     }

@@ -79,10 +79,16 @@ export class ProductionSMSService implements SMSService {
   private fromPhone: string;
   private messagingServiceSid?: string;
 
-  constructor(accountSid: string, authToken: string, fromPhone: string = "+1234567890", messagingServiceSid?: string) {
-    this.client = twilio(accountSid, authToken);
-    this.fromPhone = fromPhone;
-    this.messagingServiceSid = messagingServiceSid;
+  constructor() {
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
+      throw new Error('Twilio credentials not configured');
+    }
+    
+    this.client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    this.fromPhone = process.env.TWILIO_PHONE_NUMBER || "+1234567890";
+    this.messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
+    
+    console.log('[SMS] Twilio ProductionSMSService initialized with Messaging Service');
   }
 
   async sendConnectionInvitation(connection: ConnectionWithSMS): Promise<void> {
@@ -104,7 +110,22 @@ Accept your invitation: https://deepersocial.replit.app/invitation/${connection.
       messageOptions.from = this.fromPhone;
     }
 
-    await this.client.messages.create(messageOptions);
+    try {
+      const result = await this.client.messages.create(messageOptions);
+      console.log(`[SMS] Connection invitation sent successfully: ${result.sid}`);
+      
+      // Also store in database for monitoring
+      await storage.createSMSMessage({
+        toPhone: connection.inviteePhone,
+        fromPhone: this.fromPhone,
+        message,
+        smsType: "invitation",
+        connectionId: connection.id
+      });
+    } catch (error: any) {
+      console.error('[SMS] Failed to send connection invitation:', error.message);
+      throw error;
+    }
   }
 
   async sendConnectionAccepted(connection: ConnectionWithSMS): Promise<void> {
@@ -125,7 +146,22 @@ Begin your conversation: https://deepersocial.replit.app/dashboard`;
       messageOptions.from = this.fromPhone;
     }
 
-    await this.client.messages.create(messageOptions);
+    try {
+      const result = await this.client.messages.create(messageOptions);
+      console.log(`[SMS] Connection accepted notification sent: ${result.sid}`);
+      
+      // Also store in database for monitoring
+      await storage.createSMSMessage({
+        toPhone: connection.inviterPhone,
+        fromPhone: this.fromPhone,
+        message,
+        smsType: "acceptance",
+        connectionId: connection.id
+      });
+    } catch (error: any) {
+      console.error('[SMS] Failed to send connection accepted notification:', error.message);
+      throw error;
+    }
   }
 
   async sendConnectionDeclined(connection: ConnectionWithSMS): Promise<void> {
@@ -145,7 +181,22 @@ Thank you for reaching out. You can always try connecting with other people who 
       messageOptions.from = this.fromPhone;
     }
 
-    await this.client.messages.create(messageOptions);
+    try {
+      const result = await this.client.messages.create(messageOptions);
+      console.log(`[SMS] Connection declined notification sent: ${result.sid}`);
+      
+      // Also store in database for monitoring
+      await storage.createSMSMessage({
+        toPhone: connection.inviterPhone,
+        fromPhone: this.fromPhone,
+        message,
+        smsType: "decline",
+        connectionId: connection.id
+      });
+    } catch (error: any) {
+      console.error('[SMS] Failed to send connection declined notification:', error.message);
+      throw error;
+    }
   }
 
   async sendTurnNotification(params: {
@@ -172,7 +223,21 @@ Continue conversation: https://deepersocial.replit.app/conversation/${params.con
       messageOptions.from = this.fromPhone;
     }
 
-    await this.client.messages.create(messageOptions);
+    try {
+      const result = await this.client.messages.create(messageOptions);
+      console.log(`[SMS] Turn notification sent: ${result.sid}`);
+      
+      // Also store in database for monitoring
+      await storage.createSMSMessage({
+        toPhone: params.recipientPhone,
+        fromPhone: this.fromPhone,
+        message,
+        smsType: "turn_notification"
+      });
+    } catch (error: any) {
+      console.error('[SMS] Failed to send turn notification:', error.message);
+      throw error;
+    }
   }
 
   async sendVerificationCode(phoneNumber: string, code: string): Promise<void> {
@@ -224,6 +289,14 @@ This code will expire in 10 minutes. Enter it to verify your phone number.`;
       
       const result = await this.client.messages.create(messageOptions);
       console.log('SMS sent successfully via phone number:', { sid: result.sid, status: result.status });
+      
+      // Also store in database for monitoring
+      await storage.createSMSMessage({
+        toPhone: phoneNumber,
+        fromPhone: this.fromPhone,
+        message,
+        smsType: "verification"
+      });
     } catch (error: any) {
       console.error('Twilio SMS Error Details:', {
         error: error.message,
@@ -231,7 +304,7 @@ This code will expire in 10 minutes. Enter it to verify your phone number.`;
         moreInfo: error.moreInfo,
         status: error.status,
         details: error.details,
-        accountSid: this.accountSid?.substring(0, 10) + '...',
+        messagingServiceSid: this.messagingServiceSid,
         fromPhone: this.fromPhone
       });
       
@@ -348,8 +421,15 @@ Continue conversation: https://joindeeper.com/conversation/${params.conversation
 }
 
 export function createSMSService(): SMSService {
-  console.log('[SMS] Using internal database notification system');
-  return new InternalSMSService();
+  // Use Twilio in production for actual SMS delivery
+  if (process.env.NODE_ENV === 'production' || process.env.TWILIO_ACCOUNT_SID) {
+    console.log('[SMS] Using Twilio ProductionSMSService for real SMS delivery');
+    return new ProductionSMSService();
+  }
+  
+  // Fall back to console logging in development
+  console.log('[SMS] Using ConsoleSMSService for development');
+  return new ConsoleSMSService();
 }
 
 export const smsService = createSMSService();
