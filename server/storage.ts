@@ -1,10 +1,11 @@
 import { 
-  users, connections, conversations, messages, emails, verificationCodes,
+  users, connections, conversations, messages, emails, smsMessages, verificationCodes,
   type User, type InsertUser,
   type Connection, type InsertConnection,
   type Conversation, type InsertConversation,
   type Message, type InsertMessage,
   type Email, type InsertEmail,
+  type SMSMessage, type InsertSMSMessage,
   type VerificationCode, type InsertVerificationCode
 } from "../shared/schema";
 import { db } from "./db";
@@ -63,6 +64,11 @@ export interface IStorage {
   createEmail(email: InsertEmail): Promise<Email>;
   getEmailById(id: number): Promise<Email | undefined>;
   getEmails(): Promise<Email[]>;
+
+  // SMS Messages
+  getSMSMessagesByPhone(phoneNumber: string): Promise<SMSMessage[]>;
+  createSMSMessage(sms: InsertSMSMessage): Promise<SMSMessage>;
+  getSMSMessages(): Promise<SMSMessage[]>;
 
   // Helper methods for user display names
   getUserDisplayNameByEmail(email: string): Promise<string>;
@@ -415,6 +421,39 @@ export class DatabaseStorage implements IStorage {
       return result;
     } catch (error) {
       console.error("Error getting all emails:", error);
+      return [];
+    }
+  }
+
+  // SMS Messages
+  async getSMSMessagesByPhone(phoneNumber: string): Promise<SMSMessage[]> {
+    try {
+      const result = await db
+        .select()
+        .from(smsMessages)
+        .where(eq(smsMessages.toPhone, phoneNumber))
+        .orderBy(desc(smsMessages.id));
+      return result;
+    } catch (error) {
+      console.error("Error getting SMS messages by phone:", error);
+      return [];
+    }
+  }
+
+  async createSMSMessage(smsData: InsertSMSMessage): Promise<SMSMessage> {
+    const [sms] = await db
+      .insert(smsMessages)
+      .values(smsData)
+      .returning();
+    return sms;
+  }
+
+  async getSMSMessages(): Promise<SMSMessage[]> {
+    try {
+      const result = await db.select().from(smsMessages).orderBy(desc(smsMessages.id));
+      return result;
+    } catch (error) {
+      console.error("Error getting all SMS messages:", error);
       return [];
     }
   }

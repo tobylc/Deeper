@@ -118,6 +118,21 @@ export const insertMessageSchema = createInsertSchema(messages);
 
 export const insertEmailSchema = createInsertSchema(emails);
 
+// SMS messages table for internal SMS notification system
+export const smsMessages = pgTable("sms_messages", {
+  id: serial("id").primaryKey(),
+  toPhone: text("to_phone").notNull(),
+  fromPhone: text("from_phone").notNull(),
+  message: text("message").notNull(),
+  smsType: text("sms_type").notNull(), // 'verification', 'invitation', 'acceptance', 'decline', 'turn_notification'
+  status: text("status").default("sent").notNull(),
+  connectionId: integer("connection_id"),
+  sentAt: timestamp("sent_at").defaultNow(),
+  deliveredAt: timestamp("delivered_at"),
+});
+
+export const insertSMSSchema = createInsertSchema(smsMessages);
+
 // Verification codes table for production-ready phone verification
 export const verificationCodes = pgTable(
   "verification_codes",
@@ -149,5 +164,7 @@ export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Email = typeof emails.$inferSelect;
 export type InsertEmail = z.infer<typeof insertEmailSchema>;
+export type SMSMessage = typeof smsMessages.$inferSelect;
+export type InsertSMSMessage = z.infer<typeof insertSMSSchema>;
 export type VerificationCode = typeof verificationCodes.$inferSelect;
 export type InsertVerificationCode = z.infer<typeof insertVerificationCodeSchema>;

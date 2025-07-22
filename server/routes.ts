@@ -1749,7 +1749,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[WEBHOOK] Status: ${subscription.status}`);
           console.log(`[WEBHOOK] Customer: ${subscription.customer}`);
           console.log(`[WEBHOOK] Metadata:`, subscription.metadata);
-          console.log(`[WEBHOOK] Current period: ${subscription.current_period_start} - ${subscription.current_period_end}`);
+          console.log(`[WEBHOOK] Current period: ${(subscription as any).current_period_start} - ${(subscription as any).current_period_end}`);
           
           // For discount subscriptions, immediately check payment status regardless of subscription status
           if (subscription.metadata?.discount_applied === '50' && subscription.metadata?.payment_intent_id) {
@@ -2169,8 +2169,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: stripeSubscription.id,
           status: stripeSubscription.status,
           metadata: stripeSubscription.metadata,
-          current_period_start: stripeSubscription.current_period_start,
-          current_period_end: stripeSubscription.current_period_end,
+          current_period_start: (stripeSubscription as any).current_period_start,
+          current_period_end: (stripeSubscription as any).current_period_end,
           latest_invoice: stripeSubscription.latest_invoice ? {
             id: (stripeSubscription.latest_invoice as any).id,
             amount_paid: (stripeSubscription.latest_invoice as any).amount_paid,
@@ -5148,7 +5148,11 @@ Format each as a complete question they can use to begin this important conversa
       
       if (isS3Configured) {
         try {
-          s3Status = await s3Service.testConnection();
+          const testResult = await s3Service.testConnection();
+          s3Status = { 
+            success: testResult.success, 
+            message: testResult.message || (testResult.success ? 'S3 connection successful' : 'S3 connection failed')
+          };
         } catch (error) {
           s3Status = { 
             success: false, 
@@ -5231,6 +5235,68 @@ Format each as a complete question they can use to begin this important conversa
       res.status(500).json({ 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // View stored SMS messages from internal database system  
+  app.get('/api/internal-sms', async (req, res) => {
+    try {
+      const smsMessages = await storage.getSMSMessages();
+      res.json({ 
+        success: true, 
+        count: smsMessages.length,
+        sms: smsMessages.slice(-10) // Show last 10 SMS messages
+      });
+    } catch (error) {
+      console.error('[DEBUG] Error retrieving internal SMS messages:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Test SMS notification system
+  app.post('/api/test/sms-notification', async (req, res) => {
+    try {
+      const { testPhone } = req.body;
+      
+      if (!testPhone) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Test phone number is required'
+        });
+      }
+
+      console.log(`[DEBUG] Testing SMS notification for ${testPhone}`);
+
+      // Test the SMS verification code
+      await smsService.sendVerificationCode(testPhone, '123456');
+      
+      // Test turn notification
+      await smsService.sendTurnNotification({
+        recipientPhone: testPhone,
+        senderName: 'Test User',
+        conversationId: 1,
+        relationshipType: 'Test',
+        messageType: 'question'
+      });
+
+      console.log(`[DEBUG] Test SMS notifications completed for ${testPhone}`);
+
+      res.json({ 
+        success: true, 
+        message: 'Test SMS notifications sent successfully',
+        smsService: 'InternalSMSService (Database)',
+        note: 'All SMS notifications are stored in internal database system'
+      });
+    } catch (error) {
+      console.error('[DEBUG] Test SMS service error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: error instanceof Error ? error.stack : 'No stack trace'
       });
     }
   });

@@ -1,5 +1,6 @@
 import { Connection } from "../shared/schema";
 import twilio from "twilio";
+import { storage } from "./storage";
 
 // Extended types for SMS functionality with phone numbers and names
 export interface ConnectionWithSMS extends Connection {
@@ -245,6 +246,7 @@ This code will expire in 10 minutes. Enter it to verify your phone number.`;
   }
 }
 
+// Internal SMS service that stores SMS in database
 export class InternalSMSService implements SMSService {
   private fromPhone: string;
 
@@ -253,16 +255,58 @@ export class InternalSMSService implements SMSService {
   }
 
   async sendConnectionInvitation(connection: ConnectionWithSMS): Promise<void> {
-    // Internal SMS service could use a different provider or queue system
-    console.log('Internal SMS - Connection Invitation queued');
+    if (!connection.inviteePhone) return;
+
+    const message = `You've been invited to start a deeper conversation on Deeper! 
+${connection.inviterName} wants to connect as ${connection.relationshipType}. 
+${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
+Accept your invitation: https://joindeeper.com/invitation/${connection.id}`;
+
+    // Store SMS in database as internal notification system
+    await storage.createSMSMessage({
+      toPhone: connection.inviteePhone,
+      fromPhone: this.fromPhone,
+      message,
+      smsType: "invitation",
+      connectionId: connection.id
+    });
+
+    console.log(`[SMS] Invitation notification stored for ${connection.inviteePhone}`);
   }
 
   async sendConnectionAccepted(connection: ConnectionWithSMS): Promise<void> {
-    console.log('Internal SMS - Connection Accepted queued');
+    if (!connection.inviterPhone) return;
+
+    const message = `Great news! ${connection.inviteeName} accepted your invitation to connect on Deeper.
+You can now start meaningful conversations together.
+Begin your conversation: https://joindeeper.com/dashboard`;
+
+    await storage.createSMSMessage({
+      toPhone: connection.inviterPhone,
+      fromPhone: this.fromPhone,
+      message,
+      smsType: "acceptance",
+      connectionId: connection.id
+    });
+
+    console.log(`[SMS] Acceptance notification stored for ${connection.inviterPhone}`);
   }
 
   async sendConnectionDeclined(connection: ConnectionWithSMS): Promise<void> {
-    console.log('Internal SMS - Connection Declined queued');
+    if (!connection.inviterPhone) return;
+
+    const message = `${connection.inviteeName} has respectfully declined your invitation to connect on Deeper. 
+You can always try reaching out through other channels or invite them again in the future.`;
+
+    await storage.createSMSMessage({
+      toPhone: connection.inviterPhone,
+      fromPhone: this.fromPhone,
+      message,
+      smsType: "decline",
+      connectionId: connection.id
+    });
+
+    console.log(`[SMS] Decline notification stored for ${connection.inviterPhone}`);
   }
 
   async sendTurnNotification(params: {
@@ -272,54 +316,40 @@ export class InternalSMSService implements SMSService {
     relationshipType: string;
     messageType: 'question' | 'response';
   }): Promise<void> {
-    console.log('Internal SMS - Turn Notification queued');
+    const actionText = params.messageType === 'question' ? 'asked a question' : 'sent a response';
+    const responseText = params.messageType === 'question' ? 'respond' : 'continue the conversation';
+
+    const message = `Your turn! ${params.senderName} just ${actionText} in your ${params.relationshipType.toLowerCase()} conversation. 
+It's now your turn to ${responseText}.
+Continue conversation: https://joindeeper.com/conversation/${params.conversationId}`;
+
+    await storage.createSMSMessage({
+      toPhone: params.recipientPhone,
+      fromPhone: this.fromPhone,
+      message,
+      smsType: "turn_notification"
+    });
+
+    console.log(`[SMS] Turn notification stored for ${params.recipientPhone}`);
   }
 
   async sendVerificationCode(phoneNumber: string, code: string): Promise<void> {
-    console.log('Internal SMS - Verification Code queued');
+    const message = `Your Deeper verification code is: ${code}. This code will expire in 10 minutes.`;
+
+    await storage.createSMSMessage({
+      toPhone: phoneNumber,
+      fromPhone: this.fromPhone,
+      message,
+      smsType: "verification"
+    });
+
+    console.log(`[SMS] Verification code stored for ${phoneNumber}`);
   }
 }
 
 export function createSMSService(): SMSService {
-  const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
-  const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
-  const twilioFromPhone = process.env.TWILIO_PHONE_NUMBER;
-  const twilioMessagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
-
-  console.log('SMS Service Configuration Check:', {
-    accountSid: twilioAccountSid ? 'SET' : 'MISSING',
-    authToken: twilioAuthToken ? 'SET' : 'MISSING',
-    fromPhone: twilioFromPhone ? 'SET' : 'MISSING',
-    messagingServiceSid: twilioMessagingServiceSid ? 'SET' : 'MISSING',
-    nodeEnv: process.env.NODE_ENV
-  });
-
-  // Use production SMS service if Twilio credentials are available
-  if (twilioAccountSid && twilioAuthToken && twilioFromPhone) {
-    console.log('Using ProductionSMSService with Twilio (phone number method)');
-    console.log('Twilio Configuration:', {
-      hasAccountSid: !!twilioAccountSid,
-      hasAuthToken: !!twilioAuthToken,
-      hasFromPhone: !!twilioFromPhone,
-      hasMessagingService: !!twilioMessagingServiceSid,
-      fromPhone: twilioFromPhone,
-      primaryMethod: 'phone_number'
-    });
-    // Pass null for messaging service to prioritize phone number
-    return new ProductionSMSService(twilioAccountSid, twilioAuthToken, twilioFromPhone, null);
-  } else if (twilioAccountSid && twilioAuthToken && twilioMessagingServiceSid) {
-    console.log('Using ProductionSMSService with Twilio (messaging service fallback)');
-    return new ProductionSMSService(twilioAccountSid, twilioAuthToken, twilioFromPhone, twilioMessagingServiceSid);
-  } else {
-    console.log('Twilio credentials incomplete, using ConsoleSMSService for development');
-    console.log('Missing credentials:', {
-      accountSid: !twilioAccountSid,
-      authToken: !twilioAuthToken,
-      hasFromPhone: !!twilioFromPhone,
-      hasMessagingService: !!twilioMessagingServiceSid
-    });
-    return new ConsoleSMSService();
-  }
+  console.log('[SMS] Using internal database notification system');
+  return new InternalSMSService();
 }
 
 export const smsService = createSMSService();

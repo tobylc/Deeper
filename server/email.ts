@@ -134,7 +134,7 @@ The Deeper Team
 export class ProductionEmailService implements EmailService {
   private fromEmail: string;
 
-  constructor(apiKey: string, fromEmail: string = "notifications@deepersocial.replit.app") {
+  constructor(apiKey: string, fromEmail: string = "notifications@joindeeper.com") {
     sgMail.setApiKey(apiKey);
     this.fromEmail = fromEmail;
   }
@@ -775,8 +775,17 @@ class FallbackEmailService implements EmailService {
 
 // Email service factory
 export function createEmailService(): EmailService {
-  console.log('[EMAIL] Using internal database notification system');
-  return new InternalEmailService();
+  const sendGridApiKey = process.env.SENDGRID_API_KEY;
+  
+  if (sendGridApiKey) {
+    console.log('[EMAIL] Using SendGrid production email service with internal database fallback');
+    const productionService = new ProductionEmailService(sendGridApiKey);
+    const internalService = new InternalEmailService();
+    return new FallbackEmailService(productionService, internalService);
+  } else {
+    console.log('[EMAIL] No SendGrid API key found, using internal database notification system');
+    return new InternalEmailService();
+  }
 }
 
 export const emailService = createEmailService();
