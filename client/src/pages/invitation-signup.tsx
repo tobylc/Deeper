@@ -220,11 +220,17 @@ export default function InvitationSignup() {
                 type="email"
                 value={invitation.inviteeEmail || ''}
                 readOnly
+                disabled
                 className="bg-muted border-border text-muted-foreground cursor-not-allowed rounded-2xl font-inter"
               />
-              <p className="text-xs text-slate-300 mt-1 font-inter">
-                This email was used for your invitation and cannot be changed
-              </p>
+              <div className="mt-2 p-3 bg-ocean/10 border border-ocean/20 rounded-lg">
+                <p className="text-sm text-ocean font-inter font-medium">
+                  ⚠️ Important: You must use this exact email address to sign up
+                </p>
+                <p className="text-xs text-slate-300 mt-1 font-inter">
+                  This ensures you're connected with the right person. You can link your Google account after login for easier access.
+                </p>
+              </div>
             </div>
 
             <div>
@@ -277,10 +283,11 @@ export default function InvitationSignup() {
           <div className="mt-6 p-4 bg-card/30 rounded-2xl border border-border">
             <h4 className="text-sm font-medium text-white mb-2 font-inter">What happens next?</h4>
             <ul className="text-xs text-slate-300 space-y-1 font-inter">
-              <li>• Your account will be created with your invitation email</li>
-              <li>• A connection will be established with {getInviterName()}</li>
-              <li>• You'll be taken to your dashboard to start conversations</li>
+              <li>• Your account will be created with the designated email address</li>
+              <li>• A private connection will be established with {getInviterName()}</li>
+              <li>• You'll be taken to your dashboard to start conversations immediately</li>
               <li>• {getInviterName()} will be notified of your acceptance</li>
+              <li>• After login, you can link your Google account for easier sign-in</li>
             </ul>
           </div>
         </CardContent>

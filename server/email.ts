@@ -22,6 +22,9 @@ export interface EmailService {
 // Simple console email service for development
 export class ConsoleEmailService implements EmailService {
   async sendConnectionInvitation(connection: Connection): Promise<void> {
+    const appUrl = process.env.REPLIT_DEV_DOMAIN 
+      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+      : 'https://joindeeper.com';
     const inviterName = await storage.getUserDisplayNameByEmail(connection.inviterEmail);
     const invitationText = getInvitationText(connection.inviterRole, connection.inviteeRole, connection.relationshipType);
     const subject = getEmailSubjectWithRoles('Invitation', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
@@ -38,10 +41,10 @@ ${inviterName} has invited you to connect on Deeper for ${invitationText}.
 
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
 
-To accept this invitation:
-1. Visit the Deeper app
-2. Register with this email address: ${connection.inviteeEmail}
-3. Check your dashboard for pending invitations
+To accept this invitation, simply click the button below or visit:
+${appUrl}/invitation-signup?id=${connection.id}
+
+You must use the email address: ${connection.inviteeEmail}
 
 This is a private, turn-based conversation space where you can build deeper understanding through thoughtful questions and responses.
 
@@ -169,7 +172,7 @@ export class ProductionEmailService implements EmailService {
             ` : ''}
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${appUrl}/invitation?inviter=${encodeURIComponent(connection.inviterEmail)}&relationship=${encodeURIComponent(connection.relationshipType)}&id=${connection.id}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
+              <a href="${appUrl}/invitation-signup?id=${connection.id}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
                 Accept Invitation
               </a>
             </div>
@@ -178,10 +181,11 @@ export class ProductionEmailService implements EmailService {
           <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
             <h3 style="color: #1e293b; margin: 0 0 15px 0; font-size: 18px;">What happens next?</h3>
             <ul style="color: #64748b; line-height: 1.6; margin: 0; padding-left: 20px;">
-              <li>Register with this email address: <strong>${connection.inviteeEmail}</strong></li>
-              <li>Check your dashboard for the pending invitation</li>
-              <li>Accept to create your private conversation space</li>
-              <li>Take turns asking thoughtful questions and sharing responses</li>
+              <li>Click the button above or visit the sign-up link</li>
+              <li>You must register with this email: <strong>${connection.inviteeEmail}</strong></li>
+              <li>Create your password and complete the registration</li>
+              <li>Start your private conversation space immediately</li>
+              <li>You can link a Google account later for easier sign-in</li>
             </ul>
           </div>
           
@@ -199,10 +203,10 @@ ${inviterName} has invited you to connect on Deeper for ${invitationText}.
 
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
 
-To accept this invitation:
-1. Visit ${appUrl}/auth
-2. Register with this email address: ${connection.inviteeEmail}
-3. Check your dashboard for pending invitations
+To accept this invitation, simply visit:
+${appUrl}/invitation-signup?id=${connection.id}
+
+You must use the email address: ${connection.inviteeEmail}
 
 This is a private, turn-based conversation space where you can build deeper understanding through thoughtful questions and responses.
 
@@ -465,7 +469,7 @@ export class InternalEmailService implements EmailService {
           ` : ''}
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${appUrl}/invitation?inviter=${encodeURIComponent(connection.inviterEmail)}&relationship=${encodeURIComponent(connection.relationshipType)}&id=${connection.id}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
+            <a href="${appUrl}/invitation-signup?id=${connection.id}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
               Accept Invitation
             </a>
           </div>
@@ -474,10 +478,11 @@ export class InternalEmailService implements EmailService {
         <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
           <h3 style="color: #1e293b; margin: 0 0 15px 0; font-size: 18px;">What happens next?</h3>
           <ul style="color: #64748b; line-height: 1.6; margin: 0; padding-left: 20px;">
-            <li>Register with this email address: <strong>${connection.inviteeEmail}</strong></li>
-            <li>Check your dashboard for the pending invitation</li>
-            <li>Accept to create your private conversation space</li>
-            <li>Take turns asking thoughtful questions and sharing responses</li>
+            <li>Click the button above or visit the sign-up link</li>
+            <li>You must register with this email: <strong>${connection.inviteeEmail}</strong></li>
+            <li>Create your password and complete the registration</li>
+            <li>Start your private conversation space immediately</li>
+            <li>You can link a Google account later for easier sign-in</li>
           </ul>
         </div>
         
@@ -496,10 +501,10 @@ ${inviterName} has invited you to connect on Deeper for ${invitationText}.
 
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
 
-To accept this invitation:
-1. Visit ${appUrl}/invitation?inviter=${encodeURIComponent(connection.inviterEmail)}&relationship=${encodeURIComponent(connection.relationshipType)}&id=${connection.id}
-2. Register with this email address: ${connection.inviteeEmail}
-3. Check your dashboard for pending invitations
+To accept this invitation, simply visit:
+${appUrl}/invitation-signup?id=${connection.id}
+
+You must use the email address: ${connection.inviteeEmail}
 
 This is a private, turn-based conversation space where you can build deeper understanding through thoughtful questions and responses.
 
