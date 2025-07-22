@@ -520,7 +520,7 @@ export class DatabaseStorage implements IStorage {
   async initializeTrial(userId: string): Promise<User | undefined> {
     const trialStartedAt = new Date();
     const trialExpiresAt = new Date(trialStartedAt);
-    trialExpiresAt.setDate(trialExpiresAt.getDate() + 7); // 7 days from now
+    trialExpiresAt.setDate(trialExpiresAt.getDate() + 60); // 60 days from now
 
     const [user] = await db
       .update(users)
@@ -559,7 +559,7 @@ export class DatabaseStorage implements IStorage {
       if (!user.trialExpiresAt) {
         // Initialize trial if not set
         const updatedUser = await this.initializeTrial(userId);
-        return { isExpired: false, daysRemaining: 7, user: updatedUser };
+        return { isExpired: false, daysRemaining: 60, user: updatedUser };
       }
 
       const now = new Date();

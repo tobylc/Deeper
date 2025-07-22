@@ -52,7 +52,7 @@ export function TrialStatus() {
   // Use user data as fallback when trial status API fails
   const effectiveTrialStatus = trialStatus || {
     isExpired: user?.subscriptionStatus !== 'trialing' && user?.subscriptionTier === 'free',
-    daysRemaining: user?.subscriptionStatus === 'trialing' ? 7 : 0,
+    daysRemaining: user?.subscriptionStatus === 'trialing' ? 60 : 0,
     subscriptionTier: user?.subscriptionTier || 'free',
     subscriptionStatus: user?.subscriptionStatus || 'inactive'
   };

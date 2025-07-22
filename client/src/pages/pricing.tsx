@@ -45,7 +45,7 @@ export default function Pricing() {
           <div className="mb-8">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
               <Gift className="w-4 h-4 mr-2" />
-              7-Day Free Trial
+              60 Day Free Trial
             </Badge>
             <h1 className="text-4xl lg:text-5xl font-inter font-bold text-foreground mb-6 leading-tight">
               Start meaningful conversations <span className="text-primary">today</span>
@@ -106,16 +106,16 @@ export default function Pricing() {
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-primary flex-shrink-0" />
-                    <span className="text-foreground text-xs">7-day free trial</span>
+                    <span className="text-foreground text-xs">60-day free trial</span>
                   </li>
                 </ul>
                 <div className="mt-auto">
                   <p className="text-xs text-muted-foreground mb-4 text-center">
-                    7-day free trial • Cancel anytime
+                    60-day free trial • Cancel anytime
                   </p>
                   <Link href="/checkout/basic">
                     <Button className="w-full card-button py-2 text-xs">
-                      Start Basic Plan
+                      60 Day Free • <span className="italic">no credit card required</span>
                     </Button>
                   </Link>
                 </div>
@@ -162,16 +162,16 @@ export default function Pricing() {
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-secondary-foreground flex-shrink-0" />
-                    <span className="text-foreground text-xs">7-day free trial</span>
+                    <span className="text-foreground text-xs">60-day free trial</span>
                   </li>
                 </ul>
                 <div className="mt-auto">
                   <p className="text-xs text-muted-foreground mb-4 text-center">
-                    7-day free trial • Cancel anytime
+                    60-day free trial • Cancel anytime
                   </p>
                   <Link href="/checkout/advanced">
                     <Button className="w-full card-button py-2 text-xs">
-                      Choose Advanced
+                      60 Day Free • <span className="italic">no credit card required</span>
                     </Button>
                   </Link>
                 </div>
@@ -218,16 +218,16 @@ export default function Pricing() {
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-accent-foreground flex-shrink-0" />
-                    <span className="text-foreground text-xs">7-day free trial</span>
+                    <span className="text-foreground text-xs">60-day free trial</span>
                   </li>
                 </ul>
                 <div className="mt-auto">
                   <p className="text-xs text-muted-foreground mb-4 text-center">
-                    7-day free trial • Cancel anytime
+                    60-day free trial • Cancel anytime
                   </p>
                   <Link href="/checkout/unlimited">
                     <Button className="w-full card-button py-2 text-xs">
-                      Choose Unlimited
+                      60 Day Free • <span className="italic">no credit card required</span>
                     </Button>
                   </Link>
                 </div>
@@ -245,21 +245,21 @@ export default function Pricing() {
               <Zap className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-3xl font-inter font-bold text-foreground mb-4">
-              Limited Time: Upgrade within 7 days
+              Limited Time: Upgrade within 60 days
             </h2>
             <p className="text-lg text-muted-foreground mb-6">
-              Start your free trial today and get <strong>50% off</strong> your first month when you upgrade within 7 days. 
+              Start your free 60-day trial today and get <strong>50% off</strong> your first month when you upgrade within 60 days. 
               That's premium relationship tools for just $4.95! Cheaper and much more effective than a cup of coffee once a month with your Deeper partner.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth">
                 <Button size="lg" className="btn-ocean px-8">
-                  Start Free Trial Now
+                  60 Day Free • <span className="italic">no credit card required</span>
                 </Button>
               </Link>
             </div>
             <p className="text-sm text-muted-foreground mt-4">
-              Offer expires 7 days after trial signup • No commitment • Cancel anytime
+              Offer expires 60 days after trial signup • No commitment • Cancel anytime
             </p>
           </div>
         </div>
@@ -323,11 +323,11 @@ export default function Pricing() {
           </p>
           <Link href="/auth">
             <Button size="lg" className="btn-ocean px-8">
-              Start Your Free Trial
+              60 Day Free • <span className="italic">no credit card required</span>
             </Button>
           </Link>
           <p className="text-white/80 mt-4">
-            No credit card required • 7 days free • Cancel anytime
+            No credit card required • 60 days free • Cancel anytime
           </p>
         </div>
       </section>
