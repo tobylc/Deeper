@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Send, Users, Clock, MessageCircle, Grid3X3 } from "lucide-react";
+import { ArrowLeft, Send, Users, Clock, MessageCircle, Grid3X3, Eye, EyeOff } from "lucide-react";
 import ConversationInterface from "@/components/conversation-interface";
 import ConversationThreads from "@/components/conversation-threads";
 import QuestionSuggestions from "@/components/question-suggestions";
@@ -40,6 +40,19 @@ export default function ConversationPage() {
   const [responseStartTime, setResponseStartTime] = useState<Date | null>(null);
   const [pendingMessage, setPendingMessage] = useState<string>("");
   const [hasStartedResponse, setHasStartedResponse] = useState(false);
+  
+  // Orbs visibility toggle state with localStorage persistence
+  const [showOrbsBackground, setShowOrbsBackground] = useState(() => {
+    const saved = localStorage.getItem('deeperapp-show-orbs');
+    return saved !== null ? JSON.parse(saved) : true; // Default to true (show orbs)
+  });
+
+  // Function to toggle orbs visibility and save to localStorage
+  const toggleOrbsBackground = () => {
+    const newValue = !showOrbsBackground;
+    setShowOrbsBackground(newValue);
+    localStorage.setItem('deeperapp-show-orbs', JSON.stringify(newValue));
+  };
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -1069,6 +1082,18 @@ export default function ConversationPage() {
                 <Grid3X3 className="w-3 h-3 mr-1" />
                 Questions
               </Button>
+              {!isMyTurn && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={toggleOrbsBackground}
+                  className="text-xs px-2 py-1"
+                  title={showOrbsBackground ? "Hide floating orbs" : "Show floating orbs"}
+                >
+                  {showOrbsBackground ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+                  Orbs
+                </Button>
+              )}
               <div className="flex items-center space-x-1">
                 <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-500' : 'bg-red-500'}`} 
                      title={`WebSocket: ${wsConnected ? 'Connected' : `Disconnected (${connectionAttempts} attempts)`}`} />
@@ -1111,7 +1136,7 @@ export default function ConversationPage() {
             {/* Hypnotic Orbs Background Effect with Floating Text */}
             {!isMyTurn && (
               <>
-                <HypnoticOrbs className="absolute inset-0 z-0" />
+                {showOrbsBackground && <HypnoticOrbs className="absolute inset-0 z-0" />}
                 {/* Only show floating text when there are no messages or when messages don't fill the screen */}
                 {(!messages || messages.length === 0 || messages.length < 3) && (
                   <FloatingWaitingText className="absolute inset-0 z-30" />
