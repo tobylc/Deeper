@@ -5188,7 +5188,7 @@ Format each as a complete question they can use to begin this important conversa
       }
 
       console.log(`[DEBUG] Testing email service with recipient: ${testEmail}`);
-      console.log(`[DEBUG] Email service type: ${process.env.SENDGRID_API_KEY ? 'FallbackEmailService (SendGrid + Database)' : 'InternalEmailService (Database)'}`);
+      console.log(`[DEBUG] Email service type: InternalEmailService (Database)`);
 
       // Test turn notification email
       await notificationService.sendTurnNotification({
@@ -5204,8 +5204,8 @@ Format each as a complete question they can use to begin this important conversa
       res.json({ 
         success: true, 
         message: 'Test notification sent successfully',
-        emailService: process.env.SENDGRID_API_KEY ? 'FallbackEmailService (SendGrid + Database)' : 'InternalEmailService (Database)',
-        note: 'If SendGrid fails, system automatically uses internal database storage'
+        emailService: 'InternalEmailService (Database)',
+        note: 'All notifications are stored in internal database system'
       });
     } catch (error) {
       console.error('[DEBUG] Test email service error:', error);

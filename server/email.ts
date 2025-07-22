@@ -435,7 +435,7 @@ The Deeper Team
 export class InternalEmailService implements EmailService {
   private fromEmail: string;
 
-  constructor(fromEmail: string = "notifications@deepersocial.replit.app") {
+  constructor(fromEmail: string = "notifications@joindeeper.com") {
     this.fromEmail = fromEmail;
   }
 
@@ -775,16 +775,7 @@ class FallbackEmailService implements EmailService {
 
 // Email service factory
 export function createEmailService(): EmailService {
-  const sendgridApiKey = process.env.SENDGRID_API_KEY;
-
-  if (sendgridApiKey) {
-    console.log('[EMAIL] Using SendGrid with internal database fallback');
-    const primaryService = new ProductionEmailService(sendgridApiKey);
-    const fallbackService = new InternalEmailService();
-    return new FallbackEmailService(primaryService, fallbackService);
-  }
-
-  console.log('[EMAIL] No SendGrid API key - using internal database service');
+  console.log('[EMAIL] Using internal database notification system');
   return new InternalEmailService();
 }
 
