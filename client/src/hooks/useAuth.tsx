@@ -28,9 +28,14 @@ export function useAuth() {
             throw new Error('Auth failed during Stripe redirect');
           }
           
-          // Handle session expiration by redirecting to auth page (unless already on auth page)
-          if (!window.location.pathname.startsWith('/auth')) {
-            console.log('[AUTH] Session expired, redirecting to login');
+          // Handle session expiration - only redirect if user was on a protected route
+          const protectedRoutes = ['/dashboard', '/conversation', '/admin'];
+          const isOnProtectedRoute = protectedRoutes.some(route => 
+            window.location.pathname.startsWith(route)
+          );
+          
+          if (isOnProtectedRoute) {
+            console.log('[AUTH] Session expired on protected route, redirecting to login');
             window.location.href = '/auth';
             return null;
           }
