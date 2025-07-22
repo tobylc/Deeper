@@ -721,7 +721,6 @@ export default function Dashboard() {
             currentImageUrl={user?.profileImageUrl ?? undefined}
             userEmail={user?.email || undefined}
             hasGoogleLinked={user?.googleId ? true : false}
-            hasFacebookLinked={false}
             onImageUpdate={() => {
               // Refresh user data
               queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });

@@ -1,7 +1,6 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { Strategy as FacebookStrategy } from "passport-facebook";
-import { Strategy as AppleStrategy } from "passport-apple";
+
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
@@ -201,33 +200,9 @@ export async function setupAuth(app: Express) {
     );
   }
 
-  // Facebook OAuth Strategy
-  if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
-    passport.use(new FacebookStrategy({
-      clientID: process.env.FACEBOOK_APP_ID,
-      clientSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackURL: `${baseUrl}/api/auth/facebook/callback`,
-      profileFields: ['id', 'displayName', 'photos', 'email']
-    }, async (accessToken, refreshToken, profile, done) => {
-      try {
-        const user = await upsertUser(profile, 'facebook');
-        return done(null, user);
-      } catch (error) {
-        return done(error);
-      }
-    }));
 
-    app.get("/api/auth/facebook", passport.authenticate("facebook", { scope: ["email"] }));
-    app.get("/api/auth/facebook/callback",
-      passport.authenticate("facebook", { failureRedirect: "/?error=auth_failed" }),
-      (req, res) => res.redirect("/dashboard")
-    );
-  }
 
-  // Apple OAuth Strategy (placeholder - requires proper certificate configuration)
-  app.get("/api/auth/apple", (req, res) => {
-    res.redirect("/?error=apple_not_configured");
-  });
+
 
   // Email/Password Strategy
   passport.use(new LocalStrategy(
