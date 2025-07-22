@@ -79,6 +79,56 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
     inviteeRole: "",
     personalMessage: "",
   });
+  
+  // Track message interaction state
+  const [messageState, setMessageState] = useState<'placeholder' | 'example' | 'custom'>('placeholder');
+
+  // Get the current example text based on relationship details
+  const currentExample = getPersonalizedPlaceholder(formData.relationshipType, formData.inviterRole, formData.inviteeRole);
+
+  // Handle button actions for message management
+  const handleUseExample = () => {
+    setFormData({ ...formData, personalMessage: currentExample });
+    setMessageState('example');
+  };
+
+  const handleEditExample = () => {
+    setFormData({ ...formData, personalMessage: currentExample });
+    setMessageState('custom');
+  };
+
+  const handleRewrite = () => {
+    setFormData({ ...formData, personalMessage: "" });
+    setMessageState('custom');
+  };
+
+  // Update message state when user types
+  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData({ ...formData, personalMessage: e.target.value });
+    if (e.target.value === currentExample) {
+      setMessageState('example');
+    } else if (e.target.value === "") {
+      setMessageState('placeholder');
+    } else {
+      setMessageState('custom');
+    }
+  };
+
+  // Reset message state when relationship details change
+  const handleRelationshipChange = (value: string) => {
+    setFormData({ ...formData, relationshipType: value, inviterRole: "", inviteeRole: "", personalMessage: "" });
+    setMessageState('placeholder');
+  };
+
+  const handleInviterRoleChange = (value: string) => {
+    setFormData({ ...formData, inviterRole: value, inviteeRole: "", personalMessage: "" });
+    setMessageState('placeholder');
+  };
+
+  const handleInviteeRoleChange = (value: string) => {
+    setFormData({ ...formData, inviteeRole: value, personalMessage: "" });
+    setMessageState('placeholder');
+  };
 
   // Check if user was invited by someone else (is an invitee)
   const { data: connections = [] } = useQuery<Connection[]>({
@@ -233,7 +283,7 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
             <Label htmlFor="relationship">Relationship Type</Label>
             <Select 
               value={formData.relationshipType} 
-              onValueChange={(value) => setFormData({ ...formData, relationshipType: value, inviterRole: "", inviteeRole: "" })}
+              onValueChange={handleRelationshipChange}
               required
             >
               <SelectTrigger>
@@ -256,9 +306,7 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
                 <Label htmlFor="inviterRole">Your Role</Label>
                 <Select 
                   value={formData.inviterRole} 
-                  onValueChange={(value) => {
-                    setFormData({ ...formData, inviterRole: value, inviteeRole: "" });
-                  }}
+                  onValueChange={handleInviterRoleChange}
                   required
                 >
                   <SelectTrigger>
@@ -279,7 +327,7 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
                   <Label htmlFor="inviteeRole">Their Role</Label>
                   <Select 
                     value={formData.inviteeRole} 
-                    onValueChange={(value) => setFormData({ ...formData, inviteeRole: value })}
+                    onValueChange={handleInviteeRoleChange}
                     required
                   >
                     <SelectTrigger>
@@ -304,13 +352,58 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
 
           <div className="space-y-2">
             <Label htmlFor="message">Share why this invitation matters to you</Label>
+            
+            {/* Show action buttons only when we have relationship details and no custom message */}
+            {formData.relationshipType && formData.inviterRole && formData.inviteeRole && messageState === 'placeholder' && (
+              <div className="flex gap-2 mb-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleUseExample}
+                  className="text-xs px-3 py-1 h-7"
+                >
+                  Use Example
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEditExample}
+                  className="text-xs px-3 py-1 h-7"
+                >
+                  Edit Example
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRewrite}
+                  className="text-xs px-3 py-1 h-7"
+                >
+                  Write Your Own
+                </Button>
+              </div>
+            )}
+
             <Textarea
               id="message"
-              placeholder={getPersonalizedPlaceholder(formData.relationshipType, formData.inviterRole, formData.inviteeRole)}
+              placeholder={messageState === 'placeholder' && formData.relationshipType && formData.inviterRole && formData.inviteeRole 
+                ? "Choose an option above to get started with your personal message..." 
+                : "Share what this conversation opportunity means to you..."
+              }
               value={formData.personalMessage}
-              onChange={(e) => setFormData({ ...formData, personalMessage: e.target.value })}
+              onChange={handleMessageChange}
               className="h-24 resize-none"
             />
+            
+            {/* Show helpful text based on current state */}
+            {messageState === 'example' && (
+              <p className="text-xs text-blue-600 flex items-center gap-1">
+                <CheckCircle className="w-3 h-3" />
+                Using example message - you can edit this text if you'd like to personalize it further
+              </p>
+            )}
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg">
