@@ -14,6 +14,54 @@ import TrialExpirationPopup from "@/components/trial-expiration-popup";
 import { relationshipRoles, getRolesForRelationship, getValidRolePairs } from "@shared/relationship-roles";
 import type { Connection } from "@shared/schema";
 
+// Function to generate personalized placeholder text based on relationship
+function getPersonalizedPlaceholder(relationshipType: string, inviterRole: string, inviteeRole: string): string {
+  if (!relationshipType || !inviterRole || !inviteeRole) {
+    return "Share what this conversation opportunity means to you and why you'd like to connect...";
+  }
+
+  const key = `${relationshipType}-${inviterRole}-${inviteeRole}`;
+  
+  // Specific relationship-based examples
+  const examples: { [key: string]: string } = {
+    // Parent-Child relationships
+    "Parent-Child-Father-Son": "Hey son, I've been thinking about how much I'd love to connect with you on a deeper level. I know we've both been busy, but I really want to understand your world better and share more of mine with you. This could be a chance for us to grow closer as father and son.",
+    "Parent-Child-Father-Daughter": "My dear daughter, I've been reflecting on our relationship and would love the opportunity to have more meaningful conversations with you. I want to be someone you feel comfortable sharing with, and I'd love to learn more about who you're becoming as a person.",
+    "Parent-Child-Mother-Son": "My son, I've been thinking about how we can strengthen our bond. I'd love to have a space where we can talk openly about life, dreams, and everything in between. You mean the world to me, and I want to understand you better.",
+    "Parent-Child-Mother-Daughter": "Sweetheart, I'd love to create a special space for us to connect more deeply. I want to be someone you can always talk to, and I'm excited about the possibility of growing closer through meaningful conversations.",
+    "Parent-Child-Son-Father": "Dad, I've been thinking about our relationship and would love the chance to connect with you on a deeper level. I want to understand your experiences better and share more of what's going on in my life. I think this could really strengthen our bond.",
+    "Parent-Child-Daughter-Father": "Dad, I'd really love the opportunity to have more meaningful conversations with you. I want to know more about your stories, your wisdom, and I'd love to share more of my world with you too.",
+    "Parent-Child-Son-Mother": "Mom, I'd love to have a special place where we can talk about life, dreams, and everything that matters. You've always been there for me, and I want to deepen our connection through honest conversations.",
+    "Parent-Child-Daughter-Mother": "Mom, I've been thinking about how much I value our relationship, and I'd love to have deeper conversations with you. I want to share more of my life with you and learn from your experiences.",
+    
+    // Siblings
+    "Siblings-Brother-Brother": "Hey brother, I've been thinking about how we can reconnect and build a stronger relationship. I know we've grown apart over the years, but I'd love to understand who you are now and share what's been happening in my life. Let's see if we can grow closer as adults.",
+    "Siblings-Sister-Sister": "Hey sis, I'd love the chance to reconnect with you on a deeper level. I miss having meaningful conversations with you, and I think this could be a beautiful way for us to strengthen our sisterly bond.",
+    "Siblings-Brother-Sister": "Hey sis, I've been reflecting on our relationship and would love to connect with you more deeply. I want to be a better brother and understand your world better. This could be a chance for us to grow closer.",
+    "Siblings-Sister-Brother": "Hey brother, I'd love the opportunity to have more meaningful conversations with you. I want to understand your perspective better and share more of what's important to me. Let's see if we can strengthen our sibling bond.",
+    
+    // Romantic Partners
+    "Romantic Partners-Boyfriend-Girlfriend": "My love, I'd love for us to have a dedicated space for deeper conversations. I want to understand your heart better, share my thoughts more openly, and grow even closer together. What do you think?",
+    "Romantic Partners-Girlfriend-Boyfriend": "Babe, I've been thinking about how we can deepen our connection even more. I'd love to have meaningful conversations about our dreams, fears, and everything in between. This could be beautiful for our relationship.",
+    "Romantic Partners-Husband-Wife": "My dear wife, after all these years together, I'd love to rediscover new depths in our relationship. I want to keep growing with you and learning about who you're becoming. This could be a gift to our marriage.",
+    "Romantic Partners-Wife-Husband": "My love, I'd love for us to have a special place to connect on an even deeper level. After all we've shared, I'm excited about discovering new layers of our relationship through meaningful conversations.",
+    "Romantic Partners-Partner-Partner": "My darling, I'd love to explore deeper conversations with you. I want to understand your inner world better and share more of mine with you. This could be a beautiful way to strengthen our bond.",
+    
+    // Friends
+    "Friends-Best Friend-Best Friend": "Hey bestie, I've been thinking about how much our friendship means to me, and I'd love to take our conversations to an even deeper level. I want to understand you better and share more of my authentic self with you.",
+    "Friends-Close Friend-Close Friend": "My friend, I really value our friendship and would love the chance to connect with you on a deeper level. I think meaningful conversations could make our friendship even stronger.",
+    "Friends-Friend-Friend": "Hey there, I've been thinking about our friendship and would love to have more meaningful conversations with you. I'd love to understand your perspective better and share more of what's important to me.",
+    
+    // Grandparents
+    "Grandparents-Grandfather-Grandson": "My dear grandson, I've been thinking about all the stories and wisdom I'd love to share with you, and all the things I'd love to learn about your generation. This could be a beautiful way for us to connect across the years.",
+    "Grandparents-Grandmother-Granddaughter": "My precious granddaughter, I'd love to have deeper conversations with you about life, dreams, and family stories. I want to understand your world better and share some of the lessons I've learned along the way.",
+    "Grandparents-Grandson-Grandfather": "Grandpa, I'd love to learn more about your life experiences and share what's happening in mine. I think we could have some really meaningful conversations that would help me understand our family history better.",
+    "Grandparents-Granddaughter-Grandmother": "Grandma, I'd love to hear more of your stories and share what's going on in my life. I think deeper conversations between us could be really special and meaningful.",
+  };
+
+  return examples[key] || `I'd love to connect with you more deeply as your ${inviterRole.toLowerCase()}. This invitation represents an opportunity for us to understand each other better and strengthen our ${relationshipType.toLowerCase()} relationship through meaningful conversations.`;
+}
+
 interface InvitationFormProps {
   onClose: () => void;
   onSuccess: () => void;
@@ -255,10 +303,10 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="message">Personal Message (Optional)</Label>
+            <Label htmlFor="message">Share why this invitation matters to you</Label>
             <Textarea
               id="message"
-              placeholder="Hey! I'd love to have some deeper conversations with you..."
+              placeholder={getPersonalizedPlaceholder(formData.relationshipType, formData.inviterRole, formData.inviteeRole)}
               value={formData.personalMessage}
               onChange={(e) => setFormData({ ...formData, personalMessage: e.target.value })}
               className="h-24 resize-none"
