@@ -81,7 +81,7 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
   });
   
   // Track message interaction state
-  const [messageState, setMessageState] = useState<'example' | 'custom'>('example');
+  const [messageState, setMessageState] = useState<'example' | 'editing' | 'custom'>('example');
 
   // Get the current example text based on relationship details
   const currentExample = getPersonalizedPlaceholder(formData.relationshipType, formData.inviterRole, formData.inviteeRole);
@@ -94,7 +94,7 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
 
   const handleEditExample = () => {
     setFormData({ ...formData, personalMessage: currentExample });
-    setMessageState('custom');
+    setMessageState('editing');
   };
 
   const handleRewrite = () => {
@@ -107,8 +107,15 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
     setFormData({ ...formData, personalMessage: e.target.value });
     if (e.target.value === currentExample) {
       setMessageState('example');
-    } else {
+    } else if (e.target.value === "") {
       setMessageState('custom');
+    } else {
+      // If they're typing something different from the example, they're in editing mode
+      if (messageState === 'example') {
+        setMessageState('editing');
+      } else {
+        setMessageState('custom');
+      }
     }
   };
 
@@ -363,11 +370,10 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   <Button
                     type="button"
-                    variant={messageState === 'example' && formData.personalMessage === currentExample ? "default" : "outline"}
                     size="sm"
                     onClick={handleUseExample}
                     className={`text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
-                      messageState === 'example' && formData.personalMessage === currentExample 
+                      messageState === 'example' 
                         ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md' 
                         : 'bg-white dark:bg-card border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40'
                     }`}
@@ -376,11 +382,10 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
                   </Button>
                   <Button
                     type="button"
-                    variant={messageState === 'example' && formData.personalMessage !== currentExample ? "default" : "outline"}
                     size="sm"
                     onClick={handleEditExample}
                     className={`text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
-                      messageState === 'example' && formData.personalMessage !== currentExample 
+                      messageState === 'editing' 
                         ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md' 
                         : 'bg-white dark:bg-card border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40'
                     }`}
@@ -389,7 +394,6 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
                   </Button>
                   <Button
                     type="button"
-                    variant={messageState === 'custom' ? "default" : "outline"}
                     size="sm"
                     onClick={handleRewrite}
                     className={`text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
@@ -407,20 +411,37 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
                 id="message"
                 placeholder={!formData.relationshipType || !formData.inviterRole || !formData.inviteeRole 
                   ? "Complete the relationship details above to see a personalized example message..." 
-                  : "Your personalized invitation message will appear here..."
+                  : messageState === 'custom' 
+                    ? "Write your personal invitation message here..." 
+                    : "Your personalized invitation message will appear here..."
                 }
-                value={formData.personalMessage || 
-                       (formData.relationshipType && formData.inviterRole && formData.inviteeRole ? currentExample : "")
+                value={
+                  formData.personalMessage || 
+                  (formData.relationshipType && formData.inviterRole && formData.inviteeRole && messageState !== 'custom' 
+                    ? currentExample 
+                    : "")
                 }
                 onChange={handleMessageChange}
                 className="h-36 resize-none leading-relaxed text-sm"
               />
               
               {/* Show helpful text based on current state */}
-              {messageState === 'example' && formData.personalMessage === currentExample && (
+              {messageState === 'example' && (
                 <p className="text-xs text-blue-600 flex items-center gap-2 mt-2 px-3 py-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                   <CheckCircle className="w-4 h-4" />
                   Using example message - you can edit this text if you'd like to personalize it further
+                </p>
+              )}
+              {messageState === 'editing' && (
+                <p className="text-xs text-green-600 flex items-center gap-2 mt-2 px-3 py-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                  <CheckCircle className="w-4 h-4" />
+                  Editing example message - make any changes you'd like
+                </p>
+              )}
+              {messageState === 'custom' && (
+                <p className="text-xs text-purple-600 flex items-center gap-2 mt-2 px-3 py-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+                  <CheckCircle className="w-4 h-4" />
+                  Writing your own message - express yourself in your own words
                 </p>
               )}
             </div>
