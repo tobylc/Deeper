@@ -81,7 +81,7 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
   });
   
   // Track message interaction state
-  const [messageState, setMessageState] = useState<'placeholder' | 'example' | 'custom'>('placeholder');
+  const [messageState, setMessageState] = useState<'example' | 'custom'>('example');
 
   // Get the current example text based on relationship details
   const currentExample = getPersonalizedPlaceholder(formData.relationshipType, formData.inviterRole, formData.inviteeRole);
@@ -107,27 +107,26 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
     setFormData({ ...formData, personalMessage: e.target.value });
     if (e.target.value === currentExample) {
       setMessageState('example');
-    } else if (e.target.value === "") {
-      setMessageState('placeholder');
     } else {
       setMessageState('custom');
     }
   };
 
-  // Reset message state when relationship details change
+  // Reset message state when relationship details change and auto-populate with example
   const handleRelationshipChange = (value: string) => {
     setFormData({ ...formData, relationshipType: value, inviterRole: "", inviteeRole: "", personalMessage: "" });
-    setMessageState('placeholder');
+    setMessageState('example');
   };
 
   const handleInviterRoleChange = (value: string) => {
     setFormData({ ...formData, inviterRole: value, inviteeRole: "", personalMessage: "" });
-    setMessageState('placeholder');
+    setMessageState('example');
   };
 
   const handleInviteeRoleChange = (value: string) => {
-    setFormData({ ...formData, inviteeRole: value, personalMessage: "" });
-    setMessageState('placeholder');
+    const newExample = getPersonalizedPlaceholder(formData.relationshipType, formData.inviterRole, value);
+    setFormData({ ...formData, inviteeRole: value, personalMessage: newExample });
+    setMessageState('example');
   };
 
   // Check if user was invited by someone else (is an invitee)
@@ -353,48 +352,62 @@ export default function InvitationForm({ onClose, onSuccess }: InvitationFormPro
           <div className="space-y-2">
             <Label htmlFor="message">Share why this invitation matters to you</Label>
             
-            {/* Show action buttons only when we have relationship details and no custom message */}
-            {formData.relationshipType && formData.inviterRole && formData.inviteeRole && messageState === 'placeholder' && (
-              <div className="flex gap-2 mb-2">
+            {/* Show action buttons when we have relationship details */}
+            {formData.relationshipType && formData.inviterRole && formData.inviteeRole && (
+              <div className="flex gap-3 mb-4">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant={messageState === 'example' && formData.personalMessage === currentExample ? "default" : "outline"}
                   size="sm"
                   onClick={handleUseExample}
-                  className="text-xs px-3 py-1 h-7"
+                  className={`flex-1 text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
+                    messageState === 'example' && formData.personalMessage === currentExample 
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md' 
+                      : 'bg-white dark:bg-card border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40'
+                  }`}
                 >
-                  Use Example
+                  ✨ Use Example
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant={messageState === 'example' && formData.personalMessage !== currentExample ? "default" : "outline"}
                   size="sm"
                   onClick={handleEditExample}
-                  className="text-xs px-3 py-1 h-7"
+                  className={`flex-1 text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
+                    messageState === 'example' && formData.personalMessage !== currentExample 
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md' 
+                      : 'bg-white dark:bg-card border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40'
+                  }`}
                 >
-                  Edit Example
+                  ✏️ Edit Example
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant={messageState === 'custom' ? "default" : "outline"}
                   size="sm"
                   onClick={handleRewrite}
-                  className="text-xs px-3 py-1 h-7"
+                  className={`flex-1 text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
+                    messageState === 'custom' 
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md' 
+                      : 'bg-white dark:bg-card border-2 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary/40'
+                  }`}
                 >
-                  Write Your Own
+                  ✨ Write Your Own
                 </Button>
               </div>
             )}
 
             <Textarea
               id="message"
-              placeholder={messageState === 'placeholder' && formData.relationshipType && formData.inviterRole && formData.inviteeRole 
-                ? "Choose an option above to get started with your personal message..." 
-                : "Share what this conversation opportunity means to you..."
+              placeholder={!formData.relationshipType || !formData.inviterRole || !formData.inviteeRole 
+                ? "Complete the relationship details above to see a personalized example message..." 
+                : "Your personalized invitation message will appear here..."
               }
-              value={formData.personalMessage}
+              value={formData.personalMessage || 
+                     (formData.relationshipType && formData.inviterRole && formData.inviteeRole ? currentExample : "")
+              }
               onChange={handleMessageChange}
-              className="h-24 resize-none"
+              className="h-32 resize-none leading-relaxed"
             />
             
             {/* Show helpful text based on current state */}
