@@ -62,6 +62,7 @@ export interface IStorage {
   getEmailsByEmail(email: string): Promise<Email[]>;
   createEmail(email: InsertEmail): Promise<Email>;
   getEmailById(id: number): Promise<Email | undefined>;
+  getEmails(): Promise<Email[]>;
 
   // Helper methods for user display names
   getUserDisplayNameByEmail(email: string): Promise<string>;
@@ -406,6 +407,16 @@ export class DatabaseStorage implements IStorage {
       .from(emails)
       .where(eq(emails.id, id));
     return email;
+  }
+
+  async getEmails(): Promise<Email[]> {
+    try {
+      const result = await db.select().from(emails).orderBy(desc(emails.id));
+      return result;
+    } catch (error) {
+      console.error("Error getting all emails:", error);
+      return [];
+    }
   }
 
   async getUserDisplayNameByEmail(email: string): Promise<string> {

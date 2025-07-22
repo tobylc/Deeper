@@ -225,6 +225,8 @@ The following basic logic rules are fundamental to the application and must be p
 - **Resolution Required**: Upgrade SendGrid plan or wait for quota reset
 - **Date Identified**: July 22, 2025
 - **System Status**: EmailService configured correctly, but hitting SendGrid limits
+- **Internal System**: InternalEmailService stores all notifications in database as backup
+- **Fallback Implementation**: FallbackEmailService implemented to automatically use database when SendGrid fails
 
 ## Changelog
 ```

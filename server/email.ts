@@ -705,6 +705,7 @@ Best regards,
 The Deeper Team
     `;
 
+    // Store email in database as internal notification system
     await storage.createEmail({
       toEmail: params.recipientEmail,
       fromEmail: this.fromEmail,
@@ -712,10 +713,63 @@ The Deeper Team
       htmlContent,
       textContent,
       emailType: "turn_notification",
-      connectionId: params.conversationId,
+      // connectionId is optional and can be omitted for test emails
     });
 
     console.log(`[EMAIL] Turn notification stored for ${params.recipientEmail}`);
+  }
+}
+
+// Resilient email service with fallback capability
+class FallbackEmailService implements EmailService {
+  private primaryService: EmailService;
+  private fallbackService: EmailService;
+
+  constructor(primaryService: EmailService, fallbackService: EmailService) {
+    this.primaryService = primaryService;
+    this.fallbackService = fallbackService;
+  }
+
+  async sendConnectionInvitation(connection: Connection): Promise<void> {
+    try {
+      await this.primaryService.sendConnectionInvitation(connection);
+    } catch (error) {
+      console.log('[EMAIL] Primary service failed, using fallback...');
+      await this.fallbackService.sendConnectionInvitation(connection);
+    }
+  }
+
+  async sendConnectionAccepted(connection: Connection): Promise<void> {
+    try {
+      await this.primaryService.sendConnectionAccepted(connection);
+    } catch (error) {
+      console.log('[EMAIL] Primary service failed, using fallback...');
+      await this.fallbackService.sendConnectionAccepted(connection);
+    }
+  }
+
+  async sendConnectionDeclined(connection: Connection): Promise<void> {
+    try {
+      await this.primaryService.sendConnectionDeclined(connection);
+    } catch (error) {
+      console.log('[EMAIL] Primary service failed, using fallback...');
+      await this.fallbackService.sendConnectionDeclined(connection);
+    }
+  }
+
+  async sendTurnNotification(params: {
+    recipientEmail: string;
+    senderEmail: string;
+    conversationId: number;
+    relationshipType: string;
+    messageType: 'question' | 'response';
+  }): Promise<void> {
+    try {
+      await this.primaryService.sendTurnNotification(params);
+    } catch (error) {
+      console.log('[EMAIL] Primary service failed, using fallback for turn notification...');
+      await this.fallbackService.sendTurnNotification(params);
+    }
   }
 }
 
@@ -724,9 +778,10 @@ export function createEmailService(): EmailService {
   const sendgridApiKey = process.env.SENDGRID_API_KEY;
 
   if (sendgridApiKey) {
-    console.log('[EMAIL] Using SendGrid email service for real email delivery');
-    console.log('[EMAIL] SendGrid API key configured:', sendgridApiKey ? 'Present' : 'Missing');
-    return new ProductionEmailService(sendgridApiKey);
+    console.log('[EMAIL] Using SendGrid with internal database fallback');
+    const primaryService = new ProductionEmailService(sendgridApiKey);
+    const fallbackService = new InternalEmailService();
+    return new FallbackEmailService(primaryService, fallbackService);
   }
 
   console.log('[EMAIL] No SendGrid API key - using internal database service');

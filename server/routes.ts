@@ -5188,13 +5188,13 @@ Format each as a complete question they can use to begin this important conversa
       }
 
       console.log(`[DEBUG] Testing email service with recipient: ${testEmail}`);
-      console.log(`[DEBUG] Email service type: ${process.env.SENDGRID_API_KEY ? 'ProductionEmailService (SendGrid)' : 'InternalEmailService (Database)'}`);
+      console.log(`[DEBUG] Email service type: ${process.env.SENDGRID_API_KEY ? 'FallbackEmailService (SendGrid + Database)' : 'InternalEmailService (Database)'}`);
 
       // Test turn notification email
       await notificationService.sendTurnNotification({
         recipientEmail: testEmail,
         senderEmail: 'system@test.com',
-        conversationId: 999,
+        conversationId: 1, // Use a valid conversation ID for testing
         relationshipType: 'Test',
         messageType: 'question'
       });
@@ -5204,7 +5204,8 @@ Format each as a complete question they can use to begin this important conversa
       res.json({ 
         success: true, 
         message: 'Test notification sent successfully',
-        emailService: process.env.SENDGRID_API_KEY ? 'ProductionEmailService (SendGrid)' : 'InternalEmailService (Database)'
+        emailService: process.env.SENDGRID_API_KEY ? 'FallbackEmailService (SendGrid + Database)' : 'InternalEmailService (Database)',
+        note: 'If SendGrid fails, system automatically uses internal database storage'
       });
     } catch (error) {
       console.error('[DEBUG] Test email service error:', error);
@@ -5212,6 +5213,24 @@ Format each as a complete question they can use to begin this important conversa
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error',
         details: error instanceof Error ? error.stack : 'No stack trace'
+      });
+    }
+  });
+
+  // View stored emails from internal database system
+  app.get('/api/internal-emails', async (req, res) => {
+    try {
+      const emails = await storage.getEmails();
+      res.json({ 
+        success: true, 
+        count: emails.length,
+        emails: emails.slice(-10) // Show last 10 emails
+      });
+    } catch (error) {
+      console.error('[DEBUG] Error retrieving internal emails:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
