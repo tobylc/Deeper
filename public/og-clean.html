@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Clean Open Graph PNG</title>
+    <style>
+        body { font-family: Inter, system-ui; padding: 20px; background: #f1f5f9; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; }
+        canvas { border: 2px solid #e2e8f0; border-radius: 8px; margin: 20px 0; }
+        button { background: #3b82f6; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin: 10px 5px; }
+        button:hover { background: #2563eb; }
+        .info { background: #f0f9ff; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generate Clean Landing Page Style Open Graph</h1>
+        <div class="info">
+            <strong>Clean Professional Design:</strong> Matches your landing page exactly with clean typography and proper spacing.
+        </div>
+        
+        <canvas id="ogCanvas" width="1200" height="630"></canvas>
+        <br>
+        <button onclick="downloadImage()">Download og-clean.png</button>
+        <button onclick="generateImage()">Regenerate</button>
+        
+        <div class="info">
+            This creates a clean, professional Open Graph image that matches your landing page design exactly.
+        </div>
+    </div>
+
+    <script>
+        function generateImage() {
+            const canvas = document.getElementById('ogCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, 1200, 630);
+            
+            // Clean gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
+            gradient.addColorStop(0, '#f8fafc');
+            gradient.addColorStop(1, '#e2e8f0');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1200, 630);
+            
+            // Main heading "Cultivate meaningful"
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 56px Inter, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Cultivate meaningful', 600, 200);
+            
+            // "connections." in blue
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillText('connections.', 600, 270);
+            
+            // Subheading
+            ctx.fillStyle = '#64748b';
+            ctx.font = '24px Inter, Arial, sans-serif';
+            ctx.fillText('Create exclusive, private spaces for thoughtful dialogue that deepens', 600, 340);
+            ctx.fillText('relationships over time.', 600, 375);
+            
+            // Call to action button
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(450, 420, 300, 60);
+            
+            // Button text
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 18px Inter, Arial, sans-serif';
+            ctx.fillText('60 Day Free Trial', 600, 445);
+            
+            ctx.font = '14px Inter, Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillText('No Credit Card Required', 600, 465);
+            
+            // Website URL
+            ctx.fillStyle = '#64748b';
+            ctx.font = '20px Inter, Arial, sans-serif';
+            ctx.fillText('joindeeper.com', 600, 550);
+        }
+        
+        function downloadImage() {
+            const canvas = document.getElementById('ogCanvas');
+            const link = document.createElement('a');
+            link.download = 'og-clean.png';
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+        }
+        
+        // Generate image on load
+        window.onload = generateImage;
+    </script>
+</body>
+</html>
