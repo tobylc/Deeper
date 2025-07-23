@@ -371,7 +371,7 @@ export default function Features() {
           <p className="text-xl text-white/90 mb-8">
             Start your first meaningful conversation today
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col gap-4 justify-center items-center">
             <Link href="/auth">
               <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-4">
                 <span className="text-lg font-semibold">60 Day Free Trial</span>
