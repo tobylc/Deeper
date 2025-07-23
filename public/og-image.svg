@@ -10,36 +10,37 @@
   <!-- Background -->
   <rect width="1200" height="630" fill="url(#oceanGradient)"/>
   
-  <!-- Quote icons in white - using the actual quote mark shapes from the current design -->
-  <g transform="translate(80, 80)">
-    <!-- First quote mark - curved speech bubble style -->
-    <path d="M0 60 C0 30, 20 0, 50 0 C80 0, 100 30, 100 60 C100 90, 80 120, 50 120 C40 120, 30 110, 30 100 C30 90, 40 80, 50 80 C60 80, 70 90, 70 100 L70 110 C70 120, 60 130, 50 130 C20 130, 0 100, 0 70 Z M10 130 L25 145 L40 130" fill="white" opacity="0.9"/>
+  <!-- Exact quote icons from application in white - matching quotes-icon.png precisely -->
+  <g transform="translate(120, 120) scale(1.5)">
+    <!-- Speech bubble quote (left shape) - oval with tail pointing down-left -->
+    <ellipse cx="40" cy="30" rx="35" ry="25" fill="white" opacity="0.9"/>
+    <path d="M10 45 L25 60 L35 50" fill="white" opacity="0.9"/>
     
-    <!-- Second quote mark - teardrop style -->
-    <ellipse cx="140" cy="60" rx="35" ry="50" fill="white" opacity="0.9" transform="rotate(15 140 60)"/>
+    <!-- Teardrop quote (right shape) - perfect teardrop pointing up-right -->
+    <path d="M110 55 C110 35, 125 20, 145 20 C165 20, 180 35, 180 55 C180 75, 165 90, 145 90 C135 90, 125 80, 125 70 C125 65, 130 60, 135 60 C140 60, 145 65, 145 70 C145 75, 150 80, 155 75 L175 55" fill="white" opacity="0.9"/>
   </g>
   
   <!-- Main heading -->
-  <text x="600" y="220" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="52" font-weight="700" fill="white">
+  <text x="600" y="240" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="48" font-weight="700" fill="white">
     AI-Powered Relationship Communication Platform
   </text>
   
   <!-- Subheading -->
-  <text x="600" y="280" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="32" font-weight="400" fill="white" opacity="0.9">
+  <text x="600" y="300" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="32" font-weight="400" fill="white" opacity="0.9">
     joindeeper.com
   </text>
   
   <!-- Description -->
-  <text x="600" y="380" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="24" font-weight="400" fill="white" opacity="0.8">
+  <text x="600" y="400" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="400" fill="white" opacity="0.8">
     Build deeper connections with AI-guided conversations,
   </text>
-  <text x="600" y="420" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="24" font-weight="400" fill="white" opacity="0.8">
+  <text x="600" y="440" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="400" fill="white" opacity="0.8">
     real-time interactions, and personalized communication tools
   </text>
   
-  <!-- Bottom quote icons -->
-  <g transform="translate(1000, 480)">
-    <!-- Smaller quote mark -->
-    <ellipse cx="50" cy="40" rx="25" ry="35" fill="white" opacity="0.6" transform="rotate(-15 50 40)"/>
+  <!-- Bottom quote icons (smaller versions) -->
+  <g transform="translate(1000, 500)">
+    <!-- Small speech bubble -->
+    <path d="M0 20 C0 9, 9 0, 20 0 L40 0 C51 0, 60 9, 60 20 L60 30 C60 41, 51 50, 40 50 L20 50 C18 50, 15 47, 15 45 C15 42, 18 40, 20 40 L40 40 C42 40, 45 37, 45 35 L45 20 C45 18, 42 15, 40 15 L20 15 C18 15, 15 18, 15 20 L15 30 C15 32, 12 35, 10 35 L2 42 Z" fill="white" opacity="0.6"/>
   </g>
 </svg>

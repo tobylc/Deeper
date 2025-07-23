@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Graph Testing Tools</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            padding: 20px;
+            background: linear-gradient(135deg, #4FACFE 0%, #00f2fe 100%);
+            color: white;
+            text-align: center;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+        
+        .test-link {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #4FACFE;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 5px 10px 5px 0;
+            transition: background 0.2s;
+        }
+        
+        .test-link:hover {
+            background: #0084ff;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+        
+        .og-preview {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .current-meta {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 14px;
+            color: #0066cc;
+        }
+        
+        code {
+            background: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Open Graph Testing Tools</h1>
+            <p>Test your Open Graph metadata on real platforms</p>
+        </div>
+        
+        <div class="content">
+            <div class="current-meta">
+                <strong>Current Open Graph Settings:</strong><br>
+                Title: "Deeper - AI-Powered Relationship Communication Platform"<br>
+                Description: "Build deeper connections with AI-guided conversations, real-time interactions, and personalized communication tools designed for meaningful relationships."<br>
+                Image: <code>https://joindeeper.com/og-image.svg</code><br>
+                URL: <code>https://joindeeper.com</code>
+            </div>
+            
+            <div class="warning">
+                <strong>Note:</strong> The mockup shown earlier doesn't represent real platform behavior. Use these tools to test how your Open Graph data actually appears on different platforms.
+            </div>
+            
+            <div class="test-section">
+                <h3>🔍 Official Testing Tools</h3>
+                <p>These are the official tools from each platform to test your Open Graph metadata:</p>
+                
+                <a href="https://developers.facebook.com/tools/debug/" target="_blank" class="test-link">
+                    Facebook Sharing Debugger
+                </a>
+                
+                <a href="https://cards-dev.twitter.com/validator" target="_blank" class="test-link">
+                    Twitter Card Validator
+                </a>
+                
+                <a href="https://www.linkedin.com/post-inspector/" target="_blank" class="test-link">
+                    LinkedIn Post Inspector
+                </a>
+                
+                <a href="https://developers.pinterest.com/tools/url-debugger/" target="_blank" class="test-link">
+                    Pinterest Rich Pins Validator
+                </a>
+            </div>
+            
+            <div class="test-section">
+                <h3>📱 Real-World Testing</h3>
+                <p>Test your URL on actual platforms:</p>
+                
+                <ol>
+                    <li><strong>WhatsApp:</strong> Send yourself the URL <code>https://joindeeper.com</code> in a chat</li>
+                    <li><strong>iMessage:</strong> Text the URL to yourself or a friend</li>
+                    <li><strong>Facebook:</strong> Create a post with the URL (you can delete it after testing)</li>
+                    <li><strong>Twitter/X:</strong> Tweet the URL (you can delete it after testing)</li>
+                    <li><strong>LinkedIn:</strong> Share as a post or in a message</li>
+                    <li><strong>Discord:</strong> Paste the URL in any channel</li>
+                </ol>
+            </div>
+            
+            <div class="test-section">
+                <h3>🛠️ Quick Testing URLs</h3>
+                <p>Use these to quickly test your current Open Graph setup:</p>
+                
+                <div style="background: white; padding: 15px; border-radius: 6px; margin: 10px 0;">
+                    <strong>Facebook Debug:</strong><br>
+                    <code>https://developers.facebook.com/tools/debug/?q=https://joindeeper.com</code>
+                    <a href="https://developers.facebook.com/tools/debug/?q=https://joindeeper.com" target="_blank" class="test-link" style="margin-left: 10px;">Test Now</a>
+                </div>
+                
+                <div style="background: white; padding: 15px; border-radius: 6px; margin: 10px 0;">
+                    <strong>LinkedIn Inspector:</strong><br>
+                    <code>https://www.linkedin.com/post-inspector/inspect/https://joindeeper.com</code>
+                    <a href="https://www.linkedin.com/post-inspector/inspect/https://joindeeper.com" target="_blank" class="test-link" style="margin-left: 10px;">Test Now</a>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h3>❗ Common Issues & Solutions</h3>
+                <ul>
+                    <li><strong>Image not showing:</strong> Some platforms cache aggressively. Use the debug tools above to force a refresh.</li>
+                    <li><strong>Old image appears:</strong> Clear the cache using Facebook's debugger, then test on other platforms.</li>
+                    <li><strong>SVG not supported:</strong> Some platforms prefer PNG/JPG. Consider converting to PNG if issues persist.</li>
+                    <li><strong>WhatsApp shows no preview:</strong> WhatsApp requires the URL to be publicly accessible and may take time to fetch.</li>
+                </ul>
+            </div>
+            
+            <div class="test-section">
+                <h3>✅ What to Look For</h3>
+                <p>When testing, verify these elements appear correctly:</p>
+                <ul>
+                    <li>✓ Title: "Deeper - AI-Powered Relationship Communication Platform"</li>
+                    <li>✓ Description shows the full text about AI-guided conversations</li>
+                    <li>✓ Image displays the ocean blue gradient background</li>
+                    <li>✓ Quote icons appear in WHITE (not blue) against the blue background</li>
+                    <li>✓ URL shows as "joindeeper.com"</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
