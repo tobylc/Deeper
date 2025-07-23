@@ -1678,21 +1678,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("[TRIAL] Trial subscription created:", subscription.id);
       }
 
-      // Store Stripe IDs but keep user on current tier until payment verified
-      // For trial subscriptions, also set trial start time
+      // Store Stripe IDs and set appropriate subscription status
+      // For trial subscriptions, immediately activate trial
       const subscriptionUpdateData: any = {
-        subscriptionTier: user.subscriptionTier || 'free',
-        subscriptionStatus: user.subscriptionStatus || 'active',
-        maxConnections: user.maxConnections || 1,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
         subscriptionExpiresAt: user.subscriptionExpiresAt ? user.subscriptionExpiresAt : undefined
       };
 
-      // For trial subscriptions, set trial start time if not already set
-      if (!discountPercent && !user.trialStartedAt) {
-        subscriptionUpdateData.trialStartedAt = new Date();
-        console.log(`[TRIAL] Setting trial start time for user ${userId} during subscription creation`);
+      // For trial subscriptions, immediately set trial status and calculate expiration
+      if (!discountPercent) {
+        const trialStartedAt = new Date();
+        const trialExpiresAt = new Date(trialStartedAt);
+        const trialDays = tier === 'basic' ? 60 : 7;
+        trialExpiresAt.setDate(trialExpiresAt.getDate() + trialDays);
+        
+        subscriptionUpdateData.subscriptionTier = 'trial';
+        subscriptionUpdateData.subscriptionStatus = 'trialing';
+        subscriptionUpdateData.maxConnections = 1;
+        subscriptionUpdateData.trialStartedAt = trialStartedAt;
+        subscriptionUpdateData.trialExpiresAt = trialExpiresAt;
+        
+        console.log(`[TRIAL] Setting ${trialDays}-day trial for ${tier} tier: ${trialStartedAt.toISOString()} to ${trialExpiresAt.toISOString()}`);
+      } else {
+        // For discount subscriptions, keep current tier until payment verified
+        subscriptionUpdateData.subscriptionTier = user.subscriptionTier || 'free';
+        subscriptionUpdateData.subscriptionStatus = user.subscriptionStatus || 'active';
+        subscriptionUpdateData.maxConnections = user.maxConnections || 1;
       }
 
       await storage.updateUserSubscription(userId, subscriptionUpdateData);

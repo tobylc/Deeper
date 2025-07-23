@@ -107,9 +107,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createInviterUser(userData: InsertUser): Promise<User> {
-    // Initialize trial for new inviters (OAuth signups)
+    // Initialize 60-day trial for new inviters (OAuth signups) - default to basic tier 60-day trial
     const trialStartsAt = new Date();
-    const trialExpiresAt = new Date(trialStartsAt.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
+    const trialExpiresAt = new Date(trialStartsAt.getTime() + (60 * 24 * 60 * 60 * 1000)); // 60 days from now
     
     const [user] = await db
       .insert(users)
