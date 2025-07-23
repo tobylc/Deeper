@@ -26,6 +26,13 @@ import AdminCleanup from "@/components/admin-cleanup";
 import { PaymentSuccessNotification } from "@/components/payment-success-notification";
 import { InviteeUpgradeBanner } from "@/components/invitee-upgrade-banner";
 
+interface TrialStatusData {
+  isExpired: boolean;
+  daysRemaining: number;
+  subscriptionTier: string;
+  subscriptionStatus: string;
+}
+
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
@@ -45,6 +52,14 @@ export default function Dashboard() {
   const { data: accountStatus } = useQuery({
     queryKey: ["/api/auth/account-status"],
     enabled: isAuthenticated,
+    retry: false,
+  });
+
+  // Fetch trial status for countdown display
+  const { data: trialStatus } = useQuery<TrialStatusData>({
+    queryKey: ['/api/trial-status'],
+    refetchInterval: 60000, // Check every minute
+    enabled: !!user,
     retry: false,
   });
 
@@ -279,8 +294,14 @@ export default function Dashboard() {
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-1">Current Plan</p>
                 <Badge variant="secondary" className="text-lg px-4 py-2">
-                  {(user as any)?.subscriptionTier || 'Trial'}
+                  {(user as any)?.subscriptionTier || 'trial'}
                 </Badge>
+                {/* Show trial countdown if user is on trial */}
+                {trialStatus && trialStatus.subscriptionStatus === 'trialing' && trialStatus.daysRemaining > 0 && (
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    {trialStatus.daysRemaining} {trialStatus.daysRemaining === 1 ? 'day' : 'days'} remaining
+                  </div>
+                )}
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-1">Connections Initiated</p>
