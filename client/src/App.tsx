@@ -126,6 +126,7 @@ function Router() {
   return (
     <Switch>
       {/* Invitation and auth routes are always accessible */}
+      <Route path="/invitation-signup" component={InvitationSignup} />
       <Route path="/invitation/signup" component={InvitationSignup} />
       <Route path="/invitation/:params*" component={InvitationLanding} />
       <Route path="/invitation" component={InvitationLanding} />
