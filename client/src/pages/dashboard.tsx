@@ -331,7 +331,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className={`grid gap-6 mb-8 ${isInviteeUser ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
           <Card className="card-elevated smooth-enter">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -356,28 +356,30 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-accent/5 border-accent/20">
-            <CardContent className="p-6">
-              <Button 
-                onClick={() => {
-                  // Check subscription status before allowing invitation
-                  if ((user as any)?.subscriptionTier === 'free' || 
-                      ((user as any)?.subscriptionStatus === 'trialing' && 
-                       (user as any)?.subscriptionExpiresAt && 
-                       new Date((user as any).subscriptionExpiresAt) < new Date())) {
-                    setEnforcementAction("invite");
-                    setShowSubscriptionEnforcement(true);
-                  } else {
-                    setShowInviteForm(true);
-                  }
-                }}
-                className="w-full h-full min-h-[80px] btn-ocean"
-              >
-                <Plus className="w-6 h-6 mr-2" />
-                Send New Invitation
-              </Button>
-            </CardContent>
-          </Card>
+          {!isInviteeUser && (
+            <Card className="bg-accent/5 border-accent/20">
+              <CardContent className="p-6">
+                <Button 
+                  onClick={() => {
+                    // Check subscription status before allowing invitation
+                    if ((user as any)?.subscriptionTier === 'free' || 
+                        ((user as any)?.subscriptionStatus === 'trialing' && 
+                         (user as any)?.subscriptionExpiresAt && 
+                         new Date((user as any).subscriptionExpiresAt) < new Date())) {
+                      setEnforcementAction("invite");
+                      setShowSubscriptionEnforcement(true);
+                    } else {
+                      setShowInviteForm(true);
+                    }
+                  }}
+                  className="w-full h-full min-h-[80px] btn-ocean"
+                >
+                  <Plus className="w-6 h-6 mr-2" />
+                  Send New Invitation
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Pending Invitations */}
@@ -660,14 +662,38 @@ export default function Dashboard() {
             {activeConversations.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">No active conversations</h3>
-                <p className="text-muted-foreground mb-4">
-                  Send an invitation to start your first meaningful conversation
-                </p>
-                <Button onClick={() => setShowInviteForm(true)} className="btn-ocean">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Send Invitation
-                </Button>
+                {isInviteeUser ? (
+                  <>
+                    <h3 className="text-lg font-medium text-foreground mb-2">Connected and waiting</h3>
+                    <p className="text-muted-foreground mb-4">
+                      {(() => {
+                        // Find the connection where user is invitee to get inviter's name
+                        const inviterConnection = connections.find(c => c.inviteeEmail === user.email && c.status === 'accepted');
+                        if (inviterConnection) {
+                          return (
+                            <span>
+                              You've been connected to <UserDisplayName email={inviterConnection.inviterEmail} />.
+                              <br />
+                              Waiting for them to initiate your first conversation.
+                            </span>
+                          );
+                        }
+                        return "You've been connected! Waiting for your conversation partner to start your first dialogue.";
+                      })()}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-medium text-foreground mb-2">No active conversations</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Send an invitation to start your first meaningful conversation
+                    </p>
+                    <Button onClick={() => setShowInviteForm(true)} className="btn-ocean">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Send Invitation
+                    </Button>
+                  </>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
