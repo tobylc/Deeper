@@ -1633,13 +1633,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         clientSecret = setupIntent.client_secret;
         console.log("[TRIAL] Setup intent created:", setupIntent.id);
 
-        // Create subscription with 7-day trial
+        // Create subscription with tier-specific trial period
+        const trialPeriodDays = tier === 'basic' ? 60 : 7;
         subscription = await stripe.subscriptions.create({
           customer: customer.id,
           items: [{
             price: finalPrice,
           }],
-          trial_period_days: 7,
+          trial_period_days: trialPeriodDays,
           metadata: {
             userId: user.id,
             tier: tier,
@@ -5151,7 +5152,7 @@ Format each as a complete question they can use to begin this important conversa
           const testResult = await s3Service.testConnection();
           s3Status = { 
             success: testResult.success, 
-            message: testResult.message || (testResult.success ? 'S3 connection successful' : 'S3 connection failed')
+            message: (testResult as any).message || (testResult.success ? 'S3 connection successful' : 'S3 connection failed')
           };
         } catch (error) {
           s3Status = { 

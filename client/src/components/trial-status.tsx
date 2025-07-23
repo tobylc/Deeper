@@ -50,9 +50,11 @@ export function TrialStatus() {
   }
 
   // Use user data as fallback when trial status API fails
+  // Calculate trial period based on subscription tier
+  const getTrialDays = (tier: string) => tier === 'basic' ? 60 : 7;
   const effectiveTrialStatus = trialStatus || {
     isExpired: user?.subscriptionStatus !== 'trialing' && user?.subscriptionTier === 'free',
-    daysRemaining: user?.subscriptionStatus === 'trialing' ? 60 : 0,
+    daysRemaining: user?.subscriptionStatus === 'trialing' ? getTrialDays(user?.subscriptionTier || 'basic') : 0,
     subscriptionTier: user?.subscriptionTier || 'free',
     subscriptionStatus: user?.subscriptionStatus || 'inactive'
   };
