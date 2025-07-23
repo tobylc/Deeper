@@ -1,0 +1,42 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Clean gradient background matching your landing page -->
+  <defs>
+    <linearGradient id="landingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8fafc"/>
+      <stop offset="100%" style="stop-color:#e2e8f0"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Clean background -->
+  <rect width="1200" height="630" fill="url(#landingGradient)"/>
+  
+  <!-- Main heading exactly from your landing page -->
+  <text x="600" y="200" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="56" font-weight="700" fill="#1e293b">
+    Cultivate meaningful
+  </text>
+  <text x="600" y="270" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="56" font-weight="700" fill="#3b82f6">
+    connections.
+  </text>
+  
+  <!-- Subheading from your landing page -->
+  <text x="600" y="340" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="24" font-weight="400" fill="#64748b">
+    Create exclusive, private spaces for thoughtful dialogue that deepens
+  </text>
+  <text x="600" y="375" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="24" font-weight="400" fill="#64748b">
+    relationships over time.
+  </text>
+  
+  <!-- Call to action button -->
+  <rect x="450" y="420" width="300" height="60" rx="8" fill="#3b82f6"/>
+  <text x="600" y="445" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="600" fill="white">
+    60 Day Free Trial
+  </text>
+  <text x="600" y="465" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="400" fill="rgba(255,255,255,0.9)">
+    No Credit Card Required
+  </text>
+  
+  <!-- Website URL -->
+  <text x="600" y="550" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="500" fill="#64748b">
+    joindeeper.com
+  </text>
+</svg>
