@@ -1,0 +1,45 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Ocean blue gradient background -->
+  <defs>
+    <linearGradient id="oceanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4FACFE"/>
+      <stop offset="100%" style="stop-color:#00f2fe"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#oceanGradient)"/>
+  
+  <!-- Quote icons in white - using the actual quote mark shapes from the current design -->
+  <g transform="translate(80, 80)">
+    <!-- First quote mark - curved speech bubble style -->
+    <path d="M0 60 C0 30, 20 0, 50 0 C80 0, 100 30, 100 60 C100 90, 80 120, 50 120 C40 120, 30 110, 30 100 C30 90, 40 80, 50 80 C60 80, 70 90, 70 100 L70 110 C70 120, 60 130, 50 130 C20 130, 0 100, 0 70 Z M10 130 L25 145 L40 130" fill="white" opacity="0.9"/>
+    
+    <!-- Second quote mark - teardrop style -->
+    <ellipse cx="140" cy="60" rx="35" ry="50" fill="white" opacity="0.9" transform="rotate(15 140 60)"/>
+  </g>
+  
+  <!-- Main heading -->
+  <text x="600" y="220" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="52" font-weight="700" fill="white">
+    AI-Powered Relationship Communication Platform
+  </text>
+  
+  <!-- Subheading -->
+  <text x="600" y="280" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="32" font-weight="400" fill="white" opacity="0.9">
+    joindeeper.com
+  </text>
+  
+  <!-- Description -->
+  <text x="600" y="380" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="24" font-weight="400" fill="white" opacity="0.8">
+    Build deeper connections with AI-guided conversations,
+  </text>
+  <text x="600" y="420" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="24" font-weight="400" fill="white" opacity="0.8">
+    real-time interactions, and personalized communication tools
+  </text>
+  
+  <!-- Bottom quote icons -->
+  <g transform="translate(1000, 480)">
+    <!-- Smaller quote mark -->
+    <ellipse cx="50" cy="40" rx="25" ry="35" fill="white" opacity="0.6" transform="rotate(-15 50 40)"/>
+  </g>
+</svg>

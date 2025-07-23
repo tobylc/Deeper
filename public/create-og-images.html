@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Open Graph Images</title>
+    <style>
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        .container { text-align: center; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Open Graph Image Generator</h2>
+        <canvas id="ogCanvas" width="1200" height="630"></canvas>
+        <br>
+        <canvas id="twitterCanvas" width="1200" height="600"></canvas>
+        <br>
+        <button onclick="downloadImages()">Download Images</button>
+    </div>
+
+    <script>
+        // Create Open Graph image (1200x630)
+        function createOGImage() {
+            const canvas = document.getElementById('ogCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
+            gradient.addColorStop(0, '#4FACFE');
+            gradient.addColorStop(1, '#00f2fe');
+            
+            // Fill background
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1200, 630);
+            
+            // Draw white quote marks
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            
+            // First quote mark (simplified)
+            ctx.beginPath();
+            ctx.ellipse(150, 150, 40, 50, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.ellipse(200, 150, 40, 50, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Add text
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 48px Inter, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('AI-Powered Relationship Communication Platform', 600, 250);
+            
+            ctx.font = '28px Inter, Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillText('joindeeper.com', 600, 300);
+            
+            ctx.font = '22px Inter, Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillText('Build deeper connections with AI-guided conversations,', 600, 380);
+            ctx.fillText('real-time interactions, and personalized communication tools', 600, 410);
+            
+            // Bottom quote marks
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.beginPath();
+            ctx.ellipse(1050, 500, 30, 40, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Create Twitter card image (1200x600)
+        function createTwitterImage() {
+            const canvas = document.getElementById('twitterCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 1200, 600);
+            gradient.addColorStop(0, '#4FACFE');
+            gradient.addColorStop(1, '#00f2fe');
+            
+            // Fill background
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1200, 600);
+            
+            // Draw white quote marks
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            
+            // Quote marks
+            ctx.beginPath();
+            ctx.ellipse(150, 150, 40, 50, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.ellipse(200, 150, 40, 50, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Add text
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 46px Inter, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('AI-Powered Relationship Communication Platform', 600, 240);
+            
+            ctx.font = '26px Inter, Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillText('joindeeper.com', 600, 280);
+            
+            ctx.font = '20px Inter, Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillText('Build deeper connections with AI-guided conversations', 600, 360);
+            ctx.fillText('and personalized communication tools', 600, 390);
+        }
+        
+        function downloadImages() {
+            // Download OG image
+            const ogCanvas = document.getElementById('ogCanvas');
+            const ogLink = document.createElement('a');
+            ogLink.download = 'og-image.png';
+            ogLink.href = ogCanvas.toDataURL();
+            ogLink.click();
+            
+            // Download Twitter image
+            const twitterCanvas = document.getElementById('twitterCanvas');
+            const twitterLink = document.createElement('a');
+            twitterLink.download = 'twitter-card.png';
+            twitterLink.href = twitterCanvas.toDataURL();
+            twitterLink.click();
+        }
+        
+        // Generate images on load
+        window.onload = function() {
+            createOGImage();
+            createTwitterImage();
+        };
+    </script>
+</body>
+</html>
