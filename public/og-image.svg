@@ -1,23 +1,36 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
-  <!-- Ocean blue gradient background -->
+  <!-- Enhanced gradient background matching application color scheme -->
   <defs>
     <linearGradient id="oceanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#4FACFE"/>
-      <stop offset="100%" style="stop-color:#00f2fe"/>
+      <stop offset="0%" style="stop-color:#5B9BD5"/>
+      <stop offset="25%" style="stop-color:#4FACFE"/>
+      <stop offset="75%" style="stop-color:#00f2fe"/>
+      <stop offset="100%" style="stop-color:#0084ff"/>
     </linearGradient>
+    <radialGradient id="overlayGradient" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.1)"/>
+      <stop offset="100%" style="stop-color:rgba(0,0,0,0.1)"/>
+    </radialGradient>
   </defs>
   
-  <!-- Background -->
+  <!-- Background with enhanced gradient -->
   <rect width="1200" height="630" fill="url(#oceanGradient)"/>
+  <rect width="1200" height="630" fill="url(#overlayGradient)"/>
   
-  <!-- Exact quote icons from application in white - matching quotes-icon.png precisely -->
-  <g transform="translate(120, 120) scale(1.5)">
-    <!-- Speech bubble quote (left shape) - oval with tail pointing down-left -->
-    <ellipse cx="40" cy="30" rx="35" ry="25" fill="white" opacity="0.9"/>
-    <path d="M10 45 L25 60 L35 50" fill="white" opacity="0.9"/>
+  <!-- Exact quote icons from application with enhanced contrast -->
+  <g transform="translate(150, 150) scale(2)">
+    <!-- Speech bubble quote (left shape from quotes-icon.png) - white with dark outline for contrast -->
+    <ellipse cx="30" cy="25" rx="28" ry="20" fill="white" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+    <path d="M8 38 L20 48 L28 40" fill="white" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
     
-    <!-- Teardrop quote (right shape) - perfect teardrop pointing up-right -->
-    <path d="M110 55 C110 35, 125 20, 145 20 C165 20, 180 35, 180 55 C180 75, 165 90, 145 90 C135 90, 125 80, 125 70 C125 65, 130 60, 135 60 C140 60, 145 65, 145 70 C145 75, 150 80, 155 75 L175 55" fill="white" opacity="0.9"/>
+    <!-- Teardrop quote (right shape from quotes-icon.png) - white with dark outline for contrast -->
+    <ellipse cx="85" cy="25" rx="25" ry="35" fill="white" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+    <path d="M85 60 C88 65, 95 67, 100 62 C105 57, 105 50, 100 45 C95 40, 88 40, 85 45 Z" fill="white" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+  </g>
+  
+  <!-- Additional smaller quote icon after the text for better visibility -->
+  <g transform="translate(950, 380) scale(1.2)">
+    <ellipse cx="20" cy="15" rx="15" ry="20" fill="rgba(255,255,255,0.8)" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
   </g>
   
   <!-- Main heading -->
