@@ -159,14 +159,29 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
     const benefits = tierBenefits[newTier] || tierBenefits.free;
 
-    await storage.updateUserSubscription(userId, {
+    // Calculate trial start time for trialing subscriptions
+    let trialStartedAt: Date | undefined = undefined;
+    if (status === 'trialing' && !user.trialStartedAt) {
+      // Set trial start time to now if not already set
+      trialStartedAt = new Date();
+      console.log(`[WEBHOOK] Setting trial start time for user ${userId}: ${trialStartedAt.toISOString()}`);
+    }
+
+    const subscriptionUpdate: any = {
       subscriptionTier: newTier || 'free',
       subscriptionStatus: status,
       maxConnections: benefits.maxConnections,
       stripeCustomerId: nullToUndefined(user.stripeCustomerId),
       stripeSubscriptionId: nullToUndefined(user.stripeSubscriptionId),
       subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
-    });
+    };
+
+    // Add trial start time if this is a new trial
+    if (trialStartedAt || user.trialStartedAt) {
+      subscriptionUpdate.trialStartedAt = trialStartedAt || user.trialStartedAt;
+    }
+
+    await storage.updateUserSubscription(userId, subscriptionUpdate);
   } else {
     // For failed/inactive subscriptions, keep current tier but update status
     await storage.updateUserSubscription(userId, {
@@ -1653,14 +1668,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Store Stripe IDs but keep user on current tier until payment verified
-      await storage.updateUserSubscription(userId, {
+      // For trial subscriptions, also set trial start time
+      const subscriptionUpdateData: any = {
         subscriptionTier: user.subscriptionTier || 'free',
         subscriptionStatus: user.subscriptionStatus || 'active',
         maxConnections: user.maxConnections || 1,
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
         subscriptionExpiresAt: user.subscriptionExpiresAt ? user.subscriptionExpiresAt : undefined
-      });
+      };
+
+      // For trial subscriptions, set trial start time if not already set
+      if (!discountPercent && !user.trialStartedAt) {
+        subscriptionUpdateData.trialStartedAt = new Date();
+        console.log(`[TRIAL] Setting trial start time for user ${userId} during subscription creation`);
+      }
+
+      await storage.updateUserSubscription(userId, subscriptionUpdateData);
 
       // Get updated user data to reflect any immediate tier changes
       const updatedUser = await storage.getUser(userId);
