@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Open Graph PNG</title>
+    <style>
+        body { font-family: system-ui; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; }
+        canvas { border: 2px solid #ddd; border-radius: 8px; margin: 20px 0; }
+        button { background: #4FACFE; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0084ff; }
+        .info { background: #e7f3ff; padding: 15px; border-radius: 6px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generate New Open Graph Image</h1>
+        <div class="info">
+            <strong>Cache Busting Strategy:</strong> Creating a new PNG file with version number to bypass social media caching.
+        </div>
+        
+        <canvas id="ogCanvas" width="1200" height="630"></canvas>
+        <br>
+        <button onclick="downloadImage()">Download og-image-v2.png</button>
+        <button onclick="generateImage()">Regenerate Image</button>
+        
+        <div class="info">
+            <strong>Next Steps:</strong>
+            <ol>
+                <li>Download the PNG file</li>
+                <li>Upload it to your public folder as og-image-v2.png</li>
+                <li>Update HTML meta tags to use the new filename</li>
+                <li>Use Facebook Debugger to force cache refresh</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function generateImage() {
+            const canvas = document.getElementById('ogCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, 1200, 630);
+            
+            // Create enhanced gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
+            gradient.addColorStop(0, '#5B9BD5');
+            gradient.addColorStop(0.25, '#4FACFE');
+            gradient.addColorStop(0.75, '#00f2fe');
+            gradient.addColorStop(1, '#0084ff');
+            
+            // Fill background
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1200, 630);
+            
+            // Add radial overlay for depth
+            const radialGradient = ctx.createRadialGradient(600, 189, 0, 600, 189, 441);
+            radialGradient.addColorStop(0, 'rgba(255,255,255,0.1)');
+            radialGradient.addColorStop(1, 'rgba(0,0,0,0.1)');
+            
+            ctx.fillStyle = radialGradient;
+            ctx.fillRect(0, 0, 1200, 630);
+            
+            // Draw quote icons with better contrast
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+            ctx.lineWidth = 2;
+            
+            // Speech bubble quote (left)
+            ctx.beginPath();
+            ctx.ellipse(210, 200, 56, 40, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Speech bubble tail
+            ctx.beginPath();
+            ctx.moveTo(166, 226);
+            ctx.lineTo(190, 246);
+            ctx.lineTo(206, 230);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Teardrop quote (right)
+            ctx.beginPath();
+            ctx.ellipse(320, 200, 50, 70, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Teardrop tail
+            ctx.beginPath();
+            ctx.ellipse(320, 270, 15, 25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Main title
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 48px Inter, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('AI-Powered Relationship Communication Platform', 600, 280);
+            
+            // Subtitle
+            ctx.font = '32px Inter, Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillText('joindeeper.com', 600, 330);
+            
+            // Description
+            ctx.font = '22px Inter, Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillText('Build deeper connections with AI-guided conversations,', 600, 420);
+            ctx.fillText('real-time interactions, and personalized communication tools', 600, 460);
+            
+            // Small accent quote icon
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.ellipse(1000, 410, 24, 32, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+        
+        function downloadImage() {
+            const canvas = document.getElementById('ogCanvas');
+            const link = document.createElement('a');
+            link.download = 'og-image-v2.png';
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+        }
+        
+        // Generate image on load
+        window.onload = generateImage;
+    </script>
+</body>
+</html>

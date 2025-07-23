@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Force Open Graph Cache Refresh</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #4FACFE 0%, #00f2fe 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .step {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid white;
+        }
+        
+        .step h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.3rem;
+        }
+        
+        .urgent {
+            background: rgba(255, 255, 255, 0.3);
+            border-left-color: #ffd700;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        .refresh-link {
+            display: inline-block;
+            background: white;
+            color: #4FACFE;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        
+        .refresh-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .status {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        .warning {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid rgba(255, 193, 7, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        li {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 8px 0;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border-left: 3px solid white;
+        }
+        
+        .timer {
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Force Cache Refresh</h1>
+        
+        <div class="warning">
+            <strong>⚠️ Cache Issue Detected:</strong> Your Open Graph image has been updated to <code>og-image-v2.svg</code> with enhanced gradient and better quote icon contrast, but social platforms are showing the old cached version.
+        </div>
+        
+        <div class="step urgent">
+            <h3>🔥 Step 1: Facebook Debugger (MOST IMPORTANT)</h3>
+            <p>Facebook's debugger forces ALL platforms to refresh. This is the master cache refresh.</p>
+            <a href="https://developers.facebook.com/tools/debug/?q=https://joindeeper.com" target="_blank" class="refresh-link">
+                🔧 Debug on Facebook
+            </a>
+            <div class="status">
+                Click "Scrape Again" button multiple times until you see the new image with enhanced gradient and white quote icons.
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>📱 Step 2: Test Real Platforms</h3>
+            <p>After Facebook refresh, test on actual platforms:</p>
+            <ul>
+                <li>📲 <strong>WhatsApp:</strong> Send yourself <code>https://joindeeper.com</code></li>
+                <li>💬 <strong>iMessage:</strong> Text the URL to yourself</li>
+                <li>🐦 <strong>Twitter/X:</strong> Tweet the URL (delete after testing)</li>
+                <li>💼 <strong>LinkedIn:</strong> Share in a post or message</li>
+                <li>🎮 <strong>Discord:</strong> Paste URL in any channel</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>⚡ Step 3: Additional Validators</h3>
+            <p>Use these to verify the refresh worked:</p>
+            <a href="https://cards-dev.twitter.com/validator" target="_blank" class="refresh-link">
+                Twitter Validator
+            </a>
+            <a href="https://www.linkedin.com/post-inspector/" target="_blank" class="refresh-link">
+                LinkedIn Inspector
+            </a>
+            <a href="https://developers.pinterest.com/tools/url-debugger/" target="_blank" class="refresh-link">
+                Pinterest Debugger
+            </a>
+        </div>
+        
+        <div class="step">
+            <h3>✅ What You Should See After Refresh</h3>
+            <ul>
+                <li>🎨 <strong>Enhanced gradient:</strong> Richer 4-stop blue gradient background</li>
+                <li>⚪ <strong>White quote icons:</strong> Speech bubble + teardrop shapes with dark outlines</li>
+                <li>📏 <strong>Better contrast:</strong> Larger, more visible quote icons</li>
+                <li>🏷️ <strong>Same text:</strong> "AI-Powered Relationship Communication Platform"</li>
+                <li>🌐 <strong>URL:</strong> joindeeper.com</li>
+            </ul>
+        </div>
+        
+        <div class="timer" id="timer">
+            ⏰ Cache refresh typically takes 5-15 minutes
+        </div>
+        
+        <div class="step">
+            <h3>🔧 Technical Details</h3>
+            <div class="status">
+                <strong>Old Image:</strong> <code>og-image.svg</code> (cached version)<br>
+                <strong>New Image:</strong> <code>og-image-v2.svg</code> (enhanced version)<br>
+                <strong>Dimensions:</strong> 1200x630px (optimal for all platforms)<br>
+                <strong>Updated:</strong> <span id="timestamp"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show current timestamp
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        
+        // Countdown timer
+        let minutes = 15;
+        let seconds = 0;
+        
+        const timerElement = document.getElementById('timer');
+        
+        function updateTimer() {
+            if (minutes === 0 && seconds === 0) {
+                timerElement.innerHTML = '✅ Cache should be refreshed by now!';
+                return;
+            }
+            
+            if (seconds === 0) {
+                minutes--;
+                seconds = 59;
+            } else {
+                seconds--;
+            }
+            
+            timerElement.innerHTML = `⏰ Estimated refresh time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        setInterval(updateTimer, 1000);
+    </script>
+</body>
+</html>
