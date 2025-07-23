@@ -297,7 +297,7 @@ export default function Dashboard() {
             </div>
             <div className="mt-6 text-center space-y-3">
               <p className="text-sm text-muted-foreground">
-                Paid members can invite others without charge. Invitees can only interact with you.
+                Only paid members can invite others
               </p>
               <div className="flex justify-center gap-3">
                 {((user as any)?.subscriptionTier === 'trial' || !(user as any)?.subscriptionTier) && (
