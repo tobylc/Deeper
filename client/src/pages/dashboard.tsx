@@ -254,10 +254,19 @@ export default function Dashboard() {
         {/* Subscription Status */}
         <Card className="mb-8 card-elevated border-amber/30">
           <CardHeader>
-            <CardTitle className="flex items-center text-foreground">
-              <QuotesIcon size="sm" className="mr-2" />
-              Subscription Status
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center text-foreground">
+                <QuotesIcon size="sm" className="mr-2" />
+                Subscription Status
+              </CardTitle>
+              <Button 
+                onClick={() => setLocation('/pricing')}
+                className="btn-ocean px-4 py-2 text-sm"
+                size="sm"
+              >
+                Upgrade
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -284,14 +293,23 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground">
                 Paid members can invite others without charge. Invitees can only interact with you.
               </p>
-              {((user as any)?.subscriptionTier === 'trial' || !(user as any)?.subscriptionTier) && (
+              <div className="flex justify-center gap-3">
+                {((user as any)?.subscriptionTier === 'trial' || !(user as any)?.subscriptionTier) && (
+                  <Button 
+                    onClick={() => setLocation('/pricing')}
+                    className="btn-amber px-6 py-2"
+                  >
+                    Upgrade Plan
+                  </Button>
+                )}
                 <Button 
                   onClick={() => setLocation('/pricing')}
-                  className="btn-amber px-6 py-2"
+                  className="btn-ocean px-6 py-2"
+                  variant="outline"
                 >
-                  Upgrade Plan
+                  View Plans
                 </Button>
-              )}
+              </div>
             </div>
           </CardContent>
         </Card>
