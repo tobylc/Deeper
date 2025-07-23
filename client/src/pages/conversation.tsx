@@ -659,12 +659,24 @@ export default function ConversationPage() {
   if (!conversation) {
     return (
       <div className="min-h-screen bg-gradient-radial from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="bg-[#1B2137]/90 backdrop-blur-md p-8 rounded-2xl shadow-lg text-center border border-[#4FACFE]/30">
+        <div className="bg-[#1B2137]/90 backdrop-blur-md p-8 rounded-2xl shadow-lg text-center border border-[#4FACFE]/30 max-w-md">
           <h2 className="text-xl font-semibold mb-4 text-white">Conversation not found</h2>
-          <p className="text-slate-300 mb-4">This conversation may not exist or you may not have access to it.</p>
-          <Button onClick={() => setLocation("/dashboard")} className="bg-gradient-to-r from-[#4FACFE] to-teal text-white">
-            Back to Dashboard
-          </Button>
+          <p className="text-slate-300 mb-6 leading-relaxed">
+            This conversation doesn't exist yet or you may not have access to it.
+          </p>
+          <div className="bg-amber/10 border border-amber/30 rounded-lg p-4 mb-6">
+            <p className="text-amber-200 text-sm">
+              <strong>If you received an invitation:</strong> Please check your email for the proper invitation link and accept the invitation first before conversations can begin.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Button onClick={() => setLocation("/dashboard")} className="bg-gradient-to-r from-[#4FACFE] to-teal text-white">
+              Go to Dashboard
+            </Button>
+            <Button onClick={() => setLocation("/auth")} variant="outline" className="border-[#4FACFE]/30 text-[#4FACFE] hover:bg-[#4FACFE]/10">
+              Check Invitations
+            </Button>
+          </div>
         </div>
       </div>
     );
