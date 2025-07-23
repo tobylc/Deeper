@@ -239,6 +239,14 @@ The following basic logic rules are fundamental to the application and must be p
 ## Changelog
 ```
 Changelog:
+- July 23, 2025. Invitee dashboard improvements and invitation signup routing fix:
+  * Fixed 404 error on invitation signup page by adding missing `/invitation-signup` route in App.tsx
+  * Updated invitee dashboard to correctly show "0/0 connections" instead of "0/999" since invitees cannot initiate connections
+  * Added special waiting message for invitee users in Active Conversations section showing they're connected and waiting for inviter to start
+  * Removed "Send New Invitation" button for invitee users and adjusted grid layout to 2-column instead of 3-column
+  * Enhanced invitee user experience with personalized messaging showing inviter's name in waiting state
+  * Maintained proper invitee/inviter user detection logic throughout dashboard components
+  * Fixed routing issue preventing invitees from accessing signup flow after clicking email invitation links
 - July 23, 2025. Basic Plan Only 60-day free trial implementation:
   * Updated trial period to 60 days ONLY for Basic plan, Advanced and Unlimited maintain 7-day trials
   * Changed ALL Basic plan buttons throughout entire application to proper two-line format: "60 Day Free Trial" as main text with "No Credit Card Required" underneath in smaller font
