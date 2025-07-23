@@ -118,7 +118,7 @@ const CheckoutForm = ({ tier, onSuccess, hasDiscount, currentPlan }: CheckoutFor
       
       {!hasDiscount && (
         <p className="text-xs text-center text-black">
-          Your trial starts immediately. You won't be charged until day 8.
+          Your trial starts immediately. You won't be charged until day {tier === 'basic' ? '61' : '8'}.
           Cancel anytime during your trial period.
         </p>
       )}
@@ -391,7 +391,7 @@ export default function Checkout() {
                   {!(hasDiscount && tier === 'advanced') && (
                     <div className="flex items-center space-x-3">
                       <CheckCircle className="w-5 h-5 text-green-400" />
-                      <span className="text-white">7-day free trial</span>
+                      <span className="text-white">{tier === 'basic' ? '60-day free trial' : '7-day free trial'}</span>
                     </div>
                   )}
                 </div>

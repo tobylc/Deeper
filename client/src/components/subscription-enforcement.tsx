@@ -112,8 +112,9 @@ export function SubscriptionEnforcement({ isOpen, onClose, action }: Subscriptio
                   <li>• 60-day free trial</li>
                 </ul>
                 <Link href="/checkout/basic">
-                  <Button className="w-full mt-3 btn-ocean text-xs py-2" onClick={onClose}>
-                    Choose Basic
+                  <Button className="w-full mt-3 btn-ocean flex flex-col gap-1 h-auto py-3" onClick={onClose}>
+                    <span className="text-xs font-semibold">60 Day Free Trial</span>
+                    <span className="text-xs font-normal opacity-90">No Credit Card Required</span>
                   </Button>
                 </Link>
               </CardContent>

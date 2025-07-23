@@ -114,8 +114,9 @@ export default function Pricing() {
                     60-day free trial • Cancel anytime
                   </p>
                   <Link href="/checkout/basic">
-                    <Button className="w-full card-button py-2 text-xs">
-                      60 Day Free • <span className="italic">no credit card required</span>
+                    <Button className="w-full card-button flex flex-col gap-1 h-auto py-3">
+                      <span className="text-xs font-semibold">60 Day Free Trial</span>
+                      <span className="text-xs font-normal opacity-90">No Credit Card Required</span>
                     </Button>
                   </Link>
                 </div>
@@ -253,8 +254,9 @@ export default function Pricing() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/checkout/basic">
-                <Button size="lg" className="btn-ocean px-8">
-                  60 Day Free • <span className="italic">no credit card required</span>
+                <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-3">
+                  <span className="text-base font-semibold">60 Day Free Trial</span>
+                  <span className="text-xs font-normal opacity-90">No Credit Card Required</span>
                 </Button>
               </Link>
             </div>
