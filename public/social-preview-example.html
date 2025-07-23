@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Preview Example</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .preview-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .preview-header {
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+            text-align: center;
+        }
+        
+        .message-bubble {
+            background: #0084ff;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 18px;
+            margin: 20px;
+            display: inline-block;
+            max-width: 300px;
+        }
+        
+        .link-preview {
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 15px 20px;
+            background: white;
+        }
+        
+        .preview-image {
+            width: 100%;
+            height: 315px;
+            background: linear-gradient(135deg, #4FACFE 0%, #00f2fe 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        .quote-icon {
+            position: absolute;
+            top: 40px;
+            left: 80px;
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50% 50% 50% 10%;
+            opacity: 0.9;
+        }
+        
+        .quote-icon2 {
+            position: absolute;
+            top: 80px;
+            left: 150px;
+            width: 40px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.9;
+            transform: rotate(15deg);
+        }
+        
+        .quote-icon3 {
+            position: absolute;
+            bottom: 40px;
+            right: 60px;
+            width: 30px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+            transform: rotate(-15deg);
+        }
+        
+        .preview-title {
+            color: white;
+            font-size: 42px;
+            font-weight: 700;
+            text-align: center;
+            margin: 0 20px;
+            line-height: 1.2;
+        }
+        
+        .preview-url {
+            color: white;
+            font-size: 24px;
+            font-weight: 400;
+            text-align: center;
+            margin: 10px 0;
+            opacity: 0.9;
+        }
+        
+        .preview-desc {
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            margin: 30px 20px 0;
+            opacity: 0.8;
+            line-height: 1.3;
+        }
+        
+        .preview-text {
+            padding: 16px;
+        }
+        
+        .preview-text h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            color: #1d2129;
+            line-height: 1.3;
+        }
+        
+        .preview-text p {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #606770;
+            line-height: 1.3;
+        }
+        
+        .preview-text .url {
+            font-size: 12px;
+            color: #8a8d91;
+            text-transform: uppercase;
+        }
+        
+        .platform-examples {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .platform {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .platform h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .twitter-preview {
+            border: 1px solid #cfd9de;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .whatsapp-preview {
+            background: #dcf8c6;
+            border-radius: 7.5px;
+            padding: 6px 7px 8px 9px;
+            margin: 5px 0;
+        }
+        
+        .whatsapp-link {
+            background: white;
+            border-radius: 7.5px;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        
+        .whatsapp-link img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #4FACFE 0%, #00f2fe 100%);
+        }
+        
+        .whatsapp-text {
+            font-size: 13px;
+            margin: 5px 0 2px;
+            color: #000;
+            font-weight: 500;
+        }
+        
+        .whatsapp-desc {
+            font-size: 12px;
+            color: #667781;
+            margin: 2px 0;
+        }
+        
+        .whatsapp-url {
+            font-size: 12px;
+            color: #0084ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="preview-header">
+            <h1>Social Media Preview Example</h1>
+            <p>How your URL appears when shared in messages</p>
+        </div>
+        
+        <div class="message-bubble">
+            Check out this amazing platform! https://joindeeper.com
+        </div>
+        
+        <div class="link-preview">
+            <div class="preview-image">
+                <div class="quote-icon"></div>
+                <div class="quote-icon2"></div>
+                <div class="quote-icon3"></div>
+                
+                <div class="preview-title">AI-Powered Relationship Communication Platform</div>
+                <div class="preview-url">joindeeper.com</div>
+                <div class="preview-desc">
+                    Build deeper connections with AI-guided conversations,<br>
+                    real-time interactions, and personalized communication tools
+                </div>
+            </div>
+            
+            <div class="preview-text">
+                <h3>Deeper - AI-Powered Relationship Communication Platform</h3>
+                <p>Build deeper connections with AI-guided conversations, real-time interactions, and personalized communication tools designed for meaningful relationships.</p>
+                <div class="url">JOINDEEPER.COM</div>
+            </div>
+        </div>
+        
+        <div class="platform-examples">
+            <div class="platform">
+                <h4>🐦 Twitter/X Preview</h4>
+                <div class="twitter-preview">
+                    <div class="preview-image" style="height: 200px;">
+                        <div class="quote-icon" style="top: 20px; left: 40px; width: 30px; height: 30px;"></div>
+                        <div class="quote-icon2" style="top: 40px; left: 80px; width: 20px; height: 30px;"></div>
+                        <div class="preview-title" style="font-size: 24px;">AI-Powered Relationship Communication Platform</div>
+                        <div class="preview-url" style="font-size: 16px;">joindeeper.com</div>
+                    </div>
+                    <div class="preview-text" style="padding: 12px;">
+                        <h3 style="font-size: 15px;">Deeper - AI-Powered Relationship Communication Platform</h3>
+                        <p style="font-size: 13px;">Build deeper connections with AI-guided conversations and personalized communication tools.</p>
+                        <div class="url" style="font-size: 11px;">🔗 joindeeper.com</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="platform">
+                <h4>💬 WhatsApp Preview</h4>
+                <div class="whatsapp-preview">
+                    <div style="font-size: 12px; color: #667781;">You</div>
+                    <div style="font-size: 13px; margin: 3px 0;">https://joindeeper.com</div>
+                    <div class="whatsapp-link">
+                        <div style="width: 100%; height: 80px; background: linear-gradient(135deg, #4FACFE 0%, #00f2fe 100%); border-radius: 4px; position: relative;">
+                            <div style="position: absolute; top: 10px; left: 10px; width: 15px; height: 15px; background: white; border-radius: 50%; opacity: 0.9;"></div>
+                            <div style="position: absolute; top: 15px; left: 30px; width: 10px; height: 15px; background: white; border-radius: 50%; opacity: 0.9;"></div>
+                        </div>
+                        <div class="whatsapp-text">AI-Powered Relationship Communication Platform</div>
+                        <div class="whatsapp-desc">Build deeper connections with AI-guided conversations, real-time interactions, and personalized communication tools designed for meaningful relationships.</div>
+                        <div class="whatsapp-url">joindeeper.com</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
