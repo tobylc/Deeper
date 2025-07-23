@@ -78,7 +78,7 @@ export function SubscriptionEnforcement({ isOpen, onClose, action }: Subscriptio
                   </h4>
                   <p className="text-sm text-amber-700 dark:text-amber-300">
                     {trialStatus.isExpired 
-                      ? "Your 7-day trial has ended"
+                      ? "Your 60-day trial has ended"
                       : `${trialStatus.daysRemaining} days remaining`
                     }
                   </p>
@@ -109,7 +109,7 @@ export function SubscriptionEnforcement({ isOpen, onClose, action }: Subscriptio
                   <li>• 1 connection</li>
                   <li>• Unlimited messages</li>
                   <li>• All features</li>
-                  <li>• 7-day free trial</li>
+                  <li>• 60-day free trial</li>
                 </ul>
                 <Link href="/checkout/basic">
                   <Button className="w-full mt-3 btn-ocean text-xs py-2" onClick={onClose}>
@@ -134,7 +134,7 @@ export function SubscriptionEnforcement({ isOpen, onClose, action }: Subscriptio
                   <li>• 3 connections</li>
                   <li>• Unlimited messages</li>
                   <li>• All features</li>
-                  <li>• 7-day free trial</li>
+                  <li>• 60-day free trial</li>
                 </ul>
                 <Link href="/checkout/advanced">
                   <Button className="w-full mt-3 btn-ocean text-xs py-2" onClick={onClose}>
@@ -159,7 +159,7 @@ export function SubscriptionEnforcement({ isOpen, onClose, action }: Subscriptio
                   <li>• Unlimited connections</li>
                   <li>• Unlimited messages</li>
                   <li>• All features</li>
-                  <li>• 7-day free trial</li>
+                  <li>• 60-day free trial</li>
                 </ul>
                 <Link href="/checkout/unlimited">
                   <Button className="w-full mt-3 btn-ocean text-xs py-2" onClick={onClose}>

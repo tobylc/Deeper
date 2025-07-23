@@ -71,7 +71,7 @@ export default function Landing() {
             </p>
             <Link href="/auth">
               <Button size="lg" className="btn-ocean px-8 py-3 text-lg font-medium">
-                Start free trial
+                60 Day Free • <span className="italic">no credit card required</span>
               </Button>
             </Link>
           </div>
@@ -201,7 +201,7 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth">
               <Button size="lg" className="btn-ocean px-8">
-                Start your free trial
+                60 Day Free • <span className="italic">no credit card required</span>
               </Button>
             </Link>
             <Link href="/features">

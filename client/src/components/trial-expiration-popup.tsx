@@ -83,7 +83,7 @@ export function TrialExpirationPopup({ isOpen, onClose, action = "continue" }: T
             {/* Special offer text */}
             <div className="space-y-3">
               <p className="text-base text-slate-700 font-serif leading-relaxed">
-                Your 7-day free trial has ended, but here's an exclusive offer just for you!
+                Your 60-day free trial has ended, but here's an exclusive offer just for you!
               </p>
               
               <p className="text-sm text-slate-600 font-serif leading-relaxed italic">

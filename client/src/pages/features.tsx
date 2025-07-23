@@ -374,7 +374,7 @@ export default function Features() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth">
               <Button size="lg" className="btn-ocean px-8">
-                Start Free Trial
+                60 Day Free • <span className="italic">no credit card required</span>
               </Button>
             </Link>
             <Link href="/pricing">

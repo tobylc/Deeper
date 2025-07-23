@@ -262,7 +262,7 @@ export default function Checkout() {
             <p className="text-white/80">
               {hasDiscount && tier === 'advanced' ? 
                 'Preparing your 50% discount offer' : 
-                'Almost ready to start your 7-day trial'
+                'Almost ready to start your 60-day trial'
               }
             </p>
           </div>
@@ -340,7 +340,7 @@ export default function Checkout() {
                   Complete Your Subscription
                 </h1>
                 <p className="text-white/80">
-                  Start your 7-day free trial and begin deeper conversations today
+                  Start your 60-day free trial and begin deeper conversations today
                 </p>
               </>
             )}
