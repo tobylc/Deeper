@@ -239,6 +239,16 @@ The following basic logic rules are fundamental to the application and must be p
 ## Changelog
 ```
 Changelog:
+- July 23, 2025. Complete 60-day trial system implementation and button routing fix:
+  * Fixed critical issue where "60 Day Free Trial" buttons throughout application were incorrectly routing to /auth instead of /checkout/basic
+  * Updated ALL "60 Day Free Trial" buttons across landing page, features page, pricing page to properly route to basic tier checkout
+  * Enhanced subscription webhook handler to properly set trial start times when subscriptions move to "trialing" status
+  * Fixed subscription creation endpoint to set trialStartedAt during trial subscription setup
+  * Updated existing user trial period from 7 days to proper 60 days in database (trial_expires_at corrected from July 30 to September 21)
+  * Removed hardcoded "7-day trial" references in server error messages, replaced with generic "free trial" for tier flexibility
+  * Added comprehensive trial start time tracking to ensure proper 60-day calculation from activation date
+  * Verified backend logic correctly creates 60-day trials for basic tier and 7-day trials for advanced/unlimited tiers
+  * Complete end-to-end 60-day trial functionality now working: buttons → checkout → Stripe subscription → database activation
 - July 23, 2025. Invitee dashboard improvements and invitation signup routing fix:
   * Fixed 404 error on invitation signup page by adding missing `/invitation-signup` route in App.tsx
   * Updated invitee dashboard to correctly show "0/0 connections" instead of "0/999" since invitees cannot initiate connections

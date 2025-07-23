@@ -324,7 +324,7 @@ export default function Pricing() {
             Join thousands of people having more meaningful conversations
           </p>
           <div className="flex justify-center">
-            <Link href="/auth">
+            <Link href="/checkout/basic">
               <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-3">
                 <span className="text-base font-semibold">60 Day Free Trial</span>
                 <span className="text-xs font-normal opacity-90">No Credit Card Required</span>

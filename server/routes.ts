@@ -1236,7 +1236,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (trialStatus.isExpired && currentUser.subscriptionTier?.trim() === 'trial') {
           await storage.expireTrialUser(currentUser.id);
           return res.status(403).json({ 
-            message: "Your 7-day free trial has expired. Choose a subscription plan to continue using Deeper.", 
+            message: "Your free trial has expired. Choose a subscription plan to continue using Deeper.", 
             type: "TRIAL_EXPIRED",
             subscriptionTier: currentUser.subscriptionTier?.trim(),
             requiresUpgrade: true
@@ -2837,7 +2837,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.expireTrialUser(currentUser.id);
           return res.status(403).json({ 
             type: 'TRIAL_EXPIRED',
-            message: "Your 7-day free trial has expired. Choose a subscription plan to continue conversations.",
+            message: "Your free trial has expired. Choose a subscription plan to continue conversations.",
             subscriptionTier: currentUser.subscriptionTier?.trim(),
             subscriptionStatus: currentUser.subscriptionStatus,
             requiresUpgrade: true
@@ -3291,7 +3291,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.expireTrialUser(currentUser.id);
           return res.status(403).json({ 
             type: 'TRIAL_EXPIRED',
-            message: "Your 7-day free trial has expired. Choose a subscription plan to continue conversations.",
+            message: "Your free trial has expired. Choose a subscription plan to continue conversations.",
             subscriptionTier: currentUser.subscriptionTier?.trim(),
             subscriptionStatus: currentUser.subscriptionStatus,
             requiresUpgrade: true
@@ -3513,7 +3513,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.expireTrialUser(senderUser.id);
           return res.status(403).json({ 
             type: 'TRIAL_EXPIRED',
-            message: "Your 7-day free trial has expired. Choose a subscription plan to continue conversations.",
+            message: "Your free trial has expired. Choose a subscription plan to continue conversations.",
             subscriptionTier: senderUser.subscriptionTier?.trim(),
             subscriptionStatus: senderUser.subscriptionStatus,
             requiresUpgrade: true
@@ -3797,7 +3797,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.expireTrialUser(user.id);
           return res.status(403).json({ 
             type: 'TRIAL_EXPIRED',
-            message: "Your 7-day free trial has expired. Choose a subscription plan to continue conversations.",
+            message: "Your free trial has expired. Choose a subscription plan to continue conversations.",
             subscriptionTier: user.subscriptionTier?.trim(),
             subscriptionStatus: user.subscriptionStatus,
             requiresUpgrade: true
@@ -4570,7 +4570,7 @@ Format each as a complete question they can use to begin this important conversa
           await storage.expireTrialUser(currentUser.id);
           return res.status(403).json({ 
             type: 'TRIAL_EXPIRED',
-            message: "Your 7-day free trial has expired. Choose a subscription plan to continue conversations.",
+            message: "Your free trial has expired. Choose a subscription plan to continue conversations.",
             subscriptionTier: currentUser.subscriptionTier?.trim(),
             subscriptionStatus: currentUser.subscriptionStatus,
             requiresUpgrade: true

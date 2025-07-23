@@ -372,7 +372,7 @@ export default function Features() {
             Start your first meaningful conversation today
           </p>
           <div className="flex flex-col gap-4 justify-center items-center">
-            <Link href="/auth">
+            <Link href="/checkout/basic">
               <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-4">
                 <span className="text-lg font-semibold">60 Day Free Trial</span>
                 <span className="text-sm font-normal opacity-90">No Credit Card Required</span>
