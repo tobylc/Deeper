@@ -69,12 +69,14 @@ export default function Landing() {
             <p className="text-xl text-muted-foreground mb-12 font-inter max-w-2xl mx-auto leading-relaxed">
               Create exclusive, private spaces for thoughtful dialogue that deepens relationships over time.
             </p>
-            <Link href="/auth">
-              <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-4">
-                <span className="text-lg font-semibold">60 Day Free Trial</span>
-                <span className="text-sm font-normal opacity-90">No Credit Card Required</span>
-              </Button>
-            </Link>
+            <div className="flex justify-center">
+              <Link href="/auth">
+                <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-4">
+                  <span className="text-lg font-semibold">60 Day Free Trial</span>
+                  <span className="text-sm font-normal opacity-90">No Credit Card Required</span>
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Feature Cards */}
@@ -199,7 +201,7 @@ export default function Landing() {
           <p className="text-xl text-white/90 mb-8">
             Join thousands discovering the power of structured, intentional dialogue
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col gap-4 justify-center items-center">
             <Link href="/auth">
               <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-4">
                 <span className="text-lg font-semibold">60 Day Free Trial</span>
