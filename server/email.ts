@@ -226,9 +226,7 @@ The Deeper Team
   }
 
   async sendConnectionAccepted(connection: Connection): Promise<void> {
-    const appUrl = process.env.REPLIT_DEV_DOMAIN 
-      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-      : 'https://joindeeper.com';
+    const appUrl = 'https://joindeeper.com';
     const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
     const subject = getEmailSubjectWithRoles('Connection Accepted', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
     const roleDisplay = connection.inviterRole && connection.inviteeRole 
@@ -527,9 +525,7 @@ The Deeper Team
   }
 
   async sendConnectionAccepted(connection: Connection): Promise<void> {
-    const appUrl = process.env.REPLIT_DEV_DOMAIN 
-      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-      : 'https://deeper.app';
+    const appUrl = 'https://joindeeper.com';
     const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
     const subject = getEmailSubjectWithRoles('Connection Accepted', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
     const roleDisplay = connection.inviterRole && connection.inviteeRole 
@@ -538,22 +534,22 @@ The Deeper Team
     
     const htmlContent = `
       <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+        <div style="background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
           <h1 style="margin: 0; font-size: 28px; font-weight: bold;">Great News!</h1>
           <p style="margin: 10px 0 0 0; opacity: 0.9;">Your invitation was accepted</p>
         </div>
         
-        <div style="background: #f0fdf4; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
-          <p style="color: #166534; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
+        <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+          <p style="color: #1e293b; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
             <strong>${inviteeName}</strong> has accepted your ${roleDisplay} connection invitation!
           </p>
           
-          <p style="color: #166534; line-height: 1.6; margin: 0 0 20px 0;">
+          <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
             Your private ${roleDisplay} conversation space is now ready. You can start by asking the first question.
           </p>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${appUrl}" style="display: inline-block; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+            <a href="${appUrl}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
               Start Conversation
             </a>
           </div>
