@@ -70,8 +70,9 @@ export default function Landing() {
               Create exclusive, private spaces for thoughtful dialogue that deepens relationships over time.
             </p>
             <Link href="/auth">
-              <Button size="lg" className="btn-ocean px-8 py-3 text-lg font-medium">
-                60 Day Free • <span className="italic">no credit card required</span>
+              <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-4">
+                <span className="text-lg font-semibold">60 Day Free Trial</span>
+                <span className="text-sm font-normal opacity-90">No Credit Card Required</span>
               </Button>
             </Link>
           </div>
@@ -200,8 +201,9 @@ export default function Landing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth">
-              <Button size="lg" className="btn-ocean px-8">
-                60 Day Free • <span className="italic">no credit card required</span>
+              <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-4">
+                <span className="text-lg font-semibold">60 Day Free Trial</span>
+                <span className="text-sm font-normal opacity-90">No Credit Card Required</span>
               </Button>
             </Link>
             <Link href="/features">

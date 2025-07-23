@@ -241,13 +241,15 @@ The following basic logic rules are fundamental to the application and must be p
 Changelog:
 - July 23, 2025. Basic Plan Only 60-day free trial implementation:
   * Updated trial period to 60 days ONLY for Basic plan, Advanced and Unlimited maintain 7-day trials
-  * Changed Basic plan buttons to "60 Day Free • no credit card required" with italic styling
+  * Changed ALL Basic plan buttons throughout entire application to proper two-line format: "60 Day Free Trial" as main text with "No Credit Card Required" underneath in smaller font
+  * Applied new button structure (flex flex-col gap-1 h-auto py-3/4) to landing page, features page, pricing page, subscription enforcement, and checkout page
   * Modified backend subscription upgrade endpoint to set tier-specific trial periods (Basic: 60 days, others: 7 days)
   * Updated pricing page messaging to clarify 60-day trial only applies to Basic plan
   * Updated trial status component to calculate trial days based on subscription tier
+  * Updated checkout page to show proper trial messaging (60-day for Basic, 7-day for others) and billing day references
   * Enhanced Basic plan promotion while maintaining standard trials for Advanced/Unlimited
   * All trial references now properly differentiate between Basic (60 days) and other plans (7 days)
-  * Complete tier-specific trial system with focused Basic plan promotion
+  * Complete tier-specific trial system with focused Basic plan promotion and consistent button formatting across entire application
 - June 14, 2025. Initial setup with basic application structure
 - June 14, 2025. Production infrastructure implementation:
   * PostgreSQL database integration with Drizzle ORM
