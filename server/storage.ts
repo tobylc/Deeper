@@ -198,6 +198,8 @@ export class DatabaseStorage implements IStorage {
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
     subscriptionExpiresAt?: Date;
+    trialStartedAt?: Date;
+    trialExpiresAt?: Date;
     phoneNumber?: string;
     phoneVerified?: boolean;
     notificationPreference?: string;
@@ -221,6 +223,12 @@ export class DatabaseStorage implements IStorage {
     }
     if (subscriptionData.subscriptionExpiresAt !== undefined) {
       updateData.subscriptionExpiresAt = subscriptionData.subscriptionExpiresAt;
+    }
+    if (subscriptionData.trialStartedAt !== undefined) {
+      updateData.trialStartedAt = subscriptionData.trialStartedAt;
+    }
+    if (subscriptionData.trialExpiresAt !== undefined) {
+      updateData.trialExpiresAt = subscriptionData.trialExpiresAt;
     }
     if (subscriptionData.phoneNumber !== undefined) {
       updateData.phoneNumber = subscriptionData.phoneNumber;

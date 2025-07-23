@@ -297,7 +297,7 @@ export default function Dashboard() {
                   {(user as any)?.subscriptionTier || 'trial'}
                 </Badge>
                 {/* Show trial countdown if user is on trial */}
-                {trialStatus && trialStatus.subscriptionStatus === 'trialing' && trialStatus.daysRemaining > 0 && (
+                {trialStatus && ((user as any)?.subscriptionTier === 'trial' || trialStatus.subscriptionStatus === 'trialing') && trialStatus.daysRemaining > 0 && (
                   <div className="mt-2 text-xs text-muted-foreground">
                     {trialStatus.daysRemaining} {trialStatus.daysRemaining === 1 ? 'day' : 'days'} remaining
                   </div>

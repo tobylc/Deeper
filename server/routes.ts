@@ -159,12 +159,20 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 
     const benefits = tierBenefits[newTier] || tierBenefits.free;
 
-    // Calculate trial start time for trialing subscriptions
+    // Calculate trial start time and expiration for trialing subscriptions
     let trialStartedAt: Date | undefined = undefined;
+    let trialExpiresAt: Date | undefined = undefined;
+    
     if (status === 'trialing' && !user.trialStartedAt) {
       // Set trial start time to now if not already set
       trialStartedAt = new Date();
       console.log(`[WEBHOOK] Setting trial start time for user ${userId}: ${trialStartedAt.toISOString()}`);
+      
+      // Calculate trial expiration based on tier (60 days for basic, 7 days for others)
+      trialExpiresAt = new Date(trialStartedAt);
+      const trialDays = newTier === 'basic' ? 60 : 7;
+      trialExpiresAt.setDate(trialExpiresAt.getDate() + trialDays);
+      console.log(`[WEBHOOK] Setting ${trialDays}-day trial expiration for ${newTier} tier: ${trialExpiresAt.toISOString()}`);
     }
 
     const subscriptionUpdate: any = {
@@ -176,9 +184,12 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       subscriptionExpiresAt: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000) : undefined
     };
 
-    // Add trial start time if this is a new trial
+    // Add trial timing if this is a new trial
     if (trialStartedAt || user.trialStartedAt) {
       subscriptionUpdate.trialStartedAt = trialStartedAt || user.trialStartedAt;
+    }
+    if (trialExpiresAt || user.trialExpiresAt) {
+      subscriptionUpdate.trialExpiresAt = trialExpiresAt || user.trialExpiresAt;
     }
 
     await storage.updateUserSubscription(userId, subscriptionUpdate);
