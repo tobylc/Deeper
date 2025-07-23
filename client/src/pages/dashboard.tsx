@@ -205,6 +205,12 @@ export default function Dashboard() {
   const receivedConnections = acceptedConnections.filter(c => c.inviteeEmail === user.email);
   const activeConversations = uniqueConversations.filter(c => c.status === 'active');
 
+  // Check if user is an invitee (has been invited by someone else)
+  const isInviteeUser = connections.some(c => c.inviteeEmail === user.email);
+  
+  // Invitee users cannot initiate connections, so their limit should be 0
+  const userConnectionLimit = isInviteeUser ? 0 : ((user as any)?.maxConnections || 1);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -279,7 +285,7 @@ export default function Dashboard() {
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-1">Connections Initiated</p>
                 <p className="text-2xl font-bold text-amber">
-                  {sentInvitations.length + initiatedConnections.length} / {(user as any)?.maxConnections || 1}
+                  {sentInvitations.length + initiatedConnections.length} / {userConnectionLimit}
                 </p>
               </div>
               <div className="text-center">
