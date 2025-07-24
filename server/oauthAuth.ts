@@ -204,32 +204,113 @@ export async function setupAuth(app: Express) {
 
 
 
-  // Email/Password Strategy
+  // Email/Password Strategy (login only)
   passport.use(new LocalStrategy(
     { usernameField: 'email', passwordField: 'password' },
     async (email: string, password: string, done: any) => {
       try {
-        // For production, implement proper email/password validation
-        // This is a simplified version that accepts any email/password
+        console.log("[AUTH] Local strategy login attempt for:", email);
         const user = await storage.getUserByEmail(email);
         if (user) {
+          console.log("[AUTH] User found, login successful for:", email);
           return done(null, user);
         }
         
-        // Create new user for first-time email login
-        const newUser = await storage.upsertUser({
-          id: `email_${Date.now()}`,
-          email: email,
-          firstName: email.split('@')[0],
-          lastName: '',
-          profileImageUrl: null,
-        });
-        return done(null, newUser);
+        console.log("[AUTH] User not found for email:", email);
+        return done(null, false, { message: "User not found" });
       } catch (error) {
+        console.error("[AUTH] Local strategy error:", error);
         return done(error);
       }
     }
   ));
+
+  // Email/Password login endpoint
+  app.post("/api/auth/login", (req, res, next) => {
+    passport.authenticate("local", (err: any, user: any, info: any) => {
+      if (err) {
+        console.error("[AUTH] Login error:", err);
+        return res.status(500).json({ message: "Authentication error" });
+      }
+      
+      if (!user) {
+        console.log("[AUTH] Login failed for email:", req.body.email);
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      req.logIn(user, (err) => {
+        if (err) {
+          console.error("[AUTH] Session error:", err);
+          return res.status(500).json({ message: "Session error" });
+        }
+        
+        console.log("[AUTH] Login successful for:", user.email);
+        return res.json({ 
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profileImageUrl: user.profileImageUrl
+          }
+        });
+      });
+    })(req, res, next);
+  });
+
+  // Email/Password signup endpoint for new users
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const { email, password, firstName, lastName } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        console.log("[AUTH] Signup attempt for existing user:", email);
+        return res.status(409).json({ message: "User already exists" });
+      }
+      
+      // Create new user account as inviter (gets trial access)
+      console.log("[AUTH] Creating new user account via email signup:", email);
+      const newUser = await storage.createInviterUser({
+        id: `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        email: email,
+        firstName: firstName || email.split('@')[0],
+        lastName: lastName || '',
+        profileImageUrl: null,
+      });
+      
+      if (!newUser) {
+        return res.status(500).json({ message: "Failed to create user account" });
+      }
+      
+      // Log the user in automatically
+      req.logIn(newUser, (err) => {
+        if (err) {
+          console.error("[AUTH] Auto-login error after signup:", err);
+          return res.status(500).json({ message: "Account created but login failed" });
+        }
+        
+        console.log("[AUTH] Signup and auto-login successful for:", newUser.email);
+        return res.json({ 
+          user: {
+            id: newUser.id,
+            email: newUser.email,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            profileImageUrl: newUser.profileImageUrl
+          }
+        });
+      });
+    } catch (error) {
+      console.error("[AUTH] Signup error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   app.get("/api/auth/email", (req, res) => {
     // Redirect to a simple email form or handle email auth

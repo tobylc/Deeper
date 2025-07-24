@@ -15,8 +15,11 @@ export default function Auth() {
   const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [showEmailLogin, setShowEmailLogin] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const { toast } = useToast();
@@ -40,21 +43,23 @@ export default function Auth() {
     );
   }
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
 
     try {
-      const response = await apiRequest("POST", "/api/auth/login", {
-        email: email.trim(),
-        password,
-      });
+      const endpoint = isSignUp ? "/api/auth/signup" : "/api/auth/login";
+      const payload = isSignUp 
+        ? { email: email.trim(), password, firstName: firstName.trim(), lastName: lastName.trim() }
+        : { email: email.trim(), password };
+
+      const response = await apiRequest("POST", endpoint, payload);
 
       if (response.ok) {
         const result = await response.json();
         
         // If logging in with invitation context, accept the invitation
-        if (invitationId && isExistingUser) {
+        if (invitationId && isExistingUser && !isSignUp) {
           try {
             const acceptResponse = await apiRequest("POST", "/api/connections/accept-existing", {
               connectionId: invitationId
@@ -80,8 +85,8 @@ export default function Auth() {
           }
         } else {
           toast({
-            title: "Welcome back!",
-            description: "Successfully logged in to your account.",
+            title: isSignUp ? "Welcome to Deeper!" : "Welcome back!",
+            description: isSignUp ? "Your account has been created successfully." : "Successfully logged in to your account.",
           });
         }
         
@@ -93,13 +98,13 @@ export default function Auth() {
       } else {
         const error = await response.json();
         toast({
-          title: "Login Failed",
-          description: error.message || "Invalid email or password.",
+          title: isSignUp ? "Signup Failed" : "Login Failed",
+          description: error.message || (isSignUp ? "Unable to create account." : "Invalid email or password."),
           variant: "destructive",
         });
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error(isSignUp ? "Signup error:" : "Login error:", error);
       toast({
         title: "Connection Error",
         description: "Unable to connect. Please try again.",
@@ -147,13 +152,43 @@ export default function Auth() {
                 <DeeperLogo size="xl" />
               </div>
               <CardDescription className="text-muted-foreground font-inter">
-                {showEmailLogin ? "Sign in with your email and password" : "Sign in to start building deeper relationships"}
+                {showEmailLogin 
+                  ? (isSignUp ? "Create your account with email and password" : "Sign in with your email and password") 
+                  : "Sign in to start building deeper relationships"
+                }
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {showEmailLogin ? (
-                // Email/Password Login Form for invited users
-                <form onSubmit={handleEmailLogin} className="space-y-4">
+                // Email/Password Form for login or signup
+                <form onSubmit={handleEmailAuth} className="space-y-4">
+                  {isSignUp && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName" className="text-foreground font-inter">First Name</Label>
+                        <Input
+                          id="firstName"
+                          type="text"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          placeholder="First name"
+                          className="rounded-2xl bg-card border-border font-inter"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName" className="text-foreground font-inter">Last Name</Label>
+                        <Input
+                          id="lastName"
+                          type="text"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          placeholder="Last name"
+                          className="rounded-2xl bg-card border-border font-inter"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-foreground font-inter">Email Address</Label>
                     <Input
@@ -194,13 +229,30 @@ export default function Auth() {
                     disabled={isLoggingIn || !email.trim() || !password.trim()}
                     className="w-full btn-ocean font-inter font-medium py-3 rounded-3xl transition-all duration-200"
                   >
-                    {isLoggingIn ? "Signing in..." : "Sign In"}
+                    {isLoggingIn ? (isSignUp ? "Creating Account..." : "Signing in...") : (isSignUp ? "Create Account" : "Sign In")}
                   </Button>
+
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => setIsSignUp(!isSignUp)}
+                      className="text-sm text-primary hover:text-primary/80 font-inter"
+                    >
+                      {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+                    </button>
+                  </div>
 
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => setShowEmailLogin(false)}
+                    onClick={() => {
+                      setShowEmailLogin(false);
+                      setIsSignUp(false);
+                      setEmail("");
+                      setPassword("");
+                      setFirstName("");
+                      setLastName("");
+                    }}
                     className="w-full text-sm text-muted-foreground hover:text-foreground font-inter"
                   >
                     ← Back to login options
@@ -246,11 +298,11 @@ export default function Auth() {
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                   <polyline points="22,6 12,13 2,6"/>
                 </svg>
-                Sign in with Email & Password
+                Continue with Email & Password
               </Button>
 
                   <p className="text-center text-xs text-muted-foreground font-inter">
-                    For invited users • OAuth for new accounts
+                    Sign up or sign in with email
                   </p>
                 </>
               )}
