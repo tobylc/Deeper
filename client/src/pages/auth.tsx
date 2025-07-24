@@ -162,7 +162,10 @@ export default function Auth() {
                   <button
                     type="button"
                     onClick={() => setIsSignUp(true)}
-                    className="text-sm text-amber-500 hover:text-amber-400 font-inter font-bold"
+                    className="text-sm font-inter font-bold"
+                    style={{ color: 'hsl(var(--amber))' }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'hsl(var(--amber-hover))'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'hsl(var(--amber))'}
                   >
                     Don't have an account? Sign up
                   </button>

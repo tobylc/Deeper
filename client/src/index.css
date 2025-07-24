@@ -28,6 +28,8 @@
   --ring: hsl(215, 85%, 60%);
   --radius: 0.75rem;
   --success: hsl(120, 50%, 45%);
+  --amber: hsl(45, 100%, 51%);
+  --amber-hover: hsl(45, 100%, 47%);
   
   /* Custom color variables */
   --nav-gray: hsl(210, 15%, 20%); /* Dark gray for navigation */
@@ -61,6 +63,8 @@
   --ring: hsl(215, 85%, 60%);
   --radius: 0.75rem;
   --success: hsl(120, 50%, 55%);
+  --amber: hsl(45, 100%, 51%);
+  --amber-hover: hsl(45, 100%, 47%);
   
   /* Custom color variables for dark mode */
   --nav-gray: hsl(210, 15%, 15%);
