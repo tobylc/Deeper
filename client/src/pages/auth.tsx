@@ -157,6 +157,17 @@ export default function Auth() {
                   : "Sign in to start building deeper relationships"
                 }
               </CardDescription>
+              {showEmailLogin && !isSignUp && (
+                <div className="text-center mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsSignUp(true)}
+                    className="text-sm text-amber-500 hover:text-amber-400 font-inter font-bold"
+                  >
+                    Don't have an account? Sign up
+                  </button>
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               {showEmailLogin ? (
