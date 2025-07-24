@@ -76,6 +76,28 @@
   --dark-gray: hsl(210, 15%, 80%);
 }
 
+/* Glowing amber text effect */
+.glow-amber {
+  background: linear-gradient(45deg, #f59e0b, #fbbf24, #f59e0b);
+  background-size: 200% 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.5), 0 0 20px rgba(245, 158, 11, 0.3);
+  animation: glowPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes glowPulse {
+  0% {
+    background-position: 0% 50%;
+    filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.4));
+  }
+  100% {
+    background-position: 100% 50%;
+    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.7));
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
