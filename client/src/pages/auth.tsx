@@ -162,7 +162,7 @@ export default function Auth() {
                   <button
                     type="button"
                     onClick={() => setIsSignUp(true)}
-                    className="text-sm font-inter font-bold glow-amber"
+                    className="text-sm font-inter font-bold glow-amber-blue"
                   >
                     Don't have an account? Sign up
                   </button>

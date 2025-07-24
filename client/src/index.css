@@ -87,6 +87,28 @@
   animation: glowPulse 2s ease-in-out infinite alternate;
 }
 
+/* Glowing blue text effect */
+.glow-blue {
+  background: linear-gradient(45deg, #3b82f6, #60a5fa, #3b82f6);
+  background-size: 200% 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+  animation: glowPulseBlue 2s ease-in-out infinite alternate;
+}
+
+/* Glowing amber-blue gradient text effect */
+.glow-amber-blue {
+  background: linear-gradient(45deg, #f59e0b, #3b82f6, #fbbf24, #60a5fa, #f59e0b);
+  background-size: 300% 300%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.4), 0 0 15px rgba(59, 130, 246, 0.4), 0 0 20px rgba(245, 158, 11, 0.2);
+  animation: glowPulseAmberBlue 3s ease-in-out infinite alternate;
+}
+
 @keyframes glowPulse {
   0% {
     background-position: 0% 50%;
@@ -95,6 +117,32 @@
   100% {
     background-position: 100% 50%;
     filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.7));
+  }
+}
+
+@keyframes glowPulseBlue {
+  0% {
+    background-position: 0% 50%;
+    filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.4));
+  }
+  100% {
+    background-position: 100% 50%;
+    filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.7));
+  }
+}
+
+@keyframes glowPulseAmberBlue {
+  0% {
+    background-position: 0% 50%;
+    filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.4)) drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
+  }
+  50% {
+    background-position: 50% 50%;
+    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5)) drop-shadow(0 0 12px rgba(245, 158, 11, 0.4));
+  }
+  100% {
+    background-position: 100% 50%;
+    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.6)) drop-shadow(0 0 18px rgba(59, 130, 246, 0.5));
   }
 }
 
