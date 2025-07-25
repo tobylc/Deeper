@@ -10,6 +10,7 @@ import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import DeeperLogo from "@/components/deeper-logo";
+import NoAccountPopup from "@/components/no-account-popup";
 
 export default function Auth() {
   const { user, isLoading } = useAuth();
@@ -22,6 +23,7 @@ export default function Auth() {
   const [lastName, setLastName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [showNoAccountPopup, setShowNoAccountPopup] = useState(false);
   const { toast } = useToast();
 
   // Check for invitation context from URL parameters
@@ -97,11 +99,20 @@ export default function Auth() {
         }, 1000);
       } else {
         const error = await response.json();
-        toast({
-          title: isSignUp ? "Signup Failed" : "Login Failed",
-          description: error.message || (isSignUp ? "Unable to create account." : "Invalid email or password."),
-          variant: "destructive",
-        });
+        
+        // Check if this is a login attempt (not signup) and the error is "user not found"
+        if (!isSignUp && response.status === 401 && 
+            (error.message === "Invalid email or password" || error.message === "User not found")) {
+          // Show the "no account found" popup instead of a toast
+          setShowNoAccountPopup(true);
+        } else {
+          // Show normal error toast for other errors
+          toast({
+            title: isSignUp ? "Signup Failed" : "Login Failed",
+            description: error.message || (isSignUp ? "Unable to create account." : "Invalid email or password."),
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error(isSignUp ? "Signup error:" : "Login error:", error);
@@ -119,6 +130,17 @@ export default function Auth() {
     // Clear any existing auth state before redirecting
     queryClient.clear();
     window.location.href = `/api/auth/google`;
+  };
+
+  const handleNoAccountPopupSignUp = () => {
+    setShowNoAccountPopup(false);
+    setIsSignUp(true);
+  };
+
+  const handleNoAccountPopupClose = () => {
+    setShowNoAccountPopup(false);
+    // Clear the password field to let user try a different email
+    setPassword("");
   };
 
   return (
@@ -321,6 +343,14 @@ export default function Auth() {
           </Card>
         </div>
       </div>
+      
+      {/* No Account Found Popup */}
+      <NoAccountPopup
+        isOpen={showNoAccountPopup}
+        onClose={handleNoAccountPopupClose}
+        onSignUp={handleNoAccountPopupSignUp}
+        email={email}
+      />
     </div>
   );
 }
