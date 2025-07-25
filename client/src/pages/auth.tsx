@@ -55,6 +55,7 @@ export default function Auth() {
         ? { email: email.trim(), password, firstName: firstName.trim(), lastName: lastName.trim() }
         : { email: email.trim(), password };
 
+      console.log("[AUTH] Attempting login with:", { endpoint, email: email.trim(), isSignUp });
       const response = await apiRequest("POST", endpoint, payload);
 
       if (response.ok) {
@@ -99,11 +100,13 @@ export default function Auth() {
         }, 1000);
       } else {
         const error = await response.json();
+        console.log("[AUTH] Login failed:", { status: response.status, error, isSignUp });
         
         // Check if this is a login attempt (not signup) and the error is "user not found"
         if (!isSignUp && response.status === 401 && 
             (error.message === "Invalid email or password" || error.message === "User not found")) {
           // Show the "no account found" popup instead of a toast
+          console.log("[AUTH] Showing no account popup for:", email);
           setShowNoAccountPopup(true);
         } else {
           // Show normal error toast for other errors
