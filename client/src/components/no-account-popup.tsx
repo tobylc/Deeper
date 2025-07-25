@@ -13,17 +13,17 @@ interface NoAccountPopupProps {
 export default function NoAccountPopup({ isOpen, onClose, onSignUp, email }: NoAccountPopupProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-xl border-border/50 shadow-2xl rounded-3xl">
+      <DialogContent className="sm:max-w-md bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 shadow-2xl rounded-3xl">
         <DialogHeader className="text-center space-y-4">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-8 h-8 text-primary" />
+            <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+              <User className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="space-y-1">
-              <DialogTitle className="text-xl font-inter font-semibold text-foreground">
+              <DialogTitle className="text-xl font-inter font-semibold text-slate-900 dark:text-white">
                 No Account Found
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground font-inter">
+              <DialogDescription className="text-slate-600 dark:text-slate-300 font-inter">
                 We couldn't find an account with this email address
               </DialogDescription>
             </div>
@@ -32,10 +32,10 @@ export default function NoAccountPopup({ isOpen, onClose, onSignUp, email }: NoA
         
         <div className="space-y-4 pt-2">
           <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground font-inter">
-              <strong className="text-foreground">{email}</strong> isn't registered with Deeper yet
+            <p className="text-sm text-slate-600 dark:text-slate-300 font-inter">
+              <strong className="text-slate-900 dark:text-white">{email}</strong> isn't registered with Deeper yet
             </p>
-            <p className="text-sm text-muted-foreground font-inter">
+            <p className="text-sm text-slate-600 dark:text-slate-300 font-inter">
               Would you like to create an account to get started?
             </p>
           </div>
@@ -43,7 +43,7 @@ export default function NoAccountPopup({ isOpen, onClose, onSignUp, email }: NoA
           <div className="space-y-3">
             <Button 
               onClick={onSignUp}
-              className="w-full btn-ocean font-inter font-medium py-3 rounded-3xl transition-all duration-200 group"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-inter font-medium py-3 rounded-3xl transition-all duration-200 group shadow-lg"
             >
               Create Account
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -52,7 +52,7 @@ export default function NoAccountPopup({ isOpen, onClose, onSignUp, email }: NoA
             <Button 
               onClick={onClose}
               variant="ghost"
-              className="w-full font-inter font-medium py-2 rounded-3xl text-muted-foreground hover:text-foreground"
+              className="w-full font-inter font-medium py-2 rounded-3xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
             >
               Try Different Email
             </Button>
