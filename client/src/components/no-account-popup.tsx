@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { User, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import DeeperLogo from "@/components/deeper-logo";
 
 interface NoAccountPopupProps {
@@ -16,8 +16,8 @@ export default function NoAccountPopup({ isOpen, onClose, onSignUp, email }: NoA
       <DialogContent className="sm:max-w-md bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 shadow-2xl rounded-3xl">
         <DialogHeader className="text-center space-y-4">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
-              <User className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 dark:from-blue-400 dark:via-blue-500 dark:to-blue-600 flex items-center justify-center shadow-lg">
+              <DeeperLogo size="lg" className="text-white drop-shadow-sm" />
             </div>
             <div className="space-y-1">
               <DialogTitle className="text-xl font-inter font-semibold text-slate-900 dark:text-white">
