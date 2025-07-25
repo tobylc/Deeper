@@ -98,9 +98,10 @@ export class DatabaseStorage implements IStorage {
       .insert(users)
       .values({
         ...userData,
-        subscriptionTier: 'free',
-        subscriptionStatus: 'forever',
-        maxConnections: 999, // Invitees get unlimited connections
+        // Use provided values if specified, otherwise use defaults for invitees
+        subscriptionTier: userData.subscriptionTier || 'free',
+        subscriptionStatus: userData.subscriptionStatus || 'forever',
+        maxConnections: userData.maxConnections !== undefined ? userData.maxConnections : 0, // Invitees cannot send invitations
       })
       .returning();
     return user;

@@ -239,6 +239,13 @@ The following basic logic rules are fundamental to the application and must be p
 ## Changelog
 ```
 Changelog:
+- July 25, 2025. Critical invitee account creation fix:
+  * Fixed critical bug where invitees were incorrectly being given "unlimited" accounts instead of proper "Free Forever Only Invitee" accounts
+  * Modified createUser method in server/storage.ts to respect passed-in invitee settings (subscriptionTier: 'free', subscriptionStatus: 'forever', maxConnections: 0)
+  * Previously createUser was overriding invitation acceptance endpoint settings with hardcoded defaults (maxConnections: 999)
+  * Invitees now correctly receive: subscriptionTier: 'free', subscriptionStatus: 'forever', maxConnections: 0 (cannot send invitations)
+  * This ensures invitees are properly classified as "Free Forever Only Invitee" users instead of appearing as unlimited accounts
+  * Production fix applied without disrupting live beta users - existing incorrectly created invitees may need manual correction
 - July 23, 2025. Complete 60-day trial system implementation with comprehensive subscription flow fixes:
   * Fixed critical subscription creation endpoint to immediately set trial status and calculate 60-day expiration for basic tier users
   * Updated subscription upgrade flow to assign 'trial' tier and 'trialing' status immediately upon subscription creation for trial users
