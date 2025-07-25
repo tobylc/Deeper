@@ -97,7 +97,7 @@ export class ProductionSMSService implements SMSService {
     const message = `You've been invited to start a deeper conversation on Deeper! 
 ${connection.inviterName} wants to connect as ${connection.relationshipType}. 
 ${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
-Accept your invitation: https://deepersocial.replit.app/invitation/${connection.id}`;
+Accept your invitation: https://joindeeper.com/invitation/${connection.id}`;
 
     const messageOptions: any = {
       body: message,
@@ -133,7 +133,7 @@ Accept your invitation: https://deepersocial.replit.app/invitation/${connection.
 
     const message = `Great news! ${connection.inviteeName} accepted your invitation to connect on Deeper.
 You can now start meaningful conversations together.
-Begin your conversation: https://deepersocial.replit.app/dashboard`;
+Begin your conversation: https://joindeeper.com/dashboard`;
 
     const messageOptions: any = {
       body: message,
@@ -210,7 +210,7 @@ Thank you for reaching out. You can always try connecting with other people who 
     
     const message = `${params.senderName} ${actionText} in your ${params.relationshipType} conversation on Deeper.
 It's your turn to respond!
-Continue conversation: https://deepersocial.replit.app/conversation/${params.conversationId}`;
+Continue conversation: https://joindeeper.com/conversation/${params.conversationId}`;
 
     const messageOptions: any = {
       body: message,

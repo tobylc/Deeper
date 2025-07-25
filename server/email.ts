@@ -350,7 +350,7 @@ The Deeper Team
     recipientRole?: string;
     messageType: 'question' | 'response';
   }): Promise<void> {
-    const appUrl = 'https://deepersocial.replit.app';
+    const appUrl = 'https://joindeeper.com';
     const senderName = await storage.getUserDisplayNameByEmail(params.senderEmail);
     const actionText = params.messageType === 'question' ? 'asked a question' : 'shared a response';
     const responseText = params.messageType === 'question' ? 'respond' : 'continue the conversation';
@@ -649,7 +649,7 @@ The Deeper Team
     recipientRole?: string;
     messageType: 'question' | 'response';
   }): Promise<void> {
-    const appUrl = 'https://deepersocial.replit.app';
+    const appUrl = 'https://joindeeper.com';
     const senderName = await storage.getUserDisplayNameByEmail(params.senderEmail);
     const actionText = params.messageType === 'question' ? 'asked a question' : 'shared a response';
     const responseText = params.messageType === 'question' ? 'respond' : 'continue the conversation';
