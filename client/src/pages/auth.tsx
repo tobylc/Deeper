@@ -19,9 +19,11 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showNoAccountPopup, setShowNoAccountPopup] = useState(false);
   const { toast } = useToast();
@@ -48,6 +50,17 @@ export default function Auth() {
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
+
+    // Validate password confirmation for signup
+    if (isSignUp && password !== confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Please make sure both passwords match.",
+        variant: "destructive",
+      });
+      setIsLoggingIn(false);
+      return;
+    }
 
     try {
       const endpoint = isSignUp ? "/api/auth/signup" : "/api/auth/login";
@@ -148,12 +161,20 @@ export default function Auth() {
   const handleNoAccountPopupSignUp = () => {
     setShowNoAccountPopup(false);
     setIsSignUp(true);
+    setConfirmPassword("");
   };
 
   const handleNoAccountPopupClose = () => {
     setShowNoAccountPopup(false);
     // Clear the password field to let user try a different email
     setPassword("");
+    setConfirmPassword("");
+  };
+
+  const toggleSignUpMode = () => {
+    setIsSignUp(!isSignUp);
+    setPassword("");
+    setConfirmPassword("");
   };
 
   return (
@@ -196,7 +217,7 @@ export default function Auth() {
                 <div className="text-center mt-2">
                   <button
                     type="button"
-                    onClick={() => setIsSignUp(true)}
+                    onClick={toggleSignUpMode}
                     className="text-sm font-inter font-bold glow-amber-blue"
                   >
                     Don't have an account? Sign up
@@ -270,9 +291,33 @@ export default function Auth() {
                     </div>
                   </div>
 
+                  {isSignUp && (
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword" className="text-foreground font-inter">Confirm Password</Label>
+                      <div className="relative">
+                        <Input
+                          id="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Confirm your password"
+                          required
+                          className="rounded-2xl bg-card border-border font-inter pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <Button
                     type="submit"
-                    disabled={isLoggingIn || !email.trim() || !password.trim()}
+                    disabled={isLoggingIn || !email.trim() || !password.trim() || (isSignUp && (!firstName.trim() || !lastName.trim() || !confirmPassword.trim()))}
                     className="w-full btn-ocean font-inter font-medium py-3 rounded-3xl transition-all duration-200"
                   >
                     {isLoggingIn ? (isSignUp ? "Creating Account..." : "Signing in...") : (isSignUp ? "Create Account" : "Sign In")}
@@ -281,7 +326,7 @@ export default function Auth() {
                   <div className="text-center">
                     <button
                       type="button"
-                      onClick={() => setIsSignUp(!isSignUp)}
+                      onClick={toggleSignUpMode}
                       className="text-sm text-primary hover:text-primary/80 font-inter font-bold"
                     >
                       {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
