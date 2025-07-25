@@ -56,7 +56,14 @@ export default function Auth() {
         : { email: email.trim(), password };
 
       console.log("[AUTH] Attempting login with:", { endpoint, email: email.trim(), isSignUp });
-      const response = await apiRequest("POST", endpoint, payload);
+      
+      // Use direct fetch instead of apiRequest to avoid automatic redirect on 401
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        credentials: "include",
+      });
 
       if (response.ok) {
         const result = await response.json();
