@@ -108,6 +108,9 @@ export default function Auth() {
           // Show the "no account found" popup instead of a toast
           console.log("[AUTH] Showing no account popup for:", email);
           setShowNoAccountPopup(true);
+          // Don't invalidate queries when showing the popup to prevent auth refetch
+          setIsLoggingIn(false);
+          return;
         } else {
           // Show normal error toast for other errors
           toast({
