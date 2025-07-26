@@ -34,6 +34,7 @@ import { setupAuth, isAuthenticated } from "./oauthAuth";
 import { runUserCleanup } from "./cleanup-duplicate-users";
 import { setupAdminRoutes } from "./admin-routes";
 import { emailCampaignService } from "./email-campaigns";
+import { setupAdminEmailCampaignRoutes } from "./admin-email-campaigns";
 
 import { generateRelationshipSpecificTitle } from "./thread-naming";
 import { s3Service } from "./s3-service";
@@ -5486,6 +5487,12 @@ Format each as a complete question they can use to begin this important conversa
       });
     }
   });
+
+  // Setup admin routes
+  setupAdminRoutes(app);
+  
+  // Setup admin email campaign routes  
+  setupAdminEmailCampaignRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;

@@ -40,6 +40,7 @@ import AdminAccessGuard from "@/components/admin-access-guard";
 import RetentionChart from "@/components/retention-chart";
 import AdminDatabaseBrowser from "@/components/admin-database-browser";
 import AdvancedAnalytics from "@/components/advanced-analytics";
+import { AdminEmailCampaigns } from "@/components/admin-email-campaigns";
 
 // Color palette for charts
 const COLORS = ['#4FACFE', '#D7A087', '#22D3EE', '#F59E0B', '#EF4444', '#10B981'];
@@ -651,7 +652,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-slate-800 border-slate-700">
+          <TabsList className="grid w-full grid-cols-6 bg-slate-800 border-slate-700">
             <TabsTrigger value="overview" className="data-[state=active]:bg-ocean data-[state=active]:text-white">
               <BarChart3 className="h-4 w-4 mr-2" />
               Overview
@@ -659,6 +660,10 @@ export default function Admin() {
             <TabsTrigger value="users" className="data-[state=active]:bg-ocean data-[state=active]:text-white">
               <Users className="h-4 w-4 mr-2" />
               Users
+            </TabsTrigger>
+            <TabsTrigger value="emails" className="data-[state=active]:bg-ocean data-[state=active]:text-white">
+              <Mail className="h-4 w-4 mr-2" />
+              Email Campaigns
             </TabsTrigger>
             <TabsTrigger value="analytics" className="data-[state=active]:bg-ocean data-[state=active]:text-white">
               <LineChart className="h-4 w-4 mr-2" />
@@ -681,6 +686,10 @@ export default function Admin() {
 
           <TabsContent value="users" className="space-y-6">
             <UserManagement />
+          </TabsContent>
+
+          <TabsContent value="emails" className="space-y-6">
+            <AdminEmailCampaigns />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">

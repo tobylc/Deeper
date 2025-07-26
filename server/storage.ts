@@ -87,6 +87,33 @@ export interface IStorage {
   cancelPendingEmailCampaigns(userEmail: string, campaignTypes: string[]): Promise<void>;
   getConnectionById(id: number): Promise<Connection | undefined>;
   getConversationById(id: number): Promise<Conversation | undefined>;
+  
+  // Admin Email Campaign Management
+  getEmailCampaignsWithFilters(filters: {
+    status?: string;
+    campaignType?: string;
+    userEmail?: string;
+    startDate?: string;
+    endDate?: string;
+    limit: number;
+    offset: number;
+  }): Promise<EmailCampaign[]>;
+  getEmailCampaignsCount(filters: {
+    status?: string;
+    campaignType?: string;
+    userEmail?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<number>;
+  getEmailCampaignStats(): Promise<{
+    total: number;
+    pending: number;
+    sent: number;
+    failed: number;
+    cancelled: number;
+    byType: Record<string, number>;
+  }>;
+  updateEmailCampaignSchedule(id: number, scheduledAt: Date): Promise<EmailCampaign | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -664,6 +691,140 @@ export class DatabaseStorage implements IStorage {
       .from(conversations)
       .where(eq(conversations.id, id));
     return conversation;
+  }
+
+  // Admin Email Campaign Management Implementation
+  async getEmailCampaignsWithFilters(filters: {
+    status?: string;
+    campaignType?: string;
+    userEmail?: string;
+    startDate?: string;
+    endDate?: string;
+    limit: number;
+    offset: number;
+  }): Promise<EmailCampaign[]> {
+    let query = db.select().from(emailCampaigns);
+    const conditions = [];
+
+    if (filters.status) {
+      conditions.push(eq(emailCampaigns.status, filters.status));
+    }
+    if (filters.campaignType) {
+      conditions.push(eq(emailCampaigns.campaignType, filters.campaignType));
+    }
+    if (filters.userEmail) {
+      conditions.push(eq(emailCampaigns.userEmail, filters.userEmail));
+    }
+    if (filters.startDate) {
+      conditions.push(sql`${emailCampaigns.createdAt} >= ${new Date(filters.startDate)}`);
+    }
+    if (filters.endDate) {
+      conditions.push(sql`${emailCampaigns.createdAt} <= ${new Date(filters.endDate)}`);
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    return await query
+      .orderBy(desc(emailCampaigns.createdAt))
+      .limit(filters.limit)
+      .offset(filters.offset);
+  }
+
+  async getEmailCampaignsCount(filters: {
+    status?: string;
+    campaignType?: string;
+    userEmail?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<number> {
+    let query = db.select({ count: sql<number>`count(*)` }).from(emailCampaigns);
+    const conditions = [];
+
+    if (filters.status) {
+      conditions.push(eq(emailCampaigns.status, filters.status));
+    }
+    if (filters.campaignType) {
+      conditions.push(eq(emailCampaigns.campaignType, filters.campaignType));
+    }
+    if (filters.userEmail) {
+      conditions.push(eq(emailCampaigns.userEmail, filters.userEmail));
+    }
+    if (filters.startDate) {
+      conditions.push(sql`${emailCampaigns.createdAt} >= ${new Date(filters.startDate)}`);
+    }
+    if (filters.endDate) {
+      conditions.push(sql`${emailCampaigns.createdAt} <= ${new Date(filters.endDate)}`);
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    const [result] = await query;
+    return result.count;
+  }
+
+  async getEmailCampaignStats(): Promise<{
+    total: number;
+    pending: number;
+    sent: number;
+    failed: number;
+    cancelled: number;
+    byType: Record<string, number>;
+  }> {
+    // Get status counts
+    const statusCounts = await db
+      .select({
+        status: emailCampaigns.status,
+        count: sql<number>`count(*)`
+      })
+      .from(emailCampaigns)
+      .groupBy(emailCampaigns.status);
+
+    // Get campaign type counts
+    const typeCounts = await db
+      .select({
+        campaignType: emailCampaigns.campaignType,
+        count: sql<number>`count(*)`
+      })
+      .from(emailCampaigns)
+      .groupBy(emailCampaigns.campaignType);
+
+    const stats = {
+      total: 0,
+      pending: 0,
+      sent: 0,
+      failed: 0,
+      cancelled: 0,
+      byType: {} as Record<string, number>
+    };
+
+    // Process status counts
+    for (const { status, count } of statusCounts) {
+      stats.total += count;
+      if (status === 'scheduled') stats.pending = count;
+      else if (status === 'sent') stats.sent = count;
+      else if (status === 'failed') stats.failed = count;
+      else if (status === 'cancelled') stats.cancelled = count;
+    }
+
+    // Process type counts
+    for (const { campaignType, count } of typeCounts) {
+      stats.byType[campaignType] = count;
+    }
+
+    return stats;
+  }
+
+  async updateEmailCampaignSchedule(id: number, scheduledAt: Date): Promise<EmailCampaign | undefined> {
+    const [campaign] = await db
+      .update(emailCampaigns)
+      .set({ scheduledAt })
+      .where(eq(emailCampaigns.id, id))
+      .returning();
+    return campaign;
   }
 }
 
