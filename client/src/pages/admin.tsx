@@ -1419,7 +1419,7 @@ function SubscriptionManagement() {
                 <div className="text-sm font-medium capitalize">{metric.subscription_tier} ({metric.subscription_status})</div>
                 <div className="text-2xl font-bold">{metric.user_count}</div>
                 <div className="text-xs text-muted-foreground">
-                  ${metric.monthly_revenue?.toFixed(2)}/mo
+                  ${Number(metric.monthly_revenue || 0).toFixed(2)}/mo
                 </div>
               </CardContent>
             </Card>

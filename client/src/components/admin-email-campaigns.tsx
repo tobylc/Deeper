@@ -108,40 +108,54 @@ export function AdminEmailCampaigns() {
   // Fetch campaign data with filters
   const { data: campaignData, isLoading: campaignsLoading, refetch: refetchCampaigns } = useQuery({
     queryKey: ['/api/admin/email-campaigns', filters],
-    queryFn: () => {
+    queryFn: async () => {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value.toString());
       });
-      return apiRequest(`/api/admin/email-campaigns?${params}`);
+      const response = await fetch(`/api/admin/email-campaigns?${params}`);
+      return response.json();
     }
   });
 
   // Fetch campaign statistics
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/admin/email-campaigns/stats'],
-    queryFn: () => apiRequest('/api/admin/email-campaigns/stats')
+    queryFn: async () => {
+      const response = await fetch('/api/admin/email-campaigns/stats');
+      return response.json();
+    }
   });
 
   // Fetch template preview
   const { data: templatePreview, isLoading: templateLoading } = useQuery({
     queryKey: ['/api/admin/email-campaigns/template-preview', selectedPreviewType],
-    queryFn: () => apiRequest(`/api/admin/email-campaigns/template-preview/${selectedPreviewType}`)
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/email-campaigns/template-preview/${selectedPreviewType}`);
+      return response.json();
+    }
   });
 
   // Fetch processor status
   const { data: processorStatus } = useQuery({
     queryKey: ['/api/admin/email-campaigns/processor-status'],
-    queryFn: () => apiRequest('/api/admin/email-campaigns/processor-status'),
+    queryFn: async () => {
+      const response = await fetch('/api/admin/email-campaigns/processor-status');
+      return response.json();
+    },
     refetchInterval: 30000 // Refresh every 30 seconds
   });
 
   // Create manual campaign mutation
   const createCampaignMutation = useMutation({
-    mutationFn: (campaignData: any) => apiRequest('/api/admin/email-campaigns/manual', {
-      method: 'POST',
-      body: JSON.stringify(campaignData)
-    }),
+    mutationFn: async (campaignData: any) => {
+      const response = await fetch('/api/admin/email-campaigns/manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(campaignData)
+      });
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "Campaign Created",
@@ -162,11 +176,14 @@ export function AdminEmailCampaigns() {
 
   // Update campaign status mutation
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status, scheduledAt }: { id: number; status: string; scheduledAt?: string }) =>
-      apiRequest(`/api/admin/email-campaigns/${id}/status`, {
+    mutationFn: async ({ id, status, scheduledAt }: { id: number; status: string; scheduledAt?: string }) => {
+      const response = await fetch(`/api/admin/email-campaigns/${id}/status`, {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, scheduledAt })
-      }),
+      });
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "Status Updated",
@@ -178,11 +195,14 @@ export function AdminEmailCampaigns() {
 
   // Send test email mutation
   const testEmailMutation = useMutation({
-    mutationFn: ({ campaignType, testEmail }: { campaignType: string; testEmail: string }) =>
-      apiRequest('/api/admin/email-campaigns/test', {
+    mutationFn: async ({ campaignType, testEmail }: { campaignType: string; testEmail: string }) => {
+      const response = await fetch('/api/admin/email-campaigns/test', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaignType, testEmail })
-      }),
+      });
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "Test Email Sent",
@@ -193,7 +213,10 @@ export function AdminEmailCampaigns() {
 
   // Process campaigns manually mutation
   const processNowMutation = useMutation({
-    mutationFn: () => apiRequest('/api/admin/email-campaigns/process-now', { method: 'POST' }),
+    mutationFn: async () => {
+      const response = await fetch('/api/admin/email-campaigns/process-now', { method: 'POST' });
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "Processing Complete",

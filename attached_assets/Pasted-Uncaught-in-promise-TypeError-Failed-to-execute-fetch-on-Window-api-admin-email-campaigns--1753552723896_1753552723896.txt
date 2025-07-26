@@ -1,0 +1,62 @@
+Uncaught (in promise) TypeError: Failed to execute 'fetch' on 'Window': '/api/admin/email-campaigns?page=1&limit=25' is not a valid HTTP method.
+    at window.fetch (Network.js:219:37)
+    at apiRequest (queryClient.ts:27:21)
+    at queryFn (admin-email-campaigns.tsx:116:14)
+    at Object.fetchFn [as fn] (@tanstack_react-query.js?v=43b326cc:840:14)
+    at run (@tanstack_react-query.js?v=43b326cc:494:49)
+    at Object.start (@tanstack_react-query.js?v=43b326cc:536:9)
+    at _a4.fetch (@tanstack_react-query.js?v=43b326cc:926:41)
+    at _a9.executeFetch_fn (@tanstack_react-query.js?v=43b326cc:2211:51)
+    at _a9.onSubscribe (@tanstack_react-query.js?v=43b326cc:1898:74)
+    at _a9.subscribe (@tanstack_react-query.js?v=43b326cc:24:10)Understand this error
+Network.js:219 Uncaught (in promise) TypeError: Failed to execute 'fetch' on 'Window': '/api/admin/email-campaigns/stats' is not a valid HTTP method.
+    at window.fetch (Network.js:219:37)
+    at apiRequest (queryClient.ts:27:21)
+    at queryFn (admin-email-campaigns.tsx:123:20)
+    at Object.fetchFn [as fn] (@tanstack_react-query.js?v=43b326cc:840:14)
+    at run (@tanstack_react-query.js?v=43b326cc:494:49)
+    at Object.start (@tanstack_react-query.js?v=43b326cc:536:9)
+    at _a4.fetch (@tanstack_react-query.js?v=43b326cc:926:41)
+    at _a9.executeFetch_fn (@tanstack_react-query.js?v=43b326cc:2211:51)
+    at _a9.onSubscribe (@tanstack_react-query.js?v=43b326cc:1898:74)
+    at _a9.subscribe (@tanstack_react-query.js?v=43b326cc:24:10)Understand this error
+Network.js:219 Uncaught (in promise) TypeError: Failed to execute 'fetch' on 'Window': '/api/admin/email-campaigns/template-preview/post_signup' is not a valid HTTP method.
+    at window.fetch (Network.js:219:37)
+    at apiRequest (queryClient.ts:27:21)
+    at queryFn (admin-email-campaigns.tsx:129:20)
+    at Object.fetchFn [as fn] (@tanstack_react-query.js?v=43b326cc:840:14)
+    at run (@tanstack_react-query.js?v=43b326cc:494:49)
+    at Object.start (@tanstack_react-query.js?v=43b326cc:536:9)
+    at _a4.fetch (@tanstack_react-query.js?v=43b326cc:926:41)
+    at _a9.executeFetch_fn (@tanstack_react-query.js?v=43b326cc:2211:51)
+    at _a9.onSubscribe (@tanstack_react-query.js?v=43b326cc:1898:74)
+    at _a9.subscribe (@tanstack_react-query.js?v=43b326cc:24:10)Understand this error
+Network.js:219 Uncaught (in promise) TypeError: Failed to execute 'fetch' on 'Window': '/api/admin/email-campaigns/processor-status' is not a valid HTTP method.
+    at window.fetch (Network.js:219:37)
+    at apiRequest (queryClient.ts:27:21)
+    at queryFn (admin-email-campaigns.tsx:135:20)
+    at Object.fetchFn [as fn] (@tanstack_react-query.js?v=43b326cc:840:14)
+    at run (@tanstack_react-query.js?v=43b326cc:494:49)
+    at Object.start (@tanstack_react-query.js?v=43b326cc:536:9)
+    at _a4.fetch (@tanstack_react-query.js?v=43b326cc:926:41)
+    at _a9.executeFetch_fn (@tanstack_react-query.js?v=43b326cc:2211:51)
+    at _a9.onSubscribe (@tanstack_react-query.js?v=43b326cc:1898:74)
+    at _a9.subscribe (@tanstack_react-query.js?v=43b326cc:24:10)Understand this error
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+ [ReconnectablePort] reconnecting undefined
+ [ReconnectablePort] reconnecting undefined
+ [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+ [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+ [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+contentscript.js:2 [ReconnectablePort] reconnecting undefined
+dom.js?token=837204-639997-433504:893 initEternlDomAPI: domId 914837-471740-468873 true
+initEternlDomAPI @ dom.js?token=837204-639997-433504:893Understand this warning
+dom.js?token=837204-639997-433504:894 initEternlDomAPI: href https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fcff6a38a-c3dc-4f52-b1fd-c79081e89cb6-00-1feemc48ewm22.janeway.replit.dev%2Fadmin&title=Deeper%20-%20AI-Powered%20Relationship%20Communication%20Platform&referrer=https%3A%2F%2Fcff6a38a-c3dc-4f52-b1fd-c79081e89cb6-00-1feemc48ewm22.janeway.replit.dev%2F__replco%2Fworkspace_iframe.html%3FinitialPath%3D%252Fadmin%26id%3D%253Ar3dc%253A&muid=NA&sid=NA&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=837204-639997-433504:894Understand this warning
+dom.js?token=858159-670876-862512:893 initEternlDomAPI: domId 864768-707278-592009 true
+initEternlDomAPI @ dom.js?token=858159-670876-862512:893Understand this warning
+dom.js?token=858159-670876-862512:894 initEternlDomAPI: href https://m.stripe.network/inner.html#url=https%3A%2F%2Fcff6a38a-c3dc-4f52-b1fd-c79081e89cb6-00-1feemc48ewm22.janeway.replit.dev%2Fadmin&title=Deeper%20-%20AI-Powered%20Relationship%20Communication%20Platform&referrer=https%3A%2F%2Fcff6a38a-c3dc-4f52-b1fd-c79081e89cb6-00-1feemc48ewm22.janeway.replit.dev%2F__replco%2Fworkspace_iframe.html%3FinitialPath%3D%252Fadmin%26id%3D%253Ar3dc%253A&muid=NA&sid=NA&version=6&preview=false&__shared_params__[version]=basil
+initEternlDomAPI @ dom.js?token=858159-670876-862512:894Understand this warning
