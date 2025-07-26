@@ -37,6 +37,7 @@ export default function Landing() {
             <div className="flex items-center space-x-2">
               <DeeperLogo size="header" />
             </div>
+            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <Link href="/" className="text-white/80 hover:text-white transition-colors font-inter font-medium">
                 Home
@@ -49,6 +50,15 @@ export default function Landing() {
               </Link>
               <Link href="/auth">
                 <Button className="btn-ocean px-6 py-2">
+                  Login
+                </Button>
+              </Link>
+            </div>
+            
+            {/* Mobile Navigation - Login Button Only */}
+            <div className="flex md:hidden items-center">
+              <Link href="/auth">
+                <Button className="btn-ocean px-4 py-2 text-sm">
                   Login
                 </Button>
               </Link>
