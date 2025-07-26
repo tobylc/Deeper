@@ -556,7 +556,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = (req as any).user;
       
       // Only allow admin users
-      if (!user?.email?.includes('toby@gowithclark.com') && !user?.email?.includes('thetobyclarkshow@gmail.com')) {
+      const adminEmails = ['toby@gowithclark.com', 'thetobyclarkshow@gmail.com', 'tobylc@mac.com'];
+      if (!user?.email || !adminEmails.includes(user.email)) {
         return res.status(403).json({ message: "Unauthorized - Admin access required" });
       }
       

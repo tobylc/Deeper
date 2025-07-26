@@ -12,10 +12,10 @@ const adminOnly = (req: any, res: any, next: any) => {
   
   // Check if user is admin (you can customize this logic)
   const adminEmails = [
-    process.env.ADMIN_EMAIL_1,
-    process.env.ADMIN_EMAIL_2,
-    process.env.ADMIN_EMAIL_3
-  ].filter(Boolean);
+    'toby@gowithclark.com',
+    'thetobyclarkshow@gmail.com', 
+    'tobylc@mac.com'
+  ];
   
   if (!adminEmails.includes(req.user.email)) {
     return res.status(403).json({ error: "Admin access required" });
@@ -161,7 +161,7 @@ export function setupAdminEmailCampaignRoutes(app: Express) {
       const campaign = await storage.createEmailCampaign(campaignData);
       
       // Log admin action
-      console.log(`[ADMIN] Manual campaign created by ${req.user?.email}:`, {
+      console.log(`[ADMIN] Manual campaign created by ${(req.user as any)?.email}:`, {
         campaignId: campaign.id,
         userEmail: campaignData.userEmail,
         campaignType: campaignData.campaignType,
@@ -196,7 +196,7 @@ export function setupAdminEmailCampaignRoutes(app: Express) {
       }
       
       // Log admin action
-      console.log(`[ADMIN] Campaign ${id} status updated by ${req.user?.email}: ${status}`);
+      console.log(`[ADMIN] Campaign ${id} status updated by ${(req.user as any)?.email}: ${status}`);
       
       res.json({ success: true });
     } catch (error) {
@@ -241,7 +241,7 @@ export function setupAdminEmailCampaignRoutes(app: Express) {
       }
       
       // Log admin action
-      console.log(`[ADMIN] Bulk ${action} performed by ${req.user?.email} on ${campaignIds.length} campaigns`);
+      console.log(`[ADMIN] Bulk ${action} performed by ${(req.user as any)?.email} on ${campaignIds.length} campaigns`);
       
       res.json({ success: true, results });
     } catch (error) {
@@ -277,7 +277,7 @@ export function setupAdminEmailCampaignRoutes(app: Express) {
       await emailCampaignService.processPendingCampaigns();
       
       // Log admin action
-      console.log(`[ADMIN] Test campaign sent by ${req.user?.email} to ${testEmail}`);
+      console.log(`[ADMIN] Test campaign sent by ${(req.user as any)?.email} to ${testEmail}`);
       
       res.json({ 
         success: true, 
@@ -311,7 +311,7 @@ export function setupAdminEmailCampaignRoutes(app: Express) {
     try {
       await emailCampaignService.processPendingCampaigns();
       
-      console.log(`[ADMIN] Manual campaign processing triggered by ${req.user?.email}`);
+      console.log(`[ADMIN] Manual campaign processing triggered by ${(req.user as any)?.email}`);
       
       res.json({ 
         success: true, 

@@ -8,7 +8,11 @@ import { z } from "zod";
 
 // Admin authentication middleware
 const isAdmin = (req: any, res: any, next: any) => {
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(email => email.trim());
+  const adminEmails = [
+    'toby@gowithclark.com',
+    'thetobyclarkshow@gmail.com', 
+    'tobylc@mac.com'
+  ];
   
   if (!req.user || !adminEmails.includes(req.user.email)) {
     return res.status(403).json({ error: 'Admin access required' });

@@ -13,7 +13,11 @@ export default function AdminAccessGuard({ children }: AdminAccessGuardProps) {
   const { user, isLoading } = useAuth();
 
   // Check if user is admin (you can modify this logic based on your admin setup)
-  const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map(email => email.trim());
+  const adminEmails = [
+    'toby@gowithclark.com',
+    'thetobyclarkshow@gmail.com', 
+    'tobylc@mac.com'
+  ];
   const isAdmin = user?.email && adminEmails.includes(user.email);
 
   if (isLoading) {
