@@ -232,13 +232,26 @@ export function setupAdminRoutes(app: Express) {
       }
 
       // Get user's connections
-      const userConnections: any[] = [];
+      const userConnections = await db.select().from(connections)
+        .where(or(
+          eq(connections.inviterEmail, user[0].email!),
+          eq(connections.inviteeEmail, user[0].email!)
+        ))
+        .orderBy(desc(connections.createdAt));
 
-      // Get user's conversations  
-      const userConversations: any[] = [];
+      // Get user's conversations
+      const userConversations = await db.select().from(conversations)
+        .where(or(
+          eq(conversations.participant1Email, user[0].email!),
+          eq(conversations.participant2Email, user[0].email!)
+        ))
+        .orderBy(desc(conversations.lastActivityAt));
 
       // Get user's messages
-      const userMessages: any[] = [];
+      const userMessages = await db.select().from(messages)
+        .where(eq(messages.senderEmail, user[0].email!))
+        .orderBy(desc(messages.createdAt))
+        .limit(50);
 
       res.json({
         user: user[0],
@@ -290,7 +303,12 @@ export function setupAdminRoutes(app: Express) {
       const status = req.query.status as string;
       const offset = (page - 1) * limit;
 
-      const connectionList: any[] = [];
+      const connectionList = await db.select()
+        .from(connections)
+        .where(status ? eq(connections.status, status) : undefined)
+        .orderBy(desc(connections.createdAt))
+        .limit(limit)
+        .offset(offset);
 
       const totalCount = await db.select({ count: count() }).from(connections);
 
@@ -657,6 +675,152 @@ export function setupAdminRoutes(app: Express) {
     } catch (error) {
       console.error('[ADMIN] Export error:', error);
       res.status(500).json({ error: 'Failed to export data' });
+    }
+  });
+
+  // Delete connection
+  app.delete('/api/admin/connections/:connectionId', rateLimit(60, 20), isAdmin, async (req, res) => {
+    try {
+      const { connectionId } = req.params;
+      
+      await db.delete(connections).where(eq(connections.id, parseInt(connectionId)));
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('[ADMIN] Delete connection error:', error);
+      res.status(500).json({ error: 'Failed to delete connection' });
+    }
+  });
+
+  // Subscription management endpoints
+  app.get('/api/admin/subscriptions', rateLimit(60, 50), isAdmin, async (req, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const tier = req.query.tier as string;
+      const status = req.query.status as string;
+      const offset = (page - 1) * limit;
+
+      let query = db.select().from(users);
+      const conditions = [];
+
+      if (tier) conditions.push(eq(users.subscriptionTier, tier));
+      if (status) conditions.push(eq(users.subscriptionStatus, status));
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+
+      const subscriptionList = await query
+        .orderBy(desc(users.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      const totalCount = await db.select({ count: count() }).from(users);
+
+      // Calculate revenue metrics
+      const revenueMetrics = await db.execute(sql`
+        SELECT 
+          subscription_tier,
+          subscription_status,
+          COUNT(*) as user_count,
+          CASE 
+            WHEN subscription_tier = 'basic' THEN COUNT(*) * 9.95
+            WHEN subscription_tier = 'advanced' THEN COUNT(*) * 19.95
+            WHEN subscription_tier = 'unlimited' THEN COUNT(*) * 39.95
+            ELSE 0
+          END as monthly_revenue
+        FROM users
+        WHERE subscription_tier != 'trial'
+        GROUP BY subscription_tier, subscription_status
+      `);
+
+      res.json({
+        subscriptions: subscriptionList,
+        metrics: revenueMetrics.rows,
+        pagination: {
+          page,
+          limit,
+          total: totalCount[0].count,
+          totalPages: Math.ceil(totalCount[0].count / limit)
+        }
+      });
+    } catch (error) {
+      console.error('[ADMIN] Subscriptions list error:', error);
+      res.status(500).json({ error: 'Failed to fetch subscriptions' });
+    }
+  });
+
+  // Bulk subscription updates
+  app.patch('/api/admin/subscriptions/bulk', rateLimit(60, 10), isAdmin, async (req, res) => {
+    try {
+      const { userIds, subscriptionTier, subscriptionStatus } = req.body;
+      
+      if (!userIds || !Array.isArray(userIds)) {
+        return res.status(400).json({ error: 'User IDs array required' });
+      }
+
+      const tierLimits = {
+        trial: 1,
+        basic: 1,
+        advanced: 3,
+        unlimited: 999
+      };
+
+      const updateData: any = {};
+      if (subscriptionTier) {
+        updateData.subscriptionTier = subscriptionTier;
+        updateData.maxConnections = tierLimits[subscriptionTier as keyof typeof tierLimits] || 1;
+      }
+      if (subscriptionStatus) updateData.subscriptionStatus = subscriptionStatus;
+      updateData.updatedAt = new Date();
+
+      for (const userId of userIds) {
+        await storage.updateUser(userId, updateData);
+      }
+
+      res.json({ success: true, updated: userIds.length });
+    } catch (error) {
+      console.error('[ADMIN] Bulk subscription update error:', error);
+      res.status(500).json({ error: 'Failed to update subscriptions' });
+    }
+  });
+
+  // Advanced user search with filters
+  app.get('/api/admin/users/search', rateLimit(60, 100), isAdmin, async (req, res) => {
+    try {
+      const { query: searchQuery, tier, status, dateFrom, dateTo } = req.query;
+      
+      let query = db.select().from(users);
+      const conditions = [];
+
+      if (searchQuery) {
+        conditions.push(
+          or(
+            sql`${users.email} ILIKE ${`%${searchQuery}%`}`,
+            sql`${users.firstName} ILIKE ${`%${searchQuery}%`}`,
+            sql`${users.lastName} ILIKE ${`%${searchQuery}%`}`
+          )
+        );
+      }
+
+      if (tier) conditions.push(eq(users.subscriptionTier, tier as string));
+      if (status) conditions.push(eq(users.subscriptionStatus, status as string));
+      if (dateFrom) conditions.push(gte(users.createdAt, new Date(dateFrom as string)));
+      if (dateTo) conditions.push(lte(users.createdAt, new Date(dateTo as string)));
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+
+      const results = await query
+        .orderBy(desc(users.createdAt))
+        .limit(100);
+
+      res.json({ users: results });
+    } catch (error) {
+      console.error('[ADMIN] User search error:', error);
+      res.status(500).json({ error: 'Failed to search users' });
     }
   });
 
