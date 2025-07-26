@@ -85,8 +85,8 @@ export function AdminEmailCampaigns() {
 
   // State for filters and pagination
   const [filters, setFilters] = useState({
-    status: '',
-    campaignType: '',
+    status: 'all',
+    campaignType: 'all',
     userEmail: '',
     startDate: '',
     endDate: '',
@@ -468,7 +468,7 @@ export function AdminEmailCampaigns() {
                       <SelectValue placeholder="All statuses" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All statuses</SelectItem>
+                      <SelectItem value="all">All statuses</SelectItem>
                       <SelectItem value="scheduled">Scheduled</SelectItem>
                       <SelectItem value="sent">Sent</SelectItem>
                       <SelectItem value="failed">Failed</SelectItem>
@@ -483,7 +483,7 @@ export function AdminEmailCampaigns() {
                       <SelectValue placeholder="All types" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All types</SelectItem>
+                      <SelectItem value="all">All types</SelectItem>
                       {Object.entries(campaignTypeLabels).map(([value, label]) => (
                         <SelectItem key={value} value={value}>{label}</SelectItem>
                       ))}
