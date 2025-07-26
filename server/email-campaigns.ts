@@ -242,7 +242,7 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
       toEmail: campaign.userEmail,
       fromEmail: 'notifications@joindeeper.com',
       subject: campaign.emailSubject,
-      htmlContent: this.convertToHtml(campaign.emailContent),
+      htmlContent: this.convertToHtml(campaign.emailContent, campaign.campaignType),
       textContent: campaign.emailContent,
       emailType: 'campaign',
       status: 'sent' as const,
@@ -254,39 +254,262 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
   }
   
   /**
-   * Convert plain text content to HTML
+   * Convert plain text content to HTML with Deeper's design system
    */
-  private convertToHtml(content: string): string {
+  private convertToHtml(content: string, campaignType: string = 'general'): string {
     const appUrl = process.env.REPLIT_DEV_DOMAIN 
       ? `https://${process.env.REPLIT_DEV_DOMAIN}`
       : 'https://joindeeper.com';
+
+    // Use different gradient variations for visual interest while maintaining brand consistency
+    const gradientVariations = {
+      post_signup: 'linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%)',
+      inviter_nudge: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+      pending_invitation: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      turn_reminder: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      general: 'linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%)'
+    };
+
+    // Campaign-specific headers and subtitles
+    const campaignHeaders = {
+      post_signup: { title: 'Welcome to Deeper', subtitle: 'Start building meaningful connections' },
+      inviter_nudge: { title: 'Ready to Connect?', subtitle: 'Someone special is waiting to hear from you' },
+      pending_invitation: { title: 'Invitation Waiting', subtitle: 'Your connection is ready to begin' },
+      turn_reminder: { title: 'Your Turn', subtitle: 'Continue your meaningful conversation' },
+      general: { title: 'Deeper', subtitle: 'Building meaningful connections' }
+    };
+
+    const headerGradient = gradientVariations[campaignType as keyof typeof gradientVariations] || gradientVariations.general;
+    const headerInfo = campaignHeaders[campaignType as keyof typeof campaignHeaders] || campaignHeaders.general;
       
     return `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Deeper</title>
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-          .content { background: #f8fafc; padding: 30px; border-radius: 0 0 8px 8px; }
-          .button { display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
-          .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #666; }
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+          
+          body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            line-height: 1.6; 
+            color: #1e293b; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f8fafc;
+          }
+          
+          .email-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+          }
+          
+          .header { 
+            background: ${headerGradient}; 
+            color: white; 
+            padding: 30px; 
+            text-align: center; 
+          }
+          
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+          }
+          
+          .header p {
+            margin: 8px 0 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+            font-weight: 400;
+          }
+          
+          .content { 
+            background: #ffffff; 
+            padding: 40px 30px; 
+          }
+          
+          .content p {
+            color: #374151;
+            font-size: 16px;
+            line-height: 1.7;
+            margin: 0 0 16px 0;
+          }
+          
+          .content p:last-child {
+            margin-bottom: 0;
+          }
+          
+          .button-container {
+            text-align: center;
+            margin: 30px 0;
+          }
+          
+          .button { 
+            display: inline-block; 
+            background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); 
+            color: white; 
+            padding: 14px 28px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+          }
+          
+          .button:hover {
+            box-shadow: 0 6px 16px rgba(79, 172, 254, 0.4);
+            transform: translateY(-1px);
+          }
+          
+          .highlight-box {
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 212, 255, 0.1) 100%);
+            border: 1px solid rgba(79, 172, 254, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          
+          .highlight-box p {
+            color: #1e40af !important;
+            font-weight: 500;
+            margin: 0;
+          }
+          
+          .footer { 
+            background: #f8fafc;
+            text-align: center; 
+            padding: 25px 30px;
+            border-top: 1px solid #e2e8f0;
+          }
+          
+          .footer p {
+            color: #94a3b8; 
+            font-size: 14px; 
+            margin: 0;
+            line-height: 1.5;
+          }
+          
+          /* High contrast mode support - WCAG AAA compliant */
+          @media (prefers-contrast: high) {
+            body { color: #000000; background-color: #ffffff; }
+            .content p { color: #000000; }
+            .footer p { color: #000000; }
+            .button { 
+              background: #000000; 
+              color: #ffffff; 
+              border: 2px solid #000000;
+            }
+            .highlight-box {
+              background: #f0f0f0;
+              border: 2px solid #000000;
+            }
+            .highlight-box p {
+              color: #000000 !important;
+            }
+          }
+          
+          /* Reduced motion support */
+          @media (prefers-reduced-motion: reduce) {
+            .button:hover {
+              transform: none;
+            }
+          }
+          
+          /* Dark mode support */
+          @media (prefers-color-scheme: dark) {
+            body { background-color: #0f172a; }
+            .email-container { background: #1e293b; }
+            .content { background: #1e293b; }
+            .content p { color: #e2e8f0; }
+            .footer { background: #0f172a; }
+          }
+          
+          /* Mobile responsiveness */
+          @media (max-width: 600px) {
+            body { padding: 10px; }
+            .header { padding: 25px 20px; }
+            .content { padding: 30px 20px; }
+            .footer { padding: 20px; }
+          }
         </style>
       </head>
       <body>
-        <div class="header">
-          <h1>Deeper</h1>
-        </div>
-        <div class="content">
-          ${content.split('\n').map(line => `<p>${line}</p>`).join('')}
-          <a href="${appUrl}/dashboard" class="button">Open Deeper</a>
-        </div>
-        <div class="footer">
-          <p>Sent from Deeper - Building meaningful connections through thoughtful conversation</p>
+        <div class="email-container">
+          <div class="header">
+            <h1>${headerInfo.title}</h1>
+            <p>${headerInfo.subtitle}</p>
+          </div>
+          <div class="content">
+            ${this.formatEmailContent(content, campaignType, appUrl)}
+          </div>
+          <div class="footer">
+            <p>Sent from Deeper - Building meaningful connections through thoughtful conversation</p>
+          </div>
         </div>
       </body>
       </html>
+    `;
+  }
+
+  /**
+   * Format email content with campaign-specific styling and CTAs
+   */
+  private formatEmailContent(content: string, campaignType: string, appUrl: string): string {
+    const paragraphs = content.split('\n\n').filter(p => p.trim());
+    const formattedParagraphs = paragraphs.map(paragraph => {
+      const trimmed = paragraph.trim();
+      if (!trimmed) return '';
+      
+      // Highlight important calls to action
+      if (trimmed.includes('Ready to get started?') || 
+          trimmed.includes('Take that first step') ||
+          trimmed.includes('Don\'t wait any longer')) {
+        return `<div class="highlight-box"><p>${trimmed.replace(/\n/g, '<br>')}</p></div>`;
+      }
+      
+      return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
+    }).join('');
+
+    // Campaign-specific call-to-action buttons
+    const ctaButtons = {
+      post_signup: {
+        text: 'Start Your First Connection',
+        url: `${appUrl}/dashboard`
+      },
+      inviter_nudge: {
+        text: 'Send Your First Invitation',
+        url: `${appUrl}/dashboard`
+      },
+      pending_invitation: {
+        text: 'Accept Invitation',
+        url: `${appUrl}/dashboard`
+      },
+      turn_reminder: {
+        text: 'Continue Conversation',
+        url: `${appUrl}/dashboard`
+      },
+      general: {
+        text: 'Open Deeper',
+        url: `${appUrl}/dashboard`
+      }
+    };
+
+    const cta = ctaButtons[campaignType as keyof typeof ctaButtons] || ctaButtons.general;
+
+    return `
+      ${formattedParagraphs}
+      <div class="button-container">
+        <a href="${cta.url}" class="button">${cta.text}</a>
+      </div>
     `;
   }
   
