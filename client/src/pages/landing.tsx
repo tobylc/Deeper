@@ -32,7 +32,7 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="absolute top-0 left-0 right-0 z-50 glass-nav">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
               <DeeperLogo size="header" />
@@ -69,30 +69,30 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-32">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8 text-center">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-16">
-            <h1 className="text-5xl lg:text-7xl font-inter font-bold text-foreground mb-8 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-inter font-bold text-foreground mb-8 leading-tight">
               Cultivate meaningful
               <br />
               <span className="text-ocean-blue">connections.</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-12 font-inter max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl text-muted-foreground mb-12 font-inter max-w-2xl mx-auto leading-relaxed px-4 sm:px-0">
               Create exclusive, private spaces for thoughtful dialogue that deepens relationships over time.
             </p>
-            <div className="flex justify-center">
+            <div className="flex justify-center px-4 sm:px-0">
               <Link href="/checkout/basic">
-                <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-4">
-                  <span className="text-lg font-semibold">60 Day Free Trial</span>
-                  <span className="text-sm font-normal opacity-90">No Credit Card Required</span>
+                <Button size="lg" className="btn-ocean px-6 sm:px-8 flex flex-col gap-1 h-auto py-4 text-center min-w-0">
+                  <span className="text-base sm:text-lg font-semibold">60 Day Free Trial</span>
+                  <span className="text-xs sm:text-sm font-normal opacity-90">No Credit Card Required</span>
                 </Button>
               </Link>
             </div>
           </div>
 
           {/* Feature Cards */}
-          <div className="grid md:grid-cols-3 gap-8 mt-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-20 px-4 sm:px-0">
             {/* Structured Conversations */}
-            <Card className="bg-card p-8 text-left smooth-enter border-2 border-gray-600 rounded-xl shadow-lg">
+            <Card className="bg-card p-6 sm:p-8 text-left smooth-enter border-2 border-gray-600 rounded-xl shadow-lg">
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
                   <MessageSquare className="w-6 h-6 text-primary" />
@@ -107,7 +107,7 @@ export default function Landing() {
             </Card>
 
             {/* Curated Question Pools */}
-            <Card className="bg-card p-8 text-left smooth-enter border-2 border-gray-600 rounded-xl shadow-lg">
+            <Card className="bg-card p-6 sm:p-8 text-left smooth-enter border-2 border-gray-600 rounded-xl shadow-lg">
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
                   <HelpCircle className="w-6 h-6 text-primary" />
@@ -122,7 +122,7 @@ export default function Landing() {
             </Card>
 
             {/* Private Communication Spaces */}
-            <Card className="bg-card p-8 text-left smooth-enter border-2 border-gray-600 rounded-xl shadow-lg">
+            <Card className="bg-card p-6 sm:p-8 text-left smooth-enter border-2 border-gray-600 rounded-xl shadow-lg">
               <CardContent className="p-0">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
                   <Shield className="w-6 h-6 text-primary" />
@@ -140,13 +140,13 @@ export default function Landing() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-24 bg-muted/30">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-inter font-bold text-foreground mb-16">
+      <section className="py-16 sm:py-24 bg-muted/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-2xl sm:text-3xl font-inter font-bold text-foreground mb-12 sm:mb-16">
             Simple steps to deeper connection
           </h2>
           
-          <div className="grid md:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
             {[1, 2, 3].map((stepNumber) => (
               <div key={stepNumber} className="smooth-enter">
                 <div 
@@ -203,23 +203,23 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16" style={{ background: 'var(--nav-gray)' }}>
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-inter font-bold text-white mb-6">
+      <section className="py-12 sm:py-16" style={{ background: 'var(--nav-gray)' }}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-2xl sm:text-3xl font-inter font-bold text-white mb-6">
             Ready to cultivate meaningful connections?
           </h2>
-          <p className="text-xl text-white/90 mb-8">
+          <p className="text-lg sm:text-xl text-white/90 mb-8 px-4 sm:px-0">
             Join thousands discovering the power of structured, intentional dialogue
           </p>
-          <div className="flex flex-col gap-4 justify-center items-center">
+          <div className="flex flex-col gap-4 justify-center items-center px-4 sm:px-0">
             <Link href="/checkout/basic">
-              <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-4">
-                <span className="text-lg font-semibold">60 Day Free Trial</span>
-                <span className="text-sm font-normal opacity-90">No Credit Card Required</span>
+              <Button size="lg" className="btn-ocean px-6 sm:px-8 flex flex-col gap-1 h-auto py-4 text-center min-w-0">
+                <span className="text-base sm:text-lg font-semibold">60 Day Free Trial</span>
+                <span className="text-xs sm:text-sm font-normal opacity-90">No Credit Card Required</span>
               </Button>
             </Link>
             <Link href="/features">
-              <Button size="lg" variant="outline" className="border-white bg-transparent text-white hover:bg-white hover:text-gray-900 px-8">
+              <Button size="lg" variant="outline" className="border-white bg-transparent text-white hover:bg-white hover:text-gray-900 px-6 sm:px-8">
                 Learn more
               </Button>
             </Link>
