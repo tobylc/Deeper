@@ -71,8 +71,8 @@ export function validateMessageContent(req: Request, res: Response, next: NextFu
       return res.status(400).json({ message: "Message content cannot be empty" });
     }
     
-    if (content.length > 2000) {
-      return res.status(400).json({ message: "Message content too long (max 2000 characters)" });
+    if (content.length > 50000) {
+      return res.status(400).json({ message: "Message content too long (max 50,000 characters)" });
     }
     
     // Update the body with trimmed content
