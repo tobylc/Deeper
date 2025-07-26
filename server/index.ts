@@ -4,6 +4,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { globalErrorHandler, notFoundHandler, setupGracefulShutdown } from "./error-handling";
 import { initializeWebSocket } from "./websocket";
+import { campaignProcessor } from "./campaign-processor";
 
 const app = express();
 
@@ -54,6 +55,10 @@ app.use((req, res, next) => {
     // Initialize WebSocket server for real-time updates
     const wsManager = initializeWebSocket(server);
     log('[WebSocket] Real-time dashboard updates enabled');
+
+    // Start email campaign processor
+    campaignProcessor.start();
+    log('[EMAIL-CAMPAIGNS] Campaign processor started');
 
     // Setup graceful shutdown with database cleanup
     setupGracefulShutdown(server);

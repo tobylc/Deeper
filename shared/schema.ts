@@ -153,6 +153,26 @@ export const verificationCodes = pgTable(
 
 export const insertVerificationCodeSchema = createInsertSchema(verificationCodes);
 
+// Email campaigns table for strategic user engagement
+export const emailCampaigns = pgTable("email_campaigns", {
+  id: serial("id").primaryKey(),
+  userEmail: text("user_email").notNull(),
+  campaignType: text("campaign_type").notNull(), // 'post_signup', 'inviter_nudge', 'invitee_nudge', 'pending_invitation', 'turn_reminder'
+  triggerEvent: text("trigger_event").notNull(), // 'signup', 'invitation_sent', 'no_invitation', 'no_response', 'no_turn_response'
+  userType: text("user_type").notNull(), // 'inviter', 'invitee'
+  scheduledAt: timestamp("scheduled_at").notNull(),
+  sentAt: timestamp("sent_at"),
+  status: text("status").notNull().default("scheduled"), // 'scheduled', 'sent', 'cancelled', 'failed'
+  connectionId: integer("connection_id"), // Reference to specific connection if applicable
+  conversationId: integer("conversation_id"), // Reference to specific conversation if applicable
+  delayHours: integer("delay_hours").notNull().default(24), // Hours to wait before sending
+  emailSubject: text("email_subject").notNull(),
+  emailContent: text("email_content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertEmailCampaignSchema = createInsertSchema(emailCampaigns);
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -168,3 +188,5 @@ export type SMSMessage = typeof smsMessages.$inferSelect;
 export type InsertSMSMessage = z.infer<typeof insertSMSSchema>;
 export type VerificationCode = typeof verificationCodes.$inferSelect;
 export type InsertVerificationCode = z.infer<typeof insertVerificationCodeSchema>;
+export type EmailCampaign = typeof emailCampaigns.$inferSelect;
+export type InsertEmailCampaign = z.infer<typeof insertEmailCampaignSchema>;

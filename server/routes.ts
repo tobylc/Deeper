@@ -33,6 +33,7 @@ import { jobQueue } from "./jobs";
 import { setupAuth, isAuthenticated } from "./oauthAuth";
 import { runUserCleanup } from "./cleanup-duplicate-users";
 import { setupAdminRoutes } from "./admin-routes";
+import { emailCampaignService } from "./email-campaigns";
 
 import { generateRelationshipSpecificTitle } from "./thread-naming";
 import { s3Service } from "./s3-service";
@@ -928,6 +929,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Accept the connection
       await storage.updateConnectionStatus(connectionId, 'accepted');
 
+      // Cancel pending invitation reminder campaigns since invitation was accepted
+      try {
+        await emailCampaignService.cancelPendingCampaigns(connection.inviteeEmail, ['pending_invitation']);
+        console.log("[CAMPAIGNS] Cancelled pending invitation campaigns for accepted connection:", connection.id);
+      } catch (campaignError) {
+        console.error("[CAMPAIGNS] Failed to cancel pending invitation campaigns:", campaignError);
+      }
+
       // Send notification emails
       try {
         await notificationService.sendConnectionAccepted(connection);
@@ -1058,6 +1067,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!updatedConnection) {
         return res.status(500).json({ message: "Failed to update connection" });
+      }
+
+      // Cancel pending invitation reminder campaigns since invitation was accepted
+      try {
+        await emailCampaignService.cancelPendingCampaigns(connection.inviteeEmail, ['pending_invitation']);
+        console.log("[CAMPAIGNS] Cancelled pending invitation campaigns for new user acceptance:", connection.id);
+      } catch (campaignError) {
+        console.error("[CAMPAIGNS] Failed to cancel pending invitation campaigns:", campaignError);
       }
 
       // Don't auto-create conversation - let inviter start it manually from dashboard
@@ -1305,6 +1322,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         connection
       });
 
+      // Schedule email campaigns for this invitation
+      try {
+        // Cancel any pending inviter nudge campaigns since they're now sending an invitation
+        await emailCampaignService.cancelPendingCampaigns(connection.inviterEmail, ['inviter_nudge']);
+        
+        // Schedule pending invitation reminders for the invitee
+        await emailCampaignService.schedulePendingInvitationReminders(connection);
+        
+        console.log("[CAMPAIGNS] Scheduled invitation campaigns for connection:", connection.id);
+      } catch (campaignError) {
+        console.error("[CAMPAIGNS] Failed to schedule invitation campaigns:", campaignError);
+      }
+
       // Track connection creation
       analytics.track({
         type: 'connection_created',
@@ -1393,6 +1423,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Failed to update connection status" });
       }
 
+      // Cancel pending invitation reminder campaigns since invitation was accepted
+      try {
+        await emailCampaignService.cancelPendingCampaigns(connection.inviteeEmail, ['pending_invitation']);
+        console.log("[CAMPAIGNS] Cancelled pending invitation campaigns for accepted connection:", connection.id);
+      } catch (campaignError) {
+        console.error("[CAMPAIGNS] Failed to cancel pending invitation campaigns:", campaignError);
+      }
+
       // Don't auto-create conversation - let inviter start it manually from dashboard
 
       // Queue acceptance notification email
@@ -1458,6 +1496,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!connection) {
         return res.status(500).json({ message: "Failed to update connection status" });
+      }
+
+      // Cancel pending invitation reminder campaigns since invitation was declined
+      try {
+        await emailCampaignService.cancelPendingCampaigns(connection.inviteeEmail, ['pending_invitation']);
+        console.log("[CAMPAIGNS] Cancelled pending invitation campaigns for declined connection:", connection.id);
+      } catch (campaignError) {
+        console.error("[CAMPAIGNS] Failed to cancel pending invitation campaigns:", campaignError);
       }
 
       // Queue decline notification email
@@ -3640,6 +3686,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : conversation.participant1Email;
       await storage.updateConversationTurn(conversationId, nextTurn);
 
+      // Cancel any existing turn reminder campaigns for the sender since they just responded
+      try {
+        await emailCampaignService.cancelPendingCampaigns(messageData.senderEmail, ['turn_reminder']);
+        console.log(`[CAMPAIGNS] Cancelled turn reminder campaigns for sender: ${messageData.senderEmail}`);
+      } catch (campaignError) {
+        console.error("[CAMPAIGNS] Failed to cancel turn reminder campaigns:", campaignError);
+      }
+
       // Send turn notification (email and/or SMS based on user preferences)
       try {
         console.log(`[NOTIFICATION] Sending turn notification to ${nextTurn} from ${messageData.senderEmail}`);
@@ -3655,6 +3709,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('[NOTIFICATION] Failed to send turn notification:', error);
         console.error('[NOTIFICATION] Error details:', error);
         // Don't fail the message sending if notification fails
+      }
+
+      // Schedule turn reminder campaigns for the recipient
+      try {
+        await emailCampaignService.scheduleTurnReminderCampaigns(conversationId, nextTurn, messageData.senderEmail);
+        console.log(`[CAMPAIGNS] Scheduled turn reminder campaigns for recipient: ${nextTurn}`);
+      } catch (campaignError) {
+        console.error("[CAMPAIGNS] Failed to schedule turn reminder campaigns:", campaignError);
       }
 
       // Send real-time WebSocket notifications to both participants
@@ -4059,6 +4121,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : conversation.participant1Email;
       await storage.updateConversationTurn(conversationId, nextTurn);
 
+      // Cancel any existing turn reminder campaigns for the sender since they just responded
+      try {
+        await emailCampaignService.cancelPendingCampaigns(senderEmail, ['turn_reminder']);
+        console.log(`[CAMPAIGNS] Cancelled turn reminder campaigns for voice message sender: ${senderEmail}`);
+      } catch (campaignError) {
+        console.error("[CAMPAIGNS] Failed to cancel turn reminder campaigns for voice message:", campaignError);
+      }
+
       // Send turn notification
       try {
         await notificationService.sendTurnNotification({
@@ -4070,6 +4140,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } catch (error) {
         console.error('[NOTIFICATION] Failed to send turn notification:', error);
+      }
+
+      // Schedule turn reminder campaigns for the recipient
+      try {
+        await emailCampaignService.scheduleTurnReminderCampaigns(conversationId, nextTurn, senderEmail);
+        console.log(`[CAMPAIGNS] Scheduled turn reminder campaigns for voice message recipient: ${nextTurn}`);
+      } catch (campaignError) {
+        console.error("[CAMPAIGNS] Failed to schedule turn reminder campaigns for voice message:", campaignError);
       }
 
       // Send real-time WebSocket notifications

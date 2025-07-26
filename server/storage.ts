@@ -1,12 +1,13 @@
 import { 
-  users, connections, conversations, messages, emails, smsMessages, verificationCodes,
+  users, connections, conversations, messages, emails, smsMessages, verificationCodes, emailCampaigns,
   type User, type InsertUser,
   type Connection, type InsertConnection,
   type Conversation, type InsertConversation,
   type Message, type InsertMessage,
   type Email, type InsertEmail,
   type SMSMessage, type InsertSMSMessage,
-  type VerificationCode, type InsertVerificationCode
+  type VerificationCode, type InsertVerificationCode,
+  type EmailCampaign, type InsertEmailCampaign
 } from "../shared/schema";
 import { db } from "./db";
 import { eq, or, and, sql, desc } from "drizzle-orm";
@@ -78,6 +79,14 @@ export interface IStorage {
   getVerificationCode(email: string, phoneNumber: string): Promise<VerificationCode | undefined>;
   markVerificationCodeUsed(id: number): Promise<void>;
   cleanupExpiredVerificationCodes(): Promise<void>;
+
+  // Email Campaigns
+  createEmailCampaign(campaign: InsertEmailCampaign): Promise<EmailCampaign>;
+  getPendingEmailCampaigns(before: Date): Promise<EmailCampaign[]>;
+  updateEmailCampaignStatus(id: number, status: string): Promise<EmailCampaign | undefined>;
+  cancelPendingEmailCampaigns(userEmail: string, campaignTypes: string[]): Promise<void>;
+  getConnectionById(id: number): Promise<Connection | undefined>;
+  getConversationById(id: number): Promise<Conversation | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -592,6 +601,69 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  // Email Campaigns
+  async createEmailCampaign(campaign: InsertEmailCampaign): Promise<EmailCampaign> {
+    const [emailCampaign] = await db
+      .insert(emailCampaigns)
+      .values(campaign)
+      .returning();
+    return emailCampaign;
+  }
+
+  async getPendingEmailCampaigns(before: Date): Promise<EmailCampaign[]> {
+    return await db
+      .select()
+      .from(emailCampaigns)
+      .where(
+        and(
+          eq(emailCampaigns.status, 'scheduled'),
+          sql`${emailCampaigns.scheduledAt} <= ${before}`
+        )
+      )
+      .orderBy(emailCampaigns.scheduledAt);
+  }
+
+  async updateEmailCampaignStatus(id: number, status: string): Promise<EmailCampaign | undefined> {
+    const [campaign] = await db
+      .update(emailCampaigns)
+      .set({ 
+        status,
+        sentAt: status === 'sent' ? new Date() : undefined
+      })
+      .where(eq(emailCampaigns.id, id))
+      .returning();
+    return campaign;
+  }
+
+  async cancelPendingEmailCampaigns(userEmail: string, campaignTypes: string[]): Promise<void> {
+    await db
+      .update(emailCampaigns)
+      .set({ status: 'cancelled' })
+      .where(
+        and(
+          eq(emailCampaigns.userEmail, userEmail),
+          eq(emailCampaigns.status, 'scheduled'),
+          sql`${emailCampaigns.campaignType} = ANY(${campaignTypes})`
+        )
+      );
+  }
+
+  async getConnectionById(id: number): Promise<Connection | undefined> {
+    const [connection] = await db
+      .select()
+      .from(connections)
+      .where(eq(connections.id, id));
+    return connection;
+  }
+
+  async getConversationById(id: number): Promise<Conversation | undefined> {
+    const [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, id));
+    return conversation;
   }
 }
 

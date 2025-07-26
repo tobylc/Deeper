@@ -116,9 +116,10 @@ async function upsertUser(profile: any, provider: string, req?: any) {
   }
   
   // Only create new user if no existing user found with this email
+  let newUser;
   if (email) {
     console.log(`[AUTH] Creating new Google user with email: ${email}`);
-    return await storage.createInviterUser({
+    newUser = await storage.createInviterUser({
       id: `${provider}_${profile.id}`,
       email: email,
       firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || 'User',
@@ -128,7 +129,7 @@ async function upsertUser(profile: any, provider: string, req?: any) {
     });
   } else {
     // Fallback for users without email
-    return await storage.createInviterUser({
+    newUser = await storage.createInviterUser({
       id: `${provider}_${profile.id}`,
       email: `${provider}_${profile.id}@${provider}.com`,
       firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || 'User',
@@ -137,6 +138,20 @@ async function upsertUser(profile: any, provider: string, req?: any) {
       googleId: provider === 'google' ? profile.id : undefined,
     });
   }
+  
+  // Schedule post-signup email campaigns for new OAuth users
+  if (newUser) {
+    try {
+      const { emailCampaignService } = require('./email-campaigns');
+      await emailCampaignService.schedulePostSignupCampaign(newUser);
+      await emailCampaignService.scheduleInviterNudgeCampaign(newUser.email!);
+      console.log("[CAMPAIGNS] Scheduled post-signup campaigns for OAuth user:", newUser.email);
+    } catch (campaignError) {
+      console.error("[CAMPAIGNS] Failed to schedule post-signup campaigns for OAuth user:", campaignError);
+    }
+  }
+  
+  return newUser;
 }
 
 export async function setupAuth(app: Express) {
@@ -289,13 +304,24 @@ export async function setupAuth(app: Express) {
       }
       
       // Log the user in automatically
-      req.logIn(newUser, (err) => {
+      req.logIn(newUser, async (err) => {
         if (err) {
           console.error("[AUTH] Auto-login error after signup:", err);
           return res.status(500).json({ message: "Account created but login failed" });
         }
         
         console.log("[AUTH] Signup and auto-login successful for:", newUser.email);
+        
+        // Schedule post-signup email campaigns
+        try {
+          const { emailCampaignService } = require('./email-campaigns');
+          await emailCampaignService.schedulePostSignupCampaign(newUser);
+          await emailCampaignService.scheduleInviterNudgeCampaign(newUser.email);
+          console.log("[CAMPAIGNS] Scheduled post-signup campaigns for:", newUser.email);
+        } catch (campaignError) {
+          console.error("[CAMPAIGNS] Failed to schedule post-signup campaigns:", campaignError);
+        }
+        
         return res.json({ 
           user: {
             id: newUser.id,
