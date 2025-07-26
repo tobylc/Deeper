@@ -1014,26 +1014,27 @@ export default function ConversationPage() {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex flex-col">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-100 flex-shrink-0">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-12">
+        <div className="w-full px-2 sm:px-4 lg:px-8">
+          <div className="flex items-center justify-between h-12 min-w-0">
             <Button 
               variant="ghost" 
               onClick={() => setLocation("/dashboard")}
-              className="flex items-center text-sm"
+              className="flex items-center text-xs sm:text-sm shrink-0"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
+              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Back</span>
             </Button>
             
-            <div className="flex items-center space-x-3">
-              <div className="flex -space-x-2">
+            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1 justify-center">
+              <div className="flex -space-x-1 sm:-space-x-2 shrink-0">
                 <ProfileAvatar
                   email={user?.email || ''}
                   firstName={currentUserData?.firstName}
                   lastName={currentUserData?.lastName}
                   profileImageUrl={currentUserData?.profileImageUrl}
                   size="sm"
-                  className="border-2 border-white shadow-md z-10"
+                  className="border-2 border-white shadow-md z-10 w-6 h-6 sm:w-8 sm:h-8"
                 />
                 <ProfileAvatar
                   email={otherParticipant || ''}
@@ -1041,80 +1042,73 @@ export default function ConversationPage() {
                   lastName={otherUserData?.lastName}
                   profileImageUrl={otherUserData?.profileImageUrl}
                   size="sm"
-                  className="border-2 border-white shadow-md"
+                  className="border-2 border-white shadow-md w-6 h-6 sm:w-8 sm:h-8"
                 />
               </div>
-              <div>
-                <div className="font-semibold text-slate-800 text-sm">
-                  {currentUserData?.firstName || user?.firstName || user?.email?.split('@')[0] || 'You'} & <UserDisplayName email={otherParticipant} />
+              <div className="min-w-0 flex-1 text-center">
+                <div className="font-semibold text-slate-800 text-xs sm:text-sm truncate">
+                  {((currentUserData?.firstName || user?.firstName || user?.email?.split('@')[0] || 'You').substring(0, 8))} & <UserDisplayName email={otherParticipant} />
                 </div>
-                <div className="text-xs text-slate-600">
+                <div className="text-xs text-slate-600 truncate">
                   {(() => {
                     if (connection) {
-                      console.log('[BADGE_DEBUG] Connection data:', connection);
-                      console.log('[BADGE_DEBUG] inviterRole:', connection.inviterRole);
-                      console.log('[BADGE_DEBUG] inviteeRole:', connection.inviteeRole);
-                      console.log('[BADGE_DEBUG] relationshipType:', connection.relationshipType);
-                      
                       const roleInfo = getRoleDisplayInfo(
                         connection.relationshipType, 
                         connection.inviterRole, 
                         connection.inviteeRole
                       );
-                      console.log('[BADGE_DEBUG] roleInfo result:', roleInfo);
                       return roleInfo.relationshipDisplay;
                     }
-                    
-                    console.log('[BADGE_DEBUG] No connection data, using fallback:', conversation.relationshipType);
-                    return conversation.relationshipType; // fallback
+                    return conversation.relationshipType;
                   })()}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => setShowThreadsView(!showThreadsView)}
-                className="lg:hidden text-xs px-2 py-1"
+                className="lg:hidden text-xs px-1 sm:px-2 py-1"
               >
-                <Grid3X3 className="w-3 h-3 mr-1" />
-                Questions
+                <Grid3X3 className="w-3 h-3" />
+                <span className="hidden sm:inline ml-1">Questions</span>
               </Button>
               {!isMyTurn && (
                 <Button 
                   variant="outline" 
                   size="sm"
                   onClick={toggleOrbsBackground}
-                  className="text-xs px-2 py-1"
+                  className="text-xs px-1 sm:px-2 py-1"
                   title={showOrbsBackground ? "Hide floating orbs" : "Show floating orbs"}
                 >
-                  {showOrbsBackground ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
-                  Orbs
+                  {showOrbsBackground ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                  <span className="hidden sm:inline ml-1">Orbs</span>
                 </Button>
               )}
-              <div className="flex items-center space-x-1">
+              <div className="hidden sm:flex items-center space-x-1">
                 <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-500' : 'bg-red-500'}`} 
                      title={`WebSocket: ${wsConnected ? 'Connected' : `Disconnected (${connectionAttempts} attempts)`}`} />
                 <span className="text-xs text-gray-500">
                   {wsConnected ? 'Live' : 'Offline'}
                 </span>
               </div>
-              <Badge variant={isMyTurn ? "default" : "outline"} className="text-xs">
-                {isMyTurn ? "Your turn" : "Their turn"}
+              <Badge variant={isMyTurn ? "default" : "outline"} className="text-xs px-1 sm:px-2">
+                <span className="sm:hidden">{isMyTurn ? "You" : "Them"}</span>
+                <span className="hidden sm:inline">{isMyTurn ? "Your turn" : "Their turn"}</span>
               </Badge>
-              <div className="text-xs text-gray-600 flex items-center">
+              <div className="hidden sm:flex text-xs text-gray-600 items-center">
                 <Clock className="w-3 h-3 mr-1" />
-                {messages.length} exchanges
+                {messages.length}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-2">
-        <div className="grid lg:grid-cols-4 gap-3 min-h-full">
+      <div className="flex-1 w-full px-2 sm:px-4 lg:px-8 py-2">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 sm:gap-3 min-h-full">
           {/* Conversation Threads Sidebar */}
           <div className={`lg:col-span-1 ${showThreadsView ? 'block' : 'hidden lg:block'}`}>
             {conversation && connection && (
@@ -1132,7 +1126,7 @@ export default function ConversationPage() {
           </div>
 
           {/* Main Conversation */}
-          <div className={`lg:col-span-2 ${showThreadsView ? 'hidden lg:block' : 'block'} flex flex-col h-[calc(100vh-8rem)] overflow-hidden`}>
+          <div className={`lg:col-span-2 ${showThreadsView ? 'hidden lg:block' : 'block'} flex flex-col h-[calc(100vh-7rem)] sm:h-[calc(100vh-8rem)] overflow-hidden`}>
             {/* Hypnotic Orbs Background Effect with Floating Text */}
             {!isMyTurn && (
               <>

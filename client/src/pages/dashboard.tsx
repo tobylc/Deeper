@@ -235,15 +235,15 @@ export default function Dashboard() {
             <div className="flex items-center space-x-2">
               <DeeperLogo size="header" />
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-white/80">
-                Welcome, {user.firstName || user.email?.split('@')[0] || 'there'}
+            <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
+              <span className="text-xs sm:text-sm text-white/80 truncate">
+                <span className="hidden sm:inline">Welcome, </span>{(user.firstName || user.email?.split('@')[0] || 'there').substring(0, 10)}
               </span>
               
               <AdminNavLink />
 
               <Button 
-                className="btn-ocean px-6 py-2"
+                className="btn-ocean px-3 sm:px-6 py-2 text-xs sm:text-sm"
                 onClick={async () => {
                   try {
                     await apiRequest("POST", "/api/auth/logout", {});
@@ -255,7 +255,8 @@ export default function Dashboard() {
                   }
                 }}
               >
-                Sign Out
+                <span className="sm:hidden">Out</span>
+                <span className="hidden sm:inline">Sign Out</span>
               </Button>
             </div>
           </div>
