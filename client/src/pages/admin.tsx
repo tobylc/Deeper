@@ -147,6 +147,82 @@ interface DebugIssues {
   staleConnections: Array<{ id: string; inviteeEmail: string; createdAt: string }>;
 }
 
+interface AdminConnection {
+  id: number;
+  inviterEmail: string;
+  inviteeEmail: string;
+  inviterRole: string;
+  inviteeRole: string;
+  relationshipType: string;
+  status: string;
+  createdAt: string;
+}
+
+interface AdminConnectionsResponse {
+  connections: AdminConnection[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+interface AdminMessage {
+  id: number;
+  content: string;
+  type: string;
+  messageformat?: string;
+  message_format?: string;
+  senderemail?: string;
+  sender_email?: string;
+  participant1_email?: string;
+  participant2_email?: string;
+  created_at?: string;
+  createdAt?: string;
+  transcription?: string;
+}
+
+interface AdminMessagesResponse {
+  messages: AdminMessage[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+interface AdminSubscription {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  subscriptionTier: string;
+  subscriptionStatus: string;
+  maxConnections: number;
+  stripeCustomerId: string;
+  createdAt: string;
+}
+
+interface SubscriptionMetric {
+  subscription_tier: string;
+  subscription_status: string;
+  user_count: number;
+  monthly_revenue: number;
+}
+
+interface AdminSubscriptionsResponse {
+  subscriptions: AdminSubscription[];
+  metrics: SubscriptionMetric[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 interface ActivityChartData {
   date: string;
   new_users: number;
@@ -830,11 +906,11 @@ function SystemHealth() {
 
 function ConnectionManagement() {
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const { toast } = useToast();
 
-  const { data: connectionsData, isLoading } = useQuery({
-    queryKey: ['/api/admin/connections', { page, status: statusFilter }],
+  const { data: connectionsData, isLoading } = useQuery<AdminConnectionsResponse>({
+    queryKey: ['/api/admin/connections', { page, status: statusFilter === 'all' ? '' : statusFilter }],
     refetchInterval: 30000
   });
 
@@ -880,7 +956,7 @@ function ConnectionManagement() {
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="accepted">Accepted</SelectItem>
               <SelectItem value="declined">Declined</SelectItem>
@@ -904,7 +980,7 @@ function ConnectionManagement() {
                 </tr>
               </thead>
               <tbody>
-                {connectionsData?.connections?.map((connection: any) => (
+                {connectionsData?.connections?.map((connection) => (
                   <tr key={connection.id} className="border-b hover:bg-muted/50">
                     <td className="p-4">
                       <div>
@@ -981,11 +1057,11 @@ function ConnectionManagement() {
 
 function MessageManagement() {
   const [page, setPage] = useState(1);
-  const [formatFilter, setFormatFilter] = useState('');
+  const [formatFilter, setFormatFilter] = useState('all');
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
 
-  const { data: messagesData, isLoading } = useQuery({
-    queryKey: ['/api/admin/messages', { page, format: formatFilter }],
+  const { data: messagesData, isLoading } = useQuery<AdminMessagesResponse>({
+    queryKey: ['/api/admin/messages', { page, format: formatFilter === 'all' ? '' : formatFilter }],
     refetchInterval: 30000
   });
 
@@ -1014,7 +1090,7 @@ function MessageManagement() {
               <SelectValue placeholder="Filter by format" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Formats</SelectItem>
+              <SelectItem value="all">All Formats</SelectItem>
               <SelectItem value="text">Text</SelectItem>
               <SelectItem value="voice">Voice</SelectItem>
             </SelectContent>
@@ -1038,7 +1114,7 @@ function MessageManagement() {
                 </tr>
               </thead>
               <tbody>
-                {messagesData?.messages?.map((message: any) => (
+                {messagesData?.messages?.map((message) => (
                   <tr key={message.id} className="border-b hover:bg-muted/50">
                     <td className="p-4">
                       <div className="font-medium">{message.senderemail || message.sender_email}</div>
@@ -1238,13 +1314,17 @@ export default function Admin() {
 
 function SubscriptionManagement() {
   const [page, setPage] = useState(1);
-  const [tierFilter, setTierFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [tierFilter, setTierFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const { toast } = useToast();
 
-  const { data: subscriptionsData, isLoading } = useQuery({
-    queryKey: ['/api/admin/subscriptions', { page, tier: tierFilter, status: statusFilter }],
+  const { data: subscriptionsData, isLoading } = useQuery<AdminSubscriptionsResponse>({
+    queryKey: ['/api/admin/subscriptions', { 
+      page, 
+      tier: tierFilter === 'all' ? '' : tierFilter, 
+      status: statusFilter === 'all' ? '' : statusFilter 
+    }],
     refetchInterval: 30000
   });
 
@@ -1308,7 +1388,7 @@ function SubscriptionManagement() {
               <SelectValue placeholder="Filter by tier" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Tiers</SelectItem>
+              <SelectItem value="all">All Tiers</SelectItem>
               <SelectItem value="trial">Trial</SelectItem>
               <SelectItem value="basic">Basic</SelectItem>
               <SelectItem value="advanced">Advanced</SelectItem>
@@ -1320,7 +1400,7 @@ function SubscriptionManagement() {
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
               <SelectItem value="expired">Expired</SelectItem>
@@ -1333,7 +1413,7 @@ function SubscriptionManagement() {
       {/* Revenue Metrics */}
       {subscriptionsData?.metrics && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {subscriptionsData.metrics.map((metric: any, index: number) => (
+          {subscriptionsData.metrics.map((metric, index: number) => (
             <Card key={index}>
               <CardContent className="p-4">
                 <div className="text-sm font-medium capitalize">{metric.subscription_tier} ({metric.subscription_status})</div>
@@ -1406,7 +1486,7 @@ function SubscriptionManagement() {
                 </tr>
               </thead>
               <tbody>
-                {subscriptionsData?.subscriptions?.map((user: any) => (
+                {subscriptionsData?.subscriptions?.map((user) => (
                   <tr key={user.id} className="border-b hover:bg-muted/50">
                     <td className="p-4">
                       <input
