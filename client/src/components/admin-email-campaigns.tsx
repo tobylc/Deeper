@@ -113,7 +113,8 @@ export function AdminEmailCampaigns() {
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value.toString());
       });
-      return apiRequest('GET', `/api/admin/email-campaigns?${params}`);
+      const response = await apiRequest('GET', `/api/admin/email-campaigns?${params}`);
+      return response.json();
     }
   });
 
@@ -121,7 +122,8 @@ export function AdminEmailCampaigns() {
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/admin/email-campaigns/stats'],
     queryFn: async () => {
-      return apiRequest('GET', '/api/admin/email-campaigns/stats');
+      const response = await apiRequest('GET', '/api/admin/email-campaigns/stats');
+      return response.json();
     }
   });
 
@@ -129,7 +131,8 @@ export function AdminEmailCampaigns() {
   const { data: templatePreview, isLoading: templateLoading } = useQuery({
     queryKey: ['/api/admin/email-campaigns/template-preview', selectedPreviewType],
     queryFn: async () => {
-      return apiRequest('GET', `/api/admin/email-campaigns/template-preview/${selectedPreviewType}`);
+      const response = await apiRequest('GET', `/api/admin/email-campaigns/template-preview/${selectedPreviewType}`);
+      return response.json();
     }
   });
 
@@ -137,7 +140,8 @@ export function AdminEmailCampaigns() {
   const { data: processorStatus } = useQuery({
     queryKey: ['/api/admin/email-campaigns/processor-status'],
     queryFn: async () => {
-      return apiRequest('GET', '/api/admin/email-campaigns/processor-status');
+      const response = await apiRequest('GET', '/api/admin/email-campaigns/processor-status');
+      return response.json();
     },
     refetchInterval: 30000 // Refresh every 30 seconds
   });
