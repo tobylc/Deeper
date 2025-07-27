@@ -1,8 +1,10 @@
 import type { Express } from "express";
 import { storage } from "./storage";
 import { emailCampaignService } from "./email-campaigns";
-import { insertEmailCampaignSchema, type EmailCampaign, type InsertEmailCampaign } from "../shared/schema";
+import { insertEmailCampaignSchema, type EmailCampaign, type InsertEmailCampaign, emailCampaigns } from "../shared/schema";
 import { z } from "zod";
+import { db } from "./db";
+import { desc } from "drizzle-orm";
 
 // Admin-only middleware for email campaign management
 const adminOnly = (req: any, res: any, next: any) => {
@@ -30,6 +32,22 @@ const adminOnly = (req: any, res: any, next: any) => {
  */
 export function setupAdminEmailCampaignRoutes(app: Express) {
   
+  // Test endpoint to check raw campaign data
+  app.get("/api/admin/email-campaigns/test", adminOnly, async (req, res) => {
+    try {
+      console.log("[ADMIN] Test endpoint called - checking email campaigns with no filters");
+      const testCampaigns = await storage.getEmailCampaignsWithFilters({
+        limit: 10,
+        offset: 0
+      });
+      console.log("[ADMIN] Test campaigns count:", testCampaigns.length);
+      res.json({ count: testCampaigns.length, campaigns: testCampaigns });
+    } catch (error) {
+      console.error("[ADMIN] Test endpoint error:", error);
+      res.status(500).json({ error: "Test failed", details: error.message });
+    }
+  });
+  
   // Get all email campaigns with filtering and pagination
   app.get("/api/admin/email-campaigns", adminOnly, async (req, res) => {
     try {
@@ -43,25 +61,28 @@ export function setupAdminEmailCampaignRoutes(app: Express) {
         endDate 
       } = req.query;
       
+      console.log("[ADMIN] Email campaigns request with filters:", {
+        page, limit, status, campaignType, userEmail, startDate, endDate
+      });
+      
       const offset = (Number(page) - 1) * Number(limit);
       
-      const campaigns = await storage.getEmailCampaignsWithFilters({
-        status: status as string,
-        campaignType: campaignType as string,
-        userEmail: userEmail as string,
-        startDate: startDate as string,
-        endDate: endDate as string,
-        limit: Number(limit),
-        offset
-      });
+      // Direct database query to bypass potential storage method issues
+      const campaigns = await db
+        .select()
+        .from(emailCampaigns)
+        .orderBy(desc(emailCampaigns.createdAt))
+        .limit(Number(limit))
+        .offset(offset);
       
-      const totalCount = await storage.getEmailCampaignsCount({
-        status: status as string,
-        campaignType: campaignType as string,
-        userEmail: userEmail as string,
-        startDate: startDate as string,
-        endDate: endDate as string,
-      });
+      const totalCountResult = await db
+        .select()
+        .from(emailCampaigns);
+      
+      const totalCount = totalCountResult.length;
+      
+      console.log("[ADMIN] Found campaigns:", campaigns.length, "Total count:", totalCount);
+      console.log("[ADMIN] Sample campaigns:", campaigns.slice(0, 2));
       
       res.json({
         campaigns,
