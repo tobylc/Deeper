@@ -277,6 +277,9 @@ export default function VoiceRecorder({
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Recording paused, isPaused state set to true');
+      }
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -288,6 +291,9 @@ export default function VoiceRecorder({
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Recording resumed, isPaused state set to false');
+      }
       // Resume timer
       timerRef.current = setInterval(() => {
         setDuration(prev => {
@@ -372,6 +378,11 @@ export default function VoiceRecorder({
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
+
+  // Debug logging for button states
+  if (process.env.NODE_ENV === 'development' && isRecording) {
+    console.log('Voice recorder render - isRecording:', isRecording, 'isPaused:', isPaused);
+  }
 
   return (
     <>
