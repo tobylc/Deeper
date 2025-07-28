@@ -421,13 +421,13 @@ export default function VoiceRecorder({
             "w-6 h-6 rounded-full transition-all duration-200 text-white flex-shrink-0",
             isRecording 
               ? (isPaused 
-                  ? "bg-yellow-500 hover:bg-yellow-600 animate-pulse" 
+                  ? "bg-amber-500 hover:bg-amber-600 animate-pulse" 
                   : "bg-red-500 hover:bg-red-600")
               : "bg-[#4FACFE] hover:bg-[#4FACFE]/90"
           )}
         >
           {isRecording ? (
-            isPaused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />
+            isPaused ? <Mic className="w-3 h-3" /> : <Pause className="w-3 h-3" />
           ) : (
             <Mic className="w-3 h-3" />
           )}
