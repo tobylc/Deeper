@@ -62,6 +62,29 @@ export default function VoiceRecorder({
     return () => clearInterval(timer);
   }, []);
 
+  // Animation frame for mic level indicator
+  useEffect(() => {
+    let animationFrame: number;
+    
+    const updateAnimation = () => {
+      if (isRecording && !isPaused) {
+        // Force re-render for smooth animation
+        setVolumeLevel(prev => prev);
+      }
+      animationFrame = requestAnimationFrame(updateAnimation);
+    };
+    
+    if (isRecording) {
+      animationFrame = requestAnimationFrame(updateAnimation);
+    }
+    
+    return () => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, [isRecording, isPaused]);
+
   const clearRecording = () => {
     setIsRecording(false);
     setIsPaused(false);
@@ -356,11 +379,26 @@ export default function VoiceRecorder({
         {/* Recording Status Indicator */}
         <div className="flex items-center space-x-1">
           {isRecording ? (
-            <div className="flex items-center space-x-1">
-              <div 
-                className="w-2 h-2 rounded-full animate-pulse transition-all duration-100"
-                style={{ backgroundColor: getVolumeColor(volumeLevel) }}
-              />
+            <div className="flex items-center space-x-2">
+              {/* Mic Level Line Indicator */}
+              <div className="flex items-center space-x-0.5">
+                {Array.from({ length: 8 }).map((_, i) => {
+                  const barHeight = isPaused 
+                    ? 2 
+                    : Math.max(2, Math.min(12, (volumeLevel / 100) * 8 + Math.sin(Date.now() / 200 + i) * 2));
+                  return (
+                    <div
+                      key={i}
+                      className="w-0.5 bg-slate-300 rounded-full transition-all duration-100"
+                      style={{
+                        height: `${barHeight}px`,
+                        backgroundColor: isPaused ? '#94a3b8' : getVolumeColor(volumeLevel),
+                        opacity: isPaused ? 0.4 : 1
+                      }}
+                    />
+                  );
+                })}
+              </div>
               <span className="text-xs text-slate-600 font-mono">
                 {formatDuration(duration)}
               </span>
@@ -383,7 +421,7 @@ export default function VoiceRecorder({
             "w-6 h-6 rounded-full transition-all duration-200 text-white flex-shrink-0",
             isRecording 
               ? (isPaused 
-                  ? "bg-yellow-500 hover:bg-yellow-600" 
+                  ? "bg-yellow-500 hover:bg-yellow-600 animate-pulse" 
                   : "bg-red-500 hover:bg-red-600")
               : "bg-[#4FACFE] hover:bg-[#4FACFE]/90"
           )}
