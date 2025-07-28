@@ -38,6 +38,7 @@ export default function VoiceRecorder({
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
+  const [isManuallyPaused, setIsManuallyPaused] = useState(false);
   const [duration, setDuration] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -88,6 +89,7 @@ export default function VoiceRecorder({
   const clearRecording = () => {
     setIsRecording(false);
     setIsPaused(false);
+    setIsManuallyPaused(false);
     setHasRecording(false);
     setDuration(0);
     setAudioBlob(null);
@@ -216,7 +218,7 @@ export default function VoiceRecorder({
 
       mediaRecorder.onstop = () => {
         if (process.env.NODE_ENV === 'development') {
-          console.log('MediaRecorder stopped unexpectedly');
+          console.log('MediaRecorder stopped - recorder state was:', mediaRecorderRef.current?.state);
         }
         // Use the same MIME type that was used for recording
         const mimeType = (options as any).mimeType || 'audio/webm';
@@ -297,6 +299,7 @@ export default function VoiceRecorder({
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
+      setIsManuallyPaused(true);
       if (process.env.NODE_ENV === 'development') {
         console.log('Recording paused, isPaused state set to true');
       }
@@ -311,6 +314,7 @@ export default function VoiceRecorder({
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
+      setIsManuallyPaused(false);
       if (process.env.NODE_ENV === 'development') {
         console.log('Recording resumed, isPaused state set to false');
       }
@@ -325,15 +329,25 @@ export default function VoiceRecorder({
           return newDuration;
         });
       }, 1000);
+    } else if (isManuallyPaused) {
+      // If MediaRecorder stopped but we were manually paused, restart recording
+      setIsManuallyPaused(false);
+      setIsPaused(false);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Restarting recording after MediaRecorder stopped during pause');
+      }
+      // Continue the existing recording session
+      startRecording();
     }
   };
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      setIsPaused(false);
     }
+    setIsRecording(false);
+    setIsPaused(false);
+    setIsManuallyPaused(false);
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -452,26 +466,26 @@ export default function VoiceRecorder({
 
         {/* Main Recording Button - Compact */}
         <Button
-          onClick={!isRecording ? startRecording : (isPaused ? resumeRecording : pauseRecording)}
+          onClick={!isRecording && !isManuallyPaused ? startRecording : (isPaused || isManuallyPaused ? resumeRecording : pauseRecording)}
           disabled={disabled}
           className={cn(
             "w-6 h-6 rounded-full transition-all duration-200 text-white flex-shrink-0",
-            isRecording 
-              ? (isPaused 
+            (isRecording || isManuallyPaused)
+              ? (isPaused || isManuallyPaused
                   ? "bg-amber-500 hover:bg-amber-600 animate-pulse" 
                   : "bg-red-500 hover:bg-red-600")
               : "bg-[#4FACFE] hover:bg-[#4FACFE]/90"
           )}
         >
-          {isRecording ? (
-            isPaused ? <Mic className="w-3 h-3" /> : <Pause className="w-3 h-3" />
+          {(isRecording || isManuallyPaused) ? (
+            (isPaused || isManuallyPaused) ? <Mic className="w-3 h-3" /> : <Pause className="w-3 h-3" />
           ) : (
             <Mic className="w-3 h-3" />
           )}
         </Button>
 
         {/* Stop Recording Button */}
-        {isRecording && (
+        {(isRecording || isManuallyPaused) && (
           <Button
             onClick={stopRecording}
             className="w-6 h-6 rounded-full bg-slate-500 hover:bg-slate-600 text-white transition-all duration-200 flex-shrink-0"
@@ -491,7 +505,7 @@ export default function VoiceRecorder({
         )}
 
         {/* Recording Progress - Inline */}
-        {isRecording && (
+        {(isRecording || isManuallyPaused) && (
           <div className="flex-1 max-w-24">
             <div className="w-full bg-slate-200 rounded-full h-1">
               <div 
