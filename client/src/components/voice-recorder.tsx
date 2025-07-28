@@ -86,6 +86,11 @@ export default function VoiceRecorder({
     };
   }, [isRecording, isPaused]);
 
+  // Debug logging for state changes
+  useEffect(() => {
+    console.log('Voice recorder state changed - isRecording:', isRecording, 'isPaused:', isPaused, 'isManuallyPaused:', isManuallyPaused);
+  }, [isRecording, isPaused, isManuallyPaused]);
+
   const clearRecording = () => {
     setIsRecording(false);
     setIsPaused(false);
@@ -296,13 +301,12 @@ export default function VoiceRecorder({
   };
 
   const pauseRecording = () => {
+    console.log('pauseRecording called - before:', { isRecording, isPaused, isManuallyPaused });
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
       setIsManuallyPaused(true);
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Recording paused, isPaused state set to true');
-      }
+      console.log('Recording paused, setting states to true');
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -466,19 +470,32 @@ export default function VoiceRecorder({
 
         {/* Main Recording Button - Compact */}
         <Button
-          onClick={!isRecording && !isManuallyPaused ? startRecording : (isPaused || isManuallyPaused ? resumeRecording : pauseRecording)}
+          onClick={() => {
+            console.log('Button clicked - states:', { isRecording, isPaused, isManuallyPaused });
+            if (!isRecording && !isManuallyPaused) {
+              startRecording();
+            } else if (isPaused || isManuallyPaused) {
+              resumeRecording();
+            } else {
+              pauseRecording();
+            }
+          }}
           disabled={disabled}
           className={cn(
             "w-6 h-6 rounded-full transition-all duration-200 text-white flex-shrink-0",
-            (isRecording || isManuallyPaused)
-              ? (isPaused || isManuallyPaused
-                  ? "bg-amber-500 hover:bg-amber-600 animate-pulse" 
-                  : "bg-red-500 hover:bg-red-600")
-              : "bg-[#4FACFE] hover:bg-[#4FACFE]/90"
+            // Show amber background when paused (either state)
+            (isPaused || isManuallyPaused)
+              ? "bg-amber-500 hover:bg-amber-600 animate-pulse"
+              : isRecording
+                ? "bg-red-500 hover:bg-red-600" 
+                : "bg-[#4FACFE] hover:bg-[#4FACFE]/90"
           )}
         >
-          {(isRecording || isManuallyPaused) ? (
-            (isPaused || isManuallyPaused) ? <Mic className="w-3 h-3" /> : <Pause className="w-3 h-3" />
+          {/* Show Mic icon when paused, Pause when recording, Mic when not recording */}
+          {(isPaused || isManuallyPaused) ? (
+            <Mic className="w-3 h-3" />
+          ) : isRecording ? (
+            <Pause className="w-3 h-3" />
           ) : (
             <Mic className="w-3 h-3" />
           )}
