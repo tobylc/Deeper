@@ -19,11 +19,28 @@ export function PrivacyPolicy() {
           <div className="space-y-8 text-slate-300">
             <section>
               <h2 className="text-xl font-semibold text-white mb-4">Information We Collect</h2>
-              <p className="leading-relaxed">
-                Deeper collects information you provide when creating an account, including your name, email address, 
-                and optional phone number for SMS notifications. We also collect conversation messages and voice recordings 
-                that you share within the platform to facilitate meaningful connections.
-              </p>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Information You Provide</h3>
+                  <ul className="space-y-2 leading-relaxed">
+                    <li>• <strong>Account Information:</strong> Name, email address, password, and profile details</li>
+                    <li>• <strong>Contact Information:</strong> Phone number (optional) for SMS notifications and verification</li>
+                    <li>• <strong>Communication Content:</strong> Messages, voice recordings, and responses you share in conversations</li>
+                    <li>• <strong>Payment Information:</strong> Billing details for subscription services (processed securely through Stripe)</li>
+                    <li>• <strong>Relationship Information:</strong> Connection preferences and relationship context you provide</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Information We Collect Automatically</h3>
+                  <ul className="space-y-2 leading-relaxed">
+                    <li>• <strong>Usage Data:</strong> How you interact with our platform, conversation activity, and feature usage</li>
+                    <li>• <strong>Device Information:</strong> Browser type, operating system, and device identifiers</li>
+                    <li>• <strong>Log Data:</strong> IP addresses, access times, and pages visited (for security and troubleshooting)</li>
+                    <li>• <strong>Session Data:</strong> Authentication tokens and session identifiers for account security</li>
+                  </ul>
+                </div>
+              </div>
             </section>
 
             <section>
@@ -38,19 +55,38 @@ export function PrivacyPolicy() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-white mb-4">SMS Communication Consent</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">SMS Communication Consent & Terms</h2>
               <p className="leading-relaxed mb-4">
-                By providing your phone number and requesting SMS notifications, you consent to receive text messages from Deeper, including:
+                By providing your phone number and opting in to SMS notifications through Deeper, you explicitly consent to receive automated text messages from Deeper at the phone number you provided. This includes:
               </p>
               <ul className="space-y-2 leading-relaxed mb-4">
-                <li>• Verification codes for phone number confirmation</li>
-                <li>• Turn notifications when it's your time to respond in conversations</li>
-                <li>• Connection notifications when someone accepts or declines your invitation</li>
+                <li>• Phone number verification codes during account setup</li>
+                <li>• Turn-based conversation notifications when it's your time to respond</li>
+                <li>• Connection status updates when someone accepts or declines your invitation</li>
+                <li>• Important account and service-related notifications</li>
+                <li>• Reminder messages for pending conversations (up to 2 per day maximum)</li>
               </ul>
-              <p className="leading-relaxed">
-                <strong>Opt-out:</strong> You can stop receiving SMS messages at any time by replying "STOP" to any text message. 
-                Standard message and data rates may apply. Message frequency varies based on your conversation activity.
-              </p>
+              
+              <div className="bg-blue-900/30 p-4 rounded-lg mb-4 border border-blue-700/50">
+                <h3 className="text-lg font-semibold text-white mb-2">SMS Terms & Conditions</h3>
+                <ul className="space-y-2 text-sm leading-relaxed">
+                  <li>• <strong>Consent:</strong> Your consent is not required as a condition of purchase</li>
+                  <li>• <strong>Message Frequency:</strong> Message frequency varies based on your conversation activity and preferences</li>
+                  <li>• <strong>Carrier Rates:</strong> Message and data rates may apply as charged by your mobile carrier</li>
+                  <li>• <strong>Supported Carriers:</strong> Compatible with all major US and Canadian carriers</li>
+                  <li>• <strong>Help:</strong> Reply "HELP" to any message for assistance</li>
+                </ul>
+              </div>
+
+              <div className="bg-red-900/30 p-4 rounded-lg border border-red-700/50">
+                <h3 className="text-lg font-semibold text-white mb-2">How to Opt-Out</h3>
+                <p className="leading-relaxed mb-2">
+                  <strong>To stop receiving SMS messages:</strong> Reply "STOP", "UNSUBSCRIBE", "CANCEL", "END", or "QUIT" to any text message from Deeper. You will receive a confirmation message, and no further messages will be sent to your phone number.
+                </p>
+                <p className="text-sm leading-relaxed">
+                  You can also disable SMS notifications at any time through your account settings within the Deeper application.
+                </p>
+              </div>
             </section>
 
             <section>
@@ -72,11 +108,46 @@ export function PrivacyPolicy() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-white mb-4">Data Retention</h2>
-              <p className="leading-relaxed">
-                We retain your account information and conversations for as long as your account is active. 
-                You can request deletion of your account and all associated data by contacting us. 
-                Some information may be retained for legal compliance purposes.
+              <h2 className="text-xl font-semibold text-white mb-4">Data Retention & Your Rights</h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">How Long We Keep Your Data</h3>
+                  <ul className="space-y-2 leading-relaxed">
+                    <li>• <strong>Account Data:</strong> Retained while your account is active and for 90 days after deletion</li>
+                    <li>• <strong>Conversations:</strong> Stored indefinitely while both participants maintain active accounts</li>
+                    <li>• <strong>Payment Data:</strong> Billing records kept for 7 years for tax and legal compliance</li>
+                    <li>• <strong>SMS Records:</strong> Delivery logs maintained for 12 months for carrier compliance</li>
+                    <li>• <strong>Usage Analytics:</strong> Aggregated, anonymized data may be retained indefinitely</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Your Privacy Rights</h3>
+                  <ul className="space-y-2 leading-relaxed">
+                    <li>• <strong>Access:</strong> Request a copy of your personal data we hold</li>
+                    <li>• <strong>Correction:</strong> Update or correct inaccurate personal information</li>
+                    <li>• <strong>Deletion:</strong> Request deletion of your account and associated data</li>
+                    <li>• <strong>Portability:</strong> Export your conversation data in a readable format</li>
+                    <li>• <strong>Opt-out:</strong> Unsubscribe from SMS notifications and marketing communications</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-white mb-4">Third-Party Services</h2>
+              <p className="leading-relaxed mb-4">
+                Deeper integrates with trusted third-party services to provide our platform functionality. These services have their own privacy policies:
+              </p>
+              <ul className="space-y-2 leading-relaxed">
+                <li>• <strong>Stripe:</strong> Payment processing (see Stripe's Privacy Policy)</li>
+                <li>• <strong>Twilio:</strong> SMS message delivery and phone verification</li>
+                <li>• <strong>OpenAI:</strong> AI-powered conversation suggestions and content generation</li>
+                <li>• <strong>AWS S3:</strong> Secure cloud storage for voice messages and media</li>
+                <li>• <strong>Neon:</strong> Database hosting and management services</li>
+              </ul>
+              <p className="leading-relaxed mt-4">
+                We share only the minimum necessary information with these services to provide functionality, and they are contractually obligated to protect your data.
               </p>
             </section>
 
@@ -90,12 +161,37 @@ export function PrivacyPolicy() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-white mb-4">Children's Privacy</h2>
-              <p className="leading-relaxed">
-                Deeper is not intended for use by children under 13 years of age. We do not knowingly collect 
-                personal information from children under 13. If you believe we have collected information from 
-                a child under 13, please contact us immediately.
+              <h2 className="text-xl font-semibold text-white mb-4">Children's Privacy (COPPA Compliance)</h2>
+              <p className="leading-relaxed mb-4">
+                Deeper is not intended for use by children under 13 years of age. We do not knowingly collect, 
+                use, or disclose personal information from children under 13 without verifiable parental consent. 
+                If you believe we have collected information from a child under 13, please contact us immediately 
+                and we will take steps to remove such information.
               </p>
+              <p className="leading-relaxed">
+                For users aged 13-17, we recommend parental guidance when using our platform, as it involves 
+                personal communication and relationship-building features.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-white mb-4">Legal Compliance & Jurisdiction</h2>
+              <div className="space-y-4">
+                <p className="leading-relaxed">
+                  This privacy policy is governed by the laws of the United States. By using Deeper, you consent 
+                  to the transfer of your information to the United States and processing in accordance with this policy.
+                </p>
+                
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Regulatory Compliance</h3>
+                  <ul className="space-y-2 leading-relaxed">
+                    <li>• <strong>TCPA Compliance:</strong> All SMS communications comply with the Telephone Consumer Protection Act</li>
+                    <li>• <strong>CAN-SPAM:</strong> Marketing emails include clear unsubscribe options and sender identification</li>
+                    <li>• <strong>CCPA:</strong> California residents have additional rights under the California Consumer Privacy Act</li>
+                    <li>• <strong>GDPR:</strong> European users have rights under the General Data Protection Regulation</li>
+                  </ul>
+                </div>
+              </div>
             </section>
 
             <section>
@@ -109,17 +205,35 @@ export function PrivacyPolicy() {
 
             <section>
               <h2 className="text-xl font-semibold text-white mb-4">Contact Us</h2>
-              <p className="leading-relaxed">
-                If you have any questions about this privacy policy or our data practices, please contact us at:
+              <p className="leading-relaxed mb-4">
+                If you have any questions about this privacy policy, our data practices, or need to exercise your privacy rights, please contact us:
               </p>
-              <div className="mt-4 p-4 bg-slate-700/50 rounded-lg">
-                <p className="text-white">Email: privacy@joindeeper.com</p>
-                <p className="text-white">Website: https://joindeeper.com</p>
+              <div className="space-y-4">
+                <div className="p-4 bg-slate-700/50 rounded-lg">
+                  <h3 className="text-white font-semibold mb-2">General Privacy Inquiries</h3>
+                  <p className="text-slate-300">Email: privacy@joindeeper.com</p>
+                  <p className="text-slate-300">Website: https://joindeeper.com/privacy-policy</p>
+                </div>
+                
+                <div className="p-4 bg-slate-700/50 rounded-lg">
+                  <h3 className="text-white font-semibold mb-2">SMS & Communication Support</h3>
+                  <p className="text-slate-300">For SMS opt-out assistance or technical issues</p>
+                  <p className="text-slate-300">Email: support@joindeeper.com</p>
+                  <p className="text-slate-300">Text "HELP" to any message from Deeper</p>
+                </div>
+                
+                <div className="p-4 bg-slate-700/50 rounded-lg">
+                  <h3 className="text-white font-semibold mb-2">Data Rights Requests</h3>
+                  <p className="text-slate-300">For access, deletion, or correction requests</p>
+                  <p className="text-slate-300">Email: dataprotection@joindeeper.com</p>
+                  <p className="text-slate-300">Response time: Within 30 days</p>
+                </div>
               </div>
             </section>
 
             <div className="text-sm text-slate-400 mt-12 pt-8 border-t border-slate-700">
-              <p>Last updated: July 21, 2025</p>
+              <p>Last updated: July 28, 2025</p>
+              <p className="mt-2">Version 2.0 - Enhanced for Twilio SMS compliance and comprehensive privacy coverage</p>
             </div>
           </div>
         </div>
