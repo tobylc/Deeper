@@ -133,9 +133,16 @@ export default function Dashboard() {
     enabled: !!user.email,
   });
 
-  const { data: conversations = [] } = useQuery<Conversation[]>({
+  const { data: conversations = [], error: conversationsError } = useQuery<Conversation[]>({
     queryKey: [`/api/conversations/by-email/${user.email}`],
     enabled: !!user.email,
+    retry: (failureCount, error: any) => {
+      // Don't retry on authentication errors - these need a full page refresh
+      if (error?.status === 401) {
+        return false;
+      }
+      return failureCount < 2;
+    },
   });
 
   // Group conversations by connection to show only one conversation per connection
@@ -159,6 +166,20 @@ export default function Dashboard() {
   }, {} as Record<string, Conversation>);
 
   const uniqueConversations = Object.values(conversationsByConnection);
+
+  // Handle authentication errors by showing a refresh prompt
+  useEffect(() => {
+    if (conversationsError && (conversationsError as any)?.status === 401) {
+      console.log("[DASHBOARD] Authentication error detected, conversations may not load properly");
+      // Optionally show a user-friendly message about refreshing
+      toast({
+        title: "Session Expired",
+        description: "Please refresh the page to continue viewing your conversations.",
+        variant: "destructive",
+        duration: 10000,
+      });
+    }
+  }, [conversationsError, toast]);
 
   const handleAcceptConnection = async (connectionId: number) => {
     if (!user) return;
@@ -512,6 +533,12 @@ export default function Dashboard() {
 
         {/* Ready to Start Conversations */}
         {(() => {
+          // If conversations API failed due to auth error, don't show Ready to Start section
+          // This prevents showing "Start Conversation" buttons for existing conversations
+          if (conversationsError && (conversationsError as any)?.status === 401) {
+            return null;
+          }
+          
           // Find accepted connections that don't have active conversations yet
           const connectionsReadyToStart = acceptedConnections.filter(connection => {
             // Only show for inviters who need to start conversations
@@ -681,7 +708,16 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {activeConversations.length === 0 ? (
+            {/* Show loading state if conversations API failed due to auth but connections loaded successfully */}
+            {conversationsError && (conversationsError as any)?.status === 401 && acceptedConnections.length > 0 ? (
+              <div className="text-center py-12">
+                <MessageCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-2">Loading conversations...</h3>
+                <p className="text-muted-foreground mb-4">
+                  Your conversations are loading. If this persists, please refresh the page.
+                </p>
+              </div>
+            ) : activeConversations.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 {isInviteeUser ? (
