@@ -215,13 +215,30 @@ export default function VoiceRecorder({
       };
 
       mediaRecorder.onstop = () => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('MediaRecorder stopped unexpectedly');
+        }
         // Use the same MIME type that was used for recording
         const mimeType = (options as any).mimeType || 'audio/webm';
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
         setAudioBlob(audioBlob);
         setAudioUrl(URL.createObjectURL(audioBlob));
         setHasRecording(true);
+        setIsRecording(false);
+        setIsPaused(false);
         stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.onpause = () => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('MediaRecorder paused successfully');
+        }
+      };
+
+      mediaRecorder.onresume = () => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('MediaRecorder resumed successfully');
+        }
       };
 
       mediaRecorder.start(100); // Collect data every 100ms
@@ -243,13 +260,16 @@ export default function VoiceRecorder({
       // Start volume level monitoring with delay for audio context setup
       setTimeout(() => {
         volumeTimerRef.current = setInterval(() => {
-          if (analyserRef.current && isRecording) {
+          if (analyserRef.current && mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
             const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
             analyserRef.current.getByteFrequencyData(dataArray);
             const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
             setVolumeLevel(Math.min(100, (average / 128) * 100));
+          } else if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
+            // Keep volume level low when paused
+            setVolumeLevel(5);
           }
-        });
+        }, 50);
       }, 1000);
       
     } catch (error: any) {
@@ -379,9 +399,15 @@ export default function VoiceRecorder({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Debug logging for button states
-  if (process.env.NODE_ENV === 'development' && isRecording) {
-    console.log('Voice recorder render - isRecording:', isRecording, 'isPaused:', isPaused);
+  // Only log state changes, not every render
+  const [lastLoggedState, setLastLoggedState] = useState<{isRecording: boolean, isPaused: boolean} | null>(null);
+  if (process.env.NODE_ENV === 'development' && (
+    !lastLoggedState || 
+    lastLoggedState.isRecording !== isRecording || 
+    lastLoggedState.isPaused !== isPaused
+  )) {
+    console.log('Voice recorder state changed - isRecording:', isRecording, 'isPaused:', isPaused);
+    setLastLoggedState({isRecording, isPaused});
   }
 
   return (
