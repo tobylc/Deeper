@@ -483,13 +483,19 @@ export default function VoiceRecorder({
           disabled={disabled}
           className={cn(
             "w-6 h-6 rounded-full transition-all duration-200 text-white flex-shrink-0",
-            // Show amber background when paused (either state)
+            // Show amber background when paused (either state) - use !important style override
             (isPaused || isManuallyPaused)
-              ? "bg-amber-500 hover:bg-amber-600 animate-pulse"
+              ? "!bg-amber-500 hover:!bg-amber-600 animate-pulse border-2 border-amber-300"
               : isRecording
                 ? "bg-red-500 hover:bg-red-600" 
                 : "bg-[#4FACFE] hover:bg-[#4FACFE]/90"
           )}
+          style={(isPaused || isManuallyPaused) ? {
+            backgroundColor: '#f59e0b',
+            borderColor: '#fcd34d',
+            boxShadow: '0 0 8px rgba(245, 158, 11, 0.6)',
+            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+          } : {}}
         >
           {/* Show Mic icon when paused, Pause when recording, Mic when not recording */}
           {(isPaused || isManuallyPaused) ? (
