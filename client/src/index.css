@@ -182,6 +182,8 @@
   .pricing-card {
     @apply transition-all duration-300 ease-in-out cursor-pointer;
     border: 2px solid hsl(210, 15%, 85%);
+    overflow: hidden;
+    position: relative;
   }
 
   .pricing-card:hover {
@@ -192,6 +194,24 @@
   .pricing-card.selected {
     @apply bg-blue-50;
     border: 2px solid hsl(215, 85%, 60%);
+  }
+
+  /* Mobile responsive fixes for pricing */
+  @media (max-width: 768px) {
+    .pricing-card {
+      margin-bottom: 2rem;
+      min-height: auto;
+    }
+    
+    .pricing-card .absolute {
+      position: relative;
+      top: 0;
+      left: 0;
+      transform: none;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: center;
+    }
   }
 
   /* Default card icon styling - blue background with white icon */

@@ -236,6 +236,18 @@ The following basic logic rules are fundamental to the application and must be p
 - **Benefits**: No external SMS costs, reliable delivery tracking, internal control
 - **Coverage**: Verification codes, connection invitations, turn notifications, acceptances/declines
 
+## Recent Changes
+- July 30, 2025: Fixed mobile pricing page overlapping content issues:
+  * Removed restrictive max-height constraints that were causing content overflow on mobile devices
+  * Enhanced mobile responsive design with proper padding and spacing (px-4 sm:px-6 lg:px-8)
+  * Improved badge positioning on mobile with z-index and relative positioning for better visibility
+  * Added mobile-specific CSS rules to prevent absolute positioning issues on smaller screens
+  * Updated section spacing for mobile (py-12 sm:py-16) to provide adequate breathing room
+  * Fixed mobile navigation with dedicated login button for mobile viewport
+  * Enhanced pricing card layout with min-h-fit and proper flex column structure
+  * Added overflow:hidden and mobile-specific margin bottom rules for pricing cards
+  * All content now properly stacks vertically on mobile without overlapping
+
 ## Changelog
 ```
 Changelog:

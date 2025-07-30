@@ -35,13 +35,22 @@ export default function Pricing() {
                 </Button>
               </Link>
             </div>
+            
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <Link href="/auth">
+                <Button className="btn-ocean px-4 py-2 text-sm">
+                  Login
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-16 bg-background">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+      <section className="pt-20 pb-12 sm:pt-24 sm:pb-16 bg-background">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
               <Gift className="w-4 h-4 mr-2" />
@@ -60,18 +69,18 @@ export default function Pricing() {
 
       {/* Pricing Tiers */}
       <section className="py-8 bg-card">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 max-h-[480px]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             
             {/* Basic Plan */}
             <Card 
-              className={`pricing-card relative h-full flex flex-col ${selectedCard === 'basic' ? 'selected' : ''}`}
+              className={`pricing-card relative flex flex-col ${selectedCard === 'basic' ? 'selected' : ''} min-h-fit`}
               onClick={() => setSelectedCard('basic')}
             >
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-primary text-white px-3 py-1 text-xs">Most Popular</Badge>
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+                <Badge className="bg-primary text-white px-3 py-1 text-xs whitespace-nowrap">Most Popular</Badge>
               </div>
-              <CardHeader className="text-center pt-5 pb-3">
+              <CardHeader className="text-center pt-6 pb-3">
                 <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Users className="w-6 h-6" />
                 </div>
@@ -83,7 +92,7 @@ export default function Pricing() {
                 <p className="text-muted-foreground mt-1 text-xs">Perfect for getting started</p>
               </CardHeader>
               <CardContent className="pt-1 pb-4 flex-grow flex flex-col">
-                <ul className="space-y-2 mb-4 flex-grow">
+                <ul className="space-y-2 mb-6 flex-grow">
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-primary flex-shrink-0" />
                     <span className="text-foreground text-xs font-medium">1 invitation allowed</span>
@@ -125,10 +134,10 @@ export default function Pricing() {
 
             {/* Advanced Plan */}
             <Card 
-              className={`pricing-card h-full flex flex-col ${selectedCard === 'advanced' ? 'selected' : ''}`}
+              className={`pricing-card flex flex-col ${selectedCard === 'advanced' ? 'selected' : ''} min-h-fit`}
               onClick={() => setSelectedCard('advanced')}
             >
-              <CardHeader className="text-center pt-5 pb-3">
+              <CardHeader className="text-center pt-6 pb-3">
                 <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2">
                   <MessageCircle className="w-6 h-6" />
                 </div>
@@ -140,7 +149,7 @@ export default function Pricing() {
                 <p className="text-muted-foreground mt-1 text-xs">For meaningful relationships</p>
               </CardHeader>
               <CardContent className="pt-1 pb-4 flex-grow flex flex-col">
-                <ul className="space-y-2 mb-4 flex-grow">
+                <ul className="space-y-2 mb-6 flex-grow">
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-secondary-foreground flex-shrink-0" />
                     <span className="text-foreground text-xs font-medium">3 invitations allowed</span>
@@ -181,10 +190,10 @@ export default function Pricing() {
 
             {/* Unlimited Plan */}
             <Card 
-              className={`pricing-card h-full flex flex-col ${selectedCard === 'unlimited' ? 'selected' : ''}`}
+              className={`pricing-card flex flex-col ${selectedCard === 'unlimited' ? 'selected' : ''} min-h-fit`}
               onClick={() => setSelectedCard('unlimited')}
             >
-              <CardHeader className="text-center pt-5 pb-3">
+              <CardHeader className="text-center pt-6 pb-3">
                 <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Infinity className="w-6 h-6" />
                 </div>
@@ -196,7 +205,7 @@ export default function Pricing() {
                 <p className="text-muted-foreground mt-1 text-xs">For relationship experts</p>
               </CardHeader>
               <CardContent className="pt-1 pb-4 flex-grow flex flex-col">
-                <ul className="space-y-2 mb-4 flex-grow">
+                <ul className="space-y-2 mb-6 flex-grow">
                   <li className="flex items-center space-x-2">
                     <CheckCircle className="w-3 h-3 text-accent-foreground flex-shrink-0" />
                     <span className="text-foreground text-xs font-medium">Unlimited invitations</span>
@@ -239,23 +248,23 @@ export default function Pricing() {
       </section>
 
       {/* Trial Incentive */}
-      <section className="py-16 bg-muted/30">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-          <div className="bg-card rounded-lg p-8 shadow-lg border border-primary/20">
-            <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center mx-auto mb-6">
+      <section className="py-12 sm:py-16 bg-muted/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="bg-card rounded-lg p-6 sm:p-8 shadow-lg border border-primary/20">
+            <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4 sm:mb-6">
               <Zap className="w-8 h-8 text-white" />
             </div>
-            <h2 className="text-3xl font-inter font-bold text-foreground mb-4">
+            <h2 className="text-2xl sm:text-3xl font-inter font-bold text-foreground mb-4">
               Limited Time: Basic Plan Special Offer
             </h2>
-            <p className="text-lg text-muted-foreground mb-6">
+            <p className="text-base sm:text-lg text-muted-foreground mb-6">
               Start with our Basic plan and enjoy a generous <strong>60-day free trial</strong> - no credit card required! 
               Perfect for testing the waters with meaningful conversations. Advanced and Unlimited plans include standard 7-day trials.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/checkout/basic">
-                <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-3">
-                  <span className="text-base font-semibold">60 Day Free Trial</span>
+                <Button size="lg" className="btn-ocean px-6 sm:px-8 flex flex-col gap-1 h-auto py-3">
+                  <span className="text-sm sm:text-base font-semibold">60 Day Free Trial</span>
                   <span className="text-xs font-normal opacity-90">No Credit Card Required</span>
                 </Button>
               </Link>
@@ -268,12 +277,12 @@ export default function Pricing() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-16 bg-card">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8">
-          <h2 className="text-3xl font-inter font-bold text-foreground text-center mb-12">
+      <section className="py-12 sm:py-16 bg-card">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl sm:text-3xl font-inter font-bold text-foreground text-center mb-8 sm:mb-12">
             Frequently asked questions
           </h2>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
             <div>
               <h3 className="text-lg font-inter font-semibold text-foreground mb-2">
                 What happens after my free trial ends?
@@ -315,18 +324,18 @@ export default function Pricing() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-16" style={{ background: 'var(--nav-gray)' }}>
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-inter font-bold text-white mb-6">
+      <section className="py-12 sm:py-16" style={{ background: 'var(--nav-gray)' }}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-2xl sm:text-3xl font-inter font-bold text-white mb-4 sm:mb-6">
             Ready to build deeper connections?
           </h2>
-          <p className="text-xl text-white/90 mb-8">
+          <p className="text-lg sm:text-xl text-white/90 mb-6 sm:mb-8">
             Join thousands of people having more meaningful conversations
           </p>
           <div className="flex justify-center">
             <Link href="/checkout/basic">
-              <Button size="lg" className="btn-ocean px-8 flex flex-col gap-1 h-auto py-3">
-                <span className="text-base font-semibold">60 Day Free Trial</span>
+              <Button size="lg" className="btn-ocean px-6 sm:px-8 flex flex-col gap-1 h-auto py-3">
+                <span className="text-sm sm:text-base font-semibold">60 Day Free Trial</span>
                 <span className="text-xs font-normal opacity-90">No Credit Card Required</span>
               </Button>
             </Link>
