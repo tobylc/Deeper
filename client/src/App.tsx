@@ -16,6 +16,7 @@ import Checkout from "@/pages/checkout";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 import { PrivacyPolicy } from "@/pages/privacy-policy";
+import { SmsOptInPolicyPage } from "@/pages/sms-opt-in-policy";
 import { Component, ReactNode, useEffect } from "react";
 
 class ErrorBoundary extends Component<
@@ -143,6 +144,7 @@ function Router() {
           <Route path="/features" component={Features} />
           <Route path="/pricing" component={Pricing} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
+          <Route path="/sms-opt-in-policy" component={SmsOptInPolicyPage} />
           <Route component={NotFound} />
         </>
       ) : (
@@ -154,6 +156,7 @@ function Router() {
           <Route path="/features" component={Features} />
           <Route path="/pricing" component={Pricing} />
           <Route path="/privacy-policy" component={PrivacyPolicy} />
+          <Route path="/sms-opt-in-policy" component={SmsOptInPolicyPage} />
           <Route component={NotFound} />
         </>
       )}
