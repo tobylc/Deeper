@@ -68,17 +68,17 @@ export default function Pricing() {
       </section>
 
       {/* Pricing Tiers */}
-      <section className="py-8 bg-card">
+      <section className="pt-12 pb-8 bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 pt-8">
             
             {/* Basic Plan */}
             <Card 
               className={`pricing-card relative flex flex-col ${selectedCard === 'basic' ? 'selected' : ''} min-h-fit`}
               onClick={() => setSelectedCard('basic')}
             >
-              <div className="absolute -top-2.5 left-1/2 transform -translate-x-1/2 z-10">
-                <Badge className="bg-primary text-white px-2.5 py-0.5 text-xs whitespace-nowrap">Most Popular</Badge>
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                <Badge className="bg-primary text-white px-3 py-1 text-xs whitespace-nowrap">Most Popular</Badge>
               </div>
               <CardHeader className="text-center pt-6 pb-3">
                 <div className="w-12 h-12 card-icon rounded-lg flex items-center justify-center mx-auto mb-2">
