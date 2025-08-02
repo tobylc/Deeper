@@ -201,6 +201,7 @@
     .pricing-card {
       margin-bottom: 2rem;
       min-height: auto;
+      margin-top: 1rem;
     }
     
     .pricing-card .absolute {
@@ -212,6 +213,15 @@
       display: flex;
       justify-content: center;
     }
+  }
+  
+  /* Ensure badge has proper spacing */
+  .pricing-card {
+    margin-top: 1rem;
+  }
+  
+  .pricing-card .absolute {
+    z-index: 10;
   }
 
   /* Default card icon styling - blue background with white icon */
