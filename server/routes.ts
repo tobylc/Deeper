@@ -5259,6 +5259,161 @@ Format each as a complete question they can use to begin this important conversa
     }
   });
 
+  // Unsubscribe from all email campaigns (accessible without authentication)
+  app.get("/unsubscribe", async (req, res, next) => {
+    try {
+      const email = req.query.email as string;
+      
+      if (!email || !validateEmail(email)) {
+        // Show unsubscribe form if no valid email provided
+        return res.send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Unsubscribe - Deeper</title>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body { 
+                font-family: 'Inter', sans-serif; 
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+                color: white;
+                margin: 0;
+                padding: 40px 20px;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+              .container {
+                max-width: 500px;
+                background: rgba(30, 41, 59, 0.8);
+                padding: 40px;
+                border-radius: 12px;
+                border: 1px solid rgba(79, 172, 254, 0.2);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+              }
+              h1 { color: #4FACFE; margin-bottom: 20px; }
+              input[type="email"] {
+                width: 100%;
+                padding: 12px;
+                margin: 10px 0;
+                border: 1px solid #475569;
+                border-radius: 6px;
+                background: #1e293b;
+                color: white;
+                font-size: 16px;
+              }
+              button {
+                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                color: white;
+                padding: 12px 24px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: 600;
+                width: 100%;
+                margin-top: 20px;
+              }
+              button:hover { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+              .back-link { color: #4FACFE; text-decoration: none; margin-top: 20px; display: inline-block; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>Unsubscribe from Deeper Emails</h1>
+              <p>Enter your email address to unsubscribe from all Deeper campaign emails:</p>
+              <form method="POST" action="/unsubscribe">
+                <input type="email" name="email" placeholder="your.email@example.com" required>
+                <button type="submit">Unsubscribe Me</button>
+              </form>
+              <a href="/" class="back-link">← Back to Deeper</a>
+            </div>
+          </body>
+          </html>
+        `);
+      }
+
+      // Process unsubscribe
+      const user = await storage.getUserByEmail(email);
+      if (user) {
+        // Set notification preference to SMS only (effectively opting out of email campaigns)
+        await storage.updateUser(user.id, { notificationPreference: 'sms' });
+        
+        // Cancel all pending email campaigns for this user
+        await emailCampaignService.cancelPendingCampaigns(email, [
+          'pending_invitation', 'inviter_nudge', 'turn_reminder', 'post_signup'
+        ]);
+      }
+
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Unsubscribed - Deeper</title>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { 
+              font-family: 'Inter', sans-serif; 
+              background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+              color: white;
+              margin: 0;
+              padding: 40px 20px;
+              min-height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .container {
+              max-width: 500px;
+              background: rgba(30, 41, 59, 0.8);
+              padding: 40px;
+              border-radius: 12px;
+              border: 1px solid rgba(34, 197, 94, 0.2);
+              box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+              text-align: center;
+            }
+            h1 { color: #22c55e; margin-bottom: 20px; }
+            .checkmark { font-size: 48px; color: #22c55e; margin-bottom: 20px; }
+            .back-link { color: #4FACFE; text-decoration: none; margin-top: 20px; display: inline-block; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="checkmark">✓</div>
+            <h1>Successfully Unsubscribed</h1>
+            <p>You have been unsubscribed from all Deeper campaign emails.</p>
+            <p>You can still log in to manage your conversations and adjust preferences at any time.</p>
+            <a href="/" class="back-link">← Back to Deeper</a>
+          </div>
+        </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error("Unsubscribe error:", error);
+      res.status(500).send("Sorry, there was an error processing your unsubscribe request.");
+    }
+  });
+
+  // Handle POST unsubscribe form submission
+  app.post("/unsubscribe", async (req, res, next) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email || !validateEmail(email)) {
+        return res.status(400).send("Invalid email address");
+      }
+
+      // Redirect to GET unsubscribe with email parameter
+      res.redirect(`/unsubscribe?email=${encodeURIComponent(email)}`);
+    } catch (error) {
+      console.error("Unsubscribe POST error:", error);
+      res.status(500).send("Sorry, there was an error processing your request.");
+    }
+  });
+
   // Admin endpoint to check S3 storage configuration and status
   app.get("/api/admin/storage-status", isAuthenticated, async (req: any, res) => {
     try {

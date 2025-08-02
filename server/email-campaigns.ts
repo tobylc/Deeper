@@ -62,60 +62,41 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
   }
   
   /**
-   * Schedule 72-hour nudge for inviters who haven't sent an invitation
+   * Schedule enhanced inviter nudge campaigns (every 48-72 hours)
    */
   async scheduleInviterNudgeCampaign(userEmail: string): Promise<void> {
-    const now = new Date();
-    const in72Hours = new Date(now.getTime() + 72 * 60 * 60 * 1000);
-    
     const userName = await storage.getUserDisplayNameByEmail(userEmail);
-    const subject = `${userName}, someone is waiting to connect with you`;
-    const content = this.generateInviterNudge72HourContent(userName);
     
-    const campaign: InsertEmailCampaign = {
-      userEmail,
-      campaignType: 'inviter_nudge',
-      triggerEvent: 'no_invitation',
-      userType: 'inviter',
-      scheduledAt: in72Hours,
-      delayHours: 72,
-      emailSubject: subject,
-      emailContent: content,
-    };
+    // Enhanced inviter nudging schedule: 48h, 72h, 120h (5 days), 168h (7 days), then every 72 hours
+    const inviterNudgeSchedule = [
+      { hours: 48, description: '2 days' },
+      { hours: 72, description: '3 days' },
+      { hours: 120, description: '5 days' },
+      { hours: 168, description: '1 week' },
+      { hours: 240, description: '10 days' },
+      { hours: 312, description: '13 days' },
+      { hours: 384, description: '16 days' },
+      { hours: 528, description: '22 days' },
+      { hours: 672, description: '28 days' },
+      { hours: 840, description: '35 days' }
+    ];
     
-    await storage.createEmailCampaign(campaign);
-  }
-  
-  /**
-   * Schedule daily reminders for pending invitations
-   */
-  async schedulePendingInvitationReminders(connection: Connection): Promise<void> {
-    if (connection.status !== 'pending') return;
-    
-    const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
-    const inviterName = await storage.getUserDisplayNameByEmail(connection.inviterEmail);
-    
-    // Schedule daily reminders for up to 7 days
-    for (let day = 1; day <= 7; day++) {
+    for (let i = 0; i < inviterNudgeSchedule.length; i++) {
+      const { hours, description } = inviterNudgeSchedule[i];
       const scheduledTime = new Date();
-      scheduledTime.setTime(scheduledTime.getTime() + day * 24 * 60 * 60 * 1000);
+      scheduledTime.setTime(scheduledTime.getTime() + hours * 60 * 60 * 1000);
       
-      const subject = `${inviteeName}, ${inviterName} is waiting to connect with you`;
-      const content = this.generatePendingInvitationReminderContent(
-        inviteeName, 
-        inviterName, 
-        connection,
-        day
-      );
+      const urgencyLevel = i < 2 ? 'gentle' : i < 5 ? 'moderate' : 'strong';
+      const subject = `${userName}, ${urgencyLevel === 'gentle' ? 'someone is waiting to connect with you' : urgencyLevel === 'moderate' ? 'your invitation is still needed' : 'don\'t miss this connection opportunity'}`;
+      const content = this.generateInviterNudge72HourContent(userName);
       
       const campaign: InsertEmailCampaign = {
-        userEmail: connection.inviteeEmail,
-        campaignType: 'pending_invitation',
-        triggerEvent: 'no_response',
-        userType: 'invitee',
+        userEmail,
+        campaignType: 'inviter_nudge',
+        triggerEvent: 'no_invitation',
+        userType: 'inviter',
         scheduledAt: scheduledTime,
-        connectionId: connection.id,
-        delayHours: day * 24,
+        delayHours: hours,
         emailSubject: subject,
         emailContent: content,
       };
@@ -125,24 +106,92 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
   }
   
   /**
-   * Schedule turn reminder campaigns for conversations
+   * Schedule enhanced reminders for pending invitations (every 48-72 hours)
+   */
+  async schedulePendingInvitationReminders(connection: Connection): Promise<void> {
+    if (connection.status !== 'pending') return;
+    
+    const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
+    const inviterName = await storage.getUserDisplayNameByEmail(connection.inviterEmail);
+    
+    // Enhanced nudging schedule: 48h, 72h, 120h (5 days), 168h (7 days), 240h (10 days), 336h (14 days), then weekly
+    const nudgeSchedule = [
+      { hours: 48, description: '2 days' },
+      { hours: 72, description: '3 days' },
+      { hours: 120, description: '5 days' },
+      { hours: 168, description: '1 week' },
+      { hours: 240, description: '10 days' },
+      { hours: 336, description: '2 weeks' },
+      { hours: 504, description: '3 weeks' },
+      { hours: 672, description: '4 weeks' },
+      { hours: 840, description: '5 weeks' },
+      { hours: 1008, description: '6 weeks' },
+      { hours: 1176, description: '7 weeks' },
+      { hours: 1344, description: '8 weeks' }
+    ];
+    
+    for (let i = 0; i < nudgeSchedule.length; i++) {
+      const { hours, description } = nudgeSchedule[i];
+      const scheduledTime = new Date();
+      scheduledTime.setTime(scheduledTime.getTime() + hours * 60 * 60 * 1000);
+      
+      const subject = `${inviteeName}, ${inviterName} is still waiting to connect with you`;
+      const content = this.generatePendingInvitationReminderContent(
+        inviteeName, 
+        inviterName, 
+        connection,
+        i + 1
+      );
+      
+      const campaign: InsertEmailCampaign = {
+        userEmail: connection.inviteeEmail,
+        campaignType: 'pending_invitation',
+        triggerEvent: 'no_response',
+        userType: 'invitee',
+        scheduledAt: scheduledTime,
+        connectionId: connection.id,
+        delayHours: hours,
+        emailSubject: subject,
+        emailContent: content,
+      };
+      
+      await storage.createEmailCampaign(campaign);
+    }
+  }
+  
+  /**
+   * Schedule enhanced turn reminder campaigns for conversations (every 48-72 hours)
    */
   async scheduleTurnReminderCampaigns(conversationId: number, recipientEmail: string, senderEmail: string): Promise<void> {
     const senderName = await storage.getUserDisplayNameByEmail(senderEmail);
     const recipientName = await storage.getUserDisplayNameByEmail(recipientEmail);
     
-    // Schedule reminders at 24, 48, and 72 hours
-    const delays = [24, 48, 72];
+    // Enhanced turn reminder schedule: 48h, 72h, 120h (5 days), 168h (7 days), then every 72 hours
+    const turnReminderSchedule = [
+      { hours: 48, description: '2 days' },
+      { hours: 72, description: '3 days' },
+      { hours: 120, description: '5 days' },
+      { hours: 168, description: '1 week' },
+      { hours: 240, description: '10 days' },
+      { hours: 312, description: '13 days' },
+      { hours: 384, description: '16 days' },
+      { hours: 456, description: '19 days' },
+      { hours: 528, description: '22 days' },
+      { hours: 600, description: '25 days' },
+      { hours: 672, description: '28 days' }
+    ];
     
-    for (const delayHours of delays) {
+    for (let i = 0; i < turnReminderSchedule.length; i++) {
+      const { hours, description } = turnReminderSchedule[i];
       const scheduledTime = new Date();
-      scheduledTime.setTime(scheduledTime.getTime() + delayHours * 60 * 60 * 1000);
+      scheduledTime.setTime(scheduledTime.getTime() + hours * 60 * 60 * 1000);
       
-      const subject = `${recipientName}, ${senderName} is waiting for your response`;
+      const urgencyLevel = i < 2 ? 'gentle' : i < 5 ? 'moderate' : 'strong';
+      const subject = `${recipientName}, ${senderName} is ${urgencyLevel === 'gentle' ? 'waiting for' : urgencyLevel === 'moderate' ? 'still waiting for' : 'really hoping for'} your response`;
       const content = this.generateTurnReminderContent(
         recipientName,
         senderName,
-        delayHours,
+        hours,
         conversationId
       );
       
@@ -153,7 +202,7 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
         userType: 'participant',
         scheduledAt: scheduledTime,
         conversationId,
-        delayHours,
+        delayHours: hours,
         emailSubject: subject,
         emailContent: content,
       };
@@ -163,7 +212,7 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
   }
   
   /**
-   * Process and send pending campaigns
+   * Process and send pending campaigns with opt-out checking
    */
   async processPendingCampaigns(): Promise<void> {
     const now = new Date();
@@ -171,6 +220,14 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
     
     for (const campaign of pendingCampaigns) {
       try {
+        // Check user preferences and opt-out status first
+        const userOptedOut = await this.hasUserOptedOut(campaign.userEmail);
+        if (userOptedOut) {
+          await storage.updateEmailCampaignStatus(campaign.id, 'cancelled');
+          console.log(`[EMAIL-CAMPAIGN] User ${campaign.userEmail} has opted out, cancelling campaign ${campaign.id}`);
+          continue;
+        }
+        
         // Check if the campaign is still relevant before sending
         const isRelevant = await this.isCampaignStillRelevant(campaign);
         
@@ -179,7 +236,7 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
           continue;
         }
         
-        // Send the email using the existing email service
+        // Send the email using the existing email service with unsubscribe link
         await this.sendCampaignEmail(campaign);
         
         // Mark as sent
@@ -199,6 +256,28 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
    */
   async cancelPendingCampaigns(userEmail: string, campaignTypes: string[]): Promise<void> {
     await storage.cancelPendingEmailCampaigns(userEmail, campaignTypes);
+  }
+
+  /**
+   * Check if user has opted out of email campaigns
+   */
+  private async hasUserOptedOut(userEmail: string): Promise<boolean> {
+    try {
+      const user = await storage.getUserByEmail(userEmail);
+      if (!user) return true; // If user doesn't exist, don't send emails
+      
+      // Check if user has disabled email notifications entirely
+      if (user.notificationPreference === 'sms') {
+        return true; // User only wants SMS, not email
+      }
+      
+      // Could add more sophisticated opt-out logic here
+      // For now, we respect the notification preference
+      return false;
+    } catch (error) {
+      console.error(`[EMAIL-CAMPAIGN] Error checking opt-out status for ${userEmail}:`, error);
+      return true; // Default to not sending on error
+    }
   }
   
   /**
@@ -509,6 +588,13 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
       ${formattedParagraphs}
       <div class="button-container">
         <a href="${cta.url}" class="button">${cta.text}</a>
+      </div>
+      <div style="margin-top: 40px; padding: 20px; background: #f8fafc; border-radius: 8px; border: 1px solid #e5e7eb;">
+        <p style="margin: 0 0 10px 0; color: #64748b; font-size: 13px; text-align: center;"><strong>Manage Your Email Preferences</strong></p>
+        <p style="margin: 0; color: #64748b; font-size: 13px; text-align: center;">
+          Too many emails? <a href="${appUrl}/dashboard/settings" style="color: #4FACFE; text-decoration: none;">Adjust your notification preferences</a> or 
+          <a href="${appUrl}/unsubscribe" style="color: #ef4444; text-decoration: underline;">unsubscribe from all campaign emails</a>.
+        </p>
       </div>
     `;
   }

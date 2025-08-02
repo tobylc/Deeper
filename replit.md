@@ -36,7 +36,7 @@ Change authorization policy: NEVER make changes to any elements, pages, or funct
 - **Journal Entry Interface**: Unique UI transforms conversations into a journal aesthetic with paper textures, ruled lines, and handwriting fonts.
 - **Voice Messaging**: Voice recording with OpenAI Whisper AI transcription, integrated into conversation flow.
 - **Subscription Model**: Invitee users have "free forever" access; inviter users require trial/paid subscriptions with connection limits.
-- **Notification System**: Email and SMS notifications (Twilio integration) for turns, invitations, and system events, with user preferences.
+- **Enhanced Email Campaign System**: Aggressive nudging system with reminders every 48-72 hours for up to 35 days. Includes pending invitation reminders, turn reminders, and inviter nudges with escalating urgency. Features opt-out functionality respecting user notification preferences and unsubscribe links.
 - **Thread Management**: Multi-conversation threading system allowing new question threads, with automatic title generation and paper stacking for long conversations.
 - **Thoughtful Response Enforcement**: Implements a 10-minute minimum response time for thoughtful engagement, with visual popups.
 
