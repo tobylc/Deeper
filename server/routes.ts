@@ -5260,7 +5260,9 @@ Format each as a complete question they can use to begin this important conversa
   });
 
   // Unsubscribe from all email campaigns (accessible without authentication)
-  app.get("/unsubscribe", async (req, res, next) => {
+  app.get("/unsubscribe", 
+    rateLimit(10, 60 * 1000), // 10 requests per minute
+    async (req, res) => {
     try {
       const email = req.query.email as string;
       
@@ -5398,7 +5400,9 @@ Format each as a complete question they can use to begin this important conversa
   });
 
   // Handle POST unsubscribe form submission
-  app.post("/unsubscribe", async (req, res, next) => {
+  app.post("/unsubscribe", 
+    rateLimit(5, 60 * 1000), // 5 requests per minute
+    async (req, res) => {
     try {
       const { email } = req.body;
       

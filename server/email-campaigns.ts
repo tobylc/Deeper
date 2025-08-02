@@ -212,14 +212,29 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
   }
   
   /**
-   * Process and send pending campaigns with opt-out checking
+   * Process and send pending campaigns with production safety and opt-out checking
    */
   async processPendingCampaigns(): Promise<void> {
     const now = new Date();
     const pendingCampaigns = await storage.getPendingEmailCampaigns(now);
     
-    for (const campaign of pendingCampaigns) {
+    // Production safety: Limit batch size to prevent overwhelming email service
+    const maxBatchSize = process.env.NODE_ENV === 'production' ? 50 : 100;
+    const campaignsToProcess = pendingCampaigns.slice(0, maxBatchSize);
+    
+    if (campaignsToProcess.length > 0) {
+      console.log(`[EMAIL-CAMPAIGN] Processing ${campaignsToProcess.length} pending campaigns in ${process.env.NODE_ENV} environment`);
+    }
+    
+    for (const campaign of campaignsToProcess) {
       try {
+        // Production safety: Double-check environment before sending
+        if (process.env.NODE_ENV === 'production' && !process.env.SENDGRID_API_KEY) {
+          console.error(`[EMAIL-CAMPAIGN] Missing email service configuration in production`);
+          await storage.updateEmailCampaignStatus(campaign.id, 'failed');
+          continue;
+        }
+
         // Check user preferences and opt-out status first
         const userOptedOut = await this.hasUserOptedOut(campaign.userEmail);
         if (userOptedOut) {
@@ -234,6 +249,11 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
         if (!isRelevant) {
           await storage.updateEmailCampaignStatus(campaign.id, 'cancelled');
           continue;
+        }
+        
+        // Production safety: Add small delay between emails to respect rate limits
+        if (process.env.NODE_ENV === 'production') {
+          await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
         }
         
         // Send the email using the existing email service with unsubscribe link
@@ -259,10 +279,19 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
   }
 
   /**
-   * Check if user has opted out of email campaigns
+   * Check if user has opted out of email campaigns with production safety
    */
   private async hasUserOptedOut(userEmail: string): Promise<boolean> {
     try {
+      // Production safety: Never send emails to test/development accounts in production
+      if (process.env.NODE_ENV === 'production') {
+        const testDomains = ['@test.com', '@example.com', '@localhost', '@replit.dev'];
+        if (testDomains.some(domain => userEmail.toLowerCase().includes(domain))) {
+          console.log(`[EMAIL-CAMPAIGN] Blocking test email in production: ${userEmail}`);
+          return true;
+        }
+      }
+
       const user = await storage.getUserByEmail(userEmail);
       if (!user) return true; // If user doesn't exist, don't send emails
       
@@ -271,12 +300,16 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
         return true; // User only wants SMS, not email
       }
       
-      // Could add more sophisticated opt-out logic here
-      // For now, we respect the notification preference
+      // Production safety: Rate limit check for frequent campaigns
+      if (process.env.NODE_ENV === 'production') {
+        // Additional safety checks could be added here
+        console.log(`[EMAIL-CAMPAIGN] Processing campaign for production user: ${userEmail}`);
+      }
+      
       return false;
     } catch (error) {
       console.error(`[EMAIL-CAMPAIGN] Error checking opt-out status for ${userEmail}:`, error);
-      return true; // Default to not sending on error
+      return true; // Default to not sending on error for safety
     }
   }
   
@@ -477,22 +510,61 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
             line-height: 1.5;
           }
           
-          /* High contrast mode support - WCAG AAA compliant */
+          /* Enhanced color contrast for accessibility - WCAG AAA compliant */
           @media (prefers-contrast: high) {
-            body { color: #000000; background-color: #ffffff; }
-            .content p { color: #000000; }
-            .footer p { color: #000000; }
+            body { 
+              color: #000000 !important; 
+              background-color: #ffffff !important; 
+            }
+            .email-container {
+              background: #ffffff !important;
+              border: 3px solid #000000 !important;
+            }
+            .header {
+              background: #000000 !important;
+              color: #ffffff !important;
+            }
+            .content { 
+              background: #ffffff !important; 
+              color: #000000 !important;
+            }
+            .content p { 
+              color: #000000 !important; 
+            }
+            .footer { 
+              background: #ffffff !important;
+              color: #000000 !important;
+              border-top: 3px solid #000000 !important;
+            }
+            .footer p { 
+              color: #000000 !important; 
+            }
             .button { 
-              background: #000000; 
-              color: #ffffff; 
-              border: 2px solid #000000;
+              background: #000000 !important; 
+              color: #ffffff !important; 
+              border: 3px solid #000000 !important;
+              box-shadow: none !important;
             }
             .highlight-box {
-              background: #f0f0f0;
-              border: 2px solid #000000;
+              background: #f0f0f0 !important;
+              border: 3px solid #000000 !important;
             }
             .highlight-box p {
               color: #000000 !important;
+            }
+            /* Unsubscribe section high contrast */
+            div[style*="background: #f8fafc"] {
+              background: #ffffff !important;
+              border: 3px solid #000000 !important;
+            }
+            a[style*="color: #4FACFE"] {
+              color: #0000FF !important;
+              text-decoration: underline !important;
+            }
+            a[style*="color: #ef4444"] {
+              color: #FF0000 !important;
+              text-decoration: underline !important;
+              font-weight: bold !important;
             }
           }
           
