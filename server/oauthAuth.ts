@@ -122,7 +122,7 @@ async function upsertUser(profile: any, provider: string, req?: any) {
     console.log(`[AUTH] Creating new Google user with email: ${email}`);
     try {
       newUser = await storage.createInviterUser({
-        id: `${provider}_${profile.id}`,
+        id: `google_${Date.now()}_${profile.id.substring(0, 10)}`,
         email: email,
         firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || 'User',
         lastName: profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || '',
@@ -137,8 +137,8 @@ async function upsertUser(profile: any, provider: string, req?: any) {
   } else {
     // Fallback for users without email
     newUser = await storage.createInviterUser({
-      id: `${provider}_${profile.id}`,
-      email: `${provider}_${profile.id}@${provider}.com`,
+      id: `google_${Date.now()}_${profile.id.substring(0, 10)}`,
+      email: `google_${profile.id.substring(0, 15)}@google.com`,
       firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || 'User',
       lastName: profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || '',
       profileImageUrl: profile.photos?.[0]?.value || null,
