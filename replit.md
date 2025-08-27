@@ -9,6 +9,11 @@ Change authorization policy: NEVER make changes to any elements, pages, or funct
 
 ## Recent Changes
 **Date: August 27, 2025**
+- **Email Service Migration**: Successfully migrated from SendGrid to Amazon SES
+  - Created new `SESEmailService` class using AWS SDK v3
+  - Updated email service factory to use AWS credentials instead of SendGrid API key  
+  - Maintains backward compatibility with fallback to internal database service
+  - All email campaigns and notifications now use Amazon SES
 - Fixed critical database WebSocket connection error that prevented app from starting
 - Resolved function signature errors in server routes
 - Updated Neon database configuration to use HTTP connections instead of WebSocket for Node.js compatibility
@@ -65,7 +70,7 @@ Change authorization policy: NEVER make changes to any elements, pages, or funct
 - **zod**: Schema validation
 - **tailwindcss**: CSS framework
 - **Twilio**: SMS notifications
-- **SendGrid**: Email delivery
+- **Amazon SES**: Email delivery (migrated from SendGrid)
 - **OpenAI Whisper**: AI transcription
 - **Stripe**: Subscription billing and payment processing
 

@@ -1,6 +1,7 @@
 import type { Connection } from "../shared/schema";
 import { storage } from "./storage";
-import sgMail from '@sendgrid/mail';
+import sgMail from '@sendgrid/mail'; // Keep for legacy compatibility but deprecated
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { getInvitationText, getEmailSubjectWithRoles } from "../shared/role-display-utils";
 
 // Email service interface for sending notifications
@@ -433,6 +434,330 @@ The Deeper Team
   }
 }
 
+// Amazon SES email service for production
+export class SESEmailService implements EmailService {
+  private sesClient: SESClient;
+  private fromEmail: string;
+
+  constructor(region: string = 'us-east-1', fromEmail: string = "notifications@joindeeper.com") {
+    this.sesClient = new SESClient({ 
+      region,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      }
+    });
+    this.fromEmail = fromEmail;
+  }
+
+  async sendConnectionInvitation(connection: Connection): Promise<void> {
+    const appUrl = 'https://joindeeper.com';
+    const inviterName = await storage.getUserDisplayNameByEmail(connection.inviterEmail);
+    const invitationText = getInvitationText(connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+    const subject = getEmailSubjectWithRoles('Invitation', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+
+    const htmlContent = `
+      <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: bold;">Deeper</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">Meaningful conversations that matter</p>
+        </div>
+        
+        <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+          <h2 style="color: #1e293b; margin: 0 0 20px 0;">You've been invited to connect!</h2>
+          <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
+            <strong>${inviterName}</strong> has invited you to start ${invitationText} on Deeper.
+          </p>
+          
+          ${connection.personalMessage ? `
+            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #4FACFE; margin: 20px 0;">
+              <p style="margin: 0; color: #1e293b; font-style: italic;">"${connection.personalMessage}"</p>
+            </div>
+          ` : ''}
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${appUrl}/invitation-signup?id=${connection.id}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
+              Accept Invitation
+            </a>
+          </div>
+        </div>
+        
+        <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
+          <h3 style="color: #1e293b; margin: 0 0 15px 0; font-size: 18px;">What happens next?</h3>
+          <ul style="color: #64748b; line-height: 1.6; margin: 0; padding-left: 20px;">
+            <li>Click the button above or visit the sign-up link</li>
+            <li>You must register with this email: <strong>${connection.inviteeEmail}</strong></li>
+            <li>Create your password and complete the registration</li>
+            <li>Start your private conversation space immediately</li>
+            <li>You can link a Google account later for easier sign-in</li>
+          </ul>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+          <p style="color: #94a3b8; font-size: 14px; margin: 0;">
+            This is your invitation to build meaningful relationships through thoughtful dialogue.
+          </p>
+        </div>
+      </div>
+    `;
+
+    const textContent = `
+Hi there!
+
+${inviterName} has invited you to connect on Deeper for ${invitationText}.
+
+${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
+
+To accept this invitation, simply click the button below or visit:
+${appUrl}/invitation-signup?id=${connection.id}
+
+You must use the email address: ${connection.inviteeEmail}
+
+This is a private, turn-based conversation space where you can build deeper understanding through thoughtful questions and responses.
+
+Best regards,
+The Deeper Team
+    `;
+
+    await this.sendEmail({
+      to: connection.inviteeEmail,
+      subject,
+      htmlContent,
+      textContent
+    });
+
+    console.log(`[EMAIL] Invitation sent to ${connection.inviteeEmail}`);
+  }
+
+  async sendConnectionAccepted(connection: Connection): Promise<void> {
+    const appUrl = 'https://joindeeper.com';
+    const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
+    const subject = getEmailSubjectWithRoles('Connection Accepted', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+    const roleDisplay = connection.inviterRole && connection.inviteeRole 
+      ? `${connection.inviterRole.toLowerCase()}/${connection.inviteeRole.toLowerCase()}`
+      : connection.relationshipType.toLowerCase();
+
+    const htmlContent = `
+      <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: bold;">Great News!</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">Your invitation was accepted</p>
+        </div>
+        
+        <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+          <p style="color: #1e293b; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
+            <strong>${inviteeName}</strong> has accepted your ${roleDisplay} connection invitation!
+          </p>
+          
+          <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
+            Your private ${roleDisplay} conversation space is now ready. You can start by asking the first question.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${appUrl}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
+              Start Conversation
+            </a>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+          <p style="color: #94a3b8; font-size: 14px; margin: 0;">
+            Happy connecting! Build meaningful relationships through thoughtful dialogue.
+          </p>
+        </div>
+      </div>
+    `;
+
+    const textContent = `
+Great news! ${inviteeName} has accepted your invitation to connect.
+
+Your private ${roleDisplay} conversation space is now ready. You can start by asking the first question.
+
+Visit your dashboard to begin: ${appUrl}
+
+Happy connecting!
+The Deeper Team
+    `;
+
+    await this.sendEmail({
+      to: connection.inviterEmail,
+      subject,
+      htmlContent,
+      textContent
+    });
+
+    console.log(`[EMAIL] Connection accepted notification sent to ${connection.inviterEmail}`);
+  }
+
+  async sendConnectionDeclined(connection: Connection): Promise<void> {
+    const inviteeName = await storage.getUserDisplayNameByEmail(connection.inviteeEmail);
+    const subject = getEmailSubjectWithRoles('Connection Declined', connection.inviterRole, connection.inviteeRole, connection.relationshipType);
+    const roleDisplay = connection.inviterRole && connection.inviteeRole 
+      ? `${connection.inviterRole.toLowerCase()}/${connection.inviteeRole.toLowerCase()}`
+      : connection.relationshipType.toLowerCase();
+
+    const htmlContent = `
+      <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: bold;">Connection Update</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">Regarding your invitation</p>
+        </div>
+        
+        <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+          <p style="color: #1e293b; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
+            ${inviteeName} has respectfully declined your ${roleDisplay} connection invitation.
+          </p>
+          
+          <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
+            Don't worry - meaningful connections take time. You can always try reaching out through other channels or invite them again in the future.
+          </p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+          <p style="color: #94a3b8; font-size: 14px; margin: 0;">
+            Keep building meaningful relationships! The Deeper Team
+          </p>
+        </div>
+      </div>
+    `;
+
+    const textContent = `
+${inviteeName} has respectfully declined your ${roleDisplay} connection invitation.
+
+Don't worry - meaningful connections take time. You can always try reaching out through other channels or invite them again in the future.
+
+Keep building meaningful relationships!
+The Deeper Team
+    `;
+
+    await this.sendEmail({
+      to: connection.inviterEmail,
+      subject,
+      htmlContent,
+      textContent
+    });
+
+    console.log(`[EMAIL] Connection declined notification sent to ${connection.inviterEmail}`);
+  }
+
+  async sendTurnNotification(params: {
+    recipientEmail: string;
+    senderEmail: string;
+    conversationId: number;
+    relationshipType: string;
+    senderRole?: string;
+    recipientRole?: string;
+    messageType: 'question' | 'response';
+  }): Promise<void> {
+    const appUrl = 'https://joindeeper.com';
+    const senderName = await storage.getUserDisplayNameByEmail(params.senderEmail);
+    const actionText = params.messageType === 'question' ? 'asked a question' : 'shared a response';
+    const responseText = params.messageType === 'question' ? 'respond' : 'continue the conversation';
+    const conversationContext = params.senderRole && params.recipientRole 
+      ? `${params.senderRole.toLowerCase()}/${params.recipientRole.toLowerCase()}`
+      : params.relationshipType.toLowerCase();
+
+    const subject = `It's your turn! ${senderName} ${actionText}`;
+    
+    const htmlContent = `
+      <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: bold;">Your Turn!</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">Time to continue your meaningful conversation</p>
+        </div>
+        
+        <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+          <h2 style="color: #1e293b; margin: 0 0 20px 0;">Message waiting for you</h2>
+          <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
+            <strong>${senderName}</strong> just ${actionText} in your ${conversationContext} conversation.
+          </p>
+          
+          <p style="color: #64748b; line-height: 1.6; margin: 0 0 20px 0;">
+            It's now your turn to ${responseText} and continue this meaningful dialogue.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${appUrl}/conversation/${params.conversationId}" style="display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00D4FF 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
+              Continue Conversation
+            </a>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+          <p style="color: #94a3b8; font-size: 14px; margin: 0;">
+            This is your private, turn-based conversation space designed to deepen relationships through meaningful dialogue.
+          </p>
+        </div>
+      </div>
+    `;
+
+    const textContent = `
+Hi there!
+
+${senderName} just ${actionText} in your ${params.relationshipType.toLowerCase()} conversation.
+
+It's now your turn to ${responseText} and continue this meaningful dialogue.
+
+Visit your conversation: ${appUrl}/conversation/${params.conversationId}
+
+This is your private, turn-based conversation space designed to deepen your connection.
+
+Best regards,
+The Deeper Team
+    `;
+
+    await this.sendEmail({
+      to: params.recipientEmail,
+      subject,
+      htmlContent,
+      textContent
+    });
+
+    console.log(`[EMAIL] Turn notification sent to ${params.recipientEmail}`);
+  }
+
+  private async sendEmail(params: {
+    to: string;
+    subject: string;
+    htmlContent: string;
+    textContent: string;
+  }): Promise<void> {
+    const command = new SendEmailCommand({
+      Source: this.fromEmail,
+      Destination: {
+        ToAddresses: [params.to],
+      },
+      Message: {
+        Subject: {
+          Data: params.subject,
+          Charset: 'UTF-8',
+        },
+        Body: {
+          Html: {
+            Data: params.htmlContent,
+            Charset: 'UTF-8',
+          },
+          Text: {
+            Data: params.textContent,
+            Charset: 'UTF-8',
+          },
+        },
+      },
+    });
+
+    try {
+      console.log(`[EMAIL] Attempting to send email via Amazon SES...`);
+      console.log(`[EMAIL] From: ${this.fromEmail} | To: ${params.to} | Subject: ${params.subject}`);
+      
+      await this.sesClient.send(command);
+      console.log(`[EMAIL] ✅ Email sent successfully via Amazon SES`);
+    } catch (error: any) {
+      console.error('[EMAIL] ❌ Failed to send email via Amazon SES:', error);
+      throw error;
+    }
+  }
+}
+
 // Internal email service that stores emails in database
 export class InternalEmailService implements EmailService {
   private fromEmail: string;
@@ -776,15 +1101,17 @@ class FallbackEmailService implements EmailService {
 
 // Email service factory
 export function createEmailService(): EmailService {
-  const sendGridApiKey = process.env.SENDGRID_API_KEY;
+  const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID;
+  const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+  const awsRegion = process.env.AWS_REGION || 'us-east-1';
   
-  if (sendGridApiKey) {
-    console.log('[EMAIL] Using SendGrid production email service with internal database fallback');
-    const productionService = new ProductionEmailService(sendGridApiKey);
+  if (awsAccessKeyId && awsSecretAccessKey) {
+    console.log('[EMAIL] Using Amazon SES production email service with internal database fallback');
+    const sesService = new SESEmailService(awsRegion);
     const internalService = new InternalEmailService();
-    return new FallbackEmailService(productionService, internalService);
+    return new FallbackEmailService(sesService, internalService);
   } else {
-    console.log('[EMAIL] No SendGrid API key found, using internal database notification system');
+    console.log('[EMAIL] No AWS credentials found, using internal database notification system');
     return new InternalEmailService();
   }
 }
