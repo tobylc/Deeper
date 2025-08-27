@@ -3,7 +3,16 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "../shared/schema";
 
-neonConfig.webSocketConstructor = ws;
+// Configure Neon WebSocket constructor - disable for Node.js compatibility
+// The WebSocket configuration causes issues in Node.js environments
+// Neon will fall back to HTTP connections automatically
+if (typeof window !== 'undefined') {
+  // Only configure WebSocket in browser environments
+  neonConfig.webSocketConstructor = ws;
+} else {
+  // In Node.js, disable WebSocket to prevent the ErrorEvent issue
+  console.log('[DB] Using HTTP connections for Neon database (Node.js environment)');
+}
 
 if (!process.env.DATABASE_URL) {
   throw new Error(

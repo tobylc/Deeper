@@ -40,6 +40,7 @@ export function rateLimit(maxRequests: number, windowMs: number) {
   };
 }
 
+// Email validation middleware
 export function validateEmail(req: Request, res: Response, next: NextFunction) {
   const emailSchema = z.string().email().min(1).max(255);
   
@@ -61,6 +62,17 @@ export function validateEmail(req: Request, res: Response, next: NextFunction) {
   }
   
   next();
+}
+
+// Simple email validation utility function
+export function isValidEmail(email: string): boolean {
+  const emailSchema = z.string().email().min(1).max(255);
+  try {
+    emailSchema.parse(email);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function validateMessageContent(req: Request, res: Response, next: NextFunction) {

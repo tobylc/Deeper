@@ -1,4 +1,7 @@
-import { neon } from '@neondatabase/serverless';
+import { neon, neonConfig } from '@neondatabase/serverless';
+
+// Disable WebSocket for Node.js environment to prevent connection issues
+neonConfig.webSocketConstructor = undefined;
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL must be set");

@@ -19,6 +19,7 @@ const nullToUndefined = <T>(value: T | null): T | undefined => value === null ? 
 import { 
   rateLimit, 
   validateEmail, 
+  isValidEmail, 
   validateMessageContent, 
   corsHeaders, 
   securityHeaders, 
@@ -5266,7 +5267,7 @@ Format each as a complete question they can use to begin this important conversa
     try {
       const email = req.query.email as string;
       
-      if (!email || !validateEmail(email)) {
+      if (!email || !isValidEmail(email)) {
         // Show unsubscribe form if no valid email provided
         return res.send(`
           <!DOCTYPE html>
@@ -5406,7 +5407,7 @@ Format each as a complete question they can use to begin this important conversa
     try {
       const { email } = req.body;
       
-      if (!email || !validateEmail(email)) {
+      if (!email || !isValidEmail(email)) {
         return res.status(400).send("Invalid email address");
       }
 
