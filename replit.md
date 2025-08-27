@@ -49,7 +49,7 @@ Change authorization policy: NEVER make changes to any elements, pages, or funct
 ### Core Features
 - **Authentication**: Replit Auth (Beta) with OpenID Connect, server-side sessions, Passport.js.
 - **Connection Management**: Invitation system via email, relationship categorization, status tracking, personal messages.
-- **Conversation System**: Private, turn-based conversation spaces with message categorization (questions/responses) and real-time synchronization via WebSockets. Enforces strict turn-based system, question-response exchanges, thoughtful response timers (10 mins for responses), and prohibits timers for questions.
+- **Conversation System**: Private, turn-based conversation spaces with message categorization (questions/responses) and real-time synchronization via WebSockets. Enforces strict turn-based system, question-response exchanges, thoughtful response timers (10 mins for responses), and prohibits timers for questions. **NEW**: Intelligent question detection in middle column - when users type a message ending with "?" in the main text box, a popup asks if they want to start a new conversation thread or send as a response.
 - **Question Suggestion Engine**: Curated and AI-generated questions categorized by relationship type, populating text input for editing.
 - **Journal Entry Interface**: Unique UI transforms conversations into a journal aesthetic with paper textures, ruled lines, and handwriting fonts.
 - **Voice Messaging**: Voice recording with OpenAI Whisper AI transcription, integrated into conversation flow.

@@ -15,6 +15,7 @@ import OnboardingPopup from "@/components/onboarding-popup";
 import ThoughtfulResponsePopup from "@/components/thoughtful-response-popup";
 import NotificationPreferencePopup from "@/components/notification-preference-popup";
 import TrialExpirationPopup from "@/components/trial-expiration-popup";
+import QuestionDetectionPopup from "@/components/question-detection-popup";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserDisplayName, useUserDisplayName } from "@/hooks/useUserDisplayName";
@@ -35,6 +36,7 @@ export default function ConversationPage() {
   const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
   const [showTrialExpirationPopup, setShowTrialExpirationPopup] = useState(false);
+  const [showQuestionDetectionPopup, setShowQuestionDetectionPopup] = useState(false);
 
   const [showThoughtfulResponsePopup, setShowThoughtfulResponsePopup] = useState(false);
   const [responseStartTime, setResponseStartTime] = useState<Date | null>(null);
@@ -825,11 +827,25 @@ export default function ConversationPage() {
     return Math.max(0, Math.ceil(remaining / 1000)); // Return seconds remaining
   };
 
+  // Helper function to detect if message contains a question
+  const containsQuestion = (message: string): boolean => {
+    const trimmed = message.trim();
+    return trimmed.endsWith('?') && trimmed.length > 1;
+  };
+
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
     
     // Determine message type: if from question suggestions, always use "question"
     const messageType = isFromQuestionSuggestions ? 'question' : nextMessageType;
+    
+    // CORE LOGIC: Question detection for middle column text box
+    // If user is typing in middle column (not from question suggestions) and message contains a question mark,
+    // show popup to ask if they want to create a new conversation thread
+    if (!isFromQuestionSuggestions && containsQuestion(newMessage) && messageType !== 'question') {
+      setShowQuestionDetectionPopup(true);
+      return;
+    }
     
     // CORE RULE #1: Inviter's first question always sends immediately (no timer)
     // CORE RULE #6: NO questions should have the thoughtful timer attached
@@ -1008,6 +1024,20 @@ export default function ConversationPage() {
       conversationId,
       dismissType: type
     });
+  };
+
+  // Question Detection Popup Handlers
+  const handleQuestionDetectionConfirm = () => {
+    setShowQuestionDetectionPopup(false);
+    // Treat the message as a new question and create a new thread
+    createNewThreadMutation.mutate(newMessage);
+    setNewMessage(""); // Clear the message
+  };
+
+  const handleQuestionDetectionKeepAsResponse = () => {
+    setShowQuestionDetectionPopup(false);
+    // Send the message as a regular response to the current conversation
+    proceedWithSending(newMessage);
   };
 
   return (
@@ -1237,6 +1267,14 @@ export default function ConversationPage() {
         onClose={handleThoughtfulResponseClose}
         onProceed={handleThoughtfulResponseProceed}
         remainingSeconds={getRemainingTime()}
+      />
+
+      {/* Question Detection Popup */}
+      <QuestionDetectionPopup
+        isOpen={showQuestionDetectionPopup}
+        message={newMessage}
+        onConfirmNewQuestion={handleQuestionDetectionConfirm}
+        onKeepAsResponse={handleQuestionDetectionKeepAsResponse}
       />
 
       {/* Trial Expiration Popup */}
