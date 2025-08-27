@@ -55,6 +55,7 @@ export function getSession() {
 
 async function upsertUser(profile: any, provider: string, req?: any) {
   const email = profile.emails?.[0]?.value;
+  console.log('[AUTH] upsertUser called with provider:', provider, 'email:', email, 'profile id:', profile.id);
   
   if (provider === 'google' && email) {
     // Check if this is an account linking request (user already logged in)
@@ -119,14 +120,20 @@ async function upsertUser(profile: any, provider: string, req?: any) {
   let newUser;
   if (email) {
     console.log(`[AUTH] Creating new Google user with email: ${email}`);
-    newUser = await storage.createInviterUser({
-      id: `${provider}_${profile.id}`,
-      email: email,
-      firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || 'User',
-      lastName: profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || '',
-      profileImageUrl: profile.photos?.[0]?.value || null,
-      googleId: provider === 'google' ? profile.id : undefined,
-    });
+    try {
+      newUser = await storage.createInviterUser({
+        id: `${provider}_${profile.id}`,
+        email: email,
+        firstName: profile.name?.givenName || profile.displayName?.split(' ')[0] || 'User',
+        lastName: profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || '',
+        profileImageUrl: profile.photos?.[0]?.value || null,
+        googleId: provider === 'google' ? profile.id : undefined,
+      });
+      console.log(`[AUTH] Successfully created new Google user: ${email}`);
+    } catch (userCreationError) {
+      console.error(`[AUTH] Failed to create new Google user: ${email}`, userCreationError);
+      throw userCreationError;
+    }
   } else {
     // Fallback for users without email
     newUser = await storage.createInviterUser({
@@ -176,9 +183,12 @@ export async function setupAuth(app: Express) {
       passReqToCallback: true
     }, async (req, accessToken, refreshToken, profile, done) => {
       try {
+        console.log('[AUTH] Google OAuth callback received for profile:', profile.id, profile.emails?.[0]?.value);
         const user = await upsertUser(profile, 'google', req);
+        console.log('[AUTH] Google OAuth user upsert successful:', user.email);
         return done(null, user);
       } catch (error) {
+        console.error('[AUTH] Google OAuth callback error:', error);
         return done(error);
       }
     }));
