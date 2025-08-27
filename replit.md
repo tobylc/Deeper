@@ -9,16 +9,21 @@ Change authorization policy: NEVER make changes to any elements, pages, or funct
 
 ## Recent Changes
 **Date: August 27, 2025**
-- **Email Service Migration**: Successfully migrated from SendGrid to Amazon SES
-  - Created new `SESEmailService` class using AWS SDK v3
-  - Updated email service factory to use AWS credentials instead of SendGrid API key  
-  - Maintains backward compatibility with fallback to internal database service
-  - All email campaigns and notifications now use Amazon SES
+- **Complete AWS Communication Migration**: Successfully migrated all communication services to AWS
+  - **Email Service**: Migrated from SendGrid to Amazon SES using AWS SDK v3
+    - Created new `SESEmailService` class with full email campaign support
+    - Updated email service factory to use AWS credentials
+    - Maintains backward compatibility with fallback to internal database service
+  - **SMS Service**: Migrated from Twilio to Amazon SNS using AWS SDK v3
+    - Created new `SNSSMSService` class supporting all SMS notification types
+    - Updated SMS service factory to use AWS credentials instead of Twilio
+    - Supports connection invitations, acceptance/decline notifications, turn notifications, verification codes
+    - Maintains backward compatibility with fallback to internal database service
 - Fixed critical database WebSocket connection error that prevented app from starting
 - Resolved function signature errors in server routes
 - Updated Neon database configuration to use HTTP connections instead of WebSocket for Node.js compatibility
 - Added proper error handling and utility functions for email validation
-- App is now running successfully on port 5000 with all services configured
+- App is now running successfully on port 5000 with all AWS services configured
 
 ## System Architecture
 
@@ -69,8 +74,8 @@ Change authorization policy: NEVER make changes to any elements, pages, or funct
 - **wouter**: React router
 - **zod**: Schema validation
 - **tailwindcss**: CSS framework
-- **Twilio**: SMS notifications
 - **Amazon SES**: Email delivery (migrated from SendGrid)
+- **Amazon SNS**: SMS notifications (migrated from Twilio)
 - **OpenAI Whisper**: AI transcription
 - **Stripe**: Subscription billing and payment processing
 

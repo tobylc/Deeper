@@ -1,5 +1,6 @@
 import { Connection } from "../shared/schema";
-import twilio from "twilio";
+import twilio from "twilio"; // Keep for legacy compatibility but deprecated
+import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import { storage } from "./storage";
 
 // Extended types for SMS functionality with phone numbers and names
@@ -319,6 +320,181 @@ This code will expire in 10 minutes. Enter it to verify your phone number.`;
   }
 }
 
+// Amazon SNS SMS service for production
+export class SNSSMSService implements SMSService {
+  private snsClient: SNSClient;
+  private fromPhone: string;
+
+  constructor(region: string = 'us-east-1', fromPhone: string = "Deeper") {
+    this.snsClient = new SNSClient({ 
+      region,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      }
+    });
+    this.fromPhone = fromPhone;
+    console.log('[SMS] Amazon SNS SMS service initialized');
+  }
+
+  async sendConnectionInvitation(connection: ConnectionWithSMS): Promise<void> {
+    if (!connection.inviteePhone) return;
+
+    const message = `You've been invited to start a deeper conversation on Deeper! 
+${connection.inviterName} wants to connect as ${connection.relationshipType}. 
+${connection.personalMessage ? `Personal message: "${connection.personalMessage}"` : ''}
+Accept your invitation: https://joindeeper.com/invitation/${connection.id}`;
+
+    await this.sendSMS({
+      phoneNumber: connection.inviteePhone,
+      message,
+      messageType: "invitation"
+    });
+
+    // Store in database for monitoring
+    await storage.createSMSMessage({
+      toPhone: connection.inviteePhone,
+      fromPhone: this.fromPhone,
+      message,
+      smsType: "invitation",
+      connectionId: connection.id
+    });
+
+    console.log(`[SMS] Invitation sent to ${connection.inviteePhone}`);
+  }
+
+  async sendConnectionAccepted(connection: ConnectionWithSMS): Promise<void> {
+    if (!connection.inviterPhone) return;
+
+    const message = `Great news! ${connection.inviteeName} accepted your invitation to connect on Deeper.
+You can now start meaningful conversations together.
+Visit: https://joindeeper.com`;
+
+    await this.sendSMS({
+      phoneNumber: connection.inviterPhone,
+      message,
+      messageType: "connection_accepted"
+    });
+
+    // Store in database for monitoring
+    await storage.createSMSMessage({
+      toPhone: connection.inviterPhone,
+      fromPhone: this.fromPhone,
+      message,
+      smsType: "connection_accepted",
+      connectionId: connection.id
+    });
+
+    console.log(`[SMS] Connection accepted notification sent to ${connection.inviterPhone}`);
+  }
+
+  async sendConnectionDeclined(connection: ConnectionWithSMS): Promise<void> {
+    if (!connection.inviterPhone) return;
+
+    const message = `${connection.inviteeName} has respectfully declined your invitation to connect on Deeper. 
+Meaningful connections take time - consider reaching out in other ways or trying again later.`;
+
+    await this.sendSMS({
+      phoneNumber: connection.inviterPhone,
+      message,
+      messageType: "connection_declined"
+    });
+
+    // Store in database for monitoring
+    await storage.createSMSMessage({
+      toPhone: connection.inviterPhone,
+      fromPhone: this.fromPhone,
+      message,
+      smsType: "connection_declined",
+      connectionId: connection.id
+    });
+
+    console.log(`[SMS] Connection declined notification sent to ${connection.inviterPhone}`);
+  }
+
+  async sendTurnNotification(params: {
+    recipientPhone: string;
+    senderName: string;
+    conversationId: number;
+    relationshipType: string;
+    messageType: 'question' | 'response';
+  }): Promise<void> {
+    const actionText = params.messageType === 'question' ? 'asked a question' : 'shared a response';
+    const message = `${params.senderName} just ${actionText} in your ${params.relationshipType} conversation on Deeper.
+It's your turn to respond and continue this meaningful dialogue.
+Visit: https://joindeeper.com/conversation/${params.conversationId}`;
+
+    await this.sendSMS({
+      phoneNumber: params.recipientPhone,
+      message,
+      messageType: "turn_notification"
+    });
+
+    // Store in database for monitoring
+    await storage.createSMSMessage({
+      toPhone: params.recipientPhone,
+      fromPhone: this.fromPhone,
+      message,
+      smsType: "turn_notification"
+    });
+
+    console.log(`[SMS] Turn notification sent to ${params.recipientPhone}`);
+  }
+
+  async sendVerificationCode(phoneNumber: string, code: string): Promise<void> {
+    const message = `Your Deeper verification code is: ${code}
+This code will expire in 10 minutes. Enter it to verify your phone number.`;
+
+    await this.sendSMS({
+      phoneNumber,
+      message,
+      messageType: "verification"
+    });
+
+    // Store in database for monitoring
+    await storage.createSMSMessage({
+      toPhone: phoneNumber,
+      fromPhone: this.fromPhone,
+      message,
+      smsType: "verification"
+    });
+
+    console.log(`[SMS] Verification code sent to ${phoneNumber}`);
+  }
+
+  private async sendSMS(params: {
+    phoneNumber: string;
+    message: string;
+    messageType: string;
+  }): Promise<void> {
+    const command = new PublishCommand({
+      PhoneNumber: params.phoneNumber,
+      Message: params.message,
+      MessageAttributes: {
+        'AWS.SNS.SMS.SenderID': {
+          DataType: 'String',
+          StringValue: this.fromPhone
+        },
+        'AWS.SNS.SMS.SMSType': {
+          DataType: 'String',
+          StringValue: 'Transactional'
+        }
+      }
+    });
+
+    try {
+      console.log(`[SMS] Attempting to send ${params.messageType} via Amazon SNS...`);
+      console.log(`[SMS] From: ${this.fromPhone} | To: ${params.phoneNumber}`);
+      
+      const result = await this.snsClient.send(command);
+      console.log(`[SMS] ✅ SMS sent successfully via Amazon SNS | MessageId: ${result.MessageId}`);
+    } catch (error: any) {
+      console.error('[SMS] ❌ Failed to send SMS via Amazon SNS:', error);
+      throw error;
+    }
+  }
+}
+
 // Internal SMS service that stores SMS in database
 export class InternalSMSService implements SMSService {
   private fromPhone: string;
@@ -421,13 +597,20 @@ Continue conversation: https://joindeeper.com/conversation/${params.conversation
 }
 
 export function createSMSService(): SMSService {
-  // Use Twilio in production for actual SMS delivery
-  if (process.env.NODE_ENV === 'production' || process.env.TWILIO_ACCOUNT_SID) {
-    console.log('[SMS] Using Twilio ProductionSMSService for real SMS delivery');
-    return new ProductionSMSService();
+  // Use Amazon SNS for SMS delivery with AWS credentials
+  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+    console.log('[SMS] Using Amazon SNS SMS service for real SMS delivery');
+    const region = process.env.AWS_REGION || 'us-east-1';
+    return new SNSSMSService(region);
   }
   
-  // Fall back to console logging in development
+  // Fallback to internal database storage if no AWS credentials
+  if (process.env.NODE_ENV === 'production') {
+    console.log('[SMS] AWS credentials not found, using internal database SMS storage');
+    return new InternalSMSService();
+  }
+  
+  // Use console logging in development
   console.log('[SMS] Using ConsoleSMSService for development');
   return new ConsoleSMSService();
 }
