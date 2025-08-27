@@ -23,9 +23,7 @@ export interface EmailService {
 // Simple console email service for development
 export class ConsoleEmailService implements EmailService {
   async sendConnectionInvitation(connection: Connection): Promise<void> {
-    const appUrl = process.env.REPLIT_DEV_DOMAIN 
-      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-      : 'https://joindeeper.com';
+    const appUrl = 'https://joindeeper.com';
     const inviterName = await storage.getUserDisplayNameByEmail(connection.inviterEmail);
     const invitationText = getInvitationText(connection.inviterRole, connection.inviteeRole, connection.relationshipType);
     const subject = getEmailSubjectWithRoles('Invitation', connection.inviterRole, connection.inviteeRole, connection.relationshipType);

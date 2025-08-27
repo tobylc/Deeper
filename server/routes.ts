@@ -2810,9 +2810,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Account linking endpoints
   app.get("/api/auth/link/google", isAuthenticated, (req, res) => {
     // Redirect to Google OAuth with special linking parameter
-    const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-      : 'https://joindeeper.com';
+    const baseUrl = 'https://joindeeper.com';
     const linkingUrl = `${baseUrl}/api/auth/google?linking=true`;
     res.redirect(linkingUrl);
   });

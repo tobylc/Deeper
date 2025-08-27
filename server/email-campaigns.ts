@@ -369,9 +369,7 @@ export class ProductionEmailCampaignService implements EmailCampaignService {
    * Convert plain text content to HTML with Deeper's design system
    */
   private convertToHtml(content: string, campaignType: string = 'general'): string {
-    const appUrl = process.env.REPLIT_DEV_DOMAIN 
-      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-      : 'https://joindeeper.com';
+    const appUrl = 'https://joindeeper.com';
 
     // Use different gradient variations for visual interest while maintaining brand consistency
     const gradientVariations = {
