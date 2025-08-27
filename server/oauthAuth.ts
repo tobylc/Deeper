@@ -182,11 +182,19 @@ export async function setupAuth(app: Express) {
     }, async (req, accessToken, refreshToken, profile, done) => {
       try {
         console.log('[AUTH] Google OAuth callback received for profile:', profile.id, profile.emails?.[0]?.value);
+        console.log('[AUTH] Access token length:', accessToken?.length || 'none');
+        console.log('[AUTH] Profile object keys:', Object.keys(profile || {}));
+        
         const user = await upsertUser(profile, 'google', req);
         console.log('[AUTH] Google OAuth user upsert successful:', user.email);
         return done(null, user);
       } catch (error) {
         console.error('[AUTH] Google OAuth callback error:', error);
+        console.error('[AUTH] Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
         return done(error);
       }
     }));
@@ -201,7 +209,15 @@ export async function setupAuth(app: Express) {
     });
     
     app.get("/api/auth/google/callback", 
-      passport.authenticate("google", { failureRedirect: "/auth?error=auth_failed" }),
+      (req, res, next) => {
+        console.log('[AUTH] OAuth callback hit with code:', req.query.code?.toString().substring(0, 20) + '...');
+        console.log('[AUTH] OAuth callback state:', req.query.state || 'none');
+        next();
+      },
+      passport.authenticate("google", { 
+        failureRedirect: "/auth?error=auth_failed",
+        failureFlash: false
+      }),
       (req, res) => {
         // Ensure session is saved before redirect
         req.session.save((err) => {
